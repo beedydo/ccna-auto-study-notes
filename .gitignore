@@ -1,2 +1,27 @@
-.claude/
+# Secrets and credentials (never commit)
+.env
+.env.*
+!.env.example
+labs/.env
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials*.json
+secrets*.yml
+secrets*.yaml
+
+# Python / OS junk
+*.pyc
+__pycache__/
+.venv/
+venv/
 .DS_Store
+*.xlsx#
+
+# Claude Code: CLAUDE.md, HANDOVER.md and .claude/commands/ ARE shared on purpose.
+# Only per-machine files stay out (personal permissions, tool scratch files).
+.claude/settings.local.json
+.claude/.cc-writes

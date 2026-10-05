@@ -1,0 +1,12 @@
+requests
+ncclient
+xmltodict
+pyyaml
+pyang
+meraki
+dnacentersdk
+webexpythonsdk
+ansible-core
+pytest
+# pyATS is large; uncomment when you reach T44
+# pyats[full]

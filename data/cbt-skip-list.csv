@@ -1,0 +1,13 @@
+cbt_module_or_video,approx_min,why,confidence,category
+Automate Cisco ASA Firewalls,17,"ASA REST API is not in the v1.1 security list (3.5 lists XDR, Firepower, Secure Connect, Secure Endpoint, ISE, Malware Analytics).",High,Not on v1.1 blueprint (skip)
+Automate Cisco Platforms with PowerShell,26,PowerShell is not on the blueprint; the exam is Python and Bash.,High,Not on v1.1 blueprint (skip)
+UCS Director videos (in Automate Cisco Compute and More with UCS),10,3.3 names UCS Manager and Intersight only.,High,Not on v1.1 blueprint (skip)
+UCS Manager PowerTool video,7,PowerShell module for UCS; not tested.,High,Not on v1.1 blueprint (skip)
+Singleton Design Pattern video,5,1.6 names MVC and Observer only.,High,Not on v1.1 blueprint (skip)
+Prepare a VS Code Development Environment,43,Editor setup; not tested.,High,Not on v1.1 blueprint (skip)
+Use Postman for REST API Interaction (plus Postman segments elsewhere),40,Postman is not a blueprint item; API concepts are tested via code/curl-style questions.,Medium,Not on v1.1 blueprint (skip)
+Prepare Your Development Environment: Linux VM / WSL / Python setup videos,45,Environment setup; not tested. Keep the DevNet Resources part (3.7).,Medium,Not on v1.1 blueprint (skip)
+Install and Configure Ansible (installation parts),20,Installing Ansible is not tested; reading playbooks (5.8) is.,Medium,Not on v1.1 blueprint (skip)
+Automate Your Teamwork with Webex Teams (older module),50,"Superseded by the later Automate Cisco Webex module; Webex is tested, this module is a duplicate.",Medium,Not on v1.1 blueprint (skip)
+Easier ACI Automation with the Toolkit,24,3.1 tests using an SDK from its docs; ACI-specific toolkit syntax is unlikely to be tested. Know the aaaLogin + class-query flow instead.,Low (my judgment),Tested topic but low-yield video (skim)
+Real-World Nexus Automation for Real-World Network Engineers,28,3.6 tests NX-API concepts; real-world extension is likely beyond exam depth.,Low (my judgment),Tested topic but low-yield video (skim)

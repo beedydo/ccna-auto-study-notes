@@ -1,0 +1,64 @@
+item,domain,objective_paraphrased,topic_ids,cbt_coverage,cbt_evidence,gap_and_action,confidence
+1.1,D1,"Compare XML, JSON, YAML",T06,Full,"CBT: XML, JSON, and YAML Data Formats",,Title-matched
+1.2,D1,Parse XML/JSON/YAML into Python structures,T06,Full,CBT: Parse Data Formats into Python Structures,,Title-matched
+1.3,D1,Test-driven development concepts,T32,Full,CBT: Unit Tests and TDD (skip Postman part),,Title-matched
+1.4,D1,"Compare agile, lean, waterfall",T01,Partial,CBT: Software Development Practices for all IT Professionals (about 3-4 min),No side-by-side comparison of agile vs lean vs waterfall. Use top-up T01.2.,Title-matched
+1.5,D1,"Benefits of methods/functions, classes, modules",T02,Full,"CBT: Basic Programming Control Flow / code structures, OOP",,Title-matched
+1.6,D1,"Advantages of design patterns (MVC, Observer)",T03,Full,CBT: Determine When to Use Design Patterns,"Not confirmed that this video teaches MVC and Observer specifically (it also has Singleton). Check while watching; if absent, self-study MVC + Observer.",Verify in video
+1.7,D1,Advantages of version control,T04,Full,CBT: Getting Started with Git / Collaborate with Git,,Assumed (known topic)
+1.8,D1,"Git operations (clone, add/rm, commit, push/pull, branch, merge/conflicts, diff)",T04,Full,CBT: Git modules incl. Git Diff + Merging/Resolving Conflicts,,Assumed (known topic)
+2.1,D2,Construct a REST request from API documentation,T07,Full,CBT: REST API Fundamentals; Requests and Responses; Parameters and Payloads,,Title-matched
+2.2,D2,Webhook usage patterns,T43,None,No CBT video found for webhooks,Use top-up T43.1 (Webex webhook registration + payload).,Title-matched
+2.3,D2,"Constraints when consuming APIs (rate limits, pagination, payload size)",T08,None,"CBT ""RESTful API Constraints"" is about REST architecture rules, not consumer limits","Use top-up T08.1 (429 + Retry-After, pagination, payload limits).",Verify in video
+2.4,D2,Common HTTP response codes for REST,T07,Full,CBT: REST API Requests and Responses,,Title-matched
+2.5,D2,"Troubleshoot using response code, request and API docs",T07,Full,CBT: REST API Requests and Responses,,Title-matched
+2.6,D2,"Interpret parts of an HTTP response (code, headers, body)",T07,Full,CBT: REST API Requests and Responses,,Title-matched
+2.7,D2,"Auth mechanisms: basic, custom token, API key",T10,Full,CBT: Authentication with HTTP and REST,,Title-matched
+2.8,D2,"Compare API styles (REST, RPC, sync, async)",T09,Partial,CBT compares REST vs SOAP only,No RPC comparison or sync vs async. Use top-ups T09.1 and T09.2.,Title-matched
+2.9,D2,Python script calling a REST API with requests,"T11, T16",Full,Embedded in the platform / RESTCONF script videos (no standalone video),Practise one script end to end (lab T11.1).,Implicit
+3.1,D3,Python script using a Cisco SDK from docs,"T18, T19, T20",Full,CBT: Meraki Python SDK; ACI Toolkit; DNA Center SDK,,Title-matched
+3.2,D3,"Network management platforms (Meraki, Catalyst Center, ACI, SD-WAN, NSO)","T18-T20, T22, T25",Full,"CBT: platform modules (Meraki, ACI, DNA Center, SD-WAN, NSO)","Videos use older names (DNA Center, vManage). Learn the current names.",Title-matched
+3.3,D3,"Compute platforms (UCS Manager, Intersight)",T24,Full,CBT: Automate Cisco Compute and More with UCS; Intersight API,Skip UCS Director and PowerTool (not tested).,Title-matched
+3.4,D3,"Collaboration platforms (Webex, UCM AXL/UDS)","T21, T42",Partial,CBT: Automate Cisco Collaboration Platforms; Automate Cisco Webex,Webex devices (xAPI) not covered. Use top-up T42.2.,Title-matched
+3.5,D3,"Security platforms (XDR, Firepower, Secure Connect, Secure Endpoint, ISE, Malware Analytics)",T23,Partial,"CBT: FMC modules; Security Solutions, FDM and ISE REST","XDR, Secure Endpoint, Secure Connect, Malware Analytics only briefly. Use top-up T23.4.",Title-matched
+3.6,D3,Device-level APIs for IOS XE and NX-OS,T17,Full,CBT: NX-API CLI; NX-API REST; IOS XE via RESTCONF/NETCONF videos,,Title-matched
+3.7,D3,"DevNet resources (Sandbox, Code Exchange, Learning Labs, docs)",T13,Full,"CBT: Prepare Your Development Environment, DevNet Resources part",Keep only the DevNet Resources part; skip the VM/WSL setup.,Title-matched
+3.8,D3,"Model-driven programmability (YANG, RESTCONF, NETCONF)","T14, T15, T16",Full,CBT: Data Models and YANG; NETCONF for IOS-XE; RESTCONF for IOS-XE,,Title-matched
+3.9.a,D3,Code construction for network devices/platforms,"T18, T19, T20, T22",Full,CBT: platform script modules,Sub-item label paraphrased from tracker mapping; confirm in Cisco PDF.,Title-matched
+3.9.b,D3,Code construction for Webex management,T42,Full,CBT: Automate Cisco Webex,Sub-item label paraphrased from tracker mapping; confirm in Cisco PDF.,Title-matched
+3.9.c,D3,Code construction for client discovery,"T18, T20",Full,CBT: Meraki and DNA Center modules,Sub-item label paraphrased from tracker mapping; confirm in Cisco PDF.,Title-matched
+4.1,D4,Benefits of edge computing,T26,Full,CBT: Computing and Application Deployment Models,Edge depth not confirmed; a one-paragraph note is enough.,Verify in video
+4.2,D4,"Deployment models (private, public, hybrid, edge)",T26,Full,CBT: Computing and Application Deployment Models,,Title-matched
+4.3,D4,"Deployment types (VMs, bare metal, containers)","T26, T27",Full,CBT: Computing and Application Deployment Models; Docker basics,,Title-matched
+4.4,D4,Components of a CI/CD pipeline (app deployment),T28,Full,CBT: CI/CD Pipeline Components,You already know this; practice Qs only.,Assumed (known topic)
+4.5,D4,Construct a Python unit test,T32,Full,CBT: Unit Tests and TDD,,Title-matched
+4.6,D4,Interpret a Dockerfile,T27,Full,CBT: Containerize Your App with a Dockerfile,,Assumed (known topic)
+4.7,D4,Use Docker images in a local dev environment,T27,Full,CBT: Understand the Basics of Docker,,Assumed (known topic)
+4.8,D4,"Security issues (secrets, encryption, data handling)",T29,Full,CBT: Secure Data in Your Applications,,Title-matched
+4.9,D4,"Security infrastructure (firewall, DNS, load balancer, reverse proxy)",T41,None,No dedicated CBT content on LB / reverse proxy / DNS roles in app deployment,Use top-up T41.1 (map AWS ALB/NLB/Route 53/WAF to Cisco wording).,Title-matched
+4.10,D4,"Top OWASP threats (XSS, SQL injection, CSRF)",T30,Full,CBT: Identify OWASP Standard Threats,,Title-matched
+4.11,D4,"Bash commands (files, navigation, environment variables)",T31,Full,CBT: Linux and Bash Fundamentals,,Assumed (known topic)
+4.12,D4,Principles of DevOps practices,T28,Full,CBT: DevOps Practices Principles,,Assumed (known topic)
+5.1,D5,Value of model-driven programmability for automation,T12,Full,CBT: Network Programmability and Automation Foundations,,Title-matched
+5.2,D5,Controller-level vs device-level management,T12,Full,CBT: Network Programmability and Automation Foundations,Add own note T12.2 for the comparison.,Title-matched
+5.3,D5,"Simulation and testing tools (Modeling Labs, pyATS)","T25, T44",Full,CBT: CML + NSO in Action; Automate and Test Networks with pyATS,,Title-matched
+5.4,D5,CI/CD components and benefits for infrastructure automation,T28,Full,CBT: CI/CD Pipeline Components,,Assumed (known topic)
+5.5,D5,Principles of infrastructure as code,T33,Full,CBT: Terraform / IaC modules,,Assumed (known topic)
+5.6,D5,"Automation tools (Ansible, Terraform, NSO) capabilities","T33, T25",Full,"CBT: Ansible, Terraform, NSO modules",,Assumed (known topic)
+5.7,D5,Identify workflows in Python scripts using Cisco APIs,T45,Full,Implicit: every platform module walks through scripts,No dedicated video; do the code-reading drill T45.1.,Implicit
+5.8,D5,Interpret what an Ansible playbook automates,T34,Full,CBT: Automate Your Entire Network with Ansible (RESTCONF playbooks),Server-task playbooks are not shown; you know these.,Assumed (known topic)
+5.9,D5,Interpret Bash script workflows,T31,Full,CBT: Linux and Bash Fundamentals,,Assumed (known topic)
+5.10,D5,Interpret RESTCONF / NETCONF query results,"T15, T16",Full,CBT: NETCONF and RESTCONF script videos,,Title-matched
+5.11,D5,Interpret basic YANG models,T14,Full,CBT: Data Models and YANG,,Title-matched
+5.12,D5,Interpret a unified diff,T05,Full,Assumed from CBT Git Diff video,Not confirmed the video teaches @@ hunk headers and +/- lines. Use drill T05.1.,Verify in video
+5.13,D5,Code review process principles and benefits,T46,None,No CBT content,Use top-up T46.1.,Title-matched
+5.14,D5,Interpret a sequence diagram with API calls,T47,None,No CBT content,Use top-up T47.1 (token-auth and async-poll diagrams).,Title-matched
+6.1,D6,MAC addresses and VLANs,T35,Full,CBT: Describe How a Switch Performs Layer 2 Forwarding,,Title-matched
+6.2,D6,"IP addresses, routes, masks, prefixes, gateways",T36,Full,CBT: Describe How a Router Performs Layer 3 Forwarding,Add subnetting drills (T36.2).,Title-matched
+6.3,D6,"Network components (switches, routers, firewalls, load balancers)",T38,Partial,CBT: Interpret and Describe a Basic Network Topology,Load balancers not explicit. Covered by top-up T41.1; no dedicated top-up row in tracker.,Title-matched
+6.4,D6,Interpret a basic network topology diagram,T38,Full,CBT: Interpret and Describe a Basic Network Topology,,Title-matched
+6.5,D6,"Management, data and control planes",T39,Full,"CBT: Explain the Management, Control, and Data Planes",,Title-matched
+6.6,D6,"IP services (DHCP, DNS, NAT, SNMP, NTP)",T37,Full,CBT: Describe Application Layer Functions and Protocols,,Title-matched
+6.7,D6,"Common protocol ports (SSH, Telnet, HTTP, HTTPS, NETCONF)",T37,Full,CBT: Describe Transport Layer Functions and Protocols,Drill the port flashcards (T37.3).,Title-matched
+6.8,D6,"Diagnose connectivity issues (NAT, port blocking, proxy, VPN)",T40,Partial,CBT: Describe Network Elements that Impact Applications,Proxy and VPN diagnosis not explicit. Use top-up T40.2.,Title-matched
+6.9,D6,Impact of network constraints on applications,T40,Full,CBT: Describe Network Elements that Impact Applications,,Title-matched

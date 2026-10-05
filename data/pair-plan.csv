@@ -1,0 +1,29 @@
+date,day,phase,beedy,bob,together
+2026-10-05,Mon,Own topics (batch 1),"T02 Functions, classes, modules; T04 Git + version control","T01 Software dev methods: agile, lean, waterfall; T03 Design patterns: MVC + Observer; T12 Automation foundations: controller vs device",
+2026-10-06,Tue,Own topics (batch 1),T05 Unified diffs; T06 Data formats + parsing,"T13 DevNet resources; T35 Layer 2: MAC, VLANs; T36 Layer 3: IP, masks, routes, gateways",
+2026-10-07,Wed,Own topics (batch 1),"Practice Qs on T02-T06, write teach-back cards (3 key points + 1 exam trap per topic)","T39 Management, control, data planes; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic)",
+2026-10-08,Thu,Teach-back,,,"TEACH-BACK 1 (30 min together): Beedy teaches T02, T04, T05, T06 (12 min); Bob teaches T01, T03, T12, T13, T35, T36, T39 (12 min); 6 min swap one question per topic and log weak IDs in Notes"
+2026-10-09,Fri,Own topics (batch 2),"T07 REST fundamentals, HTTP codes; T08 API consumption constraints",T14 YANG data models,
+2026-10-10,Sat,Own topics (batch 2),"T09 API styles: REST vs RPC, sync vs async; T10 API authentication",T15 NETCONF,
+2026-10-11,Sun,Own topics (batch 2),T11 Python requests scripting; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic),T16 RESTCONF; T17 IOS XE and NX-OS device-level APIs; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic),
+2026-10-12,Mon,Teach-back,,,"TEACH-BACK 2 (30 min together): Beedy teaches T07, T08, T09, T10, T11 (12 min); Bob teaches T14, T15, T16, T17 (12 min); 6 min swap one question per topic and log weak IDs in Notes"
+2026-10-13,Tue,Own topics (batch 3),T26 Deployment models + edge computing; T27 Docker; T28 CI/CD + DevOps principles,T18 Meraki; T19 ACI,
+2026-10-14,Wed,Own topics (batch 3),"T29 Secrets, encryption, data handling; T30 OWASP: XSS, SQLi, CSRF",T20 Catalyst Center (DNA Center); T21 Collaboration: CUCM AXL + UDS,
+2026-10-15,Thu,Own topics (batch 3),T31 Bash; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic),"T22 Catalyst SD-WAN; T37 Transport, ports, IP services; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic)",
+2026-10-16,Fri,Teach-back,,,"TEACH-BACK 3 (30 min together): Beedy teaches T26, T27, T28, T29, T30, T31 (12 min); Bob teaches T18, T19, T20, T21, T22, T37 (12 min); 6 min swap one question per topic and log weak IDs in Notes"
+2026-10-17,Sat,Own topics (batch 4),T32 TDD + Python unit tests; T33 IaC + tool comparison; T34 Ansible playbook interpretation,T23 Security platforms; T24 Compute: UCS Manager + Intersight; T25 NSO + Cisco Modeling Labs,
+2026-10-18,Sun,Own topics (batch 4),T43 Webhooks; T44 pyATS + Genie,T42 Webex + Webex devices; T45 Reading Python scripts using Cisco APIs; T38 Topology diagrams + components,
+2026-10-19,Mon,Own topics (batch 4),T46 Code review principles; T47 Sequence diagrams with API calls; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic),"T40 App connectivity + network constraints; T41 Firewall, DNS, LB, reverse proxy; then practice Qs on this batch and write teach-back cards (3 key points + 1 exam trap per topic)",
+2026-10-20,Tue,Teach-back,,,"TEACH-BACK 4 (30 min together): Beedy teaches T32, T33, T34, T43, T44, T46, T47 (12 min); Bob teaches T23, T24, T25, T38, T40, T41, T42, T45 (12 min); 6 min swap one question per topic and log weak IDs in Notes"
+2026-10-21,Wed,Cross-study,"Bob's notes + Qs: T01, T03, T12-T17 (process, design patterns, foundations, YANG, NETCONF, RESTCONF, device APIs)","Beedy's notes + Qs: T02, T04-T08 (Python, Git, diffs, data formats, REST, API constraints)",
+2026-10-22,Thu,Cross-study,"Bob's notes + Qs: T18-T25 (Meraki, ACI, Catalyst Center, CUCM, SD-WAN, security, UCS/Intersight, NSO/CML)","Beedy's notes + Qs: T09-T11, T26-T30 (API styles, auth, requests, deployment, Docker, CI/CD, secrets, OWASP)",
+2026-10-23,Fri,Cross-study,"Bob's notes + Qs: T35-T42, T45 (L2, L3, ports/services, topology, planes, connectivity, LB/proxy, Webex, script reading)","Beedy's notes + Qs: T31-T34, T43, T44, T46, T47 (Bash, TDD, IaC, Ansible, webhooks, pyATS, code review, sequence diagrams)",
+2026-10-24,Sat,Swap quiz,,,SWAP QUIZ (30 min together): each quizzes the other on their OWN topics using the Exam angle rows (15 min each). Log every miss with its topic ID on Practice Log
+2026-10-25,Sun,Mock 1,"Mock 1 block A: 30 min timed, no notes, mark guesses","Mock 1 block A: 30 min timed, no notes, mark guesses","Same evening, separate seats"
+2026-10-26,Mon,Mock 1,Mock 1 block B (30 min timed),Mock 1 block B (30 min timed),
+2026-10-27,Tue,Mock 1,Mock 1 block C (30 min timed),Mock 1 block C (30 min timed),
+2026-10-28,Wed,Mock 1,Mock 1 block D (30 min timed); total per domain on Practice Log,Mock 1 block D (30 min timed); total per domain on Practice Log,
+2026-10-29,Thu,Joint review,,,MOCK REVIEW (30 min together): owner explains every miss in their own topics (Beedy: dev/API/deployment/DevOps; Bob: platforms/model-driven/network). Agree each person's 2 weakest domains
+2026-10-30,Fri,Remediation,20 min Qs on your 2 weakest domains (use owner's notes),20 min Qs on your 2 weakest domains (use owner's notes),"Last 10 min together: rapid-fire HTTP codes, ports, NETCONF ops, auth per platform"
+2026-10-31,Sat,Final,Read cheat sheet; confirm booking/ID/Pearson VUE; rest,Read cheat sheet; confirm booking/ID/Pearson VUE; rest,
+2026-11-01,Sun,Exam,EXAM 200-901 CCNAAUTO v1.1,EXAM 200-901 CCNAAUTO v1.1,

@@ -1,0 +1,79 @@
+aid_id,topic_id,type,title,est_min,resource
+T01.1,T01,Video,Software Development Practices for all IT Professionals,4,CBT module
+T01.2,T01,Top-up,Agile vs lean vs waterfall comparison,30,DevNet Learning Labs / OCG ch. 1
+T02.1,T02,Video,"Code structures, functions/methods, OOP videos (1.5x)",21,CBT: Basic Programming Control Flow
+T03.1,T03,Video,Determine When to Use Design Patterns (skip Singleton),18,CBT module
+T04.1,T04,Video,Git Diff + Merging/Resolving Conflicts only (1.5x),12,CBT: Getting Started with Git / Collaborate with Git
+T04.2,T04,Drill,"Command traps: rm vs rm --cached, reset vs revert, fetch vs pull, diff --staged",20,Docker lab
+T05.1,T05,Drill,Read @@ hunk headers + +/- lines,20,git diff output in Docker lab
+T06.1,T06,Video,"XML syntax, elements/tags/attributes, DOM only",13,"CBT: XML, JSON, and YAML Data Formats"
+T06.2,T06,Video,Parse Data Formats into Python Structures,26,CBT module
+T06.3,T06,Lab,Parse RESTCONF XML with xmltodict + ElementTree,25,Docker lab
+T07.1,T07,Video,REST API Fundamentals,22,CBT module
+T07.2,T07,Video,REST API Requests and Responses,22,CBT module
+T07.3,T07,Video,Parameters and Payloads for REST APIs,18,CBT module
+T08.1,T08,Top-up,"429 + Retry-After, pagination, payload limits",15,Meraki Dashboard API docs
+T09.1,T09,Top-up,Async taskId polling pattern,30,Catalyst Center API docs (task API)
+T09.2,T09,Top-up,REST vs RPC (JSON-RPC / NETCONF RPC examples),20,NSO docs; own notes
+T10.1,T10,Video,Authentication with HTTP and REST,27,CBT module
+T11.1,T11,Lab,"requests script: auth header, JSON body, raise_for_status, 429 retry",30,Docker lab
+T12.1,T12,Video,Network Programmability & Automation Foundations,56,CBT module
+T12.2,T12,Top-up,Notes: controller-level vs device-level management,20,Own notes
+T13.1,T13,Video,DevNet Resources,18,CBT: Prepare Your Development Environment > DevNet Resources
+T14.1,T14,Video,Data Models and YANG,41,CBT module
+T14.2,T14,Lab,pyang tree: ietf-interfaces + a Cisco native model,40,Docker lab + YangModels repo
+T14.3,T14,Drill,Read YANG snippets; pick the correct RESTCONF path,30,YangModels repo
+T15.1,T15,Video,Develop NETCONF Scripts for Cisco IOS-XE Devices,42,CBT module
+T15.2,T15,Lab,ncclient get / get-config / edit-config; ssh -s netconf hello,60,DevNet always-on IOS XE sandbox
+T15.3,T15,Drill,"Flashcards: operations, datastores, port 830",20,Own cheat sheet
+T16.1,T16,Video,Develop RESTCONF Scripts for Cisco IOS-XE,25,CBT module
+T16.2,T16,Lab,GET / PATCH / PUT / DELETE via curl + requests,60,DevNet always-on IOS XE sandbox
+T16.3,T16,Top-up,NETCONF vs RESTCONF comparison table,30,Own notes
+T16.4,T16,Drill,Interpret RESTCONF / NETCONF replies,30,Output from labs
+T17.1,T17,Video,Nexus Programmability with NX-API CLI,30,CBT module
+T17.2,T17,Video,Nexus Programmability with NX-API REST,36,CBT module
+T17.3,T17,Video,Real-World Nexus Automation for Real-World Network Engineers (optional),28,CBT module
+T18.1,T18,Video,Automate Cisco Meraki Networks,26,CBT module
+T18.2,T18,Video,Automation with the Meraki Python SDK,22,CBT module
+T18.3,T18,Lab,orgs > networks > devices > clients (requests + SDK),30,Meraki sandbox / docs API key
+T19.1,T19,Video,Automate the Data Center with ACI,43,CBT module
+T19.2,T19,Video,Easier ACI Automation with the Toolkit (optional),24,CBT module
+T19.3,T19,Lab,APIC aaaLogin + class query (fabricNode) via curl,40,DevNet always-on APIC sandbox
+T20.1,T20,Video,Automate the Campus with DNA Center Platform,36,CBT module
+T20.2,T20,Video,Easier DNA Center Automation with the SDK,19,CBT module
+T21.1,T21,Video,Automate Cisco Collaboration Platforms,30,CBT module
+T22.1,T22,Video,Automate WAN Workloads with SD-WAN,20,CBT module (vManage = SD-WAN Manager)
+T23.1,T23,Video,Automate the Cisco Security Platform (FMC),21,CBT module
+T23.2,T23,Video,Create Access Policies in FMC with Python,17,CBT module
+T23.3,T23,Video,"Security Solutions, FDM REST API, ISE REST API",43,CBT: Understand Cisco Compute & Security Solutions
+T23.4,T23,Top-up,"XDR, Secure Endpoint, Secure Connect, Secure Malware Analytics: 1-liner each",50,developer.cisco.com product API pages
+T24.1,T24,Video,"UCS platform + UCSM SDK (skip PowerTool, UCS Director)",14,CBT: Automate Cisco Compute and More with UCS
+T24.2,T24,Video,Cisco's Compute Solutions + Intersight's API,14,CBT: Understand Cisco Compute & Security Solutions
+T25.1,T25,Video,Automate Everything with NSO,29,CBT module
+T25.2,T25,Video,CML + NSO in Action (skip Terraform),20,"CBT: Understand Network Simulation, NSO & Terraform"
+T26.1,T26,Video,Computing and Application Deployment Models (1.5x),31,CBT module
+T27.1,T27,Video,Containerize Your App with a Dockerfile (2x),5,CBT: Understand the Basics of Docker
+T29.1,T29,Video,Secure Data in Your Applications,22,CBT module
+T30.1,T30,Video,Identify OWASP Standard Threats,21,CBT module
+T32.1,T32,Video,Unit Tests and TDD (skip Postman testing),21,CBT module
+T32.2,T32,Lab,unittest TestCase for your XML parser,40,Docker lab
+T33.1,T33,Top-up,One-line differentiator per tool,15,Own notes
+T34.1,T34,Video,RESTCONF playbook videos only,15,CBT: Automate Your Entire Network with Ansible
+T35.1,T35,Video,Describe How a Switch Performs Layer 2 Forwarding,33,CBT module
+T36.1,T36,Video,Describe How a Router Performs Layer 3 Forwarding,35,CBT module
+T36.2,T36,Drill,Subnetting drills,40,Own / online drills
+T37.1,T37,Video,Describe Transport Layer Functions and Protocols,21,CBT module
+T37.2,T37,Video,Describe Application Layer Functions and Protocols,38,CBT module
+T37.3,T37,Drill,Flashcards: port numbers,20,Own cheat sheet
+T38.1,T38,Video,Interpret and Describe a Basic Network Topology,40,CBT module
+T39.1,T39,Video,"Explain the Management, Control, and Data Planes",25,CBT module
+T40.1,T40,Video,Describe Network Elements that Impact Applications,23,CBT module
+T40.2,T40,Top-up,"Diagnose NAT, blocked port, proxy, VPN issues",30,Own notes
+T41.1,T41,Top-up,Map AWS ALB/NLB/Route 53/WAF to Cisco wording,30,Own notes
+T42.1,T42,Video,Automate Cisco Webex (skip older 'Webex Teams' module),58,CBT module
+T42.2,T42,Top-up,Webex devices xAPI overview,20,Webex developer docs
+T43.1,T43,Top-up,Register a Webex webhook via curl; inspect payload,45,Webex developer docs: Webhooks
+T44.1,T44,Video,Automate and Test Networks with pyATS,50,CBT module
+T45.1,T45,Drill,Identify the workflow of Cisco API scripts,40,CBT supplemental files + DevNet Code Exchange
+T46.1,T46,Top-up,Code review principles + benefits,15,Own notes
+T47.1,T47,Top-up,Read token-auth + async-poll sequence diagrams,30,Catalyst Center / Webex docs

@@ -1,0 +1,1073 @@
+topic_id,owner,concept_id,area,what_to_know
+T01,Bob,T01.01,Waterfall,"• Sequential phases: requirements → design → implementation → testing → deployment → maintenance
+• Each phase finishes (and is signed off) before the next starts
+• Heavy upfront documentation; change late in the project is expensive
+• Fits fixed, well-understood requirements (e.g. regulated projects)"
+T01,Bob,T01.02,Agile,"• Iterative and incremental: deliver working software in short iterations (sprints, 1-4 weeks)
+• Agile Manifesto values: individuals and interactions, working software, customer collaboration, responding to change
+• Continuous feedback; requirements can change between iterations"
+T01,Bob,T01.03,Agile frameworks,"• Scrum: product owner, scrum master, dev team; product backlog, sprint backlog, increment; sprint planning, daily stand-up, sprint review, retrospective
+• Kanban: visual board (To do / Doing / Done), WIP limits, continuous flow instead of sprints"
+T01,Bob,T01.04,Lean,"• Origin: Toyota Production System; maximise customer value, minimise waste
+• Principles: eliminate waste, amplify learning, decide as late as possible, deliver fast, empower the team, build quality in, see the whole
+• Waste examples: partially done work, extra features, hand-offs, waiting, defects
+• MVP (minimum viable product) and value-stream mapping"
+T01,Bob,T01.05,Comparison,"• Waterfall = plan-driven, predictable, slow feedback; agile = adaptive, fast feedback; lean = flow and waste reduction (often combined with agile)
+• Pick by scenario: fixed scope/contract → waterfall; evolving requirements → agile; reduce waste/cycle time → lean"
+T01,Bob,T01.06,Exam angle,"• ""Which method fits this scenario?"" and ""characteristic of X"" questions"
+T02,Beedy,T02.01,Why organise code,"• Reuse (DRY): write logic once, call it many times
+• Readability: small named units describe intent
+• Maintainability: fix a bug in one place
+• Testability: functions/classes can be unit-tested in isolation
+• Separation of concerns: each unit does one job; teams can work on separate modules"
+T02,Beedy,T02.02,Functions,"• Define with def name(params): and call with name(args)
+• Parameters = names in the definition; arguments = values passed in
+• Positional vs keyword args (f(1, b=2)); default values (def f(a, b=10))
+• *args collects extra positional args as a tuple; **kwargs collects extra keyword args as a dict
+• return sends a value back; no return statement means the function returns None"
+T02,Beedy,T02.03,Functions,"• Local variables exist only inside the function; global variables live at module level
+• LEGB lookup order: Local, Enclosing, Global, Built-in
+• global keyword needed to reassign a global inside a function
+• Docstring = first string inside a function/class; read by help()"
+T02,Beedy,T02.04,Methods,"• A method is a function defined inside a class and called on an object (obj.method())
+• self = reference to the instance, passed automatically as the first argument
+• Instance method uses self; @classmethod gets cls; @staticmethod gets neither
+• Example: router.get_interfaces() vs a plain get_interfaces(router)"
+T02,Beedy,T02.05,Classes,"• class Device: defines a blueprint; d = Device(...) creates an instance (object)
+• __init__(self, ...) is the constructor that sets initial attributes
+• Instance attributes (self.hostname) are per object; class attributes are shared by all instances
+• Objects bundle data (attributes) and behaviour (methods)"
+T02,Beedy,T02.06,OOP principles,"• Encapsulation: hide internal state behind methods (convention: _private attributes)
+• Inheritance: class Switch(Device) reuses parent code; super().__init__() calls the parent constructor
+• Polymorphism: different classes expose the same method name (e.g. connect()) with different behaviour
+• Abstraction: expose a simple interface, hide implementation detail"
+T02,Beedy,T02.07,Modules,"• A module is any .py file; its functions/classes/variables live in its own namespace
+• import math then math.sqrt(); from math import sqrt then sqrt()
+• import pandas as pd creates an alias
+• Avoid from x import * (pollutes the namespace, hides where names come from)"
+T02,Beedy,T02.08,Modules,"• __name__ is ""__main__"" when the file is run directly, and the module name when imported
+• if __name__ == ""__main__"": main() lets a file act as both a script and an importable module
+• Code outside this guard runs on import, which is usually unwanted"
+T02,Beedy,T02.09,Packages,"• A package is a directory of modules, traditionally with __init__.py
+• Import from packages with dotted paths: from mypkg.utils import parse
+• Standard library ships with Python (json, os, sys, unittest, xml)
+• Third-party packages come from PyPI (requests, ncclient, xmltodict, pyyaml)"
+T02,Beedy,T02.10,Dependencies,"• pip install requests installs from PyPI; pip freeze > requirements.txt records versions
+• pip install -r requirements.txt recreates the set on another machine
+• python3 -m venv venv then source venv/bin/activate isolates project dependencies
+• Why: avoid version clashes between projects and keep the system Python clean"
+T02,Beedy,T02.11,Python basics,"• Types: str, int, float, bool, None; list (ordered, mutable), tuple (ordered, immutable), dict (key/value), set (unique, unordered)
+• Mutable vs immutable: lists/dicts change in place; strings/tuples do not
+• Comprehensions: [x*2 for x in nums if x > 0]; {k: v for k, v in pairs}
+• f-strings: f""{host} is {status}"""
+T02,Beedy,T02.12,Python basics,"• if / elif / else; comparison and logical operators (and, or, not, in)
+• for item in iterable; for i, x in enumerate(list); for k, v in dict.items()
+• while loops; break exits the loop, continue skips to the next iteration
+• try / except SomeError / else / finally; raise to throw an exception"
+T02,Beedy,T02.13,Exam angle,"• Expect ""what is the benefit of organising code into functions/classes/modules?"" style questions
+• Expect short Python snippets where you predict the output or spot the error
+• Know vocabulary: method vs function, class vs instance, module vs package"
+T03,Bob,T03.01,Design patterns,"• Reusable, proven solution to a recurring software design problem (a template, not code)
+• Gang of Four groups: creational, structural, behavioural"
+T03,Bob,T03.02,MVC,"• Model: data and business logic (e.g. device inventory)
+• View: presentation/UI shown to the user
+• Controller: receives user input, updates the model, selects the view
+• Flow: user → controller → model → view → user"
+T03,Bob,T03.03,MVC advantages,"• Separation of concerns: change the UI without touching data logic
+• Parallel development of UI and back end
+• Several views over the same model (web page, API, report)
+• Easier testing and code reuse"
+T03,Bob,T03.04,Observer,"• Subject keeps a list of observers (subscribers)
+• When the subject state changes, it notifies every registered observer automatically
+• Observers can subscribe/unsubscribe at run time (publish-subscribe idea)"
+T03,Bob,T03.05,Observer advantages,"• Loose coupling: subject does not need to know observer details
+• One change broadcast to many listeners
+• Examples: GUI event listeners, model notifying views in MVC, webhooks, streaming telemetry subscriptions"
+T03,Bob,T03.06,Singleton (awareness),• Ensures only one instance of a class exists; NOT named in blueprint 1.6 (skip the CBT video)
+T03,Bob,T03.07,Exam angle,• Match a description/diagram to MVC or Observer; state an advantage of each
+T04,Beedy,T04.01,Version control,"• Full history of every change: who, what, when and why (commit message)
+• Rollback to any earlier version
+• Parallel work through branches without overwriting each other
+• Collaboration and review via a shared remote
+• Enables automation: CI/CD pipelines trigger on commits"
+T04,Beedy,T04.02,Version control,"• Centralised (e.g. SVN): one central server holds the history; clients need it to commit
+• Distributed (Git): every clone has the full history; commit offline, sync later
+• Git trade-off: more resilient and faster locally, but you must push/pull to share"
+T04,Beedy,T04.03,Git model,"• Working directory: the files you edit
+• Staging area (index): changes selected for the next commit (git add)
+• Local repository (.git): committed snapshots
+• Remote repository (e.g. origin on GitHub): shared copy you push to / pull from"
+T04,Beedy,T04.04,Git model,"• Untracked: new file Git does not know about
+• Modified: tracked file changed but not staged
+• Staged: change added to the index
+• Committed: saved in the repository; each commit has a SHA-1 hash
+• HEAD = pointer to the current commit/branch"
+T04,Beedy,T04.05,Commands: start,"• git init: create a new repo in the current folder
+• git clone <url>: copy a remote repo, sets remote ""origin""
+• git config --global user.name / user.email: identity on commits
+• git remote add origin <url>; git remote -v lists remotes"
+T04,Beedy,T04.06,Commands: change,"• git add <file> or git add .: stage changes
+• git rm <file>: delete from disk and stage the deletion
+• git rm --cached <file>: stop tracking but keep the file on disk (e.g. before adding to .gitignore)
+• git mv old new: rename and stage
+• git commit -m ""msg"": commit staged changes; git commit -a -m stages tracked files automatically"
+T04,Beedy,T04.07,Commands: inspect,"• git status: which files are untracked / modified / staged
+• git log, git log --oneline: commit history
+• git show <commit>: details and diff of one commit
+• git diff: working directory vs staging area
+• git diff --staged (or --cached): staging area vs last commit"
+T04,Beedy,T04.08,Commands: sync,"• git push origin <branch>: upload local commits
+• git fetch: download remote commits but do not change your branch
+• git pull = git fetch + git merge (or rebase if configured)"
+T04,Beedy,T04.09,Branching,"• git branch: list; git branch <name>: create
+• git checkout <name> or git switch <name>: move to a branch
+• git checkout -b <name> / git switch -c <name>: create and switch
+• git branch -d <name>: delete a merged branch"
+T04,Beedy,T04.10,Merging,"• git merge <branch>: merge into the current branch
+• Fast-forward: no new commit, the pointer just moves ahead
+• Merge commit: created when both branches have new commits
+• Rebase (awareness): replays your commits on top of another branch for a linear history"
+T04,Beedy,T04.11,Conflicts,"• Conflict = both branches changed the same lines
+• Markers: <<<<<<< HEAD (your version) ======= (theirs) >>>>>>> branch
+• Resolve: edit the file, remove markers, git add, then git commit"
+T04,Beedy,T04.12,Undo,"• git reset --soft: move HEAD, keep changes staged
+• git reset --mixed (default): move HEAD, unstage changes, keep files
+• git reset --hard: discard changes entirely
+• git revert <commit>: new commit that undoes an old one; safe on shared branches
+• git restore <file> / git checkout -- <file>: discard working-directory changes"
+T04,Beedy,T04.13,Other,"• .gitignore: patterns of files Git should not track (secrets, venv, build output)
+• git stash / git stash pop: shelve uncommitted changes temporarily
+• git tag v1.0: label a release commit
+• Fork + pull request: propose changes to a repo you do not own"
+T04,Beedy,T04.14,Exam angle,"• ""Which command…"" questions are the main format
+• Ordering a workflow: clone > branch > edit > add > commit > push > pull request > merge
+• Classic pairs: fetch vs pull, reset vs revert, rm vs rm --cached, diff vs diff --staged"
+T05,Beedy,T05.01,Diff header,"• diff --git a/file b/file: which file is compared
+• index abc123..def456: blob hashes (can ignore)
+• --- a/file = old version; +++ b/file = new version
+• /dev/null on one side = file was created or deleted"
+T05,Beedy,T05.02,Hunk header,"• Format: @@ -oldStart,oldCount +newStart,newCount @@
+• Example @@ -10,7 +10,8 @@: 7 lines from old line 10 became 8 lines from new line 10
+• Net change = newCount minus oldCount (here one line added)
+• Optional text after the second @@ shows the enclosing function/section"
+T05,Beedy,T05.03,Line prefixes,"• Leading space: unchanged context line
+• ""-"": line exists only in the old file (removed)
+• ""+"": line exists only in the new file (added)
+• A modified line shows as a ""-"" line followed by a ""+"" line"
+T05,Beedy,T05.04,Context,"• Default is 3 lines of context before and after each change
+• A file can have several hunks, each with its own @@ header
+• Context lines count towards both old and new line counts"
+T05,Beedy,T05.05,Producing diffs,"• git diff (unstaged), git diff --staged, git diff commit1 commit2
+• git show <commit> shows the commit diff
+• diff -u old.txt new.txt produces unified format outside Git"
+T05,Beedy,T05.06,Exam angle,"• Read a config diff and state what changed (e.g. VLAN added, IP changed)
+• Count added/removed lines; work out what the new file looks like
+• Know which side is old vs new from --- and +++"
+T06,Beedy,T06.01,XML,"• Optional declaration: <?xml version=""1.0"" encoding=""UTF-8""?>
+• Exactly one root element wraps everything
+• Elements: <name>value</name>; tags are case-sensitive and must close
+• Attributes inside the start tag: <interface type=""ethernet"">
+• Empty element: <shutdown/>
+• Well-formed = properly nested, closed and quoted; special characters escaped (&lt; &amp;)"
+T06,Beedy,T06.02,XML,"• Namespace declared with xmlns=""urn:..."" or prefixed xmlns:if=""...""
+• Avoids name clashes when combining models (e.g. ietf-interfaces vs Cisco native)
+• NETCONF payloads and replies always carry namespaces
+• XPath selects nodes: /interfaces/interface[name=""Gi1""]/description"
+T06,Beedy,T06.03,JSON,"• Object {""key"": value} = unordered key/value pairs; array [1, 2, 3] = ordered list
+• Keys and strings must use double quotes
+• Value types: string, number, true/false, null, object, array
+• No comments, no trailing commas
+• Default format for REST APIs and RESTCONF (application/yang-data+json)"
+T06,Beedy,T06.04,YAML,"• Indentation with spaces defines structure (no tabs)
+• key: value pairs; list items start with ""- ""
+• --- starts a document; # starts a comment
+• Strings usually unquoted; multi-line with | (keep newlines) or > (fold)
+• JSON is valid YAML; used by Ansible, Docker Compose, pyATS testbeds, CI pipelines"
+T06,Beedy,T06.05,Comparison,"• XML: most verbose, attributes + namespaces, used by NETCONF and SOAP
+• JSON: compact, native to JavaScript/REST, no comments
+• YAML: most human-readable, supports comments, indentation-sensitive
+• All three can represent the same nested data"
+T06,Beedy,T06.06,Python mapping,"• JSON object → Python dict
+• JSON array → list
+• JSON string → str; number → int/float
+• true/false → True/False; null → None
+• Going back (dumps) reverses the mapping"
+T06,Beedy,T06.07,Python json,"• import json
+• json.loads(text) → Python object; json.dumps(obj) → JSON string
+• json.load(file_obj) and json.dump(obj, file_obj) work with files
+• json.dumps(obj, indent=2) pretty-prints; sort_keys=True sorts keys
+• response.json() in requests already does json.loads for you"
+T06,Beedy,T06.08,Python YAML,"• import yaml (PyYAML package)
+• yaml.safe_load(text) → dict/list (safe: no arbitrary object creation)
+• yaml.load without a safe Loader can execute code: avoid with untrusted input
+• yaml.dump(obj) / yaml.safe_dump(obj) → YAML string"
+T06,Beedy,T06.09,Python XML,"• xmltodict.parse(xml_string) → nested dict (OrderedDict in older versions)
+• Attributes become keys prefixed with @ (e.g. [""@type""])
+• Element text with attributes is under ""#text""
+• Repeated elements become a list
+• xmltodict.unparse(dict) → XML string"
+T06,Beedy,T06.10,Python XML,"• import xml.etree.ElementTree as ET
+• root = ET.fromstring(text) or ET.parse(file).getroot()
+• root.find(""tag"") first match; root.findall(""tag"") all matches; iter() walks the tree
+• elem.tag, elem.text, elem.attrib (dict of attributes)
+• Namespaced tags look like {urn:...}name; pass a namespaces dict to find()
+• xml.dom.minidom: older DOM API; toprettyxml() for display"
+T06,Beedy,T06.11,Navigating data,"• Chain keys and indexes: data[""response""][0][""hostname""]
+• Loop: for dev in data[""devices""]: print(dev[""name""])
+• dict.get(""key"", default) avoids KeyError
+• Check type() when unsure whether a level is a list or dict"
+T06,Beedy,T06.12,Terms,"• Serialisation (encoding): Python object → text/bytes for storage or sending
+• Deserialisation (decoding/parsing): text → Python object
+• In APIs: you serialise the request body and deserialise the response body"
+T06,Beedy,T06.13,Exam angle,"• Spot the invalid snippet (single quotes in JSON, tab in YAML, unclosed XML tag)
+• Pick the Python expression that extracts a given value from parsed data
+• Match a format to its typical use (NETCONF = XML, REST = JSON, Ansible = YAML)"
+T07,Beedy,T07.01,REST basics,"• REST = Representational State Transfer: an architectural style, not a protocol
+• Everything is a resource identified by a URI (e.g. /api/v1/devices/123)
+• URI parts: scheme://host:port/path?query#fragment
+• Base URL + endpoint path = full request URL"
+T07,Beedy,T07.02,REST constraints,"• Client-server: UI and data storage separated
+• Stateless: each request carries everything needed (e.g. auth token); server keeps no session
+• Cacheable: responses say whether they can be cached
+• Uniform interface: standard methods, resource URIs, self-descriptive messages
+• Layered system: proxies/load balancers can sit in between
+• Code on demand (optional): server may send executable code"
+T07,Beedy,T07.03,HTTP methods,"• GET = read (no body)
+• POST = create (server assigns the ID)
+• PUT = create or fully replace a resource at a known URI
+• PATCH = partial update (only the fields sent)
+• DELETE = remove
+• CRUD: Create=POST, Read=GET, Update=PUT/PATCH, Delete=DELETE"
+T07,Beedy,T07.04,HTTP methods,"• Safe = does not change state: GET, HEAD, OPTIONS
+• Idempotent = repeating gives the same result: GET, PUT, DELETE (and HEAD, OPTIONS)
+• POST is neither safe nor idempotent (repeat = duplicate objects)
+• PATCH is not guaranteed idempotent"
+T07,Beedy,T07.05,Request parts,"• Request = method + URI + headers + optional body
+• Path parameter: part of the path (/devices/{id})
+• Query parameter: after ? as key=value pairs joined by & (filtering, paging)
+• Body/payload: JSON or XML data for POST/PUT/PATCH"
+T07,Beedy,T07.06,Headers,"• Content-Type: format of the body being sent
+• Accept: format the client wants back
+• Authorization: credentials/token
+• User-Agent, Cache-Control
+• Response headers: Location (URI of created resource), Retry-After, Set-Cookie, ETag, Content-Length"
+T07,Beedy,T07.07,Response parts,"• Status line: HTTP version, code, reason phrase (HTTP/1.1 201 Created)
+• Headers: metadata about the response
+• Body: the data (often JSON), may be empty (204)
+• Exam asks you to point to which part holds a given piece of information"
+T07,Beedy,T07.08,Status classes,"• 1xx informational
+• 2xx success
+• 3xx redirection (resource moved, use cache)
+• 4xx client error (fix your request)
+• 5xx server error (problem on the server side)"
+T07,Beedy,T07.09,Key codes,"• 200 OK; 201 Created; 202 Accepted (async); 204 No Content
+• 301 Moved Permanently; 302 Found; 304 Not Modified
+• 400 Bad Request; 401 Unauthorized; 403 Forbidden; 404 Not Found; 405 Method Not Allowed; 409 Conflict; 415 Unsupported Media Type; 429 Too Many Requests
+• 500 Internal Server Error; 501 Not Implemented; 502 Bad Gateway; 503 Service Unavailable; 504 Gateway Timeout"
+T07,Beedy,T07.10,Troubleshooting,"• 401: missing, wrong or expired credentials → re-authenticate
+• 403: authenticated but not allowed → check role/permissions
+• 404: wrong URI/ID; 405: wrong method for that endpoint
+• 415: wrong Content-Type header; 400: malformed or invalid body
+• 429: rate limited → wait (Retry-After); 5xx: server-side, retry later or check the server"
+T07,Beedy,T07.11,Using API docs,"• Find base URL, endpoint path and method in the docs
+• Add required headers: Content-Type, Accept, Authorization / API key
+• Build the body from the documented schema (required vs optional fields)
+• Add path/query parameters
+• Compare the response to the documented codes and schema"
+T07,Beedy,T07.12,curl,"• curl -X POST https://host/api -H ""Content-Type: application/json"" -d '{""name"":""x""}'
+• -u user:pass basic auth; -k skip TLS verification
+• -i show response headers; -v verbose (full request and response)
+• Default method is GET (POST when -d is used)"
+T07,Beedy,T07.13,Media types,"• application/json: standard REST payloads
+• application/xml: XML payloads
+• application/yang-data+json / +xml: RESTCONF
+• Must match the Content-Type and Accept headers"
+T07,Beedy,T07.14,Exam angle,"• Fill the missing method, URL part or header from an API doc snippet
+• Diagnose a failed call from the code plus its response code
+• Identify which part of the response holds a value (header vs body)"
+T08,Beedy,T08.01,Rate limiting,"• Rate limit = max requests per time window (e.g. per second per org/key)
+• Exceeding it returns 429 Too Many Requests
+• Retry-After header: seconds (or a date) to wait before retrying
+• Some APIs expose X-RateLimit-Limit / -Remaining / -Reset headers"
+T08,Beedy,T08.02,Rate limiting,"• On 429: sleep for Retry-After, then retry
+• Exponential backoff: wait 1s, 2s, 4s… with a cap
+• Reduce calls: cache results, batch requests, use webhooks instead of polling
+• Spread work across time rather than bursts"
+T08,Beedy,T08.03,Pagination,"• APIs return large collections in pages to limit load
+• Offset/limit: ?offset=100&limit=50
+• Page number: ?page=3&per_page=50
+• Cursor/token: response gives a next token (startingAfter in Meraki)
+• Link header with rel=""next"" gives the next page URL (Meraki)
+• Script bug pattern: only the first page is read → records ""missing"""
+T08,Beedy,T08.04,Payload limits,"• Servers cap request body size and items per call
+• 413 Payload Too Large when a body is too big
+• Split large updates into several smaller requests"
+T08,Beedy,T08.05,Timeouts,"• Client timeout: requests.get(url, timeout=10) avoids hanging forever
+• Server/gateway timeouts show up as 504
+• Long-running jobs are often returned as async tasks (202) instead"
+T08,Beedy,T08.06,Auth limits,"• Tokens expire (e.g. after a set number of minutes)
+• 401 mid-script often means an expired token → log in again
+• Some APIs issue refresh tokens"
+T08,Beedy,T08.07,Versioning,"• APIs are versioned in the URL (/v1/) or a header
+• Old versions get deprecated and removed
+• Scripts must be updated to new versions/fields"
+T08,Beedy,T08.08,Caching,"• Server sends ETag (version tag) with a resource
+• Client sends If-None-Match: <etag> on the next GET
+• 304 Not Modified = nothing changed, no body, saves bandwidth and quota"
+T08,Beedy,T08.09,Exam angle,"• Pick the cause and fix for 429 errors or incomplete results
+• Know the headers involved: Retry-After, Link, ETag"
+T09,Beedy,T09.01,REST,"• Resources are nouns in the URI (/devices/1); actions are HTTP methods
+• Stateless, cacheable, usually JSON over HTTP
+• Examples: Meraki, Catalyst Center, Webex, RESTCONF"
+T09,Beedy,T09.02,RPC,"• RPC = Remote Procedure Call: the client calls a named function on the server
+• Action is in the payload or URL (e.g. ""method"": ""getDevice"")
+• Usually POST to a single endpoint
+• Examples: JSON-RPC, XML-RPC, gRPC (HTTP/2 + protobuf), NX-API CLI (JSON-RPC option)
+• NETCONF is RPC-based: <rpc><get-config>…</get-config></rpc>"
+T09,Beedy,T09.03,SOAP,"• SOAP = Simple Object Access Protocol, XML only
+• Message = Envelope > optional Header > Body (> Fault on errors)
+• WSDL describes the operations and types (strict contract)
+• Typically HTTP POST; Cisco AXL (CUCM) is SOAP"
+T09,Beedy,T09.04,Comparison,"• REST: resource-centric, flexible formats, light
+• RPC: action-centric, simple to map to functions
+• SOAP: strict contract, heavier XML, built-in standards (WS-Security)
+• Recognise the style from a payload: <soap:Envelope> = SOAP; {""jsonrpc"": ""2.0"", ""method"": …} = JSON-RPC; GET /resources/123 = REST"
+T09,Beedy,T09.05,Synchronous,"• Client sends a request and blocks until the full response arrives
+• Simple to code and reason about
+• Problem for long jobs: timeouts, client tied up"
+T09,Beedy,T09.06,Asynchronous,"• Server accepts the job and replies at once, typically 202 Accepted with a task ID or status URL
+• Client gets the result later by polling the status URL or via a callback/webhook
+• Client is free to do other work meanwhile
+• Asynchronous code in Python: asyncio (awareness)"
+T09,Beedy,T09.07,Async example,"• POST/PUT to an intent API → response contains taskId (and URL)
+• GET /dna/intent/api/v1/task/{taskId} until endTime is set / isError is false
+• Then GET the result (e.g. fileId or progress field)
+• Same pattern shows in sequence-diagram questions (T47)"
+T09,Beedy,T09.08,Choosing,"• Synchronous: quick lookups, small changes
+• Asynchronous: long-running jobs (provisioning, image upgrades), large scale, avoiding HTTP timeouts"
+T09,Beedy,T09.09,Exam angle,"• Identify the API style from a snippet
+• Explain why a call returned 202 and what to do next
+• Match REST/RPC/SOAP to example Cisco APIs"
+T10,Beedy,T10.01,Concepts,"• Authentication = proving identity (who you are)
+• Authorisation = permissions after login (what you may do)
+• 401 relates to authentication; 403 to authorisation"
+T10,Beedy,T10.02,Basic auth,"• Header: Authorization: Basic <base64(""user:password"")>
+• Base64 is encoding, not encryption → anyone can decode it
+• Must be used over HTTPS
+• Sent on every request (or once to obtain a token)
+• Often used only to call the token endpoint (e.g. Catalyst Center)"
+T10,Beedy,T10.03,Custom token,"• Step 1: authenticate (often basic auth) to a login endpoint
+• Step 2: receive a token in the body, header or cookie
+• Step 3: send the token on each call in a custom or standard header
+• Examples: X-Auth-Token (Catalyst Center), Authorization: Bearer <token> (Webex, FMC uses X-auth-access-token)
+• Tokens expire → refresh or log in again"
+T10,Beedy,T10.04,API key,"• Long-lived static key generated in a portal, tied to a user/account
+• Sent in a header (e.g. X-Cisco-Meraki-API-Key or Authorization: Bearer) or query string
+• Simple, but full access if leaked → rotate and store securely
+• Query-string keys can end up in logs (avoid)"
+T10,Beedy,T10.05,Session/cookie,"• Server returns Set-Cookie after login; client sends the cookie back
+• APIC: aaaLogin returns a token, set as cookie APIC-cookie
+• SD-WAN Manager: JSESSIONID cookie plus X-XSRF-TOKEN header
+• requests.Session() keeps cookies automatically"
+T10,Beedy,T10.06,OAuth 2.0 (awareness),"• Delegated access without sharing the password
+• Access token (short-lived) + refresh token (to get new access tokens)
+• Scopes limit what the token can do
+• Webex integrations use OAuth; bots use a long-lived bot token"
+T10,Beedy,T10.07,Python,"• requests.get(url, auth=(""user"", ""pass"")) or auth=HTTPBasicAuth(user, pw) → basic auth
+• headers={""X-Auth-Token"": token} or {""Authorization"": f""Bearer {token}""} → token/API key
+• Session object: s.headers.update({...}) for all later calls"
+T10,Beedy,T10.08,Credential handling,"• Never hardcode secrets in scripts or commit them to Git
+• Use environment variables (os.environ[""API_KEY""]) or a secrets vault
+• Use HTTPS so credentials are encrypted in transit"
+T10,Beedy,T10.09,Exam angle,"• Match a header/code snippet to basic, token or API key
+• Know the method per platform: Meraki API key, Catalyst Center token, Webex bearer token, APIC cookie
+• Know why base64 is not secure"
+T11,Beedy,T11.01,Calls,"• import requests
+• requests.get / post / put / patch / delete(url, ...)
+• Or the generic requests.request(""GET"", url, ...)"
+T11,Beedy,T11.02,Arguments,"• headers={...}: Content-Type, Accept, auth headers
+• params={...}: builds the query string (?a=1&b=2)
+• json=dict: serialises body and sets Content-Type: application/json
+• data=string/dict: raw or form-encoded body (you set Content-Type yourself)
+• auth=(user, pass), verify=False (skip TLS check), timeout=seconds"
+T11,Beedy,T11.03,Response,"• resp.status_code (int), resp.ok (True for <400)
+• resp.headers (dict-like), resp.text (str), resp.content (bytes)
+• resp.json() → Python dict/list
+• resp.raise_for_status() raises HTTPError on 4xx/5xx"
+T11,Beedy,T11.04,Sessions,"• s = requests.Session() keeps cookies and default headers across calls
+• s.headers.update({""X-Auth-Token"": token})
+• Reuses TCP connections (faster)"
+T11,Beedy,T11.05,Errors,"• requests.exceptions.HTTPError (from raise_for_status)
+• ConnectionError (host unreachable), Timeout
+• try: … except requests.exceptions.RequestException as e: catches all"
+T11,Beedy,T11.06,TLS warnings,"• verify=False triggers InsecureRequestWarning on self-signed lab certs
+• requests.packages.urllib3.disable_warnings() or urllib3.disable_warnings() hides it
+• Acceptable in sandboxes only; real scripts should verify certificates"
+T11,Beedy,T11.07,Patterns,"• Auth then use: POST login → read token → GET with token header
+• Pagination: loop while a next link/page exists
+• Rate limits: if status_code == 429: time.sleep(int(resp.headers[""Retry-After""])) then retry"
+T11,Beedy,T11.08,Output,"• print(json.dumps(data, indent=2)) to inspect structure
+• Then extract fields: for d in data[""response""]: print(d[""hostname""])"
+T11,Beedy,T11.09,Exam angle,"• Complete-the-code: missing method, URL, header, argument or attribute
+• Predict the output or the error of a short script
+• Spot json= vs data= and .json() vs .text mistakes"
+T12,Bob,T12.01,Why automate,"• Scale: hundreds of devices changed consistently
+• Speed, fewer human errors, repeatability, compliance and audit trail"
+T12,Bob,T12.02,Model-driven programmability,"• Device config and state described by data models (YANG) instead of free-form CLI text
+• Accessed through APIs (NETCONF, RESTCONF, gNMI) that return structured data (XML/JSON)
+• Replaces CLI screen-scraping with parsing-free, schema-validated data"
+T12,Bob,T12.03,Value (5.1),"• Vendor-neutral models (OpenConfig, IETF) → same code across vendors
+• Validation against the model before applying
+• Transactions and rollback (NETCONF candidate/commit)
+• Easier tooling, programmability and streaming telemetry"
+T12,Bob,T12.04,Programmability stack,"• Data model: YANG
+• Encoding: XML, JSON (protobuf for gRPC)
+• Protocol: NETCONF, RESTCONF, gNMI/gRPC
+• Transport: SSH (NETCONF), HTTPS (RESTCONF), HTTP/2 (gRPC)"
+T12,Bob,T12.05,Device-level management,"• Script/tool talks to each device directly: SSH CLI, NETCONF, RESTCONF, NX-API
+• Granular control, no controller dependency
+• You handle scale, consistency and state across devices yourself"
+T12,Bob,T12.06,Controller-level management,"• Central controller (Catalyst Center, APIC, SD-WAN Manager, Meraki dashboard) holds intent/policy and programs devices
+• Northbound API: apps → controller (REST); southbound: controller → devices (NETCONF, OpenFlow, CLI, proprietary)
+• Abstraction, network-wide view, policy-based; depends on the controller"
+T12,Bob,T12.07,SDN concepts,"• SDN separates the control plane (centralised controller) from the data plane (devices)
+• Intent-based networking: declare the outcome, controller translates it into config"
+T12,Bob,T12.08,Exam angle,• Compare controller vs device level for a scenario; state the value of model-driven programmability
+T13,Bob,T13.01,DevNet Sandbox,"• Free lab environments with real Cisco platforms
+• Always-on (shared, instant, read-mostly) vs reservable (private, full admin, time-limited, often via VPN)"
+T13,Bob,T13.02,Learning Labs,"• Guided, step-by-step tutorials grouped into learning tracks"
+T13,Bob,T13.03,Code Exchange,• Curated catalogue of code repos on GitHub (Cisco + community) to reuse
+T13,Bob,T13.04,API documentation,"• developer.cisco.com API references and guides per platform; often OpenAPI specs and ""try it"" consoles"
+T13,Bob,T13.05,Support and community,"• DevNet developer support (tickets for API questions)
+• Community forums for peer help"
+T13,Bob,T13.06,Other (awareness),• DevNet Ecosystem Exchange (partner solutions); Automation Exchange (automation use cases)
+T13,Bob,T13.07,Exam angle,"• Scenario → resource: ""need a lab to test"" → Sandbox; ""find sample code"" → Code Exchange; ""learn step by step"" → Learning Labs"
+T14,Bob,T14.01,What YANG is,"• Data modelling language (RFC 6020 / 7950) that defines the structure, types and constraints of config and operational data
+• Describes data; does not contain it
+• Protocol-independent: used by NETCONF, RESTCONF, gNMI"
+T14,Bob,T14.02,Model sources,"• IETF standard models (e.g. ietf-interfaces)
+• OpenConfig: vendor-neutral, operator-driven
+• Native/vendor models (e.g. Cisco-IOS-XE-native)
+• Found in the YangModels GitHub repo and YANG Catalog"
+T14,Bob,T14.03,Module header,"• module name, namespace (unique URI), prefix, import, organization, revision"
+T14,Bob,T14.04,Node types,"• container: groups related nodes (no value itself)
+• list: repeated entries, each identified by a key leaf
+• leaf: single value with a type
+• leaf-list: list of values of one type"
+T14,Bob,T14.05,Reuse and types,"• grouping + uses (reusable blocks); augment (add nodes into another model); typedef (custom type)
+• Built-in types: string, int/uint8..64, boolean, enumeration, union, leafref, identityref"
+T14,Bob,T14.06,Config vs state,"• config true = configuration data (read-write)
+• config false = operational state (read-only), e.g. counters"
+T14,Bob,T14.07,pyang tree output,"• pyang -f tree model.yang
+• rw = config, ro = state; ? = optional; * = list or leaf-list; [name] = list key"
+T14,Bob,T14.08,Model to API path,"• Module:container/list=key/leaf, e.g. /restconf/data/ietf-interfaces:interfaces/interface=GigabitEthernet1/description"
+T14,Bob,T14.09,Exam angle,"• Read a YANG snippet or tree: identify node types, keys, config vs state; build the RESTCONF path"
+T15,Bob,T15.01,What NETCONF is,"• RFC 6241 protocol to install, change and read device config/state
+• XML-encoded messages over SSH, default port 830"
+T15,Bob,T15.02,Layers,"• Content: config/state data (YANG-modelled)
+• Operations: get, get-config, edit-config…
+• Messages: <rpc>, <rpc-reply>, <notification>
+• Secure transport: SSH"
+T15,Bob,T15.03,Session,"• Client and server exchange <hello> with their capabilities (supported models/features)
+• Test manually: ssh -p 830 user@host -s netconf
+• Message framing: ]]>]]> (1.0) vs chunked framing (1.1)"
+T15,Bob,T15.04,Operations,"• <get>: config + operational state
+• <get-config>: config from a datastore (source)
+• <edit-config>: change a datastore (target); operation attribute merge / replace / create / delete / remove
+• <copy-config>, <delete-config>, <lock>/<unlock>
+• <commit>, <discard-changes>, <validate>, <close-session>, <kill-session>"
+T15,Bob,T15.05,Datastores,"• running: active config
+• candidate: staging area, applied with <commit> (if capability supported)
+• startup: config loaded at boot"
+T15,Bob,T15.06,Filters,• Subtree filter (XML template of what to return) or XPath filter
+T15,Bob,T15.07,Replies,"• <ok/> on success
+• <data> containing results
+• <rpc-error> with error-type, error-tag, error-severity, error-message"
+T15,Bob,T15.08,Python ncclient,"• from ncclient import manager
+• m = manager.connect(host=..., port=830, username=..., password=..., hostkey_verify=False)
+• m.get_config(source=""running"", filter=(""subtree"", f)); m.edit_config(target=""running"", config=xml)
+• m.server_capabilities lists capabilities"
+T15,Bob,T15.09,Device setup and value,"• IOS XE: netconf-yang (global config)
+• Value vs CLI: transactions, validation, structured output, network-wide consistency"
+T15,Bob,T15.10,Exam angle,• Pick the operation/datastore for a task; read an rpc-reply; know port 830 and SSH
+T16,Bob,T16.01,What RESTCONF is,"• RFC 8040: HTTP-based, REST-like access to YANG-modelled data
+• JSON or XML encoding over HTTPS (port 443)"
+T16,Bob,T16.02,URI structure,"• Root discovery: GET /.well-known/host-meta → /restconf
+• /restconf/data = datastore resources; /restconf/operations = RPCs
+• /restconf/data/<module>:<container>/<list>=<key>/<leaf>"
+T16,Bob,T16.03,Methods,"• GET = read (≈ NETCONF get/get-config)
+• POST = create a child resource (error if it exists)
+• PUT = create or replace
+• PATCH = merge (partial update)
+• DELETE = remove"
+T16,Bob,T16.04,Headers,"• Accept and Content-Type: application/yang-data+json or application/yang-data+xml
+• Authentication: HTTP basic over HTTPS"
+T16,Bob,T16.05,Responses,"• 200 OK with data (GET)
+• 201 Created (POST/PUT new)
+• 204 No Content (successful PUT/PATCH/DELETE)
+• 400 bad payload; 401 auth; 404 path/resource not found; 409 already exists"
+T16,Bob,T16.06,Query parameters,"• depth=N limits nesting; fields= selects leaves
+• content=config | nonconfig | all"
+T16,Bob,T16.07,Device setup,• IOS XE: restconf and ip http secure-server
+T16,Bob,T16.08,NETCONF vs RESTCONF,"• Transport: SSH 830 vs HTTPS 443
+• Encoding: XML only vs JSON or XML
+• Datastores: running/candidate/startup + lock/commit vs a single unified datastore, no locking
+• Style: RPC operations vs HTTP methods on resources"
+T16,Bob,T16.09,Python,"• requests.get(url, auth=(u, p), headers={""Accept"": ""application/yang-data+json""}, verify=False)
+• requests.patch(url, json=body, ...) for a partial change"
+T16,Bob,T16.10,Exam angle,• Choose the method/URL/header for a change; interpret a RESTCONF JSON reply
+T17,Bob,T17.01,IOS XE programmability,"• NETCONF, RESTCONF, gNMI/gRPC over YANG models
+• Model-driven telemetry (streaming)
+• On-box Python (guestshell) and EEM (awareness)"
+T17,Bob,T17.02,NX-API CLI,"• Send CLI commands over HTTP/HTTPS POST to /ins
+• Formats: JSON, XML, JSON-RPC
+• Command types: cli_show (structured output), cli_show_ascii (raw text), cli_conf (config)
+• Enable with feature nxapi; NX-API sandbox in the browser generates request code"
+T17,Bob,T17.03,NX-API REST,"• Object model (DME): Management Information Tree of managed objects with DNs, like ACI
+• Login POST /api/aaaLogin.json → token cookie
+• Read: GET /api/mo/<dn>.json (one object) or /api/class/<class>.json (all of a class)"
+T17,Bob,T17.04,Other NX-OS interfaces,"• NETCONF, RESTCONF and gRPC/gNMI with YANG (native and OpenConfig)"
+T17,Bob,T17.05,Dynamic interfaces,"• Model-driven telemetry: devices stream data (push) instead of SNMP polling (pull)
+• Dial-in (collector subscribes) vs dial-out (device connects to collector)"
+T17,Bob,T17.06,Exam angle,• NX-API CLI vs NX-API REST; pick the interface/URL for a task
+T18,Bob,T18.01,Platform,"• Cloud-managed networking (MX security appliance, MS switch, MR wireless, MV camera)
+• Managed in the Meraki dashboard; no on-prem controller"
+T18,Bob,T18.02,APIs,"• Dashboard API: REST, base https://api.meraki.com/api/v1
+• Scanning API: location data POSTed to your server (webhook-style)
+• MV Sense: camera analytics (REST/MQTT)
+• Webhooks for alerts; captive portal APIs (awareness)"
+T18,Bob,T18.03,Authentication,"• API key generated in the dashboard user profile
+• Header X-Cisco-Meraki-API-Key: <key> or Authorization: Bearer <key>"
+T18,Bob,T18.04,Hierarchy and endpoints,"• organizations → networks → devices (by serial) → clients
+• GET /organizations; /organizations/{orgId}/networks; /networks/{networkId}/devices; /networks/{networkId}/clients"
+T18,Bob,T18.05,Constraints,"• Rate limit ~10 requests/second per organisation → 429 + Retry-After
+• Pagination via Link header (rel=next) and startingAfter/perPage"
+T18,Bob,T18.06,Python SDK,"• pip install meraki
+• dashboard = meraki.DashboardAPI(api_key)
+• dashboard.organizations.getOrganizations(); dashboard.networks.getNetworkClients(net_id)
+• SDK handles retries on 429 and pagination"
+T18,Bob,T18.07,Client discovery (3.9.c),• List clients per network/device; look up a client by MAC/IP to find where it is connected
+T18,Bob,T18.08,Exam angle,• Order the calls org → network → device; complete SDK/requests code; know the auth header
+T19,Bob,T19.01,What ACI is,"• Cisco SDN for the data centre: APIC controller cluster + Nexus 9000 spine-leaf fabric
+• Policy model: define application intent, APIC programs the fabric"
+T19,Bob,T19.02,Object model,"• Management Information Tree (MIT): every element is a managed object (MO) with a class and a distinguished name (DN)
+• Example DN: uni/tn-Prod/ap-Web/epg-Frontend"
+T19,Bob,T19.03,Logical constructs,"• Tenant → VRF (context) → bridge domain (L2) → subnets
+• Application profile → EPGs (endpoint groups)
+• Contracts (with filters) permit traffic between EPGs"
+T19,Bob,T19.04,REST API login,"• POST https://<apic>/api/aaaLogin.json
+• Body: {""aaaUser"": {""attributes"": {""name"": ""..."", ""pwd"": ""...""}}}
+• Returns a token, also set as the APIC-cookie for later calls"
+T19,Bob,T19.05,Queries,"• GET /api/mo/<dn>.json: one object (and children with query-target=children/subtree)
+• GET /api/class/<class>.json: all objects of a class, e.g. fabricNode, fvTenant
+• Filters: query-target-filter, rsp-subtree"
+T19,Bob,T19.06,Tools,"• API Inspector (shows API calls behind GUI actions); Visore (object browser)
+• Cobra SDK (acicobra/acimodel); ACI Toolkit (lower priority)
+• Ansible and Terraform providers for ACI"
+T19,Bob,T19.07,Exam angle,• Build the login or class query; map tenant/EPG/contract terms; complete Python requests code
+T20,Bob,T20.01,What Catalyst Center is,"• Formerly DNA Center: controller for campus/branch, intent-based networking
+• Functions: design, policy, provision (automation), assurance (analytics)"
+T20,Bob,T20.02,API families,"• Intent API: northbound REST for apps
+• Integration API: ITSM (e.g. ServiceNow), IPAM
+• Multivendor SDK: southbound to third-party devices
+• Events and notifications: webhooks, email, syslog"
+T20,Bob,T20.03,Authentication,"• POST /dna/system/api/v1/auth/token with HTTP basic auth → {""Token"": ""...""}
+• Send the token in the X-Auth-Token header on every call"
+T20,Bob,T20.04,Common endpoints,"• /dna/intent/api/v1/network-device (inventory)
+• /site, /site-health, /client-health, /client-detail?macAddress=
+• /topology/physical-topology; /network-device-poller/cli/read-request (command runner)"
+T20,Bob,T20.05,Asynchronous tasks,"• Many POST/PUT calls return 202 with a taskId
+• Poll GET /dna/intent/api/v1/task/{taskId} until finished; check isError and progress"
+T20,Bob,T20.06,Python SDK,"• pip install dnacentersdk
+• api = DNACenterAPI(base_url=..., username=..., password=..., verify=False)
+• api.devices.get_device_list()"
+T20,Bob,T20.07,Client discovery (3.9.c),"• client-detail by MAC shows where a client connects (device, port, SSID) and its health"
+T20,Bob,T20.08,Exam angle,• Auth flow and header; async task polling; complete code calling the intent API
+T21,Bob,T21.01,CUCM,• Cisco Unified Communications Manager: call control for IP phones and UC
+T21,Bob,T21.02,AXL,"• Administrative XML: SOAP/XML API for provisioning and configuration
+• Add/update/list phones, users, lines (e.g. addPhone, getUser, listPhone, executeSQLQuery)
+• Defined by a WSDL; HTTPS POST to https://<cucm>:8443/axl/; needs an application user with the AXL role"
+T21,Bob,T21.03,UDS,"• User Data Services: REST API (XML responses) for end-user and directory data
+• Read-mostly, user-level tasks (e.g. look up users, user devices); /cucm-uds/..."
+T21,Bob,T21.04,Other UC APIs (awareness),"• Serviceability (RisPort for device registration status), CTI/JTAPI/TAPI for call control, Finesse for contact centre"
+T21,Bob,T21.05,Choosing,• Admin/bulk provisioning → AXL; user-facing lookups → UDS
+T21,Bob,T21.06,Exam angle,• Match AXL vs UDS to a task; recognise AXL as SOAP
+T22,Bob,T22.01,Components,"• SD-WAN Manager (formerly vManage): management/NMS and API
+• SD-WAN Controller (vSmart): control plane, OMP routing and policy
+• SD-WAN Validator (vBond): orchestration, authenticates devices
+• WAN Edge routers: data plane"
+T22,Bob,T22.02,API base,• REST API on SD-WAN Manager: https://<manager>:8443/dataservice/
+T22,Bob,T22.03,Authentication,"• POST /j_security_check with form data j_username and j_password → JSESSIONID cookie
+• GET /dataservice/client/token → token sent as X-XSRF-TOKEN header on POST/PUT/DELETE
+• requests.Session() keeps the cookie"
+T22,Bob,T22.04,Common endpoints,"• /dataservice/device (inventory)
+• /dataservice/device/monitor, /statistics, /alarms
+• /dataservice/template/... (device/feature templates)"
+T22,Bob,T22.05,Exam angle,• Order the login steps; know the cookie + XSRF token; map component names old ↔ new
+T23,Bob,T23.01,Secure Firewall Management Center (FMC),"• Central manager for Firepower/Secure Firewall devices
+• Token: POST /api/fmc_platform/v1/auth/generatetoken with basic auth → X-auth-access-token and X-auth-refresh-token response headers + DOMAIN_UUID
+• Config calls: /api/fmc_config/v1/domain/{domainUUID}/object/..., /policy/accesspolicies/...
+• Token sent in the X-auth-access-token header"
+T23,Bob,T23.02,FDM (awareness),"• Firepower Device Manager: on-box manager for a single firewall, with its own REST API (OAuth-style tokens)"
+T23,Bob,T23.03,ISE,"• Identity Services Engine: AAA, network access control, posture, guest
+• ERS API (REST, HTTPS port 9060, basic auth) for endpoints, identity groups, network devices: /ers/config/...
+• pxGrid shares context (user, device, posture) with other systems; newer OpenAPI"
+T23,Bob,T23.04,XDR,"• Extended detection and response: correlates telemetry from endpoint, network, email and cloud
+• APIs (OAuth client credentials) to enrich observables and respond (e.g. block, isolate)"
+T23,Bob,T23.05,Secure Endpoint,"• Formerly AMP for Endpoints: endpoint malware protection, EDR
+• API with client ID + API key (basic auth): list computers, events, isolate endpoints"
+T23,Bob,T23.06,Secure Malware Analytics,"• Formerly Threat Grid: sandbox that detonates files/URLs and reports behaviour
+• API key: submit samples, get analysis reports and threat scores"
+T23,Bob,T23.07,Secure Connect,"• Cisco SASE/SSE cloud security service (built on Umbrella and Meraki): secure remote access, DNS-layer and web security
+• APIs use key/secret to get an OAuth token"
+T23,Bob,T23.08,Exam angle,• Match platform → capability (e.g. sandboxing → Malware Analytics; NAC → ISE; firewall policy → FMC)
+T24,Bob,T24.01,UCS and UCS Manager,"• UCS = Cisco Unified Computing System: blade/rack servers + fabric interconnects
+• UCS Manager runs on the fabric interconnects and manages one UCS domain"
+T24,Bob,T24.02,Service profiles,"• Logical server identity: UUID, MAC, WWN, BIOS, firmware, boot order
+• Applied to physical servers → stateless computing (move identity to new hardware)
+• Built from pools, policies and templates"
+T24,Bob,T24.03,UCSM XML API,"• Everything in UCSM is an MO in a Management Information Tree (DN-based, like ACI)
+• XML API over HTTP(S) to /nuova; aaaLogin returns a cookie
+• Query by class (computeBlade) or DN"
+T24,Bob,T24.04,UCSM Python SDK,"• pip install ucsmsdk
+• handle = UcsHandle(ip, user, pw); handle.login()
+• handle.query_classid(""computeBlade""); handle.logout()"
+T24,Bob,T24.05,Intersight,"• SaaS (or on-prem appliance) management for UCS, HyperFlex and more, across many sites
+• OpenAPI-based REST API; auth = API key ID + secret key used to sign each request (HTTP signature)
+• Python SDK: intersight"
+T24,Bob,T24.06,UCSM vs Intersight,"• UCSM: on-prem, per domain, XML API
+• Intersight: cloud, multi-domain, OpenAPI with signed requests"
+T24,Bob,T24.07,Not tested,• UCS Director and UCS PowerTool (skip those videos)
+T24,Bob,T24.08,Exam angle,• Pick UCSM vs Intersight; know service profile purpose and auth styles
+T25,Bob,T25.01,What NSO is,• Network Services Orchestrator: model-driven orchestration across multivendor networks
+T25,Bob,T25.02,Architecture,"• Service models (YANG) + templates/Python map a service to device config
+• NEDs (Network Element Drivers) translate to each device (CLI, NETCONF, SNMP)
+• CDB (configuration database) holds the network config
+• Northbound interfaces: CLI, web UI, REST/RESTCONF, NETCONF, JSON-RPC"
+T25,Bob,T25.03,Transactions,"• Changes commit as one transaction across many devices; all-or-nothing with rollback
+• commit dry-run previews device changes
+• FASTMAP: tracks what a service created so it can update/remove it cleanly"
+T25,Bob,T25.04,Sync,"• devices sync-from (pull device config into CDB), sync-to (push CDB to device), check-sync"
+T25,Bob,T25.05,CML,"• Cisco Modeling Labs: simulate networks with virtual Cisco images (IOSv, Catalyst 8000v, NX-OSv, IOS XRv)
+• Topology defined in YAML; REST API and Python client (virl2_client)
+• Used to test changes in CI pipelines before production"
+T25,Bob,T25.06,Tool choice,"• NSO vs Ansible vs Terraform (shared with Beedy T33): NSO = transactional, model-driven, multivendor services"
+T25,Bob,T25.07,Not tested,• Terraform segment of the CML video
+T25,Bob,T25.08,Exam angle,• Capabilities of NSO and CML; when to use each
+T26,Beedy,T26.01,Cloud models,"• Private cloud: dedicated to one organisation (on-prem or hosted); most control, highest cost
+• Public cloud: shared provider infrastructure (AWS, Azure, GCP); pay-as-you-go, elastic
+• Hybrid cloud: private + public connected, workloads move between them
+• Community cloud: shared by organisations with common needs (e.g. government)
+• Multi-cloud: several public providers, avoids lock-in"
+T26,Beedy,T26.02,Service models,"• IaaS: provider runs hardware/virtualisation; you manage OS, runtime, apps (EC2)
+• PaaS: provider also runs OS/runtime; you deploy code (Elastic Beanstalk, App Engine)
+• SaaS: complete application delivered to users (Webex, Microsoft 365)"
+T26,Beedy,T26.03,Cloud traits,"• On-demand self-service
+• Broad network access
+• Resource pooling (multi-tenant)
+• Rapid elasticity (scale up/down)
+• Measured service (pay per use)"
+T26,Beedy,T26.04,Edge computing,"• Processing happens close to where data is produced (branch, factory, IoT device) instead of a central DC/cloud
+• Benefits: lower latency, less WAN bandwidth, keeps working if the WAN fails, data stays local (privacy/sovereignty)
+• Fog computing: layer between edge devices and cloud
+• Cisco example: apps hosted on routers/switches (IOx)"
+T26,Beedy,T26.05,Deployment types,"• Bare metal: OS directly on hardware; best performance, slow to provision, low density
+• VM: hypervisor runs multiple guest OSes; Type 1 (bare-metal: ESXi, KVM) vs Type 2 (hosted: VirtualBox)
+• Container: isolated process sharing the host kernel; packages app + dependencies"
+T26,Beedy,T26.06,Comparison,"• Isolation: bare metal > VM > container
+• Overhead/start-up: container (seconds) < VM (minutes) < bare metal
+• Density: containers highest
+• Portability: containers run the same anywhere with a container runtime"
+T26,Beedy,T26.07,Other types,"• Serverless/FaaS: run functions on events, provider manages servers, pay per execution (Lambda)"
+T26,Beedy,T26.08,App architecture,"• Monolith: one deployable unit; simple at first, hard to scale parts independently
+• Microservices: small services communicating over APIs; independent deploy/scale, more complexity"
+T26,Beedy,T26.09,Exam angle,"• Scenario: ""low latency for IoT sensors"" → edge
+• ""Sensitive data must stay on-prem"" → private/hybrid
+• ""Fast start-up, many instances"" → containers"
+T27,Beedy,T27.01,Concepts,"• Image: read-only template made of layers
+• Container: running instance of an image (adds a writable layer)
+• Registry: stores images (Docker Hub, private registries); repo:tag naming (python:3.12-slim)
+• Docker Engine/daemon builds and runs containers"
+T27,Beedy,T27.02,Dockerfile,"• FROM base image (first instruction)
+• RUN executes a command at build time (new layer)
+• COPY src dest copies local files; ADD can also fetch URLs and unpack tar files
+• WORKDIR sets the working directory; ENV sets environment variables; ARG = build-time variable
+• EXPOSE documents the listening port (does not publish it)
+• USER sets the run-as user; LABEL adds metadata
+• CMD default command/args at run time; ENTRYPOINT fixed executable"
+T27,Beedy,T27.03,Dockerfile,"• RUN = build time; CMD/ENTRYPOINT = when the container starts
+• Only the last CMD counts; docker run args override CMD but are appended to ENTRYPOINT
+• Order instructions from least to most frequently changing to use layer cache"
+T27,Beedy,T27.04,Commands,"• docker build -t myapp:1.0 . (dot = build context)
+• docker images; docker pull nginx; docker push repo/myapp:1.0
+• docker rmi <image>; docker tag"
+T27,Beedy,T27.05,Commands,"• docker run -d (detached) -it (interactive terminal) --name web --rm
+• -p 8080:80 = host port 8080 → container port 80
+• -v /host/path:/container/path or -v volname:/path
+• -e KEY=value
+• docker ps (running), docker ps -a (all); docker stop / start / rm"
+T27,Beedy,T27.06,Commands,"• docker exec -it <container> /bin/bash (shell inside)
+• docker logs <container> (-f to follow)
+• docker inspect <container> (JSON details)"
+T27,Beedy,T27.07,Networking/storage,"• -p host:container (host side first)
+• Bind mount (host path) vs named volume (managed by Docker)
+• Default bridge network; --network host shares the host network"
+T27,Beedy,T27.08,Local dev,"• Same environment for every developer (no ""works on my machine"")
+• Run dependencies (DB, test tools) locally in containers
+• docker compose: multi-container apps defined in YAML (awareness)"
+T27,Beedy,T27.09,Exam angle,"• Read a Dockerfile: base image, what is installed, which port, what runs
+• Pick the command for a task (run detached with port mapping, open a shell)"
+T28,Beedy,T28.01,CI,"• Developers merge to the main branch frequently (at least daily)
+• Each push triggers an automated build and tests
+• Catches integration bugs early, keeps main releasable"
+T28,Beedy,T28.02,CD,"• Continuous delivery: every change is releasable; production deploy needs a manual approval
+• Continuous deployment: every passing change goes to production automatically"
+T28,Beedy,T28.03,Pipeline components,"• Source control repo (trigger on commit/PR)
+• Build (compile, package, container image)
+• Test: unit, integration, security/lint
+• Artifact repository (image registry, Nexus/Artifactory)
+• Deploy stages: dev → test/staging → production, with approvals/gates
+• Notifications and monitoring/feedback"
+T28,Beedy,T28.04,Tools (awareness),"• Jenkins (Jenkinsfile), GitLab CI (.gitlab-ci.yml), GitHub Actions (workflows YAML)
+• Pipeline as code: pipeline definition version-controlled with the app"
+T28,Beedy,T28.05,Benefits,"• Faster, smaller, more frequent releases
+• Fewer manual errors; repeatable deploys
+• Early defect detection; quick rollback"
+T28,Beedy,T28.06,Infra CI/CD,"• Network config/intent stored in Git (source of truth)
+• Pipeline: lint/validate → test in simulation (CML, pyATS) → deploy (Ansible, NSO, Terraform) → post-change checks
+• Same benefits for infrastructure: consistency, audit trail, fewer outages"
+T28,Beedy,T28.07,DevOps,"• DevOps = culture + practices that join development and operations
+• CALMS: Culture, Automation, Lean, Measurement, Sharing
+• Three Ways: flow (fast left-to-right), feedback (right-to-left), continual learning/experimentation"
+T28,Beedy,T28.08,DevOps practices,"• Automate everything repeatable
+• Small batch sizes, frequent releases
+• Shift-left: test and secure early
+• Monitoring and fast feedback; blameless post-mortems
+• Shared responsibility (""you build it, you run it"")"
+T28,Beedy,T28.09,Exam angle,"• Put pipeline stages in the correct order
+• Pick the benefit or DevOps principle a scenario describes
+• Delivery vs deployment distinction"
+T29,Beedy,T29.01,Secrets,"• Hardcoded secrets end up in Git history and logs
+• Use environment variables, secret managers (HashiCorp Vault, AWS Secrets Manager), Ansible Vault
+• Add secret files (.env) to .gitignore
+• Rotate keys; least privilege for service accounts"
+T29,Beedy,T29.02,Encryption,"• In transit: TLS (HTTPS), SSH, IPsec protect data on the wire
+• At rest: disk/volume/database encryption protects stored data
+• Both are usually required for sensitive data"
+T29,Beedy,T29.03,Crypto basics,"• Symmetric: one shared key encrypts and decrypts (AES); fast, key distribution is the problem
+• Asymmetric: public key encrypts/verifies, private key decrypts/signs (RSA, ECC)
+• TLS uses asymmetric crypto to exchange a symmetric session key"
+T29,Beedy,T29.04,PKI,"• Certificate binds a public key to an identity, signed by a Certificate Authority (CA)
+• Client trusts the server if the chain leads to a trusted root CA
+• Self-signed certs are not trusted by default (common in labs)
+• verify=False disables the check → open to man-in-the-middle"
+T29,Beedy,T29.05,Hashing,"• Hash: one-way fixed-length digest (SHA-256); used for integrity and password storage
+• Encryption: reversible with the key
+• Passwords: store salted hashes (bcrypt, PBKDF2), never plaintext or reversible encryption"
+T29,Beedy,T29.06,Data handling,"• PII = personally identifiable information
+• Classify data by sensitivity; apply controls accordingly
+• Collect only what you need; retain only as long as needed
+• Mask/redact secrets and PII in logs"
+T29,Beedy,T29.07,Input handling,"• Treat all input as untrusted
+• Validate type, length, format (allow-lists)
+• Sanitise/escape before use in queries, commands or HTML (links to OWASP T30)"
+T29,Beedy,T29.08,Exam angle,"• Pick the secure option for storing credentials, transmitting data, or logging
+• Know symmetric vs asymmetric and hash vs encrypt"
+T30,Beedy,T30.01,OWASP,"• Open Worldwide Application Security Project: community publishing the OWASP Top 10 web app risks
+• Used as a baseline checklist for secure development"
+T30,Beedy,T30.02,XSS,"• Cross-Site Scripting: attacker gets malicious script to run in another user's browser
+• Stored: script saved on the server (e.g. in a comment) and served to others
+• Reflected: script in a URL/parameter echoed back in the response
+• DOM-based: client-side JavaScript writes untrusted data into the page
+• Impact: session theft, defacement, actions as the user"
+T30,Beedy,T30.03,XSS defences,"• Encode/escape output for its context (HTML, JS, URL)
+• Validate input; use templating frameworks that auto-escape
+• Content Security Policy header restricts script sources
+• HttpOnly cookies limit token theft"
+T30,Beedy,T30.04,SQL injection,"• User input concatenated into a SQL statement changes its logic
+• Example: username = ' OR 1=1 -- returns all rows / bypasses login
+• Impact: data theft, modification, deletion"
+T30,Beedy,T30.05,SQLi defences,"• Parameterised queries / prepared statements (input treated as data, not code)
+• ORM frameworks
+• Input validation
+• Least-privilege database accounts"
+T30,Beedy,T30.06,CSRF,"• Cross-Site Request Forgery: a malicious site makes the victim's browser send a request to a site where they are logged in
+• Browser sends the session cookie automatically, so the request looks legitimate
+• Impact: unwanted actions (change password, transfer funds)"
+T30,Beedy,T30.07,CSRF defences,"• Anti-CSRF tokens: unique token in each form, checked by the server
+• SameSite cookie attribute
+• Re-authentication or confirmation for sensitive actions
+• Check Origin/Referer headers"
+T30,Beedy,T30.08,Other Top 10 (awareness),"• Broken access control; cryptographic failures; injection (includes SQLi, XSS)
+• Insecure design; security misconfiguration; vulnerable/outdated components
+• Identification and authentication failures; integrity failures; logging/monitoring failures; SSRF"
+T30,Beedy,T30.09,Exam angle,"• Name the attack from a scenario or snippet
+• Pick its mitigation (e.g. SQLi → parameterised queries; CSRF → tokens; XSS → output encoding)"
+T31,Beedy,T31.01,Navigation,"• pwd, cd ~ / cd .. / cd - (previous dir)
+• ls -l (long), -a (hidden), -la
+• Absolute (/etc/hosts) vs relative (./script.sh) paths"
+T31,Beedy,T31.02,File management,"• touch, mkdir -p a/b/c, cp -r, mv (move/rename), rm -r, rmdir
+• cat, less, head -n, tail -n / tail -f
+• grep pattern file (-i, -r, -v); find /path -name ""*.py"""
+T31,Beedy,T31.03,Permissions,"• ls -l shows rwx for user/group/other
+• chmod 755 file = rwxr-xr-x; chmod +x script.sh
+• chown user:group file; sudo runs as root"
+T31,Beedy,T31.04,Environment variables,"• VAR=value (shell only) vs export VAR=value (passed to child processes)
+• echo $VAR; env / printenv list them; unset VAR
+• PATH lists dirs searched for commands
+• Persist in ~/.bashrc or ~/.profile; source ~/.bashrc reloads"
+T31,Beedy,T31.05,Redirection,"• > overwrite file; >> append; < read input from file
+• | pipes stdout into the next command
+• 2> redirects stderr; 2>&1 merges stderr into stdout"
+T31,Beedy,T31.06,Scripts,"• #!/bin/bash shebang on line 1; chmod +x then ./script.sh
+• $0 script name; $1 $2 positional args; $# count; $@ all args
+• $? exit status of last command (0 = success)"
+T31,Beedy,T31.07,Scripts,"• if [ -f file ]; then …; fi; [ ""$a"" == ""$b"" ]
+• for i in 1 2 3; do …; done; while …; do …; done
+• $(command) captures output; double quotes expand variables, single quotes do not"
+T31,Beedy,T31.08,Exam angle,"• Read a short script and state its workflow or output
+• Pick the command for a file/directory/env-var task"
+T32,Beedy,T32.01,TDD,"• Test-driven development: write a failing test before the code
+• Red (test fails) → Green (minimum code to pass) → Refactor (clean up, tests still pass)
+• Benefits: clear requirements, fewer regressions, safer refactoring, better design"
+T32,Beedy,T32.02,Test types,"• Unit: one function/class in isolation (fast, many)
+• Integration: components working together (e.g. app + API)
+• Functional/system/end-to-end: whole system against requirements
+• Regression: re-run tests to catch previously fixed bugs returning"
+T32,Beedy,T32.03,unittest,"• import unittest
+• class TestParser(unittest.TestCase):
+• Each test is a method whose name starts with test_
+• Tests should be independent of each other"
+T32,Beedy,T32.04,unittest,"• setUp() runs before every test; tearDown() after (setUpClass/tearDownClass once per class)
+• assertEqual(a, b), assertNotEqual, assertTrue(x), assertFalse(x)
+• assertIn(a, b), assertIsNone(x), assertIsInstance(x, cls)
+• with self.assertRaises(ValueError): … checks an exception is raised"
+T32,Beedy,T32.05,Running,"• if __name__ == ""__main__"": unittest.main()
+• python -m unittest (discovers test_*.py files) ; python -m unittest -v
+• Output: ""."" pass, ""F"" failure (assertion false), ""E"" error (exception in test); final OK or FAILED"
+T32,Beedy,T32.06,Mocking (awareness),"• unittest.mock.patch replaces a real call (e.g. requests.get) with a fake
+• Lets you test API-calling code without the network"
+T32,Beedy,T32.07,pytest (awareness),"• pytest: plain functions named test_* using bare assert statements
+• Runs unittest tests too"
+T32,Beedy,T32.08,Exam angle,"• Complete a TestCase (class base, method name, assert)
+• Say why a given test passes, fails or errors"
+T33,Beedy,T33.01,IaC principles,"• Infrastructure defined in machine-readable files instead of manual changes
+• Stored in version control: history, review, rollback
+• Repeatable and consistent across environments
+• Enables CI/CD for infrastructure"
+T33,Beedy,T33.02,Models,"• Declarative: describe the desired end state; the tool works out the steps (Terraform, NSO, Puppet)
+• Imperative/procedural: describe the steps in order (shell scripts; Ansible tasks run in order)"
+T33,Beedy,T33.03,Properties,"• Idempotency: running again with no changes makes no changes
+• Configuration drift: real state diverging from the defined state
+• Mutable infra: change servers in place; immutable: replace with new instances"
+T33,Beedy,T33.04,Architectures,"• Push: central server pushes changes (Ansible)
+• Pull: agents on nodes fetch config (Puppet, Chef)
+• Agentless (SSH/API) vs agent-based (software on each node)"
+T33,Beedy,T33.05,Ansible,"• Agentless, push model, uses SSH / NETCONF / HTTP APIs
+• YAML playbooks of tasks using modules
+• Strong for configuration management and orchestration across many devices"
+T33,Beedy,T33.06,Terraform,"• HashiCorp, declarative HCL
+• Providers talk to platform APIs (AWS, ACI, Meraki, IOS XE)
+• State file tracks what it manages; terraform plan (preview) → apply → destroy
+• Strong for provisioning resources"
+T33,Beedy,T33.07,NSO,"• Cisco Network Services Orchestrator: model-driven (YANG) service orchestration
+• NEDs (Network Element Drivers) talk to multivendor devices
+• CDB stores config; changes are transactional across devices with rollback
+• Northbound APIs: REST, RESTCONF, NETCONF, CLI"
+T33,Beedy,T33.08,Puppet/Chef (awareness),"• Puppet: agent-based, pull, declarative manifests
+• Chef: agent-based, pull, Ruby ""recipes"""
+T33,Beedy,T33.09,Exam angle,"• Pick the tool for a scenario (multivendor service transactions → NSO; cloud provisioning with state → Terraform; agentless config push → Ansible)
+• Declarative vs imperative and push vs pull definitions"
+T34,Beedy,T34.01,Inventory,"• Inventory lists hosts and groups (INI or YAML)
+• group_vars/ and host_vars/ hold per-group / per-host variables
+• Variables like ansible_network_os, ansible_connection, ansible_user"
+T34,Beedy,T34.02,Playbook structure,"• Play: hosts (target group), gather_facts, connection, vars, tasks
+• connection: network_cli (SSH CLI), netconf, httpapi (REST), local
+• Each task: name + module + arguments"
+T34,Beedy,T34.03,Modules,"• ios_command / cisco.ios.ios_command: run show commands
+• ios_config / cisco.ios.ios_config: push config lines
+• uri: generic REST calls
+• netconf_get / netconf_config; restconf_get / restconf_config
+• template (Jinja2 → file); debug (print variables)"
+T34,Beedy,T34.04,Variables,"• {{ variable }} Jinja2 substitution
+• register: save task output to a variable
+• Facts: gathered device/host data"
+T34,Beedy,T34.05,Control,"• loop (or with_items) repeats a task
+• when: conditional execution
+• notify triggers a handler that runs once at the end if something changed"
+T34,Beedy,T34.06,Running,"• ansible-playbook -i inventory.yml site.yml
+• --check dry run; -v / -vvv verbosity; --limit host
+• Result states: ok (no change), changed, failed, skipped"
+T34,Beedy,T34.07,Structure (awareness),"• Roles package tasks/vars/templates for reuse
+• ansible.cfg sets defaults (inventory path, etc.)"
+T34,Beedy,T34.08,Exam angle,"• Read a playbook: which devices, which modules, what config or data, in what order"
+T35,Bob,T35.01,MAC addresses,"• 48-bit, hex; first 24 bits = OUI (vendor)
+• Unicast, multicast, broadcast (FF:FF:FF:FF:FF:FF)"
+T35,Bob,T35.02,Switching,• Learn source MAC → port; forward known unicast; flood broadcast/unknown unicast; filter same-port; MAC table aging
+T35,Bob,T35.03,VLANs,"• Separate L2 broadcast domain per VLAN
+• Access port (one VLAN) vs trunk (many VLANs, 802.1Q tag, 12-bit VLAN ID 1-4094, native VLAN untagged)
+• Inter-VLAN traffic needs L3 (SVI or router-on-a-stick)"
+T35,Bob,T35.04,Exam angle,• Purpose/usage questions; what a switch does with a frame
+T36,Bob,T36.01,IPv4 addressing,"• 32-bit dotted decimal; mask/prefix splits network vs host
+• Network, broadcast, usable hosts = 2^h − 2
+• RFC 1918 private ranges: 10/8, 172.16/12, 192.168/16"
+T36,Bob,T36.02,IPv6 (awareness),• 128-bit hex; /64 subnets; link-local fe80::/10
+T36,Bob,T36.03,Gateway and ARP,"• Default gateway forwards off-subnet traffic
+• ARP resolves IP → MAC on the local subnet"
+T36,Bob,T36.04,Routing table,"• Connected, static, dynamic (OSPF, EIGRP, BGP) routes
+• Longest prefix match wins; default route 0.0.0.0/0"
+T36,Bob,T36.05,Exam angle,• Subnet maths; same-subnet or not; which route is used
+T37,Bob,T37.01,TCP vs UDP,"• TCP: connection-oriented, reliable, ordered (3-way handshake)
+• UDP: connectionless, low overhead (DNS queries, SNMP, NTP, syslog)"
+T37,Bob,T37.02,Ports to memorise,"• SSH 22, Telnet 23, HTTP 80, HTTPS 443, NETCONF 830, RESTCONF 443
+• DNS 53, DHCP 67/68, TFTP 69, NTP 123, SNMP 161 / traps 162, syslog 514, SMTP 25, FTP 20/21"
+T37,Bob,T37.03,IP services,"• DHCP: DORA (Discover, Offer, Request, Ack)
+• DNS: A, AAAA, CNAME, PTR, MX records
+• NAT/PAT: private ↔ public translation
+• SNMP: manager/agent, MIB, OID, traps; v3 adds auth/encryption
+• NTP: time sync, stratum levels"
+T37,Bob,T37.04,Exam angle,• Match port to protocol; pick the service for a scenario
+T38,Bob,T38.01,Components,"• Switch (L2), router (L3), firewall (stateful filtering, zones)
+• Load balancer: spreads traffic across servers behind a VIP, with health checks (see T41)
+• Wireless AP and WLC"
+T38,Bob,T38.02,Reading diagrams,"• Physical (cables/ports) vs logical (subnets/VLANs/routing) topology
+• Identify segments, gateways, VLANs, IP ranges and traffic path"
+T38,Bob,T38.03,Common designs,• Three-tier campus (core/distribution/access); spine-leaf data centre; DMZ; WAN/branch
+T38,Bob,T38.04,Exam angle,"• Interpret a diagram: where is the gateway, which device filters, what path traffic takes"
+T39,Bob,T39.01,Management plane,"• Configure and monitor the device: SSH, SNMP, NETCONF/RESTCONF, APIs, syslog"
+T39,Bob,T39.02,Control plane,"• Builds forwarding information: routing protocols (OSPF, BGP), STP, ARP"
+T39,Bob,T39.03,Data plane,• Forwards packets/frames using the tables (hardware/ASIC)
+T39,Bob,T39.04,SDN link,• SDN centralises the control plane in a controller; devices keep the data plane
+T39,Bob,T39.05,Exam angle,• Place a protocol or function in the correct plane
+T40,Bob,T40.01,NAT issues,"• Private address not reachable from outside without static NAT/port forwarding
+• Return traffic and logging show translated addresses"
+T40,Bob,T40.02,Port blocking,"• Firewall/ACL blocking: timeout (dropped) vs connection refused (closed port)
+• Test with nc -zv host port, curl -v, telnet host port"
+T40,Bob,T40.03,Proxy issues,"• Corporate proxy required for outbound HTTP(S): set HTTP_PROXY/HTTPS_PROXY or requests proxies={}
+• Proxy auth failures (407), TLS inspection breaking cert checks"
+T40,Bob,T40.04,VPN issues,• Split vs full tunnel routes; DNS resolution through the tunnel; MTU/fragmentation; overlapping subnets
+T40,Bob,T40.05,Diagnostic tools,"• ping, traceroute, nslookup/dig, curl -v, ss/netstat"
+T40,Bob,T40.06,Network constraints (6.9),"• Bandwidth, latency, jitter, packet loss and their effect on apps (timeouts, slow chatty APIs, poor voice/video)
+• Mitigations: QoS, caching, fewer round trips, compression"
+T40,Bob,T40.07,Exam angle,• Diagnose the cause from symptoms; pick the fix
+T41,Bob,T41.01,Firewall,"• Permit/deny by IP, port, protocol, application; stateful
+• Segments tiers (web / app / DB); WAF protects HTTP apps (XSS, SQLi)"
+T41,Bob,T41.02,DNS,"• Resolves app names to IPs; enables failover and simple load distribution (round robin, GSLB); TTL affects how fast changes propagate"
+T41,Bob,T41.03,Load balancer,"• Clients hit a virtual IP (VIP); LB spreads requests across backend servers
+• Algorithms: round robin, least connections, weighted
+• Health checks remove failed servers; L4 (TCP/UDP) vs L7 (HTTP-aware)
+• SSL/TLS offload; session persistence (sticky sessions)"
+T41,Bob,T41.04,Reverse proxy,"• Sits in front of servers and forwards client requests to them
+• TLS termination, caching, compression, path-based routing, hides backend servers
+• Forward proxy (clients → internet) vs reverse proxy (internet → servers)"
+T41,Bob,T41.05,Typical flow,• Client → DNS → firewall/WAF → load balancer / reverse proxy → app servers → database
+T41,Bob,T41.06,Exam angle,"• Pick which component solves a scenario (scale out, hide servers, block ports, name resolution)"
+T42,Bob,T42.01,Webex REST API,"• Base https://webexapis.com/v1
+• Resources: people, rooms (spaces), messages, memberships, teams, webhooks, meetings"
+T42,Bob,T42.02,Authentication,"• Authorization: Bearer <token>
+• Personal access token (developer portal, short-lived ~12 h), bot token (long-lived), integration (OAuth 2.0 grant), guest issuer (awareness)"
+T42,Bob,T42.03,Common calls,"• GET /rooms; POST /rooms {""title"": ...}
+• POST /messages with roomId or toPersonEmail, plus text/markdown/files
+• POST /memberships to add people"
+T42,Bob,T42.04,Bots,• Separate identity that is added to spaces; reacts to events via webhooks (see Beedy T43)
+T42,Bob,T42.05,Webex devices xAPI,"• API on RoomOS devices: xCommand (actions), xConfiguration (settings), xStatus (state), xEvent (events)
+• Access: SSH, HTTP(S) /putxml and /getxml, cloud xAPI via webexapis.com/v1/xapi/...
+• Macros: JavaScript running on the device"
+T42,Bob,T42.06,SDKs (awareness),• Webex JS SDK; Python webexpythonsdk (formerly webexteamssdk)
+T42,Bob,T42.07,Exam angle,• Complete code that posts a message; pick token type; recognise xAPI command types
+T43,Beedy,T43.01,Concept,"• Webhook = HTTP callback: when an event happens, the service sends an HTTP POST to a URL you registered
+• ""Reverse API"": the server calls you
+• Event-driven, near real time"
+T43,Beedy,T43.02,Comparison,"• Polling: client repeatedly asks ""anything new?"" → wasted calls, delay, rate-limit risk
+• Webhook: server pushes only when something happens
+• WebSocket: persistent two-way connection (awareness)"
+T43,Beedy,T43.03,Components,"• Event source (e.g. Webex, Meraki, Catalyst Center)
+• Target URL: a publicly reachable HTTPS endpoint you host
+• Receiver app: parses the payload and acts"
+T43,Beedy,T43.04,Registration,"• Register via API (Webex POST /v1/webhooks)
+• name, targetUrl, resource (messages, rooms, memberships…), event (created, updated, deleted…)
+• Optional filter (e.g. roomId=…) and secret"
+T43,Beedy,T43.05,Payload,"• Service sends a JSON POST describing the event
+• Often minimal (IDs only, e.g. message ID) for security
+• Receiver makes a follow-up GET to fetch full details (e.g. GET /messages/{id})
+• Receiver should reply quickly with 2xx"
+T43,Beedy,T43.06,Security,"• Set a secret at registration; service signs each payload with HMAC (Webex: X-Spark-Signature header)
+• Receiver recomputes the HMAC to verify origin and integrity
+• Use HTTPS; validate and sanitise payloads"
+T43,Beedy,T43.07,Testing tools,"• ngrok: exposes a local app on a public URL for testing
+• webhook.site / RequestBin: inspect payloads without writing code"
+T43,Beedy,T43.08,Use cases,"• Webex bots reacting to messages
+• Meraki alerts to a ticketing/chat system
+• Catalyst Center event notifications
+• CI pipelines triggered by Git pushes"
+T43,Beedy,T43.09,Exam angle,"• Identify a webhook pattern in a scenario
+• Explain why the target must be reachable and why a follow-up GET is needed
+• Webhook vs polling trade-offs"
+T44,Beedy,T44.01,Components,"• pyATS: Cisco Python test automation framework
+• Genie: library of parsers (show output → structured dicts) and device feature models
+• Unicon: connection library (SSH/Telnet/console, CLI handling)
+• Free to use; works with physical, virtual or CML devices"
+T44,Beedy,T44.02,Testbed,"• YAML file describing devices to test
+• Per device: os (iosxe, nxos), type, connections (protocol: ssh, ip, port)
+• credentials (default username/password; can reference env vars)"
+T44,Beedy,T44.03,Workflow,"• from pyats.topology import loader / from genie.testbed import load
+• tb = load(""testbed.yaml""); dev = tb.devices[""csr1""]
+• dev.connect(); dev.parse(""show version"") → dict
+• dev.execute(""show run"") → raw text; dev.configure(""..."") pushes config"
+T44,Beedy,T44.04,Learn and diff,"• dev.learn(""ospf"") builds a vendor-neutral model of a feature
+• genie learn ospf --testbed-file tb.yaml --output before (CLI)
+• genie diff before after shows what changed after a change window"
+T44,Beedy,T44.05,AEtest,"• AEtest = test harness: CommonSetup → Testcase(s) → CommonCleanup
+• Sections decorated with @aetest.setup / @aetest.test / @aetest.cleanup
+• pyats run job job.py runs tests and produces reports"
+T44,Beedy,T44.06,CML link,"• CML (Cisco Modeling Labs) provides virtual topologies to run pyATS tests against
+• Blueprint 5.3 covers both; Bob covers CML in T25"
+T44,Beedy,T44.07,Use cases,"• Pre/post-change checks (snapshot → change → snapshot → diff)
+• Automated network tests inside a CI/CD pipeline
+• Compliance/state verification"
+T44,Beedy,T44.08,Exam angle,"• Pick pyATS/Genie for a test or validation scenario (vs CML for simulation)
+• Read a short pyATS snippet and say what it does"
+T45,Bob,T45.01,Typical script structure,"• Imports → constants (base URL, credentials from env) → auth function → API call functions → parse/loop → output"
+T45,Bob,T45.02,Recognise the platform,• api.meraki.com → Meraki; /dna/ → Catalyst Center; /api/aaaLogin → ACI/NX-API; /dataservice → SD-WAN; webexapis.com → Webex; /restconf/data → RESTCONF; ncclient → NETCONF
+T45,Bob,T45.03,Read the workflow,"• Which call happens first (auth), what data is extracted, what the loop does, what gets printed or changed"
+T45,Bob,T45.04,Spot bugs,"• Wrong HTTP method, missing auth/content headers, wrong JSON key path, missing raise_for_status, no pagination"
+T45,Bob,T45.05,Exam angle,"• ""What does this script do?"" and put-the-steps-in-order questions"
+T46,Beedy,T46.01,Purpose,"• Catch defects and security issues early (cheaper to fix)
+• Share knowledge across the team; reduce single points of knowledge
+• Keep code style and standards consistent
+• Mentoring and improving overall code quality"
+T46,Beedy,T46.02,Process,"• Developer works on a branch
+• Opens a pull/merge request with a description
+• CI runs automated tests/linters
+• Reviewers comment; author fixes; approval; merge to main"
+T46,Beedy,T46.03,Types,"• Over-the-shoulder: reviewer at the author's desk
+• Tool-assisted: PRs in GitHub/GitLab (most common)
+• Pair programming: continuous review while coding
+• Email-based: patches sent for review"
+T46,Beedy,T46.04,Good practice,"• Keep changes small and focused
+• Use checklists; review logic, security, tests, readability
+• Constructive, specific feedback about the code, not the person
+• Let linters/formatters and CI handle style"
+T46,Beedy,T46.05,Exam angle,"• Pick the benefit or the correct step in a review process
+• Know where review fits relative to CI and merge"
+T47,Beedy,T47.01,Notation,"• Participants (boxes) with vertical lifelines
+• Time flows from top to bottom
+• Solid arrow = request/call (often labelled with method + URL)
+• Dashed arrow = response (often labelled with status code/data)"
+T47,Beedy,T47.02,Notation,"• Activation bar = participant busy processing
+• Frames: alt (if/else), opt (optional), loop (repeat), par (parallel)"
+T47,Beedy,T47.03,Auth flow,"• Client → auth endpoint: POST credentials
+• Auth → client: 200 + token
+• Client → API: GET/POST with token header
+• API → client: 200 + data (401 if token missing/expired)"
+T47,Beedy,T47.04,Async flow,"• Client → API: POST job
+• API → client: 202 Accepted + taskId
+• loop: Client → API: GET /task/{taskId} until complete
+• Client → API: GET result"
+T47,Beedy,T47.05,Webhook flow,"• App → service: register webhook (POST /webhooks)
+• Event occurs → service POSTs payload to the app's targetUrl
+• App → service: GET full details using the IDs in the payload"
+T47,Beedy,T47.06,Reading,"• Map each arrow to an HTTP method, URL and expected status code
+• Spot the missing or out-of-order step (e.g. call before auth)"
+T47,Beedy,T47.07,Exam angle,"• Order the calls in a flow
+• Say what happens or what is returned at a given arrow"
