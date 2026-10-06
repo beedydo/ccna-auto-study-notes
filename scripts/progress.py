@@ -41,7 +41,8 @@ def main():
             continue
         p = ROOT / r["note_path"]
         fm = front_matter(p) if p.exists() else {"status": "missing", "_done": 0, "_total": 0}
-        st = fm.get("status", "not-started")
+        # Notes written without front matter (e.g. Bob's round 1) still count as drafted
+        st = fm.get("status") or ("drafted" if p.exists() and p.stat().st_size > 0 else "not-started")
         flag = ""
         if st in ("not-started", "missing") and r["learn_by"] and r["learn_by"] < today:
             flag = "OVERDUE"

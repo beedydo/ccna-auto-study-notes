@@ -40,7 +40,7 @@ docker build --tag ccna-auto-lab:latest --file labs/Dockerfile labs/
 3. Commit each topic on its own:
 
    ```bash
-   git add notes/d2-apis/T07-*.md
+   git add bee/T07-*.md
    git commit --message "T07: draft REST fundamentals notes"
    ```
 

@@ -12,11 +12,11 @@ Shared study notes for Beedy ([@beedydo](https://github.com/beedydo)) and Bob, f
 | **Beedy** (22) | T02, T04-T11, T26-T34, T43, T44, T46, T47 | Python, Git, data formats, REST/APIs, deployment, Docker, CI/CD, security, OWASP, Bash, TDD, IaC, Ansible, webhooks, pyATS, code review, sequence diagrams |
 | **Bob** (25) | T01, T03, T12-T25, T35-T42, T45 | Dev methods, design patterns, model-driven programmability (YANG/NETCONF/RESTCONF), device APIs, Cisco platforms, network fundamentals, Webex, reading Cisco API scripts |
 
-The full list is in `data/topics.csv`. There is one note per topic under `notes/<domain>/`, and each note starts with a pre-filled checklist of every concept it must cover (370 concepts in total).
+The full list is in `data/topics.csv`. Each topic note lives in its owner's folder (`bee/` or `bob/`), and each scaffold note starts with a pre-filled checklist of every concept it must cover (370 concepts in total).
 
 ## Exam domains (v1.1 weights)
 
-| Domain | Weight | Folder |
+| Domain | Weight | Index |
 |---|---|---|
 | 1 Software Development and Design | 15% | `notes/d1-software-development/` |
 | 2 Understanding and Using APIs | 20% | `notes/d2-apis/` |
@@ -123,7 +123,9 @@ _Updated 2026-10-05 by scripts/progress.py_
 - `HANDOVER.md`: how this repo was set up, decisions, open flags
 - `CONTRIBUTING.md`: Git workflow for Beedy and Bob
 - `data/`: topics, concepts, blueprint map, CBT aids, skip list, top-ups, pair plan, practice log
-- `notes/`: one note per topic
+- `bee/`: Beedy's topic notes
+- `bob/`: Bob's topic notes
+- `notes/dN-*/README.md`: per-domain index linking to both
 - `teach-back/`: cards for the 4 joint sessions
 - `quizzes/`: generated question banks
 - `labs/`: Docker lab container and per-topic labs

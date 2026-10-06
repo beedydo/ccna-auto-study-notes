@@ -42,12 +42,10 @@ If the CSVs and a note disagree on owner, blueprint or dates, the CSV wins. Upda
 ## Repo layout
 
 ```
-notes/d1-software-development/      T01-T04, T06, T32            one file per topic: TXX-slug.md
-notes/d2-apis/                       T07-T11, T43
-notes/d3-cisco-platforms/            T13-T25, T42   (incl. YANG/NETCONF/RESTCONF, first item 3.8)
-notes/d4-app-deployment-security/    T26-T31, T41
-notes/d5-infrastructure-automation/  T05, T12, T33, T34, T44-T47
-notes/d6-network-fundamentals/       T35-T40
+bee/                              Beedy's topic notes ONLY (22 files): TXX-slug.md
+bob/                              Bob's topic notes ONLY (25 files): TXX-slug.md
+notes/d1..d6-*/README.md          per-domain index tables linking into bee/ and bob/ (no notes here)
+CLAUDE.md, HANDOVER.md, data/     shared context: stays at the root, never inside bee/ or bob/
 teach-back/                       teach-back-1..4.md (cards for each joint session)
 quizzes/                          generated question banks (one file per topic or batch)
 labs/                             Docker lab container + runnable scripts
@@ -55,7 +53,11 @@ cheatsheet.md                     1-page exam-eve sheet (build from "Exam traps"
 scripts/progress.py               prints progress from note front matter
 ```
 
-The domain folder is chosen by the topic's **first** blueprint item. Check `data/topics.csv` → `note_path` for where each topic lives.
+- Topic notes live in the **owner's folder**: `bee/` for Beedy, `bob/` for Bob. Only topic notes go there; shared files stay at the root.
+- `data/topics.csv` → `note_path` is the exact path of every topic note. Always resolve paths from it, never guess.
+- New note for a topic: create it at its `note_path` from `templates/topic-note.md`, pre-filling the **Must cover** checklist from `data/concepts.csv`.
+- Bob's round-1 notes (T01, T03, T12-T17) use his own format without front matter. Treat them as `drafted`. Don't reformat them unless Bob asks.
+- If you add or rename a note, update `note_path` in `data/topics.csv` and the link in the matching `notes/dN-*/README.md`.
 
 ## Note format (every topic file)
 
