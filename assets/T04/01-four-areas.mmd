@@ -1,0 +1,19 @@
+flowchart LR
+    WD["📝 Working directory<br/>files you edit"]
+    ST["📋 Staging area<br/>(index)"]
+    LR_["🗄️ Local repo<br/>.git/"]
+    RR["☁️ Remote repo<br/>origin (GitHub)"]
+
+    WD -- "git add" --> ST
+    ST -- "git commit" --> LR_
+    LR_ -- "git push" --> RR
+    RR -- "git fetch" --> LR_
+    RR -- "git pull<br/>(fetch + merge)" --> WD
+    ST -- "git restore --staged" --> WD
+    LR_ -- "git restore / checkout" --> WD
+
+    subgraph "Your laptop"
+        WD
+        ST
+        LR_
+    end

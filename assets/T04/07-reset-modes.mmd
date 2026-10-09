@@ -1,0 +1,11 @@
+flowchart LR
+    R["git reset &lt;mode&gt; HEAD~1<br/>moves branch back 1 commit"]
+    R --> S["--soft<br/>📋 changes stay STAGED<br/>📝 files kept"]
+    R --> M["--mixed (default)<br/>📋 changes UNSTAGED<br/>📝 files kept"]
+    R --> H["--hard<br/>📋 wiped<br/>📝 files WIPED ⚠️"]
+    V["git revert &lt;sha&gt;"] --> N["NEW commit that undoes &lt;sha&gt;<br/>history kept → safe after push"]
+
+    style S fill:#d4edda,stroke:#28a745
+    style M fill:#fff3cd,stroke:#ffc107
+    style H fill:#f8d7da,stroke:#dc3545
+    style N fill:#d1ecf1,stroke:#17a2b8

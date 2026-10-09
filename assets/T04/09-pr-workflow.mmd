@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor Dev as Beedy
+    participant L as Laptop (local repo)
+    participant GH as GitHub
+    actor Rev as Bob (reviewer)
+
+    Dev->>GH: git clone <url>
+    GH-->>L: full history + origin
+    Dev->>L: git switch -c fix-ntp
+    Dev->>L: edit ntp.py
+    Dev->>L: git add ntp.py
+    Dev->>L: git commit -m "Fix NTP"
+    L->>GH: git push -u origin fix-ntp
+    Dev->>GH: open pull request
+    GH->>Rev: review request
+    Rev-->>GH: approve
+    GH->>GH: merge fix-ntp into main
+    Dev->>L: git switch main && git pull

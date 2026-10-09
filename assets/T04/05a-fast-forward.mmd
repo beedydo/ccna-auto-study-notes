@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph Before["BEFORE  (on main: git merge feature)"]
+        direction LR
+        A1[a1] --> B1[b2] --> C1[c3] --> D1[d4]
+        M1{{main}} -.-> B1
+        F1{{feature}} -.-> D1
+    end
+    subgraph After["AFTER  Fast-forward: main pointer slides, NO new commit"]
+        direction LR
+        A2[a1] --> B2[b2] --> C2[c3] --> D2[d4]
+        M2{{main}} -.-> D2
+        F2{{feature}} -.-> D2
+    end
+    Before ~~~ After
+    style M1 fill:#d1ecf1,stroke:#17a2b8
+    style M2 fill:#d1ecf1,stroke:#17a2b8
+    style F1 fill:#fff3cd,stroke:#ffc107
+    style F2 fill:#fff3cd,stroke:#ffc107

@@ -1,0 +1,13 @@
+flowchart LR
+    U["Untracked<br/><code>??</code>"] -- "git add" --> S["Staged<br/><code>A </code> / <code>M </code>"]
+    S -- "git commit" --> C["Committed<br/>(unmodified)<br/>clean"]
+    C -- "edit file" --> M["Modified<br/><code> M</code>"]
+    M -- "git add" --> S
+    M -. "git restore" .-> C
+    S -. "git restore --staged" .-> M
+    C -. "git rm --cached" .-> U
+
+    style U fill:#f8f9fa,stroke:#6c757d
+    style S fill:#d4edda,stroke:#28a745
+    style C fill:#d1ecf1,stroke:#17a2b8
+    style M fill:#fff3cd,stroke:#ffc107

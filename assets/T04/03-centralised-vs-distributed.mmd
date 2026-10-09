@@ -1,0 +1,14 @@
+flowchart LR
+    subgraph C["❌ Centralised (SVN): server down = no commits"]
+        direction TB
+        S1[("Central server<br/>ONLY full history")]
+        A1["Dev A<br/>working copy"] <--> S1
+        B1["Dev B<br/>working copy"] <--> S1
+    end
+    subgraph D["✅ Distributed (Git): commit offline, sync later"]
+        direction TB
+        S2[("GitHub<br/>full history")]
+        A2[("Dev A clone<br/>FULL history")] <-- "push / pull" --> S2
+        B2[("Dev B clone<br/>FULL history")] <-- "push / pull" --> S2
+    end
+    C ~~~ D

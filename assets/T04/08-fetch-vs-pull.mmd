@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant WD as Working dir + main
+    participant OT as origin/main (remote-tracking)
+    participant GH as GitHub (origin)
+
+    Note over WD,GH: git fetch
+    WD->>GH: any new commits?
+    GH-->>OT: download commits
+    Note over WD: unchanged ✅
+
+    Note over WD,GH: git pull = fetch + merge
+    WD->>GH: any new commits?
+    GH-->>OT: download commits
+    OT->>WD: merge origin/main into main
+    Note over WD: files updated

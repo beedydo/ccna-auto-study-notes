@@ -1,0 +1,11 @@
+flowchart LR
+    A["git merge feature"] --> B{"Same lines<br/>changed on<br/>both sides?"}
+    B -- No --> C["✅ Auto-merged<br/>fast-forward or<br/>merge commit"]
+    B -- Yes --> D["❌ CONFLICT<br/>merge paused"]
+    D --> E["1. Edit file<br/>keep wanted lines<br/>delete all 3 markers"]
+    E --> F["2. git add file<br/>(marks resolved)"]
+    F --> G["3. git commit<br/>(merge commit)"]
+    D -. "give up" .-> H["git merge --abort"]
+    style D fill:#f8d7da,stroke:#dc3545
+    style C fill:#d4edda,stroke:#28a745
+    style G fill:#d4edda,stroke:#28a745
