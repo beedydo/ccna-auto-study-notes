@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T42 architecture: Webex platform map</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .you > .zb { padding: 16px 0; }
+  .webex > .zb, .room > .zb, .users > .zb { justify-content: space-around; gap: 0; padding: 18px 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T42 · <span class="pill">Webex</span> platform map</h1>
+    <div class="meta"><b>200-901 blueprint 3.4</b><br>One cloud base URL, plus the device's own xAPI<br>Names as in <code>labs/T42/</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div style="flex: 2"></div>
+      <div class="zone client you" style="flex: 1">
+        <div class="zh">Your code <small>laptop / server</small></div>
+        <div class="zb">
+          <div class="node xw" id="code" data-icon="script"><div class="nm">Python / curl</div><div class="sub"><code>requests</code> · <code>webexpythonsdk</code><br><code>webex_bot.py</code> · <code>xapi_device.py</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="row">
+      <div class="zone cloud webex" style="flex: 2">
+        <div class="zh">Webex cloud</div>
+        <div class="zb">
+          <div class="node xw hl" id="rest" data-icon="cloud"><div class="nm">Messaging + meetings REST</div><div class="sub"><code>https://webexapis.com/v1</code><br><code>/people</code> <code>/rooms</code> <code>/messages</code><br><code>/memberships</code> <code>/teams</code><br><code>/webhooks</code> <code>/meetings</code></div></div>
+          <div class="node xw hl" id="cx" data-icon="cloud"><div class="nm">Devices + cloud xAPI</div><div class="sub"><code>https://webexapis.com/v1</code><br><code>/devices</code> · <code>/xapi/status</code><br><code>/xapi/command/{name}</code></div></div>
+        </div>
+      </div>
+      <div style="flex: 1"></div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ext users" style="flex: 1">
+        <div class="zh">Webex users</div>
+        <div class="zb">
+          <div class="node xw" id="app" data-icon="laptop"><div class="nm">Webex App</div><div class="sub">spaces · messages · meetings</div></div>
+        </div>
+      </div>
+      <div class="zone site room" style="flex: 2">
+        <div class="zh">Meeting room LAN</div>
+        <div class="zb">
+          <div class="node xw" id="dev" data-icon="roomdevice"><div class="nm">RoomOS device</div><div class="sub">Room Kit · Desk · Board<br>xAPI: <code>xCommand</code> <code>xConfiguration</code><br><code>xStatus</code> <code>xEvent</code></div><span class="tag">SG-HQ Board Room · Room Kit Pro</span></div>
+          <div class="node xw" id="macro" data-icon="script"><div class="nm">Macro</div><div class="sub">JavaScript running <b>on the device</b><br><code>volume_guard.js</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>One base URL:</b> messaging, meetings and cloud xAPI all sit under <code>https://webexapis.com/v1</code> with <code>Authorization: Bearer</code>.</div>
+      <div class="note trap"><b>Trap:</b> cloud xAPI is <b>JSON + Bearer</b> and needs a cloud-registered device; on-device <code>/putxml</code> is <b>XML + Basic</b> on the LAN. Missing <code>spark:xapi_*</code> scope → <code>403</code>.</div>
+      <div class="note"><b>Same command tree everywhere:</b> <code>xCommand Audio Volume Set</code> = <code>/xapi/command/Audio.Volume.Set</code> = <code>xapi.Command.Audio.Volume.Set()</code> in a macro.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>local device management (SSH, HTTP xAPI)</span>
+    <span><i class="sw control"></i>device registration to the cloud</span>
+    <span><i class="sw data"></i>user traffic (messages, meetings)</span>
+    <span style="margin-left:auto">Blue glow = the boxes your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "code", b: "rest", k: "api", s: "l-t", ao: -12, label: "HTTPS JSON · <code>Authorization: Bearer</code>", t: 0.3 },
+  { a: "code", b: "cx", k: "api", s: "l-t", ao: 12, label: "Bearer + <code>spark:xapi_*</code> scopes", t: 0.62 },
+  { a: "cx", b: "dev", k: "control", s: "b-t", bo: -27, dir: "both", label: "cloud-registered device", t: 0.4 },
+  { a: "code", b: "dev", k: "mgmt", s: "b-t", bo: 40, mid: 0.85, label: "LAN, no cloud: <code>ssh admin@&lt;device&gt;</code><br>or <code>/putxml</code> <code>/getxml</code> (Basic, XML)", t: 0.4 },
+  { a: "macro", b: "dev", k: "mgmt", s: "l-r", label: "<code>xapi</code> object" },
+  { a: "rest", b: "app", k: "data", s: "b-t", label: "messages · meetings", t: 0.5 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

@@ -318,7 +318,7 @@ SE, bad API key    -> 401
 
 ![Where each platform sits](../assets/T23/01-platform-map.png)
 
-*XDR (blue) sits above everything and correlates. Each box below it owns one domain: endpoint, sandbox, network/identity, firewall or cloud edge. FMC manages many FTDs; FDM manages the single FTD it runs on. ISE shares context with FMC over pxGrid.*
+*XDR sits on top and correlates telemetry from every product in the dashed zone; your playbook calls XDR and each product's own API. The grey dashed arrows at the bottom are the enforcing actions: Secure Endpoint isolates the laptop, ISE quarantines it at the switch, FMC deploys policy to many FTDs, and Secure Connect protects remote users. FDM manages only the single FTD it runs on. ISE shares context with FMC over pxGrid (purple).*
 
 ### T23.01 · Secure Firewall Management Center (FMC)
 
@@ -802,7 +802,7 @@ D. `POST /iroh/iroh-enrich/observe/observables`
 
 ## Sources
 
-- Overview image: HTML source `assets/T23/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T23/*.mmd`. Animation: `assets/T23/08-playbook-anim.html`.
+- Overview image: HTML source `assets/T23/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T23/*.mmd`. Architecture diagram: HTML source `assets/T23/01-platform-map.html` (shared kit `assets/_arch/`). Animation: `assets/T23/08-playbook-anim.html`.
 - Secure Firewall Management Center REST API Quick Start Guide 7.7, Connecting with a Client (generatetoken, refreshtoken, `X-auth-access-token`, `Domain_UUID`, 30 min, 3 refreshes): https://www.cisco.com/c/en/us/td/docs/security/firepower/770/API/REST/secure_firewall_management_center_rest_api_quick_start_guide_770/Connecting_With_A_Client.html
 - FMC REST API Quick Start Guide 7.1 PDF (rate limit 120/min, 10 connections, `429`, payload limit): https://www.cisco.com/c/en/us/td/docs/security/firepower/710/api/REST/firepower_management_center_rest_api_quick_start_guide_71.pdf
 - FMC REST API Quick Start 7.2, Objects in the REST API (accesspolicies URLs): https://www.cisco.com/c/en/us/td/docs/security/firepower/720/api/REST/secure_firewall_management_center_rest_api_quick_start_guide_720/Objects_In_The_REST_API.html

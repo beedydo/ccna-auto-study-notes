@@ -6,6 +6,7 @@
 //    s    : "b-t" style sides for a and b (t=top, b=bottom, l=left, r=right). Default: picked from the relative position.
 //    ao/bo: shift the anchor along the edge in px (to separate parallel links). mid: 0..1, where a 3-segment path bends.
 //    t    : 0..1, where along the path the label sits (default 0.5). lx/ly: nudge the label in px.
+//    r    : "straight" = one direct (diagonal) line instead of right angles. Use it for meshes (spine-leaf, full mesh).
 // Icons are simplified line-art in the style of the Cisco network topology icons; no external files, renders offline.
 (function () {
   const B = "#1b6fa8", T = "#4f9bd1", D = "#12507a", W = "#fff";
@@ -107,7 +108,8 @@
       if (!isNode(A) && isNode(Bn)) { if ("tb".includes(sa)) x1 = x2 + (L.ao || 0); else y1 = y2 + (L.ao || 0); }
       const va = "tb".includes(sa), vb = "tb".includes(sb);
       let pts;
-      if (va && vb) pts = Math.abs(x1 - x2) < 3 ? [[x1, y1], [x1, y2]] : [[x1, y1], [x1, y1 + (y2 - y1) * m], [x2, y1 + (y2 - y1) * m], [x2, y2]];
+      if (L.r === "straight") pts = [[x1, y1], [x2, y2]];
+      else if (va && vb) pts = Math.abs(x1 - x2) < 3 ? [[x1, y1], [x1, y2]] : [[x1, y1], [x1, y1 + (y2 - y1) * m], [x2, y1 + (y2 - y1) * m], [x2, y2]];
       else if (!va && !vb) pts = Math.abs(y1 - y2) < 3 ? [[x1, y1], [x2, y1]] : [[x1, y1], [x1 + (x2 - x1) * m, y1], [x1 + (x2 - x1) * m, y2], [x2, y2]];
       else if (va) pts = [[x1, y1], [x1, y2], [x2, y2]];
       else pts = [[x1, y1], [x2, y1], [x2, y2]];

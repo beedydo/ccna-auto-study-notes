@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T18 architecture: Meraki platform map</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client > .zb { justify-content: space-between; padding: 18px 60px; }
+  .site .zb { justify-content: space-between; padding: 22px 26px 20px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .inet { flex: 0 0 210px !important; align-self: flex-start; }
+  .inet > .zb { padding-top: 22px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T18 · <span class="pill">Meraki</span> platform map</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9</b><br>Cloud-managed: the cloud is the controller<br>Names as in <code>labs/T18/mock_meraki.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">You</div>
+      <div class="zb">
+        <div class="node w" id="browser" data-icon="gui"><div class="nm">Admin browser</div><div class="sub"><code>dashboard.meraki.com</code></div></div>
+        <div class="node xw" id="script" data-icon="script"><div class="nm">Python script</div><div class="sub">Dashboard API + API key<br><code>Authorization: Bearer &lt;key&gt;</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="zone cloud">
+      <div class="zh" style="text-align:center">Meraki cloud = the controller <small>nothing to install on-prem · same cloud objects behind the GUI and the API</small></div>
+      <div class="zb" style="justify-content: space-between; padding: 18px 60px">
+        <div class="node w" id="dash" data-icon="gui"><div class="nm">Dashboard</div><div class="sub">web UI · config + monitoring</div></div>
+        <div class="node xw" id="core" data-icon="cloud"><div class="nm">Meraki cloud</div><div class="sub">config store · monitoring · firmware<br>orgs → networks → devices</div></div>
+        <div class="node xw hl" id="api" data-icon="controller"><div class="nm">Dashboard API</div><div class="sub">REST · JSON</div><span class="tag">https://api.meraki.com/api/v1</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone site" id="site">
+        <div class="zh">One Meraki network · SG-HQ <small>org "DevNet Sandbox" (549236) · <code style="color:#1d1d1f">L_646829496481105433</code></small></div>
+        <div class="zb">
+          <div class="node n" id="users" data-icon="laptop"><div class="nm">Users / clients</div><div class="sub">SSID Corp-WiFi</div></div>
+          <div class="node" id="mr" data-icon="ap"><div class="nm">HQ-MR36-Lobby</div><div class="sub"><b>MR</b> wireless AP · MR36</div><span class="tag">wireless</span></div>
+          <div class="col">
+            <div class="node" id="ms" data-icon="switch"><div class="nm">HQ-MS120-01</div><div class="sub"><b>MS</b> switch · MS120-8LP</div><span class="tag">switch</span></div>
+            <div class="node" id="mv" data-icon="camera"><div class="nm">HQ-MV12-Door</div><div class="sub"><b>MV</b> camera · MV12WE</div><span class="tag">camera</span></div>
+          </div>
+          <div class="node w" id="mx" data-icon="firewall"><div class="nm">HQ-MX68</div><div class="sub"><b>MX</b> security appliance<br>MX68 · firewall · SD-WAN · VPN</div><span class="tag">appliance</span></div>
+        </div>
+      </div>
+      <div class="zone ext inet">
+        <div class="zh">Internet</div>
+        <div class="zb">
+          <div class="node n" id="inet" data-icon="internet"><div class="nm">ISP uplink</div><div class="sub">user traffic out</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>No on-prem controller.</b> Catalyst Center and SD-WAN Manager are controllers you deploy; with Meraki the cloud is the controller, so every customer uses the same <code>api.meraki.com</code>.</div>
+      <div class="note trap"><b>Trap:</b> only <b>management</b> goes to the cloud (out-of-band). If the cloud is unreachable the site <b>keeps forwarding</b>; you just can't change config.</div>
+      <div class="note"><b>Tags = <code>productTypes</code>.</b> MX → <code>appliance</code>, MS → <code>switch</code>, MR → <code>wireless</code>, MV → <code>camera</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>management tunnel (device dials out)</span>
+    <span><i class="sw data"></i>data plane (user traffic)</span>
+    <span><i class="sw phys"></i>physical / LAN link</span>
+    <span style="margin-left:auto">Blue glow = the one box your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "browser", b: "dash", k: "api", s: "b-t", label: "HTTPS (GUI)", t: 0.5 },
+  { a: "script", b: "api", k: "api", s: "b-t", label: "HTTPS REST <code>GET /organizations</code>", t: 0.5 },
+  { a: "core", b: "site", k: "mgmt", dir: "back", label: "management tunnel only · each device dials out<br>user data never goes to the cloud", t: 0.5 },
+  { a: "users", b: "mr", k: "data", label: "Wi-Fi" },
+  { a: "mr", b: "ms", k: "phys", s: "r-l" },
+  { a: "mv", b: "ms", k: "phys", s: "t-b" },
+  { a: "ms", b: "mx", k: "phys", s: "r-l" },
+  { a: "mx", b: "inet", k: "data", s: "r-l", label: "local breakout" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

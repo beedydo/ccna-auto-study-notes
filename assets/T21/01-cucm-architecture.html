@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T21 architecture: CUCM cluster and its APIs</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .clients > .zb { justify-content: space-between; padding: 18px 30px; }
+  .cluster > .zb { justify-content: space-between; padding: 22px 40px; }
+  .cc > .zb { padding: 22px 10px; }
+  .endpoints { width: 660px; margin-left: 301px; }
+  .endpoints > .zb { justify-content: space-between; padding: 18px 70px 18px 61px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T21 · <span class="pill">CUCM</span> cluster and its APIs</h1>
+    <div class="meta"><b>200-901 blueprint 3.4</b><br>Unified CM (CallManager) · several APIs, one job each<br>Names as in <code>labs/T21/cucm_lab.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client clients">
+      <div class="zh">API clients <small>who calls which API</small></div>
+      <div class="zb">
+        <div class="node w" id="axl" data-icon="script"><div class="nm">Provisioning script</div><div class="sub">bulk onboarding · migrations<br>application user <code>axladmin</code></div><span class="tag">AXL · SOAP/XML</span></div>
+        <div class="node w" id="uds" data-icon="laptop"><div class="nm">Jabber / web app</div><div class="sub">directory search · "my devices"<br>end user's <b>own</b> credentials</div><span class="tag">UDS · REST, XML replies</span></div>
+        <div class="node w" id="ris" data-icon="gui"><div class="nm">Monitoring tool</div><div class="sub">"is the phone registered?"<br>Serviceability API</div><span class="tag">RisPort70 · SOAP</span></div>
+        <div class="node w" id="cti" data-icon="script"><div class="nm">CTI app</div><div class="sub">click-to-call · CRM<br>call recording · IVR</div><span class="tag">JTAPI / TAPI</span></div>
+        <div class="node w" id="agent" data-icon="user"><div class="nm">Agent desktop</div><div class="sub">Ready / Not Ready<br>queues · reason codes</div><span class="tag">Finesse · REST</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ctrl cluster" style="flex: 3.3">
+        <div class="zh">CUCM cluster</div>
+        <div class="zb">
+          <div class="node w hl" id="pub" data-icon="db"><div class="nm">Publisher</div><div class="sub">one per cluster<br><b>writable</b> config database<br>lines · phones · users · dial plan<br>web services on <code>:8443</code></div><span class="tag">send AXL here</span></div>
+          <div class="node w" id="subA" data-icon="server"><div class="nm">Subscriber</div><div class="sub">call processing<br>phones register here<br>UDS answers on any node</div></div>
+          <div class="node w" id="subB" data-icon="server"><div class="nm">Subscriber</div><div class="sub">call processing<br>CTI Manager<br>live calls</div></div>
+        </div>
+      </div>
+      <div class="zone ext cc" style="flex: 1">
+        <div class="zh">Contact centre</div>
+        <div class="zb">
+          <div class="node" id="fin" data-icon="server"><div class="nm">Finesse</div><div class="sub">on UCCX / UCCE<br>agent state · call control</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone site endpoints">
+      <div class="zh">Endpoints</div>
+      <div class="zb">
+        <div class="node w" id="phone" data-icon="phone"><div class="nm">IP phone</div><div class="sub">Cisco 8845 · name = SEP + MAC</div><span class="tag">SEP001122334455 · DN 2001</span></div>
+        <div class="node w" id="jab" data-icon="laptop"><div class="nm">Jabber soft client</div><div class="sub">user <code>jkam</code></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>AXL goes to the Publisher</b>: <code>POST https://&lt;cucm&gt;:8443/axl/</code> (trailing <code>/</code>), app user with <b>Standard AXL API Access</b>.</div>
+      <div class="note trap"><b>Trap:</b> AXL <code>addPhone</code> success ≠ phone online. The row is in the DB; "is it registered?" is <b>RisPort70</b>, not AXL.</div>
+      <div class="note"><b>Config vs live:</b> AXL and UDS read the database. RisPort70 (registration) and CTI (calls) see what is happening now.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>management / config (DB replication)</span>
+    <span><i class="sw control"></i>control plane (SIP / SCCP, CTI signalling)</span>
+    <span><i class="sw data"></i>data plane (RTP voice)</span>
+    <span style="margin-left:auto">Blue glow = where AXL writes</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "axl", b: "pub", k: "api", s: "b-t", label: "SOAP <code>POST /axl/</code>", t: 0.45 },
+  { a: "uds", b: "subA", k: "api", s: "b-t", bo: -30, label: "<code>GET /cucm-uds/…</code>", t: 0.3 },
+  { a: "ris", b: "subA", k: "api", s: "b-t", bo: 30, label: "<code>/realtimeservice2/…</code>", t: 0.3 },
+  { a: "cti", b: "subB", k: "api", s: "b-t", label: "JTAPI / TAPI", t: 0.45 },
+  { a: "agent", b: "fin", k: "api", s: "b-t", label: "Finesse REST", t: 0.45 },
+  { a: "pub", b: "subA", k: "mgmt", s: "r-l", label: "replicates DB" },
+  { a: "fin", b: "subB", k: "control", s: "l-r", dir: "both", label: "CTI" },
+  { a: "subA", b: "phone", k: "control", s: "b-t", dir: "both", label: "SIP / SCCP register", t: 0.6 },
+  { a: "subB", b: "jab", k: "control", s: "b-t", dir: "both", label: "SIP register", t: 0.6 },
+  { a: "phone", b: "jab", k: "data", s: "r-l", label: "RTP voice" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

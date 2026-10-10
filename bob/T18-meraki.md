@@ -230,7 +230,7 @@ if __name__ == "__main__":
 
 ![Meraki platform map](../assets/T18/01-platform-map.png)
 
-*Blue = the API path your script uses. Dotted = the management tunnel each device opens to the cloud. Thick arrows = user traffic, which stays on site.*
+*Blue = the API path your script uses (only the Dashboard API box glows). Grey dashed = the management tunnel each device dials out to the cloud. Thick green = user traffic, which stays on site and leaves through the MX.*
 
 ### T18.02 · APIs
 
@@ -804,7 +804,7 @@ A. A Meraki network needs an on-prem controller VM to push configuration  B. MR 
 
 ## Sources
 
-- Overview image: HTML source `assets/T18/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T18/*.mmd`. Animation: `assets/T18/08-hierarchy-walk-anim.html` → `08-hierarchy-walk.gif`.
+- Overview image: HTML source `assets/T18/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T18/*.mmd`. Architecture diagram: HTML source `assets/T18/01-platform-map.html` (shared kit `assets/_arch/`). Animation: `assets/T18/08-hierarchy-walk-anim.html` → `08-hierarchy-walk.gif`.
 - Meraki Dashboard API v1, authorization (Bearer header, key generation, key scope, 2 keys per admin, `MERAKI_DASHBOARD_API_KEY`): https://developer.cisco.com/meraki/api-v1/authorization/
 - Rate limit (10 req/s per org, burst, 100 req/s per IP, 429 + `Retry-After`): https://developer.cisco.com/meraki/api-v1/rate-limit/
 - Pagination (`perPage`, `startingAfter`, `endingBefore`, RFC 5988 `Link` header, `total_pages`): https://developer.cisco.com/meraki/api-v1/pagination/

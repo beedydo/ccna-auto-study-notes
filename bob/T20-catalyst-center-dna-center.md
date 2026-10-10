@@ -248,7 +248,7 @@ if __name__ == "__main__":
 
 ![Catalyst Center API families by direction](../assets/T20/02-api-families.png)
 
-*North = what your script calls. West and east = Catalyst Center talking to other IT systems. South = Catalyst Center talking to devices. Blue = the API you write code against.*
+*North = what your script calls. West and east = Catalyst Center talking to other IT systems. South = Catalyst Center talking to devices. Blue = REST API calls, arrowhead = who receives the call (east is push, from Catalyst Center to you). Grey dashed = southbound device management.*
 
 | Family | Direction | Who calls whom | Used for |
 |---|---|---|---|
@@ -747,7 +747,7 @@ A. Design  B. Policy  C. Provision  D. Assurance
 
 ## Sources
 
-- Overview image: HTML source `assets/T20/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T20/*.mmd`. Animation: `assets/T20/06-command-runner-anim.html` → `06-command-runner.gif`.
+- Overview image: HTML source `assets/T20/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T20/*.mmd`. Architecture diagram: HTML source `assets/T20/02-api-families.html` (shared kit `assets/_arch/`). Animation: `assets/T20/06-command-runner-anim.html` → `06-command-runner.gif`.
 - Catalyst Center API 3.1.6, Introduction (rename from DNA Center; Intent API northbound, Integration westbound, Events and Notifications eastbound): https://developer.cisco.com/docs/catalyst-center/
 - Catalyst Center API, Authentication (Basic auth → token, `X-Auth-Token`, 60-minute lifetime): https://developer.cisco.com/docs/catalyst-center/authentication
 - Authentication and Authorization guide 2.3.7.x (`/dna/system/api/v1/auth/token` from 1.2.6, older `/api/system/v1/auth/token`, `HTTPBasicAuth` + `["Token"]`): https://developer.cisco.com/docs/dna-center/2-3-7-4/authentication-and-authorization

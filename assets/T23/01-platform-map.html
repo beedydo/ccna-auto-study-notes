@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T23 architecture: where each security platform sits</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .top > .zone > .zb { padding: 16px 14px; }
+  .products > .zb { padding: 16px 16px 18px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 420px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T23 · <span class="pill">Security platforms</span>: where each one sits</h1>
+    <div class="meta"><b>200-901 blueprint 3.5</b><br>Analysers above, enforcers below<br>Names as in <code>labs/T23/incident_response.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row top">
+      <div class="zone client" style="flex: 1">
+        <div class="zh">Automation client</div>
+        <div class="zb">
+          <div class="node w" id="script" data-icon="script"><div class="nm">Your playbook</div><div class="sub"><code>incident_response.py</code><br>one API + auth style per product</div></div>
+        </div>
+      </div>
+      <div class="zone cloud" style="flex: 2">
+        <div class="zh">Correlation layer <small>cloud</small></div>
+        <div class="zb">
+          <div class="node xw" id="xdr" data-icon="cloud"><div class="nm">XDR</div><div class="sub">pulls telemetry from every product below<br>correlates one incident · enriches observables<br><b>orchestrates</b> the response, never blocks itself</div><span class="tag">OAuth client credentials → Bearer</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone dashed products" id="products" style="--zc: #6e7781">
+      <div class="zh" style="background: #6e7781">Products XDR correlates <small>each has its own API; your playbook calls them directly too</small></div>
+      <div class="zb">
+        <div class="row" style="width: 100%">
+          <div class="zone cloud" style="flex: 3">
+            <div class="zh">Cloud services</div>
+            <div class="zb">
+              <div class="node w" id="sc" data-icon="cloud"><div class="nm">Secure Connect</div><div class="sub">SASE: Umbrella + Meraki<br>remote access · DNS / web security</div><span class="tag">key + secret → OAuth</span></div>
+              <div class="node w" id="sma" data-icon="server"><div class="nm">Secure Malware Analytics</div><div class="sub">(Threat Grid) · sandbox<br>detonates file / URL<br>threat score 0-100</div><span class="tag"><code>api_key</code> parameter</span></div>
+              <div class="node w" id="se" data-icon="cloud"><div class="nm">Secure Endpoint</div><div class="sub">(AMP for Endpoints) · EDR<br>cloud console + host connector</div><span class="tag">Basic: client ID + API key</span></div>
+            </div>
+          </div>
+          <div class="zone ctrl" style="flex: 2">
+            <div class="zh">On-prem managers</div>
+            <div class="zb">
+              <div class="node w" id="ise" data-icon="server"><div class="nm">ISE</div><div class="sub">who / what is on the network<br>AAA · NAC · posture · guest</div><span class="tag">ERS Basic · <code>:9060</code></span></div>
+              <div class="node w hl" id="fmc" data-icon="controller"><div class="nm">FMC</div><div class="sub">Secure Firewall Management Center<br>(Firepower MC) · many FTDs</div><span class="tag"><code>X-auth-access-token</code></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ext" style="flex: 1">
+        <div class="zh">Remote users</div>
+        <div class="zb" style="padding-left: 66px">
+          <div class="node" id="remote" data-icon="laptop"><div class="nm">Remote laptop</div><div class="sub">no VPN to a branch</div></div>
+        </div>
+      </div>
+      <div class="zone site" style="flex: 1">
+        <div class="zh">Small site · no FMC</div>
+        <div class="zb">
+          <div class="node w" id="fdm" data-icon="firewall"><div class="nm">FTD + FDM</div><div class="sub">on-box manager of <b>one</b> FTD<br><code>/api/fdm/latest/…</code> · Bearer</div></div>
+        </div>
+      </div>
+      <div class="zone site" style="flex: 3.2">
+        <div class="zh">Branch</div>
+        <div class="zb" style="justify-content: flex-start; gap: 0; padding-left: 0; padding-right: 0">
+          <div class="node" style="margin-left: 33px" id="laptop" data-icon="laptop"><div class="nm">Branch laptop</div><div class="sub">Secure Endpoint connector</div></div>
+          <div class="node" style="margin-left: 160px" id="sw" data-icon="switch"><div class="nm">Access switch</div><div class="sub">802.1X / MAB to ISE</div></div>
+          <div class="node n" style="margin-left: 101px" id="ftd1" data-icon="firewall"><div class="nm">FTD</div><div class="sub">T23-BR1-FTD</div></div>
+          <div class="node n" style="margin-left: 19px" id="ftd2" data-icon="firewall"><div class="nm">FTD</div><div class="sub">another branch</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>FMC vs FDM:</b> FMC manages many FTDs centrally; FDM runs on the one FTD it manages. Never both on the same FTD.</div>
+      <div class="note trap"><b>Trap:</b> the analysers don't enforce. A score of 95 or an XDR incident blocks nothing: Secure Endpoint isolates, ISE quarantines the MAC, FMC/FTD blocks the IP, Secure Connect blocks the domain.</div>
+      <div class="note"><b>Saved ≠ deployed:</b> an FMC rule returns <code>201</code>, but the FTDs change only after <code>POST …/deployment/deploymentrequests</code> (<code>202</code>).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>management / config (telemetry, policy deploy, enforcement action)</span>
+    <span><i class="sw control"></i>context sharing (pxGrid)</span>
+    <span><i class="sw data"></i>user traffic</span>
+    <span><i class="sw phys"></i>LAN link</span>
+    <span style="margin-left:auto">Blue glow = the API the exam asks most about</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "xdr", k: "api", s: "r-l", label: "enrich · respond" },
+  { a: "script", b: "products", k: "api", label: "each product's own API", t: 0.55 },
+  { a: "xdr", b: "products", k: "mgmt", dir: "both", label: "telemetry in · response out", t: 0.55 },
+  { a: "ise", b: "fmc", k: "control", s: "r-l", dir: "both", label: "pxGrid <code>:8910</code>" },
+  { a: "sc", b: "remote", k: "data", s: "b-t", label: "DNS / web security", t: 0.5 },
+  { a: "se", b: "laptop", k: "mgmt", s: "b-t", label: "isolate host", t: 0.5 },
+  { a: "ise", b: "sw", k: "mgmt", s: "b-t", label: "ANC quarantine", t: 0.5 },
+  { a: "fmc", b: "ftd1", k: "mgmt", s: "b-t", ao: -35, label: "deploy policy", t: 0.5 },
+  { a: "fmc", b: "ftd2", k: "mgmt", s: "b-t", ao: 30, mid: 0.7 },
+  { a: "laptop", b: "sw", k: "phys" },
+  { a: "sw", b: "ftd1", k: "phys" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

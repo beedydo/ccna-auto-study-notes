@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T19 architecture: ACI fabric</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client { width: 560px; margin: 0 auto; }
+  .ctrl > .zb { justify-content: center; gap: 70px; }
+  .fab > .zb { flex-direction: column; align-items: stretch; gap: 0; padding: 22px 14px 18px; }
+  .tier { display: flex; justify-content: space-around; }
+  .tier.spines { padding: 0 22%; }
+  .tier-gap { height: 130px; }
+  .eps > .zb { justify-content: space-around; gap: 0; flex-wrap: nowrap; }
+  .fab .tier { gap: 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T19 · <span class="pill">ACI</span> fabric</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9.a</b><br>APIC cluster + Nexus 9000 spine-leaf<br>Names as in <code>labs/T19/aci_tenant_builder.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Automation client</div>
+      <div class="zb">
+        <div class="node w" id="script" data-icon="script"><div class="nm">Your script</div><div class="sub">Python · Ansible · Terraform<br><code>requests.Session()</code></div></div>
+        <div class="node" id="gui" data-icon="gui"><div class="nm">APIC GUI</div><div class="sub">same REST API</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ctrl">
+      <div class="zh">APIC cluster <small>3+ controllers for HA · policy + management only · NOT in the data path</small></div>
+      <div class="zb">
+        <div class="node" id="apic1" data-icon="controller"><div class="nm">APIC 1</div><div class="sub">controller</div><span class="tag">role=controller · node 1</span></div>
+        <div class="node w hl" id="apic2" data-icon="controller"><div class="nm">APIC 2</div><div class="sub">any member answers the API<br><code>https://&lt;apic&gt;/api/…</code></div></div>
+        <div class="node" id="apic3" data-icon="controller"><div class="nm">APIC 3</div><div class="sub">controller</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone fabric fab" id="fabric">
+      <div class="zh">Fabric · Nexus 9000 in ACI mode (spine-leaf) <small>every leaf ↔ every spine · no leaf ↔ leaf · no spine ↔ spine</small></div>
+      <div class="zb">
+        <div class="tier spines">
+          <div class="node" id="s201" data-icon="l3switch"><div class="nm">Spine 201</div><span class="tag">role=spine</span></div>
+          <div class="node" id="s202" data-icon="l3switch"><div class="nm">Spine 202</div><span class="tag">role=spine</span></div>
+        </div>
+        <div class="tier-gap"></div>
+        <div class="tier">
+          <div class="node" id="l101" data-icon="switch"><div class="nm">Leaf 101</div><span class="tag">role=leaf</span></div>
+          <div class="node" id="l102" data-icon="switch"><div class="nm">Leaf 102</div><span class="tag">role=leaf</span></div>
+          <div class="node" id="l103" data-icon="switch"><div class="nm">Leaf 103</div><span class="tag">role=leaf</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="zone site eps">
+      <div class="zh">Endpoints <small>leaves only</small></div>
+      <div class="zb">
+        <div class="node" id="srv" data-icon="server"><div class="nm">Bare-metal server</div><div class="sub">endpoint</div></div>
+        <div class="node" id="vm" data-icon="server"><div class="nm">Hypervisor + VMs</div><div class="sub">endpoints</div></div>
+        <div class="node" id="fw" data-icon="firewall"><div class="nm">Firewall</div><div class="sub">service device</div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>One API for everything.</b> GUI, CLI and your scripts all use the APIC REST API. You never configure a switch one by one.</div>
+      <div class="note trap"><b>Trap:</b> endpoints <b>and the APICs</b> cable into <b>leaves</b>. APIC pushes policy but is <b>never in the data path</b>: traffic goes leaf → spine → leaf.</div>
+      <div class="note"><b>Predictable hops.</b> Any leaf is at most leaf → spine → leaf from any other. Scale out by adding spines (bandwidth) or leaves (ports).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>policy push (management)</span>
+    <span><i class="sw phys"></i>physical link (fabric uplinks, access ports)</span>
+    <span style="margin-left:auto">Blue glow = the box your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "apic2", k: "api", s: "b-t", bo: -30, mid: 0.4, label: "HTTPS REST <code>/api/…</code>", t: 0.3 },
+  { a: "gui", b: "apic2", k: "api", s: "b-t", bo: 30, mid: 0.6 },
+  { a: "apic2", b: "fabric", k: "mgmt", label: "pushes policy to every switch", t: 0.55 },
+  // spine 201 bus (upper level), spine 202 bus (lower level)
+  { a: "s201", b: "l101", k: "phys", s: "b-t", ao: -10, bo: -10, mid: 0.35 },
+  { a: "s201", b: "l102", k: "phys", s: "b-t", ao: 10, bo: -10, mid: 0.35 },
+  { a: "s201", b: "l103", k: "phys", s: "b-t", ao: 10, bo: -10, mid: 0.35 },
+  { a: "s202", b: "l101", k: "phys", s: "b-t", ao: -10, bo: 10, mid: 0.65 },
+  { a: "s202", b: "l102", k: "phys", s: "b-t", ao: -10, bo: 10, mid: 0.65 },
+  { a: "s202", b: "l103", k: "phys", s: "b-t", ao: 10, bo: 10, mid: 0.65 },
+  { a: "l101", b: "srv", k: "phys" },
+  { a: "l102", b: "vm", k: "phys" },
+  { a: "l103", b: "fw", k: "phys" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

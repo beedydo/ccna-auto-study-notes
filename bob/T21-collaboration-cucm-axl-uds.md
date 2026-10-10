@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
 ![CUCM cluster and its APIs](../assets/T21/01-cucm-architecture.png)
 
-*Blue = AXL (writes config to the Publisher), green = UDS (one user's data), grey = the other UC APIs. Notice that only RisPort70 and CTI talk about live phones and calls.*
+*Top row = who calls which API (blue arrows). AXL lands on the Publisher (glowing, the writable DB); UDS, RisPort70 and CTI land on Subscribers; Finesse sits on UCCX/UCCE. Notice that only RisPort70 and CTI deal with live phones and calls: the purple SIP/SCCP registrations and the green RTP voice at the bottom.*
 
 ### T21.02 · AXL
 
@@ -732,7 +732,7 @@ A. CUCM crashed; retry later  B. The phone name already exists  C. The SOAPActio
 
 ## Sources
 
-- Overview image: HTML source `assets/T21/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T21/*.mmd`. Animation: `assets/T21/06-onboard-anim.html` → `06-onboard.gif`.
+- Overview image: HTML source `assets/T21/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T21/*.mmd`. Architecture diagram: HTML source `assets/T21/01-cucm-architecture.html` (shared kit `assets/_arch/`). Animation: `assets/T21/06-onboard-anim.html` → `06-onboard.gif`.
 - AXL overview (SOAP/XML, WSDL, CRUD on the config DB, object list): https://developer.cisco.com/docs/axl/
 - AXL Developer Guide (POST to Publisher, `https://{cucm}:8443/axl/` with required trailing `/`, `text/xml`, `SOAPAction: "CUCM:DB ver=14.0 …"` + matching namespace, `…Response` naming, operation verbs, throttling, 503 on write queue, 8 MB read limit, `executeSQLQuery` not version-stable, faults as HTTP 500, AXL read-only role since 11.5): https://developer.cisco.com/docs/axl/axl-developer-guide/
 - Download the AXL WSDL (AXL SQL Toolkit, Application → Plugins): https://developer.cisco.com/docs/axl/download-the-axl-wsdl

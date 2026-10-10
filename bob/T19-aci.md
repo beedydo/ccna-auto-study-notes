@@ -332,7 +332,7 @@ POST /api/aaaLogout.json -> 200
 
 ![Logical model: tenant, VRF, BD, app profile, EPGs and the contract between them](../assets/T19/03-logical.png)
 
-*Solid black = containment. Dotted = relation objects (`fvRsBd`). The thick arrows through the blue contract are the only permitted EPG-to-EPG traffic. "EPG Other" has no contract, so it's dropped.*
+*Left = network chain (VRF → BD → subnet), right = app chain (app profile → EPGs); each EPG's tag shows its `fvRsBd` relation to Web_BD. The green arrows through the glowing contract are the only permitted EPG-to-EPG traffic. "EPG Other" has no contract, so it's dropped (red).*
 
 - **Relation objects** (`fvRs…`, `vzRs…`) link MOs by name. They're children too: `fvRsBd` with `tnFvBDName: "Web_BD"` is how an EPG says "my BD is Web_BD". The last query in section 4 shows the Frontend EPG's relations resolved to real DNs (`tDn=uni/tn-T19-Prod/BD-Web_BD`, `state=formed`).
 
@@ -839,7 +839,7 @@ VRF → L3 routing table · bridge domain → L2 flood domain · subnet on the B
 
 ## Sources
 
-- Overview image: HTML source `assets/T19/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T19/*.mmd`.
+- Overview image: HTML source `assets/T19/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T19/*.mmd`. Architecture diagrams: HTML sources `assets/T19/01-fabric.html` and `assets/T19/03-logical.html` (shared kit `assets/_arch/`).
 - Cisco APIC REST API Configuration Guide, 4.2(x) and later: Using the REST API (aaaLogin / aaaRefresh / aaaLogout, `APIC-cookie`, URL format, `query-target`, `target-subtree-class`, `query-target-filter`, `rsp-subtree`, Visore): https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide-42x-and-later/m_using_the_rest_api.html
 - Cisco APIC REST API Configuration Guide (PDF, filter examples): https://www.cisco.com/c/en/us/td/docs/dcn/aci/apic/all/apic-rest-api-configuration-guide/cisco-apic-rest-api-configuration-guide.pdf
 - Cisco ACI Policy Model Guide (MIT, MOs, tenant contents, contracts/subjects/filters, API Inspector, Visore): https://www.cisco.com/c/en/us/td/docs/switches/datacenter/aci/apic/sw/policy-model-guide/b-Cisco-ACI-Policy-Model-Guide.html

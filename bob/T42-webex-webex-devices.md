@@ -260,7 +260,7 @@ if __name__ == "__main__":
 
 ![Webex platform map](../assets/T42/01-platform-map.png)
 
-*Your code reaches messaging and devices through one cloud base URL with a Bearer token. The dotted path is local to the device on the LAN, with no cloud involved.*
+*Your code reaches messaging and devices through one cloud base URL with a Bearer token (blue). The grey dashed path goes straight to the device on the LAN, with no cloud involved; the purple link is the device's own cloud registration, which the cloud xAPI needs.*
 
 | Resource | Is | Lab call |
 |---|---|---|
@@ -912,7 +912,7 @@ A. A bot sees every message in every group space it belongs to  B. A bot has its
 
 ## Sources
 
-- Overview image: HTML source `assets/T42/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T42/*.mmd`. Animation: `assets/T42/08-bot-webhook-anim.html` → `08-bot-webhook.gif`.
+- Overview image: HTML source `assets/T42/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T42/*.mmd`. Architecture diagram: HTML source `assets/T42/01-platform-map.html` (shared kit `assets/_arch/`). Animation: `assets/T42/08-bot-webhook-anim.html` → `08-bot-webhook.gif`.
 - Webex, Getting started / access the API (Bearer header; personal token expires 12 h after portal sign-in; token types): https://developer.webex.com/docs/getting-started
 - Webex, Bots (group spaces: only mentioned messages, `mentionedPeople=me`, token shown once, regenerate, webhooks): https://developer.webex.com/docs/bots
 - Webex, Integrations (OAuth 2.0 client, Service Apps for unattended automation): https://developer.webex.com/docs/integrations
