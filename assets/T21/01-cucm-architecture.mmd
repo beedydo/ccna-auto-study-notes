@@ -1,0 +1,28 @@
+flowchart TB
+  subgraph APIS["CUCM APIs (who calls them)"]
+    direction LR
+    AXL["AXL · SOAP · POST /axl/<br/>provisioning script, bulk onboarding<br/>app user + AXL role"]
+    UDS["UDS · REST · GET /cucm-uds/...<br/>Jabber / web widget for one user<br/>end-user credentials"]
+    RIS["RisPort70 (Serviceability) · SOAP<br/>monitoring tool: who is registered"]
+    CTI["CTI: JTAPI / TAPI<br/>click-to-call, CRM, call recording"]
+    FIN["Finesse · REST<br/>contact-centre agent desktop"]
+  end
+  subgraph CLUSTER["CUCM cluster"]
+    direction LR
+    PUB[("Publisher<br/>config database")]
+    SUB["Subscribers<br/>call processing"]
+    PUB -- "replicates" --> SUB
+  end
+  PH["IP phones /<br/>soft clients"]
+  AXL -- "read / write config" --> PUB
+  UDS -- "user data, own settings" --> PUB
+  RIS -- "live registration" --> SUB
+  CTI -- "make / answer / monitor calls" --> SUB
+  FIN -. "via UCCX / UCCE" .-> SUB
+  SUB -- "SIP / SCCP register" --- PH
+  classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px;
+  classDef usr fill:#e3f6ee,stroke:#28a745,stroke-width:2px;
+  classDef other fill:#f3f4f6,stroke:#6b7280;
+  class AXL rec
+  class UDS usr
+  class RIS,CTI,FIN other
