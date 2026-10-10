@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph WF["Waterfall: value arrives once, at the end"]
+        direction LR
+        W1["Requirements"] --> W2["Design"] --> W3["Build"] --> W4["Test"] --> W5["Release v1.0<br/>first working software<br/>first customer feedback"]
+    end
+    subgraph AG["Agile: a working increment every sprint"]
+        direction LR
+        S1["Sprint 1<br/>plan, build, test<br/>increment 1"] -- "feedback" --> S2["Sprint 2<br/>increment 2"] -- "feedback" --> S3["Sprint 3<br/>increment 3"] -- "feedback" --> S4["Sprint 4<br/>increment 4"]
+    end
+    WF ~~~ AG
+    style WF fill:#f8f9fa,stroke:#6c757d
+    style AG fill:#f8f9fa,stroke:#6c757d
+    style W5 fill:#fff3cd,stroke:#e0a800
+    style S1 fill:#d4edda,stroke:#28a745
+    style S2 fill:#d4edda,stroke:#28a745
+    style S3 fill:#d4edda,stroke:#28a745
+    style S4 fill:#d4edda,stroke:#28a745

@@ -1,0 +1,21 @@
+flowchart LR
+    V["1 Define value<br/>from the customer's view"] --> S["2 Map the value stream<br/>every step, idea to prod"]
+    S --> F["3 Create flow<br/>remove waste"]
+    F --> P["4 Pull<br/>limit WIP, small batches"]
+    P --> I["5 Improve continuously"]
+    I --> V
+    S --> WASTE
+    subgraph WASTE["7 wastes of software (Poppendieck)"]
+        direction TB
+        W1["Partially done work"]
+        W2["Extra features"]
+        W3["Relearning"]
+        W4["Hand-offs"]
+        W5["Task switching"]
+        W6["Delays / waiting"]
+        W7["Defects"]
+    end
+    style WASTE fill:#f8d7da,stroke:#dc3545
+    style V fill:#d1ecf1,stroke:#17a2b8
+    style F fill:#d4edda,stroke:#28a745
+    style P fill:#d4edda,stroke:#28a745
