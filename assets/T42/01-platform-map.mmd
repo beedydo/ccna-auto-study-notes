@@ -1,0 +1,24 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart LR
+  subgraph YOU["Your code (laptop / server)"]
+    S["Python requests<br/>webexpythonsdk<br/>curl"]
+  end
+  subgraph CLOUD["Webex cloud: https://webexapis.com/v1"]
+    R["Messaging + meetings<br/>/people  /rooms  /messages<br/>/memberships  /teams<br/>/webhooks  /meetings"]
+    X["Devices<br/>/devices  /xapi/status<br/>/xapi/command/{name}"]
+  end
+  subgraph DEV["RoomOS device (Room Kit, Desk, Board)"]
+    API["xAPI<br/>xCommand  xConfiguration<br/>xStatus  xEvent"]
+    M["Macros<br/>JavaScript running<br/>on the device"]
+  end
+  S -- "HTTPS, JSON<br/>Authorization: Bearer token" --> R
+  S -- "Bearer token with<br/>spark:xapi_* scopes" --> X
+  X -- "cloud-registered device" --> API
+  S -. "LAN, no cloud: SSH xCommand ...<br/>or HTTPS /putxml /getxml (Basic, XML)" .-> API
+  M -- "xapi object" --> API
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,color:#000
+  classDef green fill:#d4edda,stroke:#28a745,color:#000
+  classDef yellow fill:#fff3cd,stroke:#e0a800,color:#000
+  class R,X blue
+  class API green
+  class M yellow

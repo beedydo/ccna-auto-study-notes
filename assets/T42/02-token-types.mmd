@@ -1,0 +1,17 @@
+flowchart TD
+  Q{"Who is the API<br/>acting as?"}
+  Q -- "me, just testing<br/>in the dev portal" --> P["Personal access token<br/>expires 12 h after portal sign-in<br/>never in production"]
+  Q -- "an app identity that posts<br/>and answers in spaces" --> B["Bot token<br/>long-lived, shown once<br/>regenerate in My Webex Apps"]
+  Q -- "any Webex user who<br/>signs in and consents" --> I["Integration = OAuth 2.0<br/>access token ~14 days<br/>refresh token ~90 days"]
+  Q -- "unauthenticated guests<br/>(widgets / SDK apps)" --> G["Guest issuer<br/>awareness only<br/>(legacy, see Service Apps)"]
+  P --> H["Every call: Authorization: Bearer &lt;token&gt;"]
+  B --> H
+  I --> H
+  classDef red fill:#fde8e8,stroke:#dc3545,color:#000
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,color:#000
+  classDef green fill:#d4edda,stroke:#28a745,color:#000
+  classDef yellow fill:#fff3cd,stroke:#e0a800,color:#000
+  class P red
+  class B,I blue
+  class G yellow
+  class H green

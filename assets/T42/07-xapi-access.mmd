@@ -1,0 +1,18 @@
+%%{init: {"flowchart": {"wrappingWidth": 700}}}%%
+flowchart TB
+  G["Goal: set the room volume to 30"]
+  G --> SSH["<b>SSH</b> admin@device<br/>xCommand Audio Volume Set Level: 30<br/>*r AudioVolumeSetResult (status=OK)"]
+  G --> HTTP["<b>HTTP on the device</b><br/>POST https://device/putxml<br/>Basic auth · Content-Type: text/xml<br/>&lt;Command&gt;&lt;Audio&gt;&lt;Volume&gt;&lt;Set&gt;<br/>&lt;Level&gt;30&lt;/Level&gt; ..."]
+  G --> CL["<b>Cloud xAPI</b><br/>POST https://webexapis.com/v1<br/>/xapi/command/Audio.Volume.Set<br/>Bearer · JSON<br/>{deviceId, arguments: {Level: 30}}"]
+  G --> MAC["<b>Macro</b> (JavaScript on the device)<br/>xapi.Command.Audio.Volume<br/>.Set({ Level: 30 })"]
+  R["<b>Read it back (xStatus)</b><br/>SSH: xStatus Audio Volume  ·  HTTP: GET /getxml?location=/Status/Audio/Volume<br/>Cloud: GET /v1/xapi/status?deviceId=...&name=Audio.Volume  ·  Macro: xapi.Status.Audio.Volume.get()"]
+  SSH --> R
+  HTTP --> R
+  CL --> R
+  MAC --> R
+  classDef green fill:#d4edda,stroke:#28a745,color:#000
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,color:#000
+  classDef yellow fill:#fff3cd,stroke:#e0a800,color:#000
+  class SSH,HTTP yellow
+  class CL blue
+  class MAC green

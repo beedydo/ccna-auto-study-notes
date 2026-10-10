@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T42 bot webhook animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --u:#fff3cd; --u-b:#e0a800; --c:#d1ecf1; --c-b:#17a2b8; --b:#d4edda; --b-b:#28a745;
+          --r:#fde8e8; --r-b:#dc3545; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:22px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:270px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.u { border-color:var(--u-b); } .lane.c { border-color:var(--c-b); } .lane.b { border-color:var(--b-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .card { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.4; }
+  .u .card { background:var(--u); border-color:var(--u-b); } .c .card { background:var(--c); border-color:var(--c-b); }
+  .b .card { background:var(--b); border-color:var(--b-b); }
+  .card.bad { background:var(--r) !important; border-color:var(--r-b) !important; }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { height:58px; position:relative; margin-top:8px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd.fwd::after { content:" ➜"; color:#7ee2b8; }
+  .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T42 · <span class="pill">Bot + webhook</span> one @mention, start to finish</h1>
+  <div class="sub">Webex pushes an event to the bot. The bot never polls, and the push never carries the message text.</div>
+  <div class="lanes">
+    <div class="lane u" id="u"><h3>👤 Bob</h3><div class="where">Webex app, space "T42-NOC-Alerts"</div><div id="u-f"></div></div>
+    <div class="lane c" id="c"><h3>☁️ Webex cloud</h3><div class="where">webexapis.com/v1</div><div id="c-f"></div></div>
+    <div class="lane b" id="b"><h3>🤖 Bot server</h3><div class="where">webex_bot.py at targetUrl</div><div id="b-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const K = (t, s, cls="") => `<div class="card ${cls}">${t}<small>${s}</small></div>`;
+const HOOK = K('webhook "T42-noc-bot"<br>messages / created<br>filter roomId=Y2lz...', 'status: active');
+const frames = [
+  { active:"b", u:"", c:HOOK, b:K('secret = "T42-shared-secret"', 'kept on the bot server'),
+    cmd:{left:395, t:"POST /webhooks", cls:"back"},
+    txt:"The bot registers a webhook: <code>resource: messages</code>, <code>event: created</code>, a <code>targetUrl</code> and a <code>secret</code>." },
+  { active:"u", u:K("@NOC Alerts status", "Bob types in the space"), c:HOOK + K("message Y2lz...<br>text: NOC Alerts status", "stored, encrypted"), b:"",
+    cmd:{left:300, t:"Bob @mentions the bot", cls:"fwd"},
+    txt:"Bob @mentions the bot. In a group space a bot only gets messages that <b>mention</b> it." },
+  { active:"b", u:K("@NOC Alerts status", "sent"), c:HOOK,
+    b:K('{"resource": "messages",<br> "event": "created",<br> "data": {"id": "Y2lz...",<br>  "roomId": "Y2lz...",<br>  "personEmail": "bob@..."}}', "no text field!", "bad"),
+    cmd:{left:620, t:"POST https://bot.example.com/webex", cls:"fwd"},
+    txt:"Webex <b>pushes</b> an HTTP POST to <code>targetUrl</code>. The body has <b>IDs only, no message text</b>." },
+  { active:"b", u:K("@NOC Alerts status", "sent"), c:HOOK,
+    b:K("X-Spark-Signature: 8f3c...<br>HMAC-SHA1(secret, body)", "match → trust it") + K('data.id = "Y2lz..."', "next: fetch the text"),
+    cmd:null,
+    txt:"The bot checks <code>X-Spark-Signature</code> = HMAC-SHA1 of the raw body with the shared secret. Mismatch → ignore." },
+  { active:"c", u:K("@NOC Alerts status", "sent"), c:HOOK + K("message Y2lz...<br>text: NOC Alerts status", "returned to the bot"),
+    b:K('{"text": "NOC Alerts status",<br> "personEmail": "bob@..."}', "200 OK"),
+    cmd:{left:395, t:"GET /messages/{data.id}", cls:"back"},
+    txt:"The bot calls <code>GET /messages/{id}</code> with its <b>bot token</b>. Only now does it see the text." },
+  { active:"u", u:K("@NOC Alerts status", "sent") + K("↳ <b>3 alerts open</b>, 0 critical", "threaded reply from NOC Alerts"),
+    c:HOOK, b:K('POST /messages<br>{"roomId", "parentId",<br> "markdown"}', "200 OK"),
+    cmd:{left:300, t:"POST /messages parentId", cls:"back"},
+    txt:"The bot replies with <code>POST /messages</code> and <code>parentId</code>, so the answer is a thread under Bob's message." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["u","c","b"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd " + f.cmd.cls;
+    d.textContent = f.cmd.t; d.style.left = f.cmd.left + "px"; a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

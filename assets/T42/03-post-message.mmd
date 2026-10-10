@@ -1,0 +1,16 @@
+sequenceDiagram
+  autonumber
+  participant S as webex_bot.py
+  participant W as webexapis.com/v1
+  S->>W: GET /rooms?type=group&max=2
+  W-->>S: 200 {"items": [...]} + Link header rel="next"
+  S->>W: GET (the rel="next" URL)
+  W-->>S: 200 {"items": [...]} (no Link = last page)
+  S->>W: POST /rooms {"title": "T42-NOC-Alerts"}
+  W-->>S: 200 {"id": "Y2lz...", "type": "group"}
+  S->>W: POST /memberships {"roomId", "personEmail"}
+  W-->>S: 200 membership (again: 409 already in room)
+  S->>W: POST /messages {"roomId", "markdown"}
+  W-->>S: 200 message JSON (id, roomType, text)
+  S->>W: POST /messages {"toPersonEmail", "text"}
+  W-->>S: 200 roomType "direct" (1:1 space made for you)
