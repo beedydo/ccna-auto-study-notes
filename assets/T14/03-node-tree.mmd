@@ -1,0 +1,22 @@
+flowchart TD
+    M["module: ietf-interfaces<br/>prefix if"] --> C["<b>container</b> interfaces<br/>groups, no value"]
+    C --> L["<b>list</b> interface* [name]<br/>many entries, one key"]
+    L --> K["<b>leaf</b> name<br/>string · KEY"]
+    L --> D["<b>leaf</b> description?<br/>string · rw"]
+    L --> EN["<b>leaf</b> enabled?<br/>boolean · rw"]
+    L --> OS["<b>leaf</b> oper-status<br/>enumeration · ro"]
+    L --> HL["<b>leaf-list</b> higher-layer-if*<br/>interface-ref · ro"]
+    L --> ST["<b>container</b> statistics · ro"]
+    ST --> IO["<b>leaf</b> in-octets?<br/>counter64 · ro"]
+    L --> IP["<b>container</b> ipv4!<br/>augmented in by ietf-ip"]
+    IP --> AL["<b>list</b> address* [ip]"]
+    AL --> AK["<b>leaf</b> ip · KEY"]
+    AL --> NM["<b>leaf</b> netmask?"]
+    classDef key fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    classDef rw fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef ro fill:#fef9c3,stroke:#a16207,color:#111
+    classDef aug fill:#f3e8ff,stroke:#7e22ce,stroke-dasharray:5 3,color:#111
+    class K,AK key
+    class C,L,D,EN,AL,NM rw
+    class OS,HL,ST,IO ro
+    class IP aug

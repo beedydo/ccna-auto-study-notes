@@ -1,0 +1,12 @@
+flowchart TB
+    L["<b>+--rw interface* [name]</b>"] --> P1["<b>+</b><br/>current<br/>(x deprecated, o obsolete)"]
+    L --> P2["<b>rw</b><br/>config data<br/>(ro = state)"]
+    L --> P3["<b>interface</b><br/>node name"]
+    L --> P4["<b>*</b><br/>list or leaf-list<br/>(? optional, ! presence)"]
+    L --> P5["<b>[name]</b><br/>list key<br/>→ interface=GigabitEthernet1"]
+    classDef line fill:#111827,stroke:#111827,color:#fff
+    classDef part fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef key fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    class L line
+    class P1,P2,P3,P4 part
+    class P5 key
