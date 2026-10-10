@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T35 overview: Layer 2, MAC, VLANs</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+
+
+  /* T35 extras */
+  .macbar { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 3px; font-family: Menlo, Consolas, monospace; font-size: 13px; text-align: center; margin-bottom: 8px; }
+  .macbar div { border: 2px solid; border-radius: 6px; padding: 4px 0; }
+  .macbar .o { background: #fff3cd; border-color: #e0a800; } .macbar .s { background: #d4edda; border-color: #28a745; }
+  .macbar .lab { border: none; font-family: -apple-system, Arial, sans-serif; font-size: 11.5px; color: var(--muted); padding: 0; }
+  .acts { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; margin-bottom: 8px; }
+  .act { border: 2px solid; border-radius: 8px; padding: 5px 6px; font-size: 12.3px; line-height: 1.35; }
+  .act h4 { margin: 0 0 2px; font-size: 13px; }
+  .a-l { background: #d1ecf1; border-color: #17a2b8; } .a-f { background: #fff6dc; border-color: #e0a800; }
+  .a-w { background: #e3f6ee; border-color: #28a745; } .a-x { background: #fde8e8; border-color: #dc3545; }
+  .tag { display: grid; grid-template-columns: 1.1fr 1.1fr 1.6fr 1fr 1.1fr 0.8fr; gap: 3px; font-size: 11.5px; text-align: center; margin-bottom: 8px; }
+  .tag div { border: 2px solid var(--line); border-radius: 5px; padding: 3px 2px; background: #fff; }
+  .tag .q { background: #d1ecf1; border-color: #17a2b8; font-weight: 700; }
+  .span2 { grid-column: span 2; }
+  .cmp { width: 100%; border: 2px solid var(--line); margin-bottom: 8px; }
+  .cmp td { border: 1px solid #999; padding: 4px 7px; font-size: 12.5px; }
+  .cmp tr:first-child td { font-weight: 800; background: #f0f0f0; }
+  .cmp code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 1px 5px; border-radius: 4px; line-height: 1.9; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T35 · <span class="pill">Layer 2: MAC &amp; VLANs</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.1</b><br>Every T35 concept on one page<br>Code from <code>labs/T35/l2_switch.py</code></div>
+  </header>
+
+  <table>
+    <!-- MAC -->
+    <tr>
+      <td class="label"><span class="icon">🏷️</span><div class="name">MAC<br>ADDRESS</div><div class="ids">T35.01</div></td>
+      <td class="what"><span class="sig">48 bits = 12 hex = OUI + NIC</span><br>
+        Burned-in L2 address of a NIC. First <b>24 bits = OUI</b> (vendor, from IEEE). Lowest bit of octet 1 = <b>I/G</b>: 0 unicast, 1 group.</td>
+      <td class="items">
+        <div class="macbar">
+          <div class="o">00</div><div class="o">00</div><div class="o">0C</div><div class="s">AA</div><div class="s">00</div><div class="s">0A</div>
+          <div class="lab span2" style="grid-column: span 3">OUI 00:00:0C (Cisco) · 24 bits</div><div class="lab" style="grid-column: span 3">NIC-specific · 24 bits</div>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>3 notations, same address<span class="c"><code>00:00:0C:AA:00:0A</code> <code>0000.0caa.000a</code></span></div>
+          <div class="item"><span class="n">3</span>multicast (I/G = 1)<span class="c"><code>01:00:5e:00:00:fb</code> <code>33:33:00:00:00:01</code></span></div>
+          <div class="item"><span class="n">2</span>unicast = one NIC<span class="c"><code>02:42:ac:11:00:02</code> = local (U/L = 1)</span></div>
+          <div class="item"><span class="n">4</span>broadcast = all 48 bits 1<span class="c"><code>FF:FF:FF:FF:FF:FF</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> MAC = local segment only; the router <b>rewrites</b> src/dst MAC every hop, the IP stays. OUI = vendor, <b>not</b> location</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- SWITCHING -->
+    <tr>
+      <td class="label"><span class="icon">🔀</span><div class="name">SWITCH<br>LOGIC</div><div class="ids">T35.02</div></td>
+      <td class="what"><span class="sig">Switch.receive()</span><br>
+        Every frame: <b>learn the source</b>, then look up the <b>destination</b> in the MAC table <b>of that VLAN</b>. Table = <code>show mac address-table</code>.</td>
+      <td class="items">
+        <div class="acts">
+          <div class="act a-l"><h4>1 LEARN</h4>src MAC → ingress port</div>
+          <div class="act a-w"><h4>2 FORWARD</h4>known unicast → 1 port</div>
+          <div class="act a-f"><h4>3 FLOOD</h4>bcast, mcast, unknown unicast</div>
+          <div class="act a-x"><h4>4 FILTER</h4>dst on same port → drop</div>
+          <div class="act a-l"><h4>5 AGE</h4>idle &gt; <code>300</code> s → removed</div>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>flood = every port in the VLAN <b>except</b> ingress</div>
+          <div class="item"><span class="n">2</span>change the timer<span class="c"><code>mac address-table aging-time 600</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> the switch learns the <b>source</b>, never the destination. Unknown unicast is <b>flooded, not dropped</b></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- VLANs -->
+    <tr>
+      <td class="label"><span class="icon">🧱</span><div class="name">VLANs</div><div class="ids">T35.03</div></td>
+      <td class="what"><span class="sig">1 VLAN = 1 broadcast domain = 1 subnet</span><br>
+        Splits one switch into separate L2 networks. A broadcast in VLAN 10 never reaches VLAN 20. MAC table is <b>per VLAN</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>usable IDs<span class="c"><code>1-4094</code> (0, 4095 reserved)</span></div>
+        <div class="item"><span class="n">3</span>default / native VLAN<span class="c"><code>VLAN 1</code></span></div>
+        <div class="item"><span class="n">2</span>normal · extended<span class="c"><code>1-1005</code> · <code>1006-4094</code></span></div>
+        <div class="item"><span class="n">4</span>create + check<span class="c"><code>vlan 10</code> · <code>show vlan brief</code></span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> VLANs <b>add</b> broadcast domains (fewer hosts per domain). Same switch ≠ same VLAN ≠ can talk</div>
+      </div></td>
+    </tr>
+
+    <!-- ACCESS / TRUNK -->
+    <tr>
+      <td class="label"><span class="icon">🔗</span><div class="name">ACCESS<br>vs TRUNK</div><div class="ids">T35.03</div></td>
+      <td class="what"><span class="sig">TPID 0x8100 · PCP 3 · DEI 1 · VID 12</span><br>
+        <b>Access</b> = one VLAN, untagged (PCs). <b>Trunk</b> = many VLANs, 4-byte <b>802.1Q</b> tag after src MAC (switch↔switch, switch↔router).</td>
+      <td class="items">
+        <div class="tag"><div>Dst MAC</div><div>Src MAC</div><div class="q">802.1Q tag 4 B</div><div>Type</div><div>Payload</div><div>FCS</div></div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>access port<span class="c"><code>switchport mode access</code></span><span class="c"><code>switchport access vlan 10</code></span></div>
+          <div class="item"><span class="n">2</span>trunk port<span class="c"><code>switchport mode trunk</code></span><span class="c"><code>switchport trunk allowed vlan 10,20</code></span></div>
+          <div class="item"><span class="n">3</span>native VLAN = <b>untagged</b> on trunk<span class="c"><code>switchport trunk native vlan 99</code></span></div>
+          <div class="item"><span class="n">4</span>check<span class="c"><code>show interfaces trunk</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> 12-bit VID → 4096 values, 4094 usable. Native VLAN must <b>match</b> both ends, or untagged traffic lands in the wrong VLAN</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- INTER-VLAN -->
+    <tr>
+      <td class="label"><span class="icon">🌐</span><div class="name">INTER-<br>VLAN</div><div class="ids">T35.03</div></td>
+      <td class="what"><span class="sig">VLAN 10 ↔ VLAN 20 = Layer 3</span><br>
+        Different VLANs = different subnets, so traffic needs a <b>router</b>. The host's default gateway is the SVI or subinterface IP.</td>
+      <td class="items">
+        <table class="cmp">
+          <tr><td>SVI (L3 switch)</td><td>Router-on-a-stick</td></tr>
+          <tr><td><code>ip routing</code><br><code>interface vlan 10</code><br><code>ip address 10.10.10.1 255.255.255.0</code></td>
+              <td><code>interface gigabitEthernet 0/0.10</code><br><code>encapsulation dot1Q 10</code><br><code>ip address 10.10.10.1 255.255.255.0</code></td></tr>
+        </table>
+        <div class="grid">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> ROAS needs the switch port as a <b>trunk</b>; an L2-only switch can never route VLAN 10 → 20</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- EXAM ANGLE -->
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T35.04</div></td>
+      <td class="what"><span class="sig">frame in → what happens?</span><br>
+        Ask: which VLAN? broadcast/unknown/known? same port? Automation angle: parse the MAC table into data.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>empty table, A → B<span class="c">flood VLAN, learn A</span></div>
+        <div class="item"><span class="n">4</span>tag 30, trunk allows 10,20<span class="c">drop</span></div>
+        <div class="item"><span class="n">2</span>B replies to A<span class="c">forward 1 port, learn B</span></div>
+        <div class="item"><span class="n">5</span>parse the table<span class="c"><code>parse_mac_table(text)</code></span></div>
+        <div class="item"><span class="n">3</span>VLAN 20 host → VLAN 10 MAC<span class="c">flood VLAN 20 only</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> hub = 1 collision domain; switch = 1 per port, still 1 broadcast domain per VLAN</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = example from the SW1 simulation</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>python3 labs/T35/l2_switch.py</code> · details in each T35.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+SW1#show mac address-table
+          Mac Address Table
+-------------------------------------------
+
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+ All    0100.0ccc.cccc    STATIC      CPU
+ All    0180.c200.0000    STATIC      CPU
+ All    ffff.ffff.ffff    STATIC      CPU
+  10    0000.0caa.000a    DYNAMIC     Gi1/0/1
+  10    0000.0cbb.000b    DYNAMIC     Gi1/0/2
+  10    0000.0cdd.000d    DYNAMIC     Gi1/0/1
+  20    0242.ac11.0002    DYNAMIC     Gi1/0/3
+  20    0000.0c99.0001    DYNAMIC     Gi1/0/24
+  99    0000.0c99.0001    DYNAMIC     Gi1/0/24
+Total Mac Addresses for this criterion: 9

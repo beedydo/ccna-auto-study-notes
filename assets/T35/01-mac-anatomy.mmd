@@ -1,0 +1,18 @@
+flowchart TB
+  MAC["<b>0000.0caa.000a</b> = 00:00:0C:AA:00:0A<br/>48 bits = 12 hex digits = 6 octets"]
+  MAC --> OUI["<b>OUI: 00:00:0C</b><br/>first 24 bits<br/>vendor, assigned by IEEE RA<br/>(00:00:0C = Cisco)"]
+  MAC --> NIC["<b>NIC-specific: AA:00:0A</b><br/>last 24 bits<br/>assigned by the vendor"]
+  OUI --> O1["<b>First octet 0x00 = 0000 0000</b><br/>bit 0 (LSB) = I/G<br/>bit 1 = U/L"]
+  O1 --> IG0["I/G = 0 → <b>unicast</b> (one NIC)"]
+  O1 --> IG1["I/G = 1 → <b>multicast</b><br/>01:00:5E:… IPv4 · 33:33:… IPv6"]
+  O1 --> BC["all 48 bits = 1 → <b>broadcast</b><br/>FF:FF:FF:FF:FF:FF"]
+  O1 --> UL["U/L = 1 → locally administered<br/>e.g. 02:42:AC:… (Docker)"]
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+  classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+  classDef yellow fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+  classDef red fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+  class MAC blue
+  class OUI,NIC,O1 yellow
+  class IG0 green
+  class IG1,UL yellow
+  class BC red
