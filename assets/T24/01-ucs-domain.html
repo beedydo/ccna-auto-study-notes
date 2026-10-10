@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T24 architecture: one UCS domain</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .side { flex: 0 0 230px !important; }
+  .spacer { flex: 0 0 334px; }
+  .mid { gap: 130px !important; }
+  .client > .zb { flex-direction: column; align-items: center; gap: 14px; padding: 18px 10px; }
+  .fis > .zb { justify-content: space-between; padding: 34px 100px 30px; }
+  .servers > .zb { padding: 14px 16px 16px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+  .vip { width: 220px; align-self: center; text-align: center; font-size: 12.5px; color: var(--muted); line-height: 1.5; padding-top: 22px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T24 · <span class="pill">UCS domain</span> architecture</h1>
+    <div class="meta"><b>200-901 blueprint 3.3</b><br>One FI pair = one domain = one UCS Manager<br>Names as in <code>labs/T24/mock_ucsm.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="spacer"></div>
+      <div class="zone ext" id="upstream">
+        <div class="zh">LAN + SAN upstream <small>the data-centre core the FIs uplink to</small></div>
+        <div class="zb">
+          <div class="node w" id="lan" data-icon="l3switch"><div class="nm">LAN core</div><div class="sub">Ethernet uplinks from both FIs</div></div>
+          <div class="node w" id="san" data-icon="switch"><div class="nm">SAN fabric</div><div class="sub">Fibre Channel uplinks (vHBA traffic)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row mid">
+      <div class="zone client side">
+        <div class="zh">Automation client</div>
+        <div class="zb">
+          <div class="node" id="script" data-icon="script"><div class="nm">Script · ucsmsdk · curl</div><div class="sub"><code>UcsHandle(…).login()</code></div></div>
+          <div class="node" id="gui" data-icon="gui"><div class="nm">UCSM GUI / CLI</div><div class="sub">same XML API underneath</div></div>
+        </div>
+      </div>
+      <div class="zone ctrl fis" id="fipair">
+        <div class="zh">Fabric interconnect pair</div>
+        <div class="zb">
+          <div class="node w hl" id="fia" data-icon="fi"><div class="nm">FI-A · UCS-FI-6454</div><div class="sub">UCSM <b>active</b> on one FI<br>mgmt IP 10.10.20.41</div><span class="tag">sys/switch-A</span></div>
+          <div class="vip"><b style="color:var(--ink); font-size:14px">UCS Manager runs ON the FIs</b><br>domain <b style="color:var(--ink)">UCS-SG-DC1</b> · cluster mode<br>cluster VIP <code>10.10.20.40</code><br>= the address scripts use</div>
+          <div class="node w hl" id="fib" data-icon="fi"><div class="nm">FI-B · UCS-FI-6454</div><div class="sub">UCSM <b>standby</b> on the other<br>mgmt IP 10.10.20.42</div><span class="tag">sys/switch-B</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="spacer"></div>
+      <div class="zone fabric dashed servers" id="servers">
+        <div class="zh">Servers behind the FIs <small>no per-server config of their own · all managed by this one UCSM</small></div>
+        <div class="zb">
+          <div class="row" style="width:100%">
+            <div class="zone fabric" style="flex: 2.2">
+              <div class="zh">Blade chassis UCSB-5108 <small>sys/chassis-1</small></div>
+              <div class="zb">
+                <div class="node" id="b1" data-icon="server"><div class="nm">blade-1</div><div class="sub">UCSB-B200-M5<br>profile ESX-01</div></div>
+                <div class="node" id="b2" data-icon="server"><div class="nm">blade-2</div><div class="sub">UCSB-B200-M5<br>profile ESX-02</div></div>
+                <div class="node" id="b3" data-icon="server"><div class="nm">blade-3</div><div class="sub">UCSB-B200-M6<br>unassociated · off</div></div>
+              </div>
+            </div>
+            <div class="zone fabric" style="flex: 1">
+              <div class="zh">Rack server</div>
+              <div class="zb">
+                <div class="node" id="r1" data-icon="server"><div class="nm">rack-unit-1</div><div class="sub">UCSC-C220-M5SX<br>profile SQL-01</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>One UCSM = one domain.</b> <code>handle.login()</code> → <code>logged in to UCS-SG-DC1</code>: the domain name, not a server. Ten FI pairs = ten UCSMs (until Intersight).</div>
+      <div class="note trap"><b>Trap:</b> UCS Manager runs <b>on the fabric interconnects</b>, not on a separate server or VM. Its whole API is one URL: <code>POST /nuova</code>.</div>
+      <div class="note"><b>Every server's LAN, SAN and management traffic</b> goes through the FIs, so <code>query_classid("computeBlade")</code> sees every blade in the domain.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw data"></i>data uplinks / server links</span>
+    <span><i class="sw phys"></i>FI cluster link</span>
+    <span style="margin-left:auto">Blue glow = where UCS Manager lives (the box your code talks to)</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "fipair", k: "api", s: "r-l", label: "HTTPS POST XML<br><code>/nuova</code> on the VIP", t: 0.5 },
+  { a: "gui", b: "fipair", k: "api", s: "r-l" },
+  { a: "fia", b: "upstream", k: "data", s: "t-b", ao: -14 },
+  { a: "fia", b: "upstream", k: "data", s: "t-b", ao: 14, label: "uplinks", t: 0.68 },
+  { a: "fib", b: "upstream", k: "data", s: "t-b", ao: -14 },
+  { a: "fib", b: "upstream", k: "data", s: "t-b", ao: 14, label: "uplinks", t: 0.68 },
+  { a: "fia", b: "fib", k: "phys", s: "r-l" },
+  { a: "fia", b: "servers", k: "data", s: "b-t", label: "server links", t: 0.75 },
+  { a: "fib", b: "servers", k: "data", s: "b-t", label: "server links", t: 0.75 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

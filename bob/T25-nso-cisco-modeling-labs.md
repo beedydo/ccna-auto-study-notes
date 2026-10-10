@@ -922,6 +922,7 @@ A. The cisco-ios-cli NED  B. SNMP SET to a switch  C. RESTCONF on port 8080  D. 
 ## Sources
 
 - Overview image: HTML source `assets/T25/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T25/*.mmd`. Animation: `assets/T25/08-transaction-anim.html` → `.gif`.
+- Architecture diagram: HTML source `assets/T25/01-nso-architecture.html` (shared kit `assets/_arch/`).
 - NSO at a Glance (architecture, CDB, northbound interfaces, FASTMAP): https://nso-docs.cisco.com/nso-basics/nso-at-a-glance
 - NSO Device Manager (NED types: CLI, NETCONF, SNMP, generic; YANG for non-NETCONF devices): https://nso-docs.cisco.com/guides/nso-6.4/operation-and-usage/operations/nso-device-manager
 - NSO Lifecycle Operations (sync-from, sync-to, check-sync, compare-config, dry-run outformats, re-deploy, un-deploy, get-modifications): https://nso-docs.cisco.com/guides/operation-and-usage/operations/lifecycle-operations · https://nso-docs.cisco.com/guides/nso-6.1/operation-and-usage/operations/lifecycle-operations

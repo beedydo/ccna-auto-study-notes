@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T39 architecture: three planes inside one device</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .grid { display: grid; grid-template-columns: 210px minmax(0, 1fr) 210px; grid-template-rows: auto auto auto; column-gap: 40px; row-gap: 64px; align-items: center; }
+  .dev { grid-column: 2; grid-row: 1 / 4; align-self: stretch; margin: -48px -18px -18px; }
+  .plane { grid-column: 2; position: relative; }
+  .plane > .zb { justify-content: space-between; align-items: center; padding: 14px 26px; }
+  .why { align-self: flex-end; margin-bottom: 4px; font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 250px; text-align: left; }
+  .why b { color: var(--ink); }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 34px; }
+  .notes .note { max-width: 390px; }
+  .side > .zb { padding: 14px 8px; }
+  .zone.mgmtp { --zc: #57606a; } .zone.ctrlp { --zc: #8250df; } .zone.datap { --zc: #1a7f37; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T39 · <span class="pill">Three planes</span> inside one router</h1>
+    <div class="meta"><b>200-901 blueprint 6.5</b><br>Config flows down · packets cross the bottom plane only<br>Names as in <code>labs/T39/planes_probe.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="grid" style="margin-top: 48px">
+      <div class="zone dashed dev"><div class="zh" style="background:transparent;color:var(--ink)">One router or switch (IOS XE) <small style="color:var(--muted)">CPU on top · ASIC / NPU at the bottom</small></div></div>
+
+      <div class="zone client side" style="grid-column:1; grid-row:1">
+        <div class="zh">Admin / NMS / script</div>
+        <div class="zb"><div class="node" id="nms" data-icon="script"><div class="nm">planes_probe.py</div><div class="sub">also SSH, SNMP, NETCONF</div></div></div>
+      </div>
+
+      <div class="zone mgmtp plane" style="grid-row:1">
+        <div class="zh">MANAGEMENT plane <small>CPU · configure + monitor the box · people and tools reaching the box itself</small></div>
+        <div class="zb" style="justify-content:flex-end">
+          <div class="node xw" id="mgmt" data-icon="controller"><div class="nm">SSH · SNMP · NETCONF / RESTCONF</div><div class="sub">syslog · NTP · AAA</div></div>
+        </div>
+      </div>
+
+      <div class="zone ctrlp plane" style="grid-row:2">
+        <div class="zh">CONTROL plane <small>CPU · decide where traffic goes</small></div>
+        <div class="zb">
+          <div class="node w" id="rib" data-icon="db"><div class="nm">RIB · ARP · MAC tables</div><div class="sub"><code>show ip route</code></div></div>
+          <div class="node w" id="proto" data-icon="controller"><div class="nm">OSPF · BGP · EIGRP</div><div class="sub">STP · ARP · LACP</div></div>
+        </div>
+      </div>
+
+      <div class="zone ext side" style="grid-column:3; grid-row:2">
+        <div class="zh">Neighbour routers</div>
+        <div class="zb"><div class="node" id="nbr" data-icon="router"><div class="nm">OSPF / BGP peers</div><div class="sub">hellos · LSAs · BGP updates<br>(switches: BPDUs)</div></div></div>
+      </div>
+
+      <div class="zone client side" style="grid-column:1; grid-row:3">
+        <div class="zh">Host A</div>
+        <div class="zb"><div class="node" id="hin" data-icon="laptop"><div class="nm">transit packet in</div></div></div>
+      </div>
+
+      <div class="zone datap plane" style="grid-row:3">
+        <div class="zh">DATA plane <small>ASIC / NPU · line rate</small></div>
+        <div class="zb" style="justify-content:center">
+          <div class="node xw" id="asic" data-icon="l3switch"><div class="nm">FIB + adjacency lookup</div><div class="sub">ACL · NAT · QoS · encap<br><code>show ip cef</code></div></div>
+        </div>
+      </div>
+
+      <div class="zone client side" style="grid-column:3; grid-row:3">
+        <div class="zh">Host B</div>
+        <div class="zb"><div class="node" id="hout" data-icon="server"><div class="nm">transit packet out</div></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note trap"><b>Trap:</b> classify by the job, not the data. RESTCONF reading the RIB is still <b>management</b>. ARP and STP are <b>control</b> (they build tables), even though they're "Layer 2".</div>
+      <div class="note"><b>Transit traffic never touches the CPU.</b> Traffic <b>to</b> the router's own IP (SSH, OSPF hellos) is punted to the CPU, and CoPP polices it.</div>
+      <div class="note"><b>Static route:</b> typed in through management (CLI / NETCONF), lives in the <b>RIB</b> (control), forwards via the <b>FIB</b> (data).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw mgmt"></i>management: config + telemetry</span>
+    <span><i class="sw control"></i>control plane: protocol messages, table programming</span>
+    <span><i class="sw data"></i>data plane: user packets</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "nms", b: "mgmt", k: "mgmt", s: "r-l", bo: -8, dir: "both", label: "config + telemetry<br><code>/restconf/data</code>", t: 0.3 },
+  { a: "mgmt", b: "proto", k: "mgmt", s: "b-t", ao: 25, label: "config: <code>router ospf</code>, <code>ip route</code>" },
+  { a: "nbr", b: "proto", k: "control", s: "l-r", ao: 16, dir: "both" },
+  { a: "proto", b: "rib", k: "control", s: "l-r", label: "best routes" },
+  { a: "rib", b: "asic", k: "control", s: "b-t", bo: -60, label: "CEF programs FIB / MAC table" },
+  { a: "hin", b: "asic", k: "data", s: "r-l", bo: 16, dir: "fwd" },
+  { a: "asic", b: "hout", k: "data", s: "r-l", ao: 16, dir: "fwd" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

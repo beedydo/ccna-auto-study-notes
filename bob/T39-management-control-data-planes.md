@@ -37,7 +37,7 @@ The note hangs on one picture and one program.
 
 ![Three planes inside one device](../assets/T39/01-three-planes.png)
 
-*Blue = management, yellow = control, green = data. Notice only the green path carries user packets; the two CPU planes only configure and program it.*
+*Grey = management, purple = control, green = data. Notice only the green path carries user packets; the two CPU planes only configure and program it.*
 
 **`labs/T39/planes_probe.py`**
 
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 
 ![Traditional vs SDN](../assets/T39/04-traditional-vs-sdn.png)
 
-*Top: every router decides for itself. Bottom: one controller decides; switches only forward. User packets still go switch to switch, never through the controller.*
+*Left: every router decides for itself. Right: one controller decides; switches only forward. User packets still go switch to switch, never through the controller.*
 
 - **Interfaces** (blueprint wording appears in T12 too):
 
@@ -520,6 +520,7 @@ A. REST = southbound, OpenFlow = northbound  B. REST = northbound, OpenFlow = so
 ## Sources
 
 - Overview image: HTML source `assets/T39/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T39/*.mmd`. Animation: `assets/T39/06-packet-journey-anim.html` → `06-packet-journey.gif`.
+- Architecture diagrams: HTML source `assets/T39/01-three-planes.html` and `assets/T39/04-traditional-vs-sdn.html` (shared kit `assets/_arch/`).
 - Cisco Guide to Harden Cisco IOS Devices (definitions of management, control and data planes; protocols per plane; CPPr/CoPP): https://www.cisco.com/c/en/us/support/docs/ip/access-lists/13608-21.html
 - RFC 7426, SDN Layers and Architecture Terminology (forwarding/control/management/operational planes, timescale and persistence, CPSI vs MPSI, northbound): https://www.rfc-editor.org/rfc/rfc7426
 - Cisco IOS XE CEF overview (FIB as a mirror of the routing table, adjacency table, punt adjacency): https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipswitch_cef/configuration/xe-16/isw-cef-xe-16-book/isw-cef-overview.html

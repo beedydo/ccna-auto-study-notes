@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T25 architecture: Cisco NSO</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .core > .zb { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; row-gap: 26px; justify-items: center; padding: 20px 20px 22px; }
+  #sm { grid-column: 1; grid-row: 1; } #dm { grid-column: 3; grid-row: 1; } #cdb { grid-column: 2; grid-row: 2; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+  .nb > .zb, .ned > .zb, .dev > .zb { justify-content: space-around; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T25 · <span class="pill">Cisco NSO</span> architecture</h1>
+    <div class="meta"><b>200-901 blueprint 3.2, 5.3, 5.6</b><br>Northbound → core + CDB → NEDs → devices<br>Names as in <code>labs/T25/mock_nso_cml.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client nb">
+      <div class="zh">Northbound · how you talk to NSO <small>every interface reaches the same core</small></div>
+      <div class="zb">
+        <div class="node" id="nb-rc" data-icon="script"><div class="nm">Your script</div><div class="sub"><code>labs/T25/pipeline.py</code></div></div>
+        <div class="node" id="nb-nc" data-icon="script"><div class="nm">NETCONF client</div><div class="sub">e.g. ncclient</div></div>
+        <div class="node" id="nb-cli" data-icon="laptop"><div class="nm">NSO CLI</div><div class="sub">Juniper-style (J) or<br>Cisco-style (C)</div></div>
+        <div class="node" id="nb-web" data-icon="gui"><div class="nm">Web UI</div><div class="sub">runs on JSON-RPC</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ctrl core" id="core">
+      <div class="zh">NSO core <small>Cisco NSO (Tail-f NCS) · one transaction engine · <code style="background:#ffffff33;color:#fff">ncs</code> / <code style="background:#ffffff33;color:#fff">tailf-ncs</code></small></div>
+      <div class="zb">
+        <div class="node xw" id="sm" data-icon="controller"><div class="nm">Service Manager</div><div class="sub">service YANG + XML template / Python<br>FASTMAP: remembers what it created</div><span class="tag">nso-package/loopback.yang</span></div>
+        <div class="node xw" id="dm" data-icon="controller"><div class="nm">Device Manager</div><div class="sub">device copies in CDB · sends diffs via NEDs<br><code>check-sync</code> · <code>sync-from</code> · <code>sync-to</code></div></div>
+        <div class="node xw hl" id="cdb" data-icon="db"><div class="nm">CDB</div><div class="sub">service instances <b>+ every device's config</b>, as YANG</div><span class="tag">…/devices/device=ios0/config/…</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ctrl ned" id="neds">
+      <div class="zh">Southbound · NEDs <small>Network Element Drivers, one per device type · translate the YANG diff to native</small></div>
+      <div class="zb">
+        <div class="node w" id="ned1" data-icon="proxy"><div class="nm">CLI NED</div><span class="tag">cisco-ios-cli-6.106</span></div>
+        <div class="node w" id="ned2" data-icon="proxy"><div class="nm">CLI NED</div><span class="tag">cisco-iosxr-cli-7.61</span></div>
+        <div class="node w" id="ned3" data-icon="proxy"><div class="nm">NETCONF NED</div><span class="tag">juniper-junos-nc-4.17</span></div>
+        <div class="node w" id="ned4" data-icon="proxy"><div class="nm">SNMP / generic NED</div><div class="sub">YANG from MIBs · Java code</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone site dev">
+      <div class="zh">Managed devices</div>
+      <div class="zb">
+        <div class="node w" id="d1" data-icon="router"><div class="nm">ios0</div><div class="sub">10.10.20.51 · device-type cli</div></div>
+        <div class="node w" id="d2" data-icon="router"><div class="nm">xr0</div><div class="sub">10.10.20.52 · device-type cli</div></div>
+        <div class="node w" id="d3" data-icon="router"><div class="nm">junos0</div><div class="sub">10.10.20.53 · device-type netconf</div></div>
+        <div class="node w" id="d4" data-icon="switch"><div class="nm">other vendor</div><div class="sub">device-type snmp / generic<br>no YANG or agent needed</div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>One service, three dialects.</b> <code>?dry-run=native</code> shows IOS <code>ip address …</code>, XR <code>ipv4 address …</code> and a Junos <code>edit-config</code>, from one template.</div>
+      <div class="note trap"><b>Trap:</b> NEDs are <b>southbound</b> (NSO → device). RESTCONF, NETCONF, JSON-RPC, CLI and Web UI are <b>northbound</b> (you → NSO).</div>
+      <div class="note"><b>CDB holds device config too</b>, so <code>GET …/device=ios0/config/…</code> reads NSO's copy without logging in to the box. ⚠ verify ports (<code>:8080</code>, <code>:2022</code>).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>northbound API call (you → NSO)</span>
+    <span><i class="sw mgmt"></i>config: inside NSO and NED → device</span>
+    <span style="margin-left:auto">Blue glow = CDB, the source of truth every part reads and writes</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "nb-rc", b: "core", k: "api", s: "b-t", label: "RESTCONF<br><code>:8080/restconf</code>", t: 0.45 },
+  { a: "nb-nc", b: "core", k: "api", s: "b-t", label: "NETCONF <code>:2022</code>", t: 0.45 },
+  { a: "nb-cli", b: "core", k: "api", s: "b-t", label: "CLI", t: 0.45 },
+  { a: "nb-web", b: "core", k: "api", s: "b-t", label: "JSON-RPC", t: 0.45 },
+  { a: "sm", b: "dm", k: "mgmt", s: "r-l", label: "per-device diffs" },
+  { a: "sm", b: "cdb", k: "mgmt", s: "b-l", dir: "both", label: "service instances", t: 0.35 },
+  { a: "dm", b: "cdb", k: "mgmt", s: "b-r", ao: -40, dir: "both", label: "device config", t: 0.35 },
+  { a: "dm", b: "neds", k: "mgmt", s: "b-t", ao: 50, label: "YANG diff to the right NED", t: 0.82 },
+  { a: "ned1", b: "d1", k: "mgmt", s: "b-t", label: "CLI over SSH" },
+  { a: "ned2", b: "d2", k: "mgmt", s: "b-t", label: "CLI over SSH" },
+  { a: "ned3", b: "d3", k: "mgmt", s: "b-t", label: "NETCONF <code>edit-config</code>" },
+  { a: "ned4", b: "d4", k: "mgmt", s: "b-t", label: "SNMP SET / REST" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

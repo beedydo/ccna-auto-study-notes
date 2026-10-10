@@ -271,7 +271,7 @@ what the last signed request carried:
 
 ![UCS domain](../assets/T24/01-ucs-domain.png)
 
-*UCS Manager lives on the fabric interconnect pair (blue), not on a separate server. Everything to the right of the FIs (green) is managed by that one UCSM.*
+*UCS Manager lives on the fabric interconnect pair (purple zone: active on one FI, standby on the other), not on a separate server. Scripts POST XML to `/nuova` on the cluster VIP; every server below the FIs (green) is managed by that one UCSM.*
 
 - In the program: `handle.login()` returns `logged in to UCS-SG-DC1`. That's the **domain name** (`topSystem`), not a single server. `query_classid("computeBlade")` then lists **all** blades in that domain.
 
@@ -400,7 +400,7 @@ what the last signed request carried:
 
 ![Intersight architecture](../assets/T24/05-intersight-arch.png)
 
-*Many domains and server types connect outbound to one Intersight (blue). Your script talks only to Intersight, never to each domain.*
+*Many domains and server types connect outbound to one Intersight (blue): the grey dashed device-connector arrows point up, from the data centre to the cloud. Your script talks only to Intersight, never to each domain.*
 
 - **API:** REST/JSON, described by an **OpenAPI** spec. Base `https://intersight.com/api/v1/`. Resources are named `<group>/<Plural>`:
   - `compute/PhysicalSummaries` = every server, any type and management mode. `compute/Blades`, `compute/RackUnits`, `server/Profiles`.
@@ -796,6 +796,7 @@ A. The WWPN of each vHBA  B. The chassis serial number  C. The boot order  D. Th
 ## Sources
 
 - Overview image: HTML source `assets/T24/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T24/*.mmd`. Animation: `assets/T24/08-sp-move-anim.html` → `08-sp-move.gif`.
+- Architecture diagrams: HTML source `assets/T24/01-ucs-domain.html` and `assets/T24/05-intersight-arch.html` (shared kit `assets/_arch/`).
 - Cisco UCS Manager XML API Programmer's Guide, ch. 1 (MIT, MO, DN/RN format, `sys` tree, query and config methods, `inHierarchical`, empty `outConfig` for a missing DN, `errorCode 103`, 47-char cookie, 256 sessions, TCP 443/80): https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/sw/api/UCSM_API_Guide/b_UCSM_API_Guide_3_1_chapter_01.html
 - Same guide, method chapter (POST to `/nuova`, `aaaLogin` request/response with `outCookie`, `outRefreshPeriod="600"`, `aaaRefresh`, `aaaLogout`, `errorCode 551` "Authentication failed"): https://www.cisco.com/c/en/us/td/docs/unified_computing/ucs/sw/api/UCSM_API_Guide/b_UCSM_API_Guide_3_1_chapter_010.html
 - Perform Manual XML API Calls to CIMC (expired cookie → 552 "Authorization required"; IMC, not UCSM): https://www.cisco.com/c/en/us/support/docs/servers-unified-computing/integrated-management-controller/223087-perform-manual-xml-api-calls-to-cimc.html
