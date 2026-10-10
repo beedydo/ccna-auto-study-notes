@@ -386,6 +386,10 @@ Running `python3 -c "import build_inventory; print(build_inventory.__name__)"` p
 - **Inheritance and `super()`:**
   - `IOSXE` defines its own `__init__`, so `Device.__init__` does **not** run unless it calls `super().__init__(hostname, mgmt_ip, port)`. Remove that line and `self.hostname` never gets set → `AttributeError`.
   - `NXOS` defines **no** `__init__`, so it inherits `Device.__init__` automatically (port stays 22; its URL doesn't use the port).
+
+![Animated super().__init__ call chain](../assets/T02/01-super-init.gif)
+
+*`make_device()` building an IOSXE, one line per frame: the classmethod gets `cls = IOSXE` → `IOSXE.__init__` runs first on an empty object → `super()` jumps to `Device.__init__`, which sets `hostname`, `mgmt_ip`, `port`, `_token` → back in the child for `api`. The last frame deletes the `super()` line: only `api` gets set, and the error appears later in `connect()`. This fixes the belief that a parent's `__init__` runs automatically.*
 - **Overriding:** `IOSXE.connect()` replaces `Device.connect()`. It still calls `super().connect()` to reuse the counter and token logic, then returns its own string.
 
 ### T02.07 · Modules
@@ -736,6 +740,7 @@ A. (a) package (b) module (c) method  B. (a) module (b) package (c) method  C. (
 ## Sources
 
 - Overview image: HTML source `assets/T02/00-overview.html`, rendered to PNG (see `assets/README.md`).
+- Animation: `assets/T02/01-super-init-anim.html` → `.gif`. Frame order and attribute values come from a `sys.settrace` run of `make_device()`.
 - Python tutorial, Defining Functions: https://docs.python.org/3/tutorial/controlflow.html#defining-functions
 - Python tutorial, Classes (scopes, `self`, inheritance, private variables): https://docs.python.org/3/tutorial/classes.html
 - Python tutorial, Modules and Packages: https://docs.python.org/3/tutorial/modules.html
