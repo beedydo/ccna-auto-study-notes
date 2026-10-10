@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant S as Script (ucsmsdk or curl)
+    participant U as UCS Manager /nuova
+    S->>U: POST #lt;aaaLogin inName="ucspe" inPassword="..." /#gt;
+    U-->>S: 200 · #lt;aaaLogin outCookie="1791635060/7f27..." outRefreshPeriod="600" outVersion="4.2(3d)" /#gt;
+    Note over S: cookie travels INSIDE each XML body<br/>(cookie="..." attribute), not in an HTTP header
+    S->>U: POST #lt;configResolveClass cookie="..." classId="computeBlade" inHierarchical="false" /#gt;
+    U-->>S: 200 · #lt;outConfigs#gt;#lt;computeBlade dn="sys/chassis-1/blade-1" .../#gt;...
+    S->>U: POST #lt;configResolveDn cookie="..." dn="sys/chassis-1/blade-3" /#gt;
+    U-->>S: 200 · #lt;outConfig#gt;#lt;computeBlade dn="sys/chassis-1/blade-3" .../#gt;
+    S->>U: POST #lt;configConfMos cookie="..."#gt; lsServer status="created" #lt;/configConfMos#gt;
+    U-->>S: 200 · #lt;outConfigs#gt; new lsServer with its UUID
+    S->>U: POST #lt;aaaRefresh inCookie="..." /#gt; (before 600 s)
+    U-->>S: 200 · new outCookie
+    S->>U: POST #lt;aaaLogout inCookie="..." /#gt;
+    U-->>S: 200 · outStatus="success"
+    Note over S,U: Errors are ALSO HTTP 200: errorCode="551" bad login ·<br/>"552" no/expired cookie · "103" object already exists
