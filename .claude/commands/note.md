@@ -28,6 +28,95 @@ Decide how the note hangs together, so it reads as one story rather than fragmen
   - Use colour to carry meaning, and keep it the same across diagrams: green = safe/kept, yellow = partial, red = destructive/error, blue = the recommended answer.
   - Prefer `flowchart` or `sequenceDiagram`. Avoid `gitGraph` with long commit labels, because they render rotated. Avoid circle nodes, because they balloon in size.
 
+## 2b. One-page overview sheet (top of every note)
+
+Every note opens with one cheat-sheet-style infographic that summarises **every concept ID** in the topic. The visual style is ByteByteGo-inspired: bold title with a coloured pill, thick-bordered panels, icons, numbered callouts, grey code chips and red trap boxes. Build it last, after the Concepts are written, so it mirrors them exactly. `assets/T02/00-overview.html` is the worked reference: copy its CSS and adapt the layout.
+
+**Pick the layout from the shape of the knowledge, not the topic name.** Ask: "What would the learner draw on a whiteboard to explain this?"
+
+| Archetype | Use when the topic is mostly… | Layout | ByteByteGo inspiration | Fits topics like |
+|---|---|---|---|---|
+| **A. Command / concept grid** | a set of parallel items, each with syntax + options + a trap | One row per concept group: icon + name · key syntax pill + 2-line meaning · 2-col numbered examples with code chips · red trap box | "Top 6 Log Parsing Commands" | T02 Python, T06 data formats, T31 Bash, T04 Git commands, T45 script reading |
+| **B. Comparison cheat sheet** | 2–5 things to compare on the same criteria ("X vs Y vs Z") | Row per option, columns = criteria (left: what/why, middle: measurements or rules, right: a tiny diagram of how it works). Or a big matrix with ✅/❌ cells | "System Design Cheat Sheet" (HA / throughput / scalability) | T09 REST vs RPC, T15/T16 NETCONF vs RESTCONF, T26 deployment models, T33 IaC tools, T10 auth types, T08 rate limit vs pagination |
+| **C. Swim-lane pipeline** | a process with stages, roles or environments, in order | Horizontal lanes per stage (Plan / Build / Test / Release), numbered steps flowing between lanes with dashed arrows, actors as small icons | "How Companies Ship Code to Production" | T28 CI/CD, T04 PR workflow, T01 dev methods, T32 TDD cycle, T43 webhooks, T47 sequence diagrams |
+| **D. Lifecycle / loop** | one cycle repeated (develop → commit → test → deploy → back) | Numbered panels top to bottom: 1 the loop as a circle/arrows, 2 the split (e.g. CI ↔ CD with a dashed divider), 3 the detail | "CI/CD Pipelines" zine | T28 CI/CD, T04 file lifecycle, T32 red-green-refactor, T11 request → retry loop |
+| **E. Architecture / system map** | components and how traffic or data flows between them | Grouped zones (boxes with a coloured header: Client · Edge · Controller · Device) with labelled arrows, side notes for options, and a legend for colours | "System Design Blueprint" | T12 controller vs device, T17/T18–T25 platform APIs, T38 topology, T39 planes, T40/T41 FW/DNS/LB/proxy, T27 Docker, T20 Catalyst Center |
+| **F. Family of variants** | 3–6 variants of one idea, each with the same internal parts | Grid of same-sized cards, each with its own colour, same mini-diagram inside (so differences pop), plus one shared element (e.g. "Environment" bar) per card. Optional wide card at the bottom for the most complex variant | "Types of AI Agents" | T10 auth methods (basic / API key / OAuth / token), T14 YANG node types, T30 OWASP attacks, T23 security platforms, T36 IP addressing/routing types |
+
+- **Mixing is fine.** For example: archetype A rows with one row that holds a mini system map, or archetype E with a comparison strip at the bottom. Pick one **primary** archetype so the sheet has a clear reading order.
+- **Networking, platform and system topics usually suit E or F.** Process topics suit C or D. "Which option/command" topics suit A or B. When unsure between a diagram and a table, ask yourself whether the exam questions are "what happens next / where does it go" (choose a diagram) or "which one / what's the difference" (choose a table or comparison).
+- State the chosen archetype and a one-line reason in the final summary.
+
+**Content rules (same for every archetype)**
+
+- **Coverage:** every `TXX.NN` concept ID appears somewhere on the sheet. Label each panel/row with its IDs (small grey text, e.g. `T02.02 · T02.03`).
+- **One red trap box** per panel/row, taken from `## Exam traps`.
+- **Grey code chips** for exact syntax only (commands, paths, status codes, ports). Code-heavy topics take their examples from the reference program in `labs/TXX/`, with identical text. If a line is too long, split it across two chips; never shorten it into code that doesn't exist.
+- **Numbered black circles** for steps or examples. In flows they show order; in grids they're just indexes.
+- **Diagrams inside the sheet** are HTML/CSS boxes and arrows, or inline SVG. Keep them simple: boxes, arrows, short labels. Use colour to carry meaning, the same way as in §2 (green safe/kept, yellow partial, red destructive/error, blue recommended answer).
+- **Icons:** emoji (🎯 🔧 🧱 📦 🌐 🔐 ⚙️ 🚀). No external images or web fonts; the sheet must render offline.
+- **Header:** `TXX · <pill>Topic name</pill> at a glance`, plus a right-aligned meta block (blueprint items, "Every TXX concept on one page", and where the code lives). **Footer:** a legend for chips, colours and numbers.
+- **Density:** scannable in about 2 minutes. Short phrases, not sentences. If the sheet needs more than about 7 rows/panels, merge concept IDs instead of growing it.
+
+**Build and check**
+
+1. Write `assets/$ARGUMENTS/00-overview.html`. One root element `<div class="sheet">` with a fixed CSS width: 1180px for grids and tables, up to about 1500px for system maps. Use `table-layout: fixed` and `grid-template-columns: minmax(0, 1fr) …`, so long content wraps instead of pushing columns off the edge.
+2. Render: `node scripts/render-overview.mjs assets/$ARGUMENTS/00-overview.html` → `00-overview.png` at 2x. In this setup, run it from `/private/tmp/claude-501/mmd` (where `puppeteer-core` is installed), with the Bash sandbox disabled.
+3. **Look at the PNG** (Read the image) and fix any of these, then re-render:
+   - text clipped at the right edge
+   - code chips overlapping the next column
+   - lines wrapping mid-token
+   - empty or lopsided panels
+   - invisible legend swatches
+   Expect 2–4 rounds.
+4. Insert it directly under the `> Owner: …` line at the top of the note:
+   `![TXX at a glance: …](../assets/$ARGUMENTS/00-overview.png)`, then a blank line and a one-line italic caption saying how to read it (rows/panels = what, numbers = what, red = traps).
+5. Add `- Overview image: HTML source assets/$ARGUMENTS/00-overview.html …` to `## Sources`.
+
+## 2c. Step animations (GIF), only where motion teaches
+
+A GIF shows **something moving through stages over time**, one command or event per frame. Use it sparingly: **0–2 per note**, and most notes need none. A GIF never replaces a static diagram or table, because it can't be paused. Put it right below the static diagram of the same flow.
+
+**Make one only if all three are true:**
+
+1. **The concept is a sequence over time**, where order matters and the exam asks "what happens next" or "put these in order".
+2. **The state changes between steps**: something visibly moves, appears or switches location (a file between Git areas, a token between client and server, a packet through hops).
+3. **A static diagram leaves a common misconception.** For example: "fetch changes my files", "the webhook is polled", "a NETCONF edit is live before commit".
+
+**Good fits, by topic (one each unless stated):**
+
+| Topic | Animation | Misconception it fixes |
+|---|---|---|
+| T04 Git ✅ done | edit → add → commit → push → fetch → pull (`assets/T04/10-workflow.gif`) | fetch vs pull |
+| T10 API auth | OAuth 2.0 auth-code flow: redirect → login → code → token exchange → API call | where the token comes from |
+| T15 NETCONF | SSH :830 → hello/capabilities → lock → edit-config (candidate) → commit → unlock | candidate vs running |
+| T43 Webhooks | register URL → event happens → platform POSTs to you → you reply 200 | push vs polling |
+| T28 CI/CD | commit → build → test → package → deploy dev/QA/prod (a fail stops the line) | CI vs CD boundary |
+| T37 / T41 | DNS lookup chain, or a request through firewall → LB → reverse proxy → server | which box does what |
+| T11 requests | call → 429 → wait `Retry-After` → retry → 200 | retry/backoff loop |
+
+**Skip it for** syntax, comparisons, definitions, status-code lists, and any flow with fewer than 4 steps or more than 8. A static diagram or table is clearer there.
+
+**Frame design (copy `assets/T04/10-workflow-anim.html`):**
+
+- **Fixed layout across frames:** the same lanes or boxes in the same places every frame; only their *contents* change. This lets the eye see what moved.
+- **4–8 frames.** Each frame = one command or event. Use real commands, codes and values from the note or `labs/`, never placeholders.
+- In each frame:
+  - **Highlight** the active lane (glow).
+  - Show a dark **command label** under the box it acts on. `➜` marks a forward action; `⬅` marks one coming back.
+  - Fade or dash anything that's "unchanged" or "gone".
+- **Caption strip** at the bottom: step number circle + one sentence of what just happened (bold the key fact) + progress dots.
+- Same colour meanings as the diagrams (§2), same fonts and title style as the overview sheet (§2b).
+- No smooth tweening. A stepped frame is easier to read than motion, and the file stays small (aim < 300 KB).
+
+**Build and check:**
+
+1. Write `assets/$ARGUMENTS/NN-name-anim.html`. It needs `window.FRAME_COUNT`, `window.show(i)` and one `.sheet` root.
+2. Render: `node scripts/render-animation.mjs assets/$ARGUMENTS/NN-name-anim.html 2.5` → `NN-name.gif`. The number is seconds per frame; the last frame is held twice as long. In this setup, run it from `/private/tmp/claude-501/mmd` with the Bash sandbox disabled (needs Chrome + ffmpeg).
+3. **Check it.** Extract 2–3 frames with `ffmpeg -i X.gif -vf "select=eq(n\,K)" -vframes 1 -update 1 fK.png` and Read them. Fix clipped labels, overlapping boxes and any fake-looking values (e.g. commit hashes must be hex).
+4. Embed it under the static diagram of the same flow:
+   `![Animated …](../assets/$ARGUMENTS/NN-name.gif)`, then a blank line, then an italic caption listing the steps in order and naming the misconception it fixes.
+
 ## 3. Fill the note (follow CLAUDE.md)
 
 - Under each `### TXX.NN` concept, keep the checklist, tick `[x]` every item you explain, and write point-form **Notes:**.
@@ -51,6 +140,7 @@ Decide how the note hangs together, so it reads as one story rather than fragmen
   - If something can't run (sandbox host, network), say so in `## To verify`.
 - After pasting code into the note, extract it back out and `diff` it against the `labs/` file, so the two never drift apart.
 - Check that every file path the note references (`labs/...`, `assets/...`) exists.
+- Check the overview sheet against the Concepts: every concept ID is on it, and every code chip matches the note or `labs/` exactly.
 - Third-party Python packages: install them into a throwaway venv under `$TMPDIR`, never into the system Python or the repo.
 - Throwaway git repos: set `git config commit.gpgsign false` locally. Global signing fails inside the sandbox.
 
@@ -72,5 +162,7 @@ Decide how the note hangs together, so it reads as one story rather than fragmen
   - number of Qs
   - ⚠ items
   - backbone used (reference program in `labs/$ARGUMENTS/` and/or N diagrams in `assets/$ARGUMENTS/`)
+  - overview sheet archetype (A–F) and why
+  - GIFs made (or "none: no flow needed motion"), each with the misconception it fixes
   - anything not run
 - Suggest the commit message `$ARGUMENTS: draft notes`, but do not commit unless asked.

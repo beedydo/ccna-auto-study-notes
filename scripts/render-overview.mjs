@@ -1,5 +1,6 @@
 // Screenshot an assets/TXX/00-overview.html sheet to PNG at 2x.
 // Usage: node scripts/render-overview.mjs assets/T02/00-overview.html
+// The page must wrap everything in one element with class="sheet" and a fixed CSS width.
 // Needs puppeteer-core (npm install --no-save puppeteer-core) and Google Chrome.
 import path from "node:path";
 import puppeteer from "puppeteer-core";
@@ -11,8 +12,12 @@ const browser = await puppeteer.launch({
   headless: "new",
 });
 const page = await browser.newPage();
-await page.setViewport({ width: 1180, height: 800, deviceScaleFactor: 2 });
+await page.setViewport({ width: 1600, height: 800, deviceScaleFactor: 2 });
 await page.goto(`file://${input}`, { waitUntil: "networkidle0" });
-await (await page.$(".sheet")).screenshot({ path: output });
+const sheet = await page.$(".sheet");
+// Fit the viewport to the sheet's own width, so wide map layouts aren't clipped.
+const width = await sheet.evaluate((el) => Math.ceil(el.scrollWidth));
+await page.setViewport({ width, height: 800, deviceScaleFactor: 2 });
+await sheet.screenshot({ path: output });
 await browser.close();
 console.log(`wrote ${output}`);

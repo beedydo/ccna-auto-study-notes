@@ -16,9 +16,22 @@ for f in assets/T04/*.mmd; do npx --yes @mermaid-js/mermaid-cli --input "$f" --o
 ## One-page overviews (HTML → PNG)
 
 - `assets/TXX/00-overview.html` is a cheat-sheet-style infographic of the whole topic; the note embeds `00-overview.png`.
+- The layout archetype (grid, comparison, swim-lane, lifecycle, system map, variant cards) is chosen per topic; see §2b of `.claude/commands/note.md`. `assets/T02/00-overview.html` is the reference for the CSS.
 - Edit the HTML, then screenshot the `.sheet` element at 2x (auto-sizes to the full page height):
 
 ```bash
 npm install --no-save puppeteer-core
 node scripts/render-overview.mjs assets/T02/00-overview.html
 ```
+
+## Step animations (HTML → GIF)
+
+- `assets/TXX/NN-name-anim.html` defines the frames (`window.FRAME_COUNT`, `window.show(i)`); the note embeds the `.gif`.
+- Edit the frames, then re-render (needs ffmpeg):
+
+```bash
+npm install --no-save puppeteer-core
+node scripts/render-animation.mjs assets/T04/10-workflow-anim.html 2.5
+```
+
+- The last argument is seconds per frame. The last frame is held twice as long.
