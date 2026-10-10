@@ -1,0 +1,13 @@
+flowchart LR
+    NET["🌐 Internet<br/>ext1 198.51.100.7"] --- ISP["isp1"]
+    ISP -- "outside<br/>203.0.113.2" --- FW["🛡️ fw1"]
+    FW -- "inside<br/>10.0.2.2" --- CORE["core1 → campus<br/>10.10.0.0/16"]
+    FW -- "dmz<br/>172.16.50.1" --- DSW["dmz-sw · VLAN 50"]
+    DSW --- LB["⚖️ lb1<br/>VIP 172.16.50.10:443"]
+    DSW --- W1["web1 .11"]
+    DSW --- W2["web2 .12"]
+    style FW fill:#fde8e8,stroke:#dc3545,stroke-width:3px
+    style DSW fill:#fff3cd,stroke:#e0a800
+    style LB fill:#fff3cd,stroke:#e0a800
+    style CORE fill:#e3f6ee,stroke:#2fb380
+    style NET fill:#f8d7da,stroke:#dc3545
