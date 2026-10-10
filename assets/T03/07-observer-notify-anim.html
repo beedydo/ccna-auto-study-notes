@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T03 observer notify animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --sub:#dcfce7; --sub-b:#15803d; --obs:#ede9fe; --obs-b:#6d28d9; --cmd:#dbeafe; --cmd-b:#1d4ed8;
+          --trap:#fde8e8; --trap-ink:#b42318; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:270px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.cm { border-color:var(--cmd-b); } .lane.sj { border-color:var(--sub-b); } .lane.ob { border-color:var(--obs-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .lane.off { opacity:.35; border-style:dashed; }
+  .card { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; word-break:break-word; }
+  .cm .card { background:var(--cmd); border-color:var(--cmd-b); }
+  .sj .card { background:var(--sub); border-color:var(--sub-b); }
+  .ob .card { background:var(--obs); border-color:var(--obs-b); }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .card.hot { border-width:3px; box-shadow:0 0 0 3px rgba(180,35,24,.25); }
+  .ghost { opacity:.3; border-style:dashed !important; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmdlbl { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmdlbl::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmdlbl.back::after { content:""; } .cmdlbl.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T03 · <span class="pill">Observer</span> who gets notified, and when</h1>
+  <div class="sub">Steps from <code>labs/T03/link_monitor.py</code>. The subject <b>pushes</b> to its list; observers never ask.</div>
+  <div class="lanes">
+    <div class="lane cm" id="cm"><h3>⌨️ main() / Controller</h3><div class="where">the call being made</div><div id="cm-f"></div></div>
+    <div class="lane sj" id="sj"><h3>📡 Subject</h3><div class="where">InterfaceModel("sw1")</div><div id="sj-f"></div></div>
+    <div class="lane ob" id="o1"><h3>📝 SyslogObserver</h3><div class="where">update(event)</div><div id="o1-f"></div></div>
+    <div class="lane ob" id="o2"><h3>🚨 AlertObserver</h3><div class="where">update(event)</div><div id="o2-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (t, s, cls="") => `<div class="card ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const st = (obs, intf) => C(`_observers = [${obs}]`, "subscriber list") + C(intf, "interface status");
+const frames = [
+  { active:["cm","sj"], off:[], cm:C("model.attach(syslog)", "subscribe"),
+    sj:st("syslog", "(none yet)"), o1:C("waiting", "", "ghost"), o2:C("not attached", "", "ghost"),
+    lbl:{x:120, t:"attach(syslog)"}, txt:"<code>model.attach(syslog)</code> adds the observer to the subject's list. Nothing is sent yet." },
+  { active:["cm","sj"], off:[], cm:C("model.attach(alerts)", "subscribe"),
+    sj:st("syslog, alerts", "(none yet)"), o1:C("waiting", "", "ghost"), o2:C("waiting", "", "ghost"),
+    lbl:{x:120, t:"attach(alerts)"}, txt:"Second observer subscribes <b>at run time</b>. The subject still knows only that each has <code>update()</code>." },
+  { active:["sj","o1","o2"], off:[], cm:C("set Gi1/0/2 down", "ctl.handle(cmd)"),
+    sj:st("syslog, alerts", "Gi1/0/1 up<br>Gi1/0/2 up → <b>down</b>"),
+    o1:C("%LINK-3-UPDOWN: Interface Gi1/0/2, changed state to down", "received", "hot"),
+    o2:C("sw1 Gi1/0/2 DOWN (was up) -> webhook", "received · sent = 1", "hot"),
+    lbl:{x:390, t:"notify(event) → update(event) × 2"}, txt:"State changed, so <code>notify()</code> loops the list and calls <code>update(event)</code> on <b>both</b> observers." },
+  { active:["sj"], off:[], cm:C("set Gi1/0/2 down", "same command again"),
+    sj:st("syslog, alerts", "Gi1/0/1 up<br>Gi1/0/2 down (unchanged)"),
+    o1:C("nothing received", "", "ghost"), o2:C("nothing received", "sent = 1", "ghost"),
+    lbl:null, txt:"Same value again → <code>old == status</code> → <b>no change, no notification</b>." },
+  { active:["cm","sj"], off:["o2"], cm:C("model.detach(alerts)", "unsubscribe"),
+    sj:st("syslog", "Gi1/0/1 up<br>Gi1/0/2 down"),
+    o1:C("waiting", "", "ghost"), o2:C("detached", "sent = 1", "ghost"),
+    lbl:{x:120, t:"detach(alerts)"}, txt:"<code>model.detach(alerts)</code> removes it from the list <b>at run time</b>. The subject code did not change." },
+  { active:["sj","o1"], off:["o2"], cm:C("set Gi1/0/1 down", "ctl.handle(cmd)"),
+    sj:st("syslog", "Gi1/0/1 up → <b>down</b><br>Gi1/0/2 down"),
+    o1:C("%LINK-3-UPDOWN: Interface Gi1/0/1, changed state to down", "received", "hot"),
+    o2:C("nothing received", "Alerts sent: 1", "ghost"),
+    lbl:{x:390, t:"notify(event) → update(event) × 1"}, txt:"Only <b>attached</b> observers hear it: syslog logs the change, alerts stays at <code>Alerts sent: 1</code>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["cm","sj","o1","o2"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active.includes(k));
+    document.getElementById(k).classList.toggle("off", f.off.includes(k));
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.lbl) {
+    const d = document.createElement("div"); d.className = "cmdlbl"; d.textContent = f.lbl.t; d.style.left = f.lbl.x + "px";
+    a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+flowchart TB
+    DP["Design pattern<br/>reusable, proven template<br/>for a recurring design problem<br/>(not finished code)"]
+    DP --> CR["Creational<br/>how objects are created"]
+    DP --> ST["Structural<br/>how objects are composed"]
+    DP --> BE["Behavioural<br/>how objects communicate"]
+    DP --> AR["Architectural style<br/>(not one of the GoF 23)"]
+    CR --> SG["Singleton<br/>awareness only, not in 1.6"]
+    CR --> FA["Factory Method"]
+    ST --> AD["Adapter"]
+    ST --> DE["Decorator"]
+    BE --> OB["Observer<br/>blueprint 1.6"]
+    BE --> SR["Strategy"]
+    AR --> MVC["MVC<br/>blueprint 1.6"]
+    MVC -. "uses" .-> OB
+    classDef exam fill:#dbeafe,stroke:#1d4ed8,stroke-width:3px,color:#111
+    classDef aware fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#111
+    classDef grp fill:#f3f4f6,stroke:#374151,stroke-width:2px,color:#111
+    class OB,MVC exam
+    class SG aware
+    class CR,ST,BE,AR grp
