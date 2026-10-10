@@ -1,0 +1,33 @@
+flowchart LR
+    Q["Symptom"] --> A1["Fails instantly:<br/>Connection refused"]
+    Q --> A2["Hangs, then timeout"]
+    Q --> A3["HTTP 407"]
+    Q --> A4["CERTIFICATE_VERIFY_FAILED<br/>only on corp network"]
+    Q --> A5["Internal name won't resolve<br/>only on VPN"]
+    Q --> A6["Small requests OK,<br/>large ones hang (VPN)"]
+    Q --> A7["Works inside LAN,<br/>not from internet"]
+    Q --> A8["Slow, many small calls<br/>over WAN"]
+    A1 --> F1["Service down / wrong port"]
+    A2 --> F2["Firewall drop / no route"]
+    A3 --> F3["Add proxy creds"]
+    A4 --> F4["Trust corp CA"]
+    A5 --> F5["Split-DNS: use corp DNS"]
+    A6 --> F6["MTU: clamp MSS"]
+    A7 --> F7["Add static NAT / port fwd"]
+    A8 --> F8["Batch, cache, gzip"]
+    style A1 fill:#fff3cd,stroke:#ffc107
+    style A2 fill:#f8d7da,stroke:#dc3545
+    style A3 fill:#fff3cd,stroke:#ffc107
+    style A4 fill:#fff3cd,stroke:#ffc107
+    style A5 fill:#fff3cd,stroke:#ffc107
+    style A6 fill:#f8d7da,stroke:#dc3545
+    style A7 fill:#fff3cd,stroke:#ffc107
+    style A8 fill:#fff3cd,stroke:#ffc107
+    style F1 fill:#d1ecf1,stroke:#17a2b8
+    style F2 fill:#d1ecf1,stroke:#17a2b8
+    style F3 fill:#d1ecf1,stroke:#17a2b8
+    style F4 fill:#d1ecf1,stroke:#17a2b8
+    style F5 fill:#d1ecf1,stroke:#17a2b8
+    style F6 fill:#d1ecf1,stroke:#17a2b8
+    style F7 fill:#d1ecf1,stroke:#17a2b8
+    style F8 fill:#d1ecf1,stroke:#17a2b8

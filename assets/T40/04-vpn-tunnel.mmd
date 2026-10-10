@@ -1,0 +1,23 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart LR
+    L["💻 Laptop on VPN home LAN 192.168.1.0/24"]
+    subgraph SPLIT["Split tunnel"]
+      direction TB
+      S1["10.0.0.0/8 → tunnel"]
+      S2["everything else → local ISP"]
+    end
+    subgraph FULL["Full tunnel"]
+      direction TB
+      F1["0.0.0.0/0 → tunnel"]
+      F2["internet goes via corp (proxy / firewall rules apply)"]
+    end
+    L --> SPLIT
+    L --> FULL
+    L --- O["⚠️ Overlap: corp subnet is also 192.168.1.0/24 → connected local route wins, tunnel never used"]
+    SPLIT --- D["🔎 Split DNS: internal names (api.corp.local) only resolve on the corp DNS server pushed by the VPN"]
+    style S1 fill:#d1ecf1,stroke:#17a2b8
+    style S2 fill:#d4edda,stroke:#28a745
+    style F1 fill:#d1ecf1,stroke:#17a2b8
+    style F2 fill:#fff3cd,stroke:#ffc107
+    style D fill:#fff3cd,stroke:#ffc107
+    style O fill:#f8d7da,stroke:#dc3545
