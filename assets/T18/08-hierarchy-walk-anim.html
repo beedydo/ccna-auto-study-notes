@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T18 Meraki hierarchy walk animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --org:#d6e4ff; --org-b:#2f5bd3; --net:#d4edda; --net-b:#28a745;
+          --dev:#fff3cd; --dev-b:#e0a800; --cli:#e8dcf7; --cli-b:#7b4bc4; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:12px; }
+  .vars { display:flex; gap:10px; align-items:center; margin-bottom:12px; font-size:14px; }
+  .vars b { margin-right:4px; }
+  .var { font-family:Menlo,monospace; font-size:13px; border:2px dashed #bbb; border-radius:7px; padding:4px 10px; color:#aaa; background:#fff; }
+  .var.set { border-style:solid; border-color:#2fb380; color:var(--ink); background:#e3f6ee; }
+  .var.new { box-shadow:0 0 0 4px rgba(47,179,128,.35); }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px; background:#fff; overflow:hidden; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-family:Menlo,monospace; font-size:10.5px; overflow-wrap:anywhere; color:var(--muted); margin-bottom:10px; }
+  .lane.o { border-color:var(--org-b); } .lane.n { border-color:var(--net-b); }
+  .lane.d { border-color:var(--dev-b); } .lane.c { border-color:var(--cli-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .item { font-family:Menlo,monospace; font-size:12px; border:2px solid; border-radius:7px; padding:5px 7px; margin-bottom:6px; }
+  .o .item { background:var(--org); border-color:var(--org-b); } .n .item { background:var(--net); border-color:var(--net-b); }
+  .d .item { background:var(--dev); border-color:var(--dev-b); } .c .item { background:var(--cli); border-color:var(--cli-b); }
+  .item small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .item.pick { outline:3px solid #2fb380; }
+  .ghost { opacity:.3; border-style:dashed !important; }
+  .cmdrow { height:52px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:7px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T18 · <span class="pill">Meraki hierarchy</span> where is 10.10.10.21 plugged in?</h1>
+  <div class="sub">Each frame = one Dashboard API call. Every path needs an ID that only the previous response gave you.</div>
+  <div class="vars"><b>Script knows:</b>
+    <span class="var" id="v-org">org_id = ?</span>
+    <span class="var" id="v-net">net_id = ?</span>
+    <span class="var" id="v-ser">serial = ?</span>
+  </div>
+  <div class="lanes">
+    <div class="lane o" id="o"><h3>🏢 Organization</h3><div class="where">/organizations</div><div id="o-f"></div></div>
+    <div class="lane n" id="n"><h3>🌐 Networks</h3><div class="where">/organizations/{organizationId}<br>/networks</div><div id="n-f"></div></div>
+    <div class="lane c" id="c"><h3>💻 Clients</h3><div class="where">/networks/{networkId}/clients</div><div id="c-f"></div></div>
+    <div class="lane d" id="d"><h3>📦 Device (by serial)</h3><div class="where">/devices/{serial}</div><div id="d-f"></div></div>
+  </div>
+  <div class="cmdrow" id="cmd"></div>
+  <div class="step"><div class="n" id="num">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (t, s, cls="") => `<div class="item ${cls}">${t}<small>${s}</small></div>`;
+const ORG = I("549236", "DevNet Sandbox", "pick");
+const NETS1 = I("L_646829496481105433", "SG-HQ") + I("L_646829496481105434", "SG-Branch-01") + I("L_646829496481105435", "SG-Branch-02") + I("Link: rel=next", "more pages", "ghost");
+const NETS2 = I("L_646829496481105433", "SG-HQ", "pick") + I("L_646829496481105436", "TY-Lab (page 2)") + I("L_646829496481105437", "NY-Office (page 2)");
+const CLI = I("f8:4d:89:01:aa:10 · 10.10.10.21", "recentDeviceSerial Q2HP-3WCD-7KZE<br>switchport 3 · vlan 10", "pick");
+const DEV = I("Q2HP-3WCD-7KZE", "MS120-8LP · HQ-MS120-01");
+const frames = [
+  { active:"o", o:ORG, n:"", c:"", d:"", vars:["org"], newv:"org", cmd:{lane:0, t:"GET /organizations"},
+    txt:"Start at the top. <code>GET /organizations</code> returns a list; take <b>id 549236</b> as <code>org_id</code>." },
+  { active:"n", o:ORG, n:NETS1, c:"", d:"", vars:["org"], cmd:{lane:1, t:"GET /organizations/549236/networks?perPage=3"},
+    txt:"Networks need the <b>org id in the path</b>. Only 3 came back, and the <code>Link</code> header has <code>rel=next</code>." },
+  { active:"n", o:ORG, n:NETS2, c:"", d:"", vars:["org","net"], newv:"net", cmd:{lane:1, t:"GET /organizations/549236/networks?perPage=3&startingAfter=L_646829496481105435"},
+    txt:"Follow <code>rel=next</code> for page 2: 5 networks in total. Pick SG-HQ: <b>networkId</b> (an <code>L_</code> or <code>N_</code> string)." },
+  { active:"c", o:ORG, n:NETS2, c:CLI, d:"", vars:["org","net","ser"], newv:"ser", cmd:{lane:2, t:"GET /networks/L_646829496481105433/clients?ip=10.10.10.21"},
+    txt:"Clients live <b>under a network</b>. Filter with <code>?ip=</code>; the reply names the device: <code>recentDeviceSerial</code>." },
+  { active:"d", o:ORG, n:NETS2, c:CLI, d:DEV, vars:["org","net","ser"], cmd:{lane:3, t:"GET /devices/Q2HP-3WCD-7KZE"},
+    txt:"Devices are addressed by <b>serial</b>, not name. The answer: <b>HQ-MS120-01 port 3, VLAN 10</b>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["o","n","c","d"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const vals = { org:"org_id = 549236", net:"net_id = L_646829496481105433", ser:"serial = Q2HP-3WCD-7KZE" };
+  const blank = { org:"org_id = ?", net:"net_id = ?", ser:"serial = ?" };
+  for (const k of ["org","net","ser"]) {
+    const el = document.getElementById("v-"+k);
+    const on = f.vars.includes(k);
+    el.textContent = on ? vals[k] : blank[k];
+    el.classList.toggle("set", on); el.classList.toggle("new", f.newv === k);
+  }
+  const row = document.getElementById("cmd"); row.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t;
+  row.appendChild(d);
+  const laneW = (1124 - 3*16) / 4;
+  let left = f.cmd.lane * (laneW + 16);
+  d.style.left = "0px";
+  const w = d.getBoundingClientRect().width;
+  left = Math.min(Math.max(0, left + laneW/2 - w/2), 1124 - w);
+  d.style.left = left + "px";
+  document.getElementById("num").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
