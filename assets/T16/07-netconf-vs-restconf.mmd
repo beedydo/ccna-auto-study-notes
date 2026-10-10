@@ -1,0 +1,22 @@
+flowchart LR
+    Y["📄 Same YANG models<br/>ietf-interfaces<br/>Cisco-IOS-XE-native"]
+    subgraph NC["NETCONF (T15)"]
+        direction TB
+        N1["SSH :830 · XML only"] --> N2["RPCs:<br/>get · get-config<br/>edit-config<br/>lock · commit · unlock"]
+        N2 --> N3[("running · candidate · startup")]
+    end
+    subgraph RC["RESTCONF (T16)"]
+        direction TB
+        R1["HTTPS :443 · JSON or XML"] --> R2["HTTP methods on URIs<br/>GET · POST · PUT · PATCH · DELETE"]
+        R2 --> R3[("one unified datastore<br/>edits go live, no lock / commit")]
+    end
+    Y --> N1
+    Y --> R1
+    classDef y fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+    classDef nc fill:#e8dcf7,stroke:#7b4bc4,stroke-width:2px,color:#1d1d1f
+    classDef rc fill:#e3f6ee,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    class Y y
+    class N1,N2,N3 nc
+    class R1,R2,R3 rc
+    style NC fill:#faf7fd,stroke:#7b4bc4,stroke-width:2px
+    style RC fill:#f4fbf7,stroke:#28a745,stroke-width:2px

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T16 overview: RESTCONF</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 330px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code, .mx code, .meth code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item .c code { display: inline-block; margin-top: 2px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  .span2 { grid-column: span 2; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer code { font-family: Menlo, Consolas, monospace; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+
+  /* T16 extras */
+  .map { display: flex; align-items: center; gap: 6px; margin-bottom: 9px; }
+  .map .box { border: 2px solid; border-radius: 8px; padding: 5px 8px; font-size: 12.2px; line-height: 1.3; text-align: center; background: #fff; }
+  .map .cl { border-color: #17a2b8; background: #e3f1f8; } .map .dv { border-color: #28a745; background: #e3f6ee; }
+  .map .ar { font-weight: 800; font-size: 13px; color: var(--muted); text-align: center; line-height: 1.1; }
+  .map .ar small { display: block; font-weight: 400; font-size: 10.5px; }
+  .url { display: flex; flex-wrap: wrap; font-family: Menlo, Consolas, monospace; font-size: 12.4px; margin-bottom: 4px; }
+  .url span { padding: 4px 3px; border-top: 3px solid; }
+  .url .u1 { border-color: #17a2b8; background: #e3f1f8; } .url .u2 { border-color: #e0a800; background: #fff6dc; }
+  .url .u3 { border-color: #7b4bc4; background: #efe6fa; } .url .u4 { border-color: #28a745; background: #e3f6ee; }
+  .urlk { display: flex; gap: 10px; font-size: 11.3px; color: var(--muted); margin-bottom: 9px; }
+  .urlk i { font-style: normal; padding: 0 5px; border-radius: 3px; }
+  .meths { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; margin-bottom: 9px; }
+  .meth { border: 2px solid; border-radius: 8px; padding: 6px 7px; font-size: 12.3px; line-height: 1.4; }
+  .meth h4 { margin: 0 0 3px; font-size: 14px; font-family: Menlo, Consolas, monospace; }
+  .meth code { font-size: 11.5px; padding: 1px 4px; }
+  .m-get { background: #e3f6ee; border-color: #28a745; } .m-post { background: #e3f1f8; border-color: #17a2b8; }
+  .m-put { background: #fff6dc; border-color: #e0a800; } .m-patch { background: #e3f1f8; border-color: #17a2b8; }
+  .m-del { background: #fde8e8; border-color: #dc3545; }
+  .mx { width: 100%; border-collapse: collapse; table-layout: fixed; border: none; font-size: 12.8px; margin-bottom: 9px; }
+  .mx th, .mx td { border: 1.5px solid #bbb; padding: 4px 7px; text-align: left; vertical-align: middle; }
+  .mx th { background: #f0f0ee; font-size: 12.5px; }
+  .mx th.nc { background: #efe6fa; } .mx th.rc { background: #e3f6ee; }
+  .mx td.k { font-weight: 700; width: 110px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T16 · <span class="pill">RESTCONF</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.8, 5.10, 2.9</b><br>Every T16 concept on one page<br>Code from <code>labs/T16/</code></div>
+  </header>
+
+  <table>
+    <!-- WHAT + SETUP -->
+    <tr>
+      <td class="label"><span class="icon">🌐</span><div class="name">WHAT &amp;<br>SETUP</div><div class="ids">T16.01 · T16.07</div></td>
+      <td class="what"><span class="sig">RFC 8040 · HTTPS 443</span><br>
+        REST-like HTTP access to <b>YANG-modelled</b> config + state. Body = <b>JSON or XML</b>. IOS XE needs two commands, plus a <b>privilege 15</b> user.</td>
+      <td class="items">
+        <div class="map">
+          <div class="box cl">🐍 client<br>curl / requests</div>
+          <div class="ar">⇄<small>HTTPS 443<br>Basic auth</small></div>
+          <div class="box dv">nginx<br><code>/restconf</code></div>
+          <div class="ar">→</div>
+          <div class="box dv">YANG layer<br>(confd / DMI)</div>
+          <div class="ar">→</div>
+          <div class="box dv">running-config<br>(live at once)</div>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>enable it<span class="c"><code>restconf</code> <code>ip http secure-server</code></span></div>
+          <div class="item"><span class="n">2</span>check the processes<span class="c"><code>show platform software</code> <code>yang-management process</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> RESTCONF = HTTPS <code>443</code>, not SSH <code>830</code>. No <code>ip http secure-server</code> → nothing listens.</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- URI -->
+    <tr>
+      <td class="label"><span class="icon">🧭</span><div class="name">URI</div><div class="ids">T16.02</div></td>
+      <td class="what"><span class="sig">/restconf/data/&lt;module&gt;:&lt;node&gt;</span><br>
+        Path follows the YANG tree (T14). Root found via <code>/.well-known/host-meta</code>. <code>/data</code> = datastore, <code>/operations</code> = RPCs.</td>
+      <td class="items">
+        <div class="url"><span class="u1">https://10.10.20.48/restconf/data</span><span class="u2">/ietf-interfaces:interfaces</span><span class="u3">/interface=GigabitEthernet1</span><span class="u2">/description</span><span class="u4">?content=config</span></div>
+        <div class="urlk"><i style="background:#e3f1f8">root + datastore</i><i style="background:#fff6dc">module:container / leaf</i><i style="background:#efe6fa">list=key</i><i style="background:#e3f6ee">query</i></div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>discover the root<span class="c"><code>GET /.well-known/host-meta</code> → <code>href='/restconf'</code></span></div>
+          <div class="item"><span class="n">2</span>RPC (save the config)<span class="c"><code>POST /restconf/operations/</code> <code>cisco-ia:save-config</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> a <code>/</code> inside a key must be <code>%2F</code>: <code>interface=GigabitEthernet1%2F0%2F1</code>. Unencoded → wrong path (400/404).</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- METHODS + CODES -->
+    <tr>
+      <td class="label"><span class="icon">🔧</span><div class="name">METHODS<br>&amp; CODES</div><div class="ids">T16.03 · T16.05</div></td>
+      <td class="what"><span class="sig">GET · POST · PUT · PATCH · DELETE</span><br>
+        HTTP methods map to NETCONF ops. Success is <b>200</b> (data), <b>201</b> (created) or <b>204</b> (done, no body). Errors carry <code>ietf-restconf:errors</code> with an <b>error-tag</b>.</td>
+      <td class="items">
+        <div class="meths">
+          <div class="meth m-get"><h4>GET</h4>read<br>≈ get / get-config<br><code>200</code></div>
+          <div class="meth m-post"><h4>POST</h4>create, to the <b>parent</b><br><code>201</code> + Location<br>exists → <code>409</code></div>
+          <div class="meth m-put"><h4>PUT</h4>create <b>or replace</b><br><code>201</code> new<br><code>204</code> replaced</div>
+          <div class="meth m-patch"><h4>PATCH</h4><b>merge</b> some leaves<br><code>204</code></div>
+          <div class="meth m-del"><h4>DELETE</h4>remove<br><code>204</code><br>gone → <code>404</code></div>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>4xx = fix the request<span class="c"><code>400</code> payload · <code>401</code> creds · <code>404</code> path · <code>409</code> exists</span></div>
+          <div class="item"><span class="n">2</span>media-type errors<span class="c"><code>406</code> bad Accept · <code>415</code> bad Content-Type</span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> PUT <b>replaces</b>: leaves not in the body are <b>deleted</b> (description + IP gone in the lab). Use PATCH to change one leaf.</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- HEADERS -->
+    <tr>
+      <td class="label"><span class="icon">🏷️</span><div class="name">HEADERS</div><div class="ids">T16.04</div></td>
+      <td class="what"><span class="sig">application/yang-data+json</span><br>
+        <code>Accept</code> = what I want back. <code>Content-Type</code> = what I send. Auth = HTTP <b>Basic</b> over HTTPS.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>JSON<span class="c"><code>application/yang-data+json</code></span></div>
+        <div class="item"><span class="n">3</span>Basic auth<span class="c"><code>curl -u user:pass</code> · <code>auth=AUTH</code></span></div>
+        <div class="item"><span class="n">2</span>XML<span class="c"><code>application/yang-data+xml</code></span></div>
+        <div class="item"><span class="n">4</span>no Accept on IOS XE → <b>XML</b> back</div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> plain <code>application/json</code> is <b>not</b> a RESTCONF type → <code>415</code> as Content-Type, <code>406</code> as Accept (RFC 8040 rule).</div>
+      </div></td>
+    </tr>
+
+    <!-- QUERY -->
+    <tr>
+      <td class="label"><span class="icon">🔎</span><div class="name">QUERY<br>PARAMS</div><div class="ids">T16.06</div></td>
+      <td class="what"><span class="sig">?content= · ?depth= · ?fields=</span><br>
+        Trim a <b>GET</b> reply on the server side. Only for GET (and HEAD); anything unexpected → <code>400</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>config vs state<span class="c"><code>?content=config</code> <code>nonconfig</code> <code>all</code></span></div>
+        <div class="item"><span class="n">3</span>pick leaves (<code>;</code> = and, <code>()</code> = inside)<span class="c"><code>?fields=interface(name;enabled)</code></span></div>
+        <div class="item"><span class="n">2</span>limit nesting<span class="c"><code>?depth=1</code> … <code>65535</code> · <code>unbounded</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> defaults: <code>content=all</code>, <code>depth=unbounded</code>. Oper counters = <code>nonconfig</code>.</div>
+      </div></td>
+    </tr>
+
+    <!-- PYTHON -->
+    <tr>
+      <td class="label"><span class="icon">🐍</span><div class="name">PYTHON<br>&amp; EXAM</div><div class="ids">T16.09 · T16.10</div></td>
+      <td class="what"><span class="sig">requests.patch(url, auth=, headers=,</span><br><span class="sig">json=, verify=False)</span><br>
+        Same 4 keyword args on every call. Exam: pick method + URL + header for a change, then read the JSON reply.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>read<span class="c"><code>requests.get(BASE, auth=AUTH,</code> <code>headers=HEADERS, verify=False)</code></span></div>
+        <div class="item"><span class="n">3</span>parse the reply<span class="c"><code>r.json()["ietf-interfaces:interface"]</code></span></div>
+        <div class="item"><span class="n">2</span>partial change<span class="c"><code>requests.patch(iface_url("Loopback100"),</code> <code>auth=AUTH, headers=HEADERS,</code> <code>json=patch, verify=False)</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> top-level JSON key is <code>"module:name"</code>. <code>r.json()</code> on a <code>204</code> fails: no body.</div>
+      </div></td>
+    </tr>
+
+    <!-- NETCONF vs RESTCONF -->
+    <tr>
+      <td class="label"><span class="icon">⚖️</span><div class="name">NETCONF<br>vs<br>RESTCONF</div><div class="ids">T16.08</div></td>
+      <td class="what"><span class="sig">same YANG, different transport</span><br>
+        Both read and write the same YANG data. Pick by transport, encoding and whether you need <b>candidate + commit</b>.</td>
+      <td class="items">
+        <table class="mx">
+          <tr><th></th><th class="nc">NETCONF (T15)</th><th class="rc">RESTCONF (T16)</th></tr>
+          <tr><td class="k">Transport</td><td>SSH <code>830</code></td><td>HTTPS <code>443</code></td></tr>
+          <tr><td class="k">Encoding</td><td>XML only</td><td>JSON or XML</td></tr>
+          <tr><td class="k">Operations</td><td>RPCs: <code>get-config</code> <code>edit-config</code></td><td>HTTP methods on URIs</td></tr>
+          <tr><td class="k">Datastores</td><td>running · candidate · startup, <code>lock</code> / <code>commit</code></td><td>one unified datastore, no lock, no commit</td></tr>
+        </table>
+        <div class="grid">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> "needs a candidate datastore / commit / lock" → <b>NETCONF</b>. "JSON over HTTPS with HTTP verbs" → <b>RESTCONF</b>.</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k k1">numbered = example from the lab session</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T16/run_lab.sh</code> · details in each T16.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

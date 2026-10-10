@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T16 RESTCONF loopback lifecycle animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --req:#e3f1f8; --req-b:#17a2b8; --ok:#e3f6ee; --ok-b:#28a745;
+          --warn:#fff6dc; --warn-b:#e0a800; --bad:#fde8e8; --bad-b:#dc3545;
+          --st:#e8dcf7; --st-b:#7b4bc4; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:460px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr) minmax(0,1.35fr) minmax(0,0.95fr); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:255px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.req { border-color:var(--req-b); } .lane.resp { border-color:var(--line); }
+  .lane.run { border-color:var(--ok-b); } .lane.start { border-color:var(--st-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12.5px; line-height:1.5; border:2px solid; border-radius:7px; padding:7px 9px; margin-bottom:8px; word-break:break-word; }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11.5px; }
+  .b-req { background:var(--req); border-color:var(--req-b); }
+  .b-ok { background:var(--ok); border-color:var(--ok-b); }
+  .b-warn { background:var(--warn); border-color:var(--warn-b); }
+  .b-bad { background:var(--bad); border-color:var(--bad-b); }
+  .b-st { background:var(--st); border-color:var(--st-b); }
+  .b-none { background:#fafafa; border-color:#bbb; border-style:dashed; color:#999; }
+  .run .box { font-size:11px; }
+  .chg { background:#ffe58a; border-radius:3px; padding:0 2px; }
+  .gone { text-decoration:line-through; color:var(--bad-b); }
+  .code { display:inline-block; font-weight:800; font-size:15px; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+  .cmd { display:inline-block; font-family:Menlo,monospace; font-size:13px; font-weight:700; background:var(--ink); color:#fff;
+         padding:5px 10px; border-radius:8px; margin-bottom:8px; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T16 · <span class="pill">RESTCONF</span> one loopback, start to finish</h1>
+  <div class="sub">Each frame = one call from <code>labs/T16/restconf_client.py</code>. Watch running-config vs startup-config.</div>
+  <div class="lanes">
+    <div class="lane req" id="req"><h3>🐍 Request</h3><div class="where">method · URI · body</div><div id="req-f"></div></div>
+    <div class="lane resp" id="resp"><h3>📨 Response</h3><div class="where">status line · headers · body</div><div id="resp-f"></div></div>
+    <div class="lane run" id="run"><h3>⚡ running-config</h3><div class="where">changes the moment the call returns</div><div id="run-f"></div></div>
+    <div class="lane start" id="start"><h3>💾 startup-config</h3><div class="where">survives a reload</div><div id="start-f"></div></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (cls, t, s="") => `<div class="box ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const C = (t, back=false) => `<div class="cmd${back ? " back" : ""}">${t}</div>`;
+const LO_POST = B("b-ok", "interface Loopback100<br>&nbsp;description Created by RESTCONF<br>&nbsp;ip address 10.255.100.1 255.255.255.255", "enabled: true");
+const LO_PATCH = B("b-ok", "interface Loopback100<br>&nbsp;description <span class='chg'>Merged by PATCH</span><br>&nbsp;ip address 10.255.100.1 255.255.255.255", "enabled: true · ip kept");
+const LO_PUT = B("b-warn", "interface Loopback100<br>&nbsp;<span class='gone'>description …</span><br>&nbsp;<span class='gone'>ip address …</span><br>&nbsp;<span class='chg'>shutdown</span>", "only what the PUT body had");
+const LO101 = B("b-ok", "interface Loopback101<br>&nbsp;shutdown", "PUT created it");
+const NONE = B("b-none", "no Loopback100");
+const frames = [
+  { active:"run", req:C("POST")+B("b-req", "…/ietf-interfaces:interfaces", "parent + {name: Loopback100, …}"),
+    resp:B("b-ok", "<span class='code'>201 Created</span><br>Location: …/interface=Loopback100", "no body"),
+    run:LO_POST, start:NONE,
+    txt:"<code>POST</code> to the <b>parent</b> creates the entry. It is <b>live in running-config at once</b>: no lock, no commit." },
+  { active:"resp", req:C("POST")+B("b-req", "…/ietf-interfaces:interfaces", "same body again"),
+    resp:B("b-bad", "<span class='code'>409 Conflict</span><br>error-tag: data-exists"),
+    run:LO_POST, start:NONE,
+    txt:"POST the same entry again → <code>409</code> <code>data-exists</code>. POST only creates; it never overwrites." },
+  { active:"run", req:C("PATCH")+B("b-req", "…/interface=Loopback100", "{name, description}"),
+    resp:B("b-ok", "<span class='code'>204 No Content</span>"),
+    run:LO_PATCH, start:NONE,
+    txt:"<code>PATCH</code> = <b>merge</b>: only <code>description</code> changes, the IP address stays." },
+  { active:"run", req:C("PUT")+B("b-req", "…/interface=Loopback100", "{name, type, enabled: false}"),
+    resp:B("b-ok", "<span class='code'>204 No Content</span>", "replaced an existing entry"),
+    run:LO_PUT, start:NONE,
+    txt:"<code>PUT</code> = <b>replace</b>: description and IP were not in the body, so they are <b>removed</b>." },
+  { active:"run", req:C("PUT")+B("b-req", "…/interface=Loopback101", "{name, type, enabled: false}"),
+    resp:B("b-ok", "<span class='code'>201 Created</span>", "PUT to a URI that did not exist"),
+    run:LO_PUT+LO101, start:NONE,
+    txt:"<code>PUT</code> to a new URI <b>creates</b> it → <code>201</code>. Same method, 204 when it replaced." },
+  { active:"run", req:C("DELETE")+B("b-req", "…/interface=Loopback101", "no body"),
+    resp:B("b-ok", "<span class='code'>204 No Content</span>", "again → 404"),
+    run:LO_PUT, start:NONE,
+    txt:"<code>DELETE</code> removes Loopback101 → <code>204</code>. Run it again → <code>404</code>, same end state." },
+  { active:"start", req:C("POST")+B("b-req", "/restconf/operations/<br>cisco-ia:save-config", "RPC, no body"),
+    resp:B("b-ok", "<span class='code'>200 OK</span><br>{\"cisco-ia:output\": {\"result\": …}}"),
+    run:LO_PUT, start:B("b-st", "interface Loopback100<br>&nbsp;shutdown", "copied from running"),
+    txt:"Only now does <b>startup-config</b> change: <code>POST /operations/cisco-ia:save-config</code> = <code>copy run start</code>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["req","resp","run","start"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
