@@ -27,6 +27,7 @@ Decide how the note hangs together, so it reads as one story rather than fragmen
     `![Alt text](../assets/$ARGUMENTS/NN-short-name.png)` then a blank line, then `*Caption.*`
   - Use colour to carry meaning, and keep it the same across diagrams: green = safe/kept, yellow = partial, red = destructive/error, blue = the recommended answer.
   - Prefer `flowchart` or `sequenceDiagram`. Avoid `gitGraph` with long commit labels, because they render rotated. Avoid circle nodes, because they balloon in size.
+  - **Mermaid is for flows only** (sequences, decisions, lifecycles). If the diagram shows **what the parts are and how they connect** (a platform, a topology, planes, tiers), it's an architecture diagram: build it with the kit in §2d, not Mermaid. An auto-laid-out flowchart of boxes is not an architecture diagram.
 
 ## 2b. One-page overview sheet (top of every note)
 
@@ -117,6 +118,38 @@ A GIF shows **something moving through stages over time**, one command or event 
 4. Embed it under the static diagram of the same flow:
    `![Animated …](../assets/$ARGUMENTS/NN-name.gif)`, then a blank line, then an italic caption listing the steps in order and naming the misconception it fixes.
 
+## 2d. Architecture and topology diagrams (HTML kit, not Mermaid)
+
+Use one when the learner needs to see **components, where they sit and what connects to what**. Typical cases are a platform's architecture (controller, cloud, devices), a network topology, planes or tiers, and a request path through boxes. **Platform topics (T12, T17–T25, T42) and topology topics (T38–T41) need at least one.** Mermaid can't do this well: it auto-places boxes, has no device shapes and doesn't type the links, so the result reads like a flowchart.
+
+**The kit (`assets/_arch/`, shared by every topic):**
+- `arch.css`: zones, node and label styles, the link legend, and the same title style as the overview sheets.
+- `arch.js`: inline SVG device icons, simplified in the style of the Cisco network topology icons. It also draws the links from a list.
+- Worked reference: `assets/T22/01-architecture.html`. Copy its structure.
+
+**How to build one:**
+1. Write `assets/$ARGUMENTS/NN-short-name.html`. It loads `../_arch/arch.css` and `../_arch/arch.js` and has one `<div class="sheet">` root (1300px; add `class="sheet wide"` for 1500px).
+2. **Place things on purpose, in zones.** A zone is a `.zone` with a header (`.zh`) and a body (`.zb`). Zones stack top to bottom (`.gap` between rows) or sit side by side in a `.row`.
+   - Zone kinds give the header colour: `client` · `cloud` · `ctrl` · `fabric` · `site` · `dmz` · `ext`. `dashed` gives an outline-only grouping zone.
+   - Usual reading order: whoever calls the API at the top, then controller or cloud, then fabric or devices, then sites or end hosts at the bottom.
+3. **Nodes** are `<div class="node" id="…" data-icon="…">` with `.nm` (name), `.sub` (role, old name, port) and an optional `.tag` (an exact value from the lab, e.g. `device-type: vsmart`).
+   - Icons: `router switch l3switch firewall lb server controller cloud internet ap wlc laptop script gui user phone roomdevice phonesvc camera db chassis fi dns proxy`.
+   - Width modifiers: `.n` narrow, `.w` wide, `.xw` extra wide. `.hl` makes a node glow (the box your code talks to); `.down` marks a failed one.
+4. **Links** go in `window.LINKS = [{a, b, k, label, dir, s, ao, bo, mid, t}]`. `k` is the link type, shown in the legend, and must mean the same thing in every diagram:
+   - `api`: your code → platform (blue, arrow)
+   - `mgmt`: management or config such as NETCONF, SSH or SNMP (grey dashed)
+   - `control`: control plane such as OMP, routing protocols or DTLS control (purple dotted)
+   - `data`: user traffic (thick green)
+   - `phys`: a plain cable or LAN link (dark)
+   - `error`: blocked or failing (red dashed)
+
+   A link whose `b` is a zone lands straight below its source, so one line can stand for "to every device in this zone".
+5. **Keep it readable:** at most ~16 links. Parallel links get `ao`/`bo` offsets, so none overlap. No label sits on a node. Use 2–3 `.note` boxes under the canvas (one `.note.trap` from `## Exam traps`), and a `footer` legend that lists only the link types the diagram uses.
+6. Render with the overview script (it screenshots `.sheet` at 2x): `node scripts/render-overview.mjs assets/$ARGUMENTS/NN-short-name.html` → `NN-short-name.png`. **Read the PNG** and fix crossing lines, labels on top of nodes, lopsided zones and clipped text. Expect 2–4 rounds; move nodes or zones before adding bends.
+7. Embed it like any diagram, with an italic caption saying what to notice. In `## Sources`, list it as `Architecture diagram: HTML source assets/$ARGUMENTS/NN-short-name.html (shared kit assets/_arch/)`.
+
+Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link type, add it there once, then re-render the existing diagrams that use the kit and check them.
+
 ## 3. Fill the note (follow CLAUDE.md)
 
 - Under each `### TXX.NN` concept, keep the checklist, tick `[x]` every item you explain, and write point-form **Notes:**.
@@ -163,6 +196,7 @@ A GIF shows **something moving through stages over time**, one command or event 
   - ⚠ items
   - backbone used (reference program in `labs/$ARGUMENTS/` and/or N diagrams in `assets/$ARGUMENTS/`)
   - overview sheet archetype (A–F) and why
+  - architecture/topology diagrams built with the `assets/_arch/` kit (or "none: no component map needed")
   - GIFs made (or "none: no flow needed motion"), each with the misconception it fixes
   - anything not run
 - Suggest the commit message `$ARGUMENTS: draft notes`, but do not commit unless asked.

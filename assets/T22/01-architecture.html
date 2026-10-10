@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T22 architecture: Catalyst SD-WAN</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client { width: 470px; margin: 0 auto; }
+  .transport > .zb { flex-direction: column; align-items: center; gap: 26px; padding: 22px 10px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T22 · <span class="pill">Catalyst SD-WAN</span> architecture</h1>
+    <div class="meta"><b>200-901 blueprint 3.2, 3.9.a</b><br>Four components, four planes<br>Names as in <code>labs/T22/sdwan_inventory.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Automation client</div>
+      <div class="zb">
+        <div class="node" id="script" data-icon="script"><div class="nm">Your script / curl</div><div class="sub"><code>requests.Session()</code></div></div>
+        <div class="node" id="gui" data-icon="gui"><div class="nm">Browser GUI</div><div class="sub">same REST API</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ctrl">
+      <div class="zh">SD-WAN control components <small>cloud-hosted or on-prem · each owns one plane</small></div>
+      <div class="zb">
+        <div class="node w" id="validator" data-icon="controller"><div class="nm">SD-WAN Validator</div><div class="sub">(vBond) · <b>orchestration</b> plane<br>authenticates new devices<br>NAT traversal · public IP<br>permanent DTLS to Controller</div><span class="tag">device-type: vbond</span></div>
+        <div class="node xw hl" id="manager" data-icon="gui"><div class="nm">SD-WAN Manager</div><div class="sub">(vManage) · <b>management</b> plane<br>GUI · NMS · templates · <b>REST API</b><br><code>https://&lt;manager&gt;/dataservice/…</code></div><span class="tag">device-type: vmanage</span></div>
+        <div class="node w" id="controller" data-icon="controller"><div class="nm">SD-WAN Controller</div><div class="sub">(vSmart) · <b>control</b> plane<br>OMP: routes, TLOCs, keys, policy</div><span class="tag">device-type: vsmart</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone fabric dashed" id="dataplane">
+      <div class="zh">Data plane · WAN Edge overlay <small>every edge keeps DTLS to the Manager + Controller; IPsec to other edges</small></div>
+      <div class="zb" style="padding: 16px 16px 18px">
+        <div class="row" style="width: 100%">
+          <div class="zone site" style="flex: 1">
+            <div class="zh">Site 1 · branch</div>
+            <div class="zb">
+              <div class="node n" id="lan1" data-icon="switch"><div class="nm">LAN switch</div></div>
+              <div class="node" id="edge1" data-icon="router"><div class="nm">Edge1</div><div class="sub">WAN Edge · C8000V<br>(vEdge / cEdge)</div><span class="tag">device-type: vedge</span></div>
+            </div>
+          </div>
+          <div class="zone ext transport" style="flex: 0.75">
+            <div class="zh">WAN transports <small>TLOC colours</small></div>
+            <div class="zb">
+              <div class="node n" id="mpls" data-icon="cloud"><div class="nm">mpls</div></div>
+              <div class="node n" id="inet" data-icon="internet"><div class="nm">biz-internet</div></div>
+            </div>
+          </div>
+          <div class="zone site" style="flex: 1">
+            <div class="zh">Site 2 · branch</div>
+            <div class="zb">
+              <div class="node" id="edge2" data-icon="router"><div class="nm">Edge2</div><div class="sub">WAN Edge · C8000V<br>(vEdge / cEdge)</div><span class="tag">device-type: vedge</span></div>
+              <div class="node n" id="lan2" data-icon="switch"><div class="nm">LAN switch</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Only the Manager has the API.</b> Scripts never talk to the Controller, the Validator or an edge directly.</div>
+      <div class="note trap"><b>Trap:</b> OMP runs <b>edge ↔ Controller only</b>. Edges never run OMP with each other: edge ↔ edge is an <b>IPsec data tunnel</b>, checked with <b>BFD</b>.</div>
+      <div class="note"><b>Validator = first contact.</b> After onboarding, an edge keeps DTLS sessions with the Controller and the Manager only.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span><i class="sw mgmt"></i>management / config (NETCONF)</span>
+    <span><i class="sw control"></i>control plane (OMP, DTLS)</span>
+    <span><i class="sw data"></i>data plane (user traffic)</span>
+    <span><i class="sw phys"></i>physical / LAN link</span>
+    <span style="margin-left:auto">Blue glow = the one box your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "manager", k: "api", s: "b-t", bo: -30, label: "HTTPS REST <code>/dataservice/…</code>", t: 0.3 },
+  { a: "gui", b: "manager", k: "api", s: "b-t", bo: 30, mid: 0.75 },
+  { a: "validator", b: "dataplane", k: "control", label: "DTLS · onboarding only", t: 0.55 },
+  { a: "manager", b: "dataplane", k: "mgmt", label: "NETCONF config over DTLS", t: 0.55 },
+  { a: "controller", b: "dataplane", k: "control", dir: "both", label: "OMP over DTLS<br>routes · TLOCs · keys · policy", t: 0.55 },
+  { a: "edge1", b: "mpls", k: "data", s: "r-l", ao: -5 },
+  { a: "edge1", b: "inet", k: "data", s: "r-l", ao: 5 },
+  { a: "mpls", b: "edge2", k: "data", s: "r-l", bo: -5 },
+  { a: "inet", b: "edge2", k: "data", s: "r-l", bo: 5, label: "IPsec tunnels + BFD<br>(user traffic)", t: 0.5 },
+  { a: "lan1", b: "edge1", k: "phys" },
+  { a: "edge2", b: "lan2", k: "phys" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

@@ -46,3 +46,13 @@ CHROME_PATH=/usr/bin/google-chrome FFMPEG=/path/to/ffmpeg node scripts/render-an
 ```
 
 - For Mermaid, pass a puppeteer config with `{"executablePath": "/usr/bin/google-chrome", "args": ["--no-sandbox"]}` via `npx @mermaid-js/mermaid-cli -p puppeteer.json ...`.
+
+## Architecture and topology diagrams (HTML kit → PNG)
+
+- Platform architectures, topologies, planes and tiers are hand-placed HTML, not Mermaid. They use the shared kit in `assets/_arch/` (`arch.css` for zones, labels and legend; `arch.js` for the device icons and links drawn from `window.LINKS`).
+- The worked reference is `assets/T22/01-architecture.html`. The authoring rules are in §2d of `.claude/commands/note.md`.
+- Render the same way as an overview sheet:
+
+```bash
+node scripts/render-overview.mjs assets/T22/01-architecture.html
+```

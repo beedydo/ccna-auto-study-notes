@@ -628,7 +628,7 @@ A. BGP  B. OMP  C. BFD  D. NETCONF
 
 ## Sources
 
-- Overview image: HTML source `assets/T22/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T22/*.mmd`. Animation: `assets/T22/07-session-anim.html` → `07-session.gif`.
+- Overview image: HTML source `assets/T22/00-overview.html`, rendered to PNG (see `assets/README.md`). Architecture diagram: HTML source `assets/T22/01-architecture.html` (shared kit `assets/_arch/`). Other diagrams: Mermaid sources in `assets/T22/*.mmd`. Animation: `assets/T22/07-session-anim.html` → `07-session.gif`.
 - Cisco DevNet, SD-WAN Manager API, Authentication (session login, empty body + JSESSIONID, HTML body on failure, XSRF token since 19.2, POST /logout with nocache, 24 h / 30 min / 100 sessions, JWT 20.18.1+): https://developer.cisco.com/docs/sdwan/authentication/
 - Cisco DevNet, SD-WAN Manager API, Getting Started (base URI `/dataservice`, API categories, curl cookie-jar flow, logout): https://developer.cisco.com/docs/sdwan/getting-started
 - Cisco DevNet, Device Inventory (`/device` response fields): https://developer.cisco.com/docs/sdwan/device-inventory
