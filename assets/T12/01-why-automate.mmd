@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph MAN["Manual: one engineer, one box at a time"]
+        direction TB
+        E["Engineer"] -->|"SSH + type CLI"| M1["sw1"]
+        E -->|"SSH + type CLI<br/>(typo on port 4)"| M2["sw2"]
+        E -->|"forgot this one"| M3["sw3"]
+    end
+    subgraph AUTO["Automated: one source of truth, every box the same"]
+        direction TB
+        G["Git repo<br/>desired config + history"] --> S["Script / pipeline<br/>runs in seconds"]
+        S --> A1["sw1"]
+        S --> A2["sw2"]
+        S --> A3["sw3"]
+        S --> L["Log + diff<br/>= audit trail"]
+    end
+    MAN ~~~ AUTO
+    classDef red fill:#fde8e8,stroke:#b42318,color:#111
+    classDef yellow fill:#fef9c3,stroke:#a16207,color:#111
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111
+    class M2 yellow
+    class M3 red
+    class A1,A2,A3 green
+    class G,S,L blue
