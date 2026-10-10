@@ -1,0 +1,10 @@
+flowchart LR
+    ED["&lt;edit-config&gt;<br/>target = candidate"] --> CAN["📝 candidate<br/>staging copy<br/>(:candidate)"]
+    CAN -- "&lt;commit&gt;" --> RUN["⚙️ running<br/>active config"]
+    RUN -- "&lt;discard-changes&gt;<br/>copies running back over candidate" --> CAN
+    RUN -- "&lt;copy-config&gt; running → startup" --> ST["💾 startup<br/>loaded at boot<br/>(:startup)"]
+    ED2["&lt;edit-config&gt;<br/>target = running"] -. "only if :writable-running" .-> RUN
+    style CAN fill:#fff3cd,stroke:#e0a800
+    style RUN fill:#d4edda,stroke:#28a745
+    style ST fill:#d1ecf1,stroke:#17a2b8
+    style ED2 fill:#f2f2f2,stroke:#999,stroke-dasharray: 4 3

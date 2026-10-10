@@ -1,0 +1,9 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart LR
+    R["&lt;rpc message-id=&quot;101&quot;&gt;"] --> P["&lt;rpc-reply message-id=&quot;101&quot;&gt;<br/>same message-id"]
+    P --> OK["✅ &lt;ok/&gt;<br/>edit-config · lock · commit<br/>copy-config · close-session"]
+    P --> DATA["📦 &lt;data&gt;…&lt;/data&gt;<br/>get · get-config"]
+    P --> ERR["❌ &lt;rpc-error&gt;<br/>error-type: transport / rpc / protocol / application<br/>error-tag: lock-denied, data-exists, in-use …<br/>error-severity: error / warning<br/>error-path · error-message · error-info"]
+    style OK fill:#d4edda,stroke:#28a745
+    style DATA fill:#d1ecf1,stroke:#17a2b8
+    style ERR fill:#f8d7da,stroke:#dc3545
