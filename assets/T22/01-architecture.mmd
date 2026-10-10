@@ -1,0 +1,25 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart TB
+    S["🧑‍💻 Your script / curl<br/>HTTPS REST → <b>/dataservice/...</b>"]
+    subgraph TOP[" "]
+        direction LR
+        V["<b>SD-WAN Validator</b> (vBond)<br/>ORCHESTRATION plane<br/>authenticates devices<br/>tells them where the controllers are<br/>NAT traversal"]
+        M["<b>SD-WAN Manager</b> (vManage)<br/>MANAGEMENT plane<br/>GUI · NMS · REST API<br/>templates · monitoring"]
+        C["<b>SD-WAN Controller</b> (vSmart)<br/>CONTROL plane<br/>OMP: routes + TLOCs<br/>pushes policy + keys"]
+    end
+    subgraph DATA["DATA plane: WAN Edge routers (vEdge / cEdge, e.g. C8000V)"]
+        direction LR
+        E1["<b>WAN Edge</b><br/>Edge1 · site 1"] <==>|"IPsec tunnel + BFD<br/>(user traffic)"| E2["<b>WAN Edge</b><br/>Edge2 · site 2"]
+    end
+    S -->|"the ONLY API target"| M
+    V -.->|"DTLS: onboarding only"| DATA
+    M -.->|"NETCONF config<br/>over DTLS/TLS"| DATA
+    C <-->|"OMP over DTLS"| DATA
+    style TOP fill:#ffffff,stroke:#ffffff
+    style S fill:#d1ecf1,stroke:#17a2b8
+    style M fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style V fill:#fff3cd,stroke:#e0a800
+    style C fill:#e8dcf7,stroke:#7b4bc4
+    style DATA fill:#f3fbf5,stroke:#28a745
+    style E1 fill:#d4edda,stroke:#28a745
+    style E2 fill:#d4edda,stroke:#28a745
