@@ -1,0 +1,14 @@
+flowchart LR
+    C["💻 Client<br/>stub resolver + cache"] -->|"1. A app.t41.lab?"| R["Recursive resolver"]
+    R -->|"2. ask root → .lab TLD → authoritative"| AUTH["Authoritative DNS / GSLB<br/>app.t41.lab"]
+    AUTH -->|"3. A 127.0.41.1, 127.0.41.2<br/>TTL 3 (order rotates)"| R
+    R -->|"4. answer + TTL (both cache it)"| C
+    AUTH -. "health check" .-> SA["Site A VIP<br/>127.0.41.1 ✅"]
+    AUTH -. "health check" .-> SB["Site B VIP<br/>127.0.41.2 ❌ failed"]
+    C ==>|"5. HTTP to a VIP<br/>(DNS carries no traffic)"| SA
+    classDef ok fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f
+    classDef rec fill:#e3f1f8,stroke:#1f6feb,color:#1d1d1f
+    class SA ok
+    class SB bad
+    class AUTH rec

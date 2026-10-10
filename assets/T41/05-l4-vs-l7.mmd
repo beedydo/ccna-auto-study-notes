@@ -1,0 +1,17 @@
+flowchart TB
+    subgraph L4["L4 load balancer (AWS NLB): sees IP + port only"]
+      direction LR
+      C4["Client"] -->|"TCP :443, still encrypted"| N["L4 LB<br/>flow hash on 5-tuple"]
+      N -->|"same TCP flow → one server"| S4a["server 1"]
+      N --> S4b["server 2"]
+    end
+    subgraph L7["L7 load balancer / reverse proxy (AWS ALB, NGINX): reads HTTP"]
+      direction LR
+      C7["Client"] -->|"HTTPS :443"| P["L7 LB<br/>TLS terminated here<br/>reads Host, path, cookie"]
+      P -->|"/api/*"| S7a["api pool"]
+      P -->|"/static/*"| S7b["static pool"]
+    end
+    classDef rec fill:#e3f1f8,stroke:#1f6feb,color:#1d1d1f
+    classDef part fill:#fff6dc,stroke:#e0a800,color:#1d1d1f
+    class P rec
+    class N part
