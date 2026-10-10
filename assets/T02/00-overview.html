@@ -75,10 +75,10 @@
       <td class="what"><span class="sig">def f(a, *args, k=1, **kw):</span><br>
         Reusable block of logic. <b>Parameter</b> = name in <code>def</code>; <b>argument</b> = value in the call. <code>return</code> sends a value back; no <code>return</code> → <code>None</code>. Names resolve <b>L→E→G→B</b>.</td>
       <td class="items"><div class="grid">
-        <div class="item"><span class="n">1</span>positional, then keyword<span class="c"><code>build_inventory(rows, site="sandbox")</code></span></div>
-        <div class="item"><span class="n">5</span>return several values → tuple<span class="c"><code>devices, skipped = f(...)</code></span></div>
-        <div class="item"><span class="n">2</span>default value<span class="c"><code>def first_free_vlan(used, start=10)</code></span></div>
-        <div class="item"><span class="n">6</span>rebind a global needs <code>global</code><span class="c"><code>global rows_seen; rows_seen += 1</code></span></div>
+        <div class="item"><span class="n">1</span>positional, then keyword<span class="c"><code>site="sandbox"</code> in the <code>build_inventory(</code> call</span></div>
+        <div class="item"><span class="n">5</span>return several values → tuple<span class="c"><code>devices, skipped = build_inventory(</code></span></div>
+        <div class="item"><span class="n">2</span>default value<span class="c"><code>def first_free_vlan(used,</code><br><code>&nbsp;&nbsp;start=10, step=10):</code></span></div>
+        <div class="item"><span class="n">6</span>rebind a global needs <code>global</code><span class="c"><code>global rows_seen</code> · <code>rows_seen += 1</code></span></div>
         <div class="item"><span class="n">3</span><code>*args</code> → extra positional as <b>tuple</b><span class="c"><code>*extra_rows</code> → <code>({...},)</code></span></div>
         <div class="item"><span class="n">7</span>docstring = first string in body<span class="c"><code>make_device.__doc__</code> · <code>help(f)</code></span></div>
         <div class="item"><span class="n">4</span><code>**kwargs</code> → extra keyword as <b>dict</b><span class="c"><code>**tags</code> → <code>{'owner': 'beedy'}</code></span></div>
@@ -93,7 +93,7 @@
         Blueprint bundling <b>data</b> (attributes) + <b>behaviour</b> (methods). <code>Device(...)</code> makes an <b>instance</b>. <code>__init__</code> sets starting attributes; <code>self</code> = this object, passed automatically.</td>
       <td class="items"><div class="grid">
         <div class="item"><span class="n">1</span>instance attribute: one per object<span class="c"><code>self.hostname = hostname</code></span></div>
-        <div class="item"><span class="n">4</span><code>@classmethod</code> gets <code>cls</code>: alt constructor<span class="c"><code>IOSXE.from_dict(row)</code> → an IOSXE</span></div>
+        <div class="item"><span class="n">4</span><code>@classmethod</code> gets <code>cls</code>: alt constructor<span class="c"><code>cls.from_dict(row)</code> with <code>cls = IOSXE</code></span></div>
         <div class="item"><span class="n">2</span>class attribute: shared by all<span class="c"><code>Device.connections += 1</code></span></div>
         <div class="item"><span class="n">5</span><code>@staticmethod</code>: no <code>self</code>, no <code>cls</code><span class="c"><code>Device.is_valid_vlan(4095)</code> → False</span></div>
         <div class="item"><span class="n">3</span>instance method uses <code>self</code><span class="c"><code>d.connect()</code> = <code>Device.connect(d)</code></span></div>
@@ -153,12 +153,12 @@
         <b>Mutable</b> (list, dict, set) change in place; <b>immutable</b> (str, int, tuple) don't. Control flow: <code>if/elif/else</code>, <code>for</code>, <code>while</code>, <code>try/except/else/finally</code>.</td>
       <td class="items"><div class="grid">
         <div class="item"><span class="n">1</span>list comprehension + filter<span class="c"><code>[d.hostname for d in devices</code><br><code>&nbsp;if d.port == 443]</code></span></div>
-        <div class="item"><span class="n">5</span><code>while</code> + <code>break</code> / <code>continue</code><span class="c"><code>first_free_vlan({10,20,30})</code> → 40</span></div>
+        <div class="item"><span class="n">5</span><code>while</code> + <code>break</code> / <code>continue</code><span class="c"><code>first_free_vlan({10, 20, 30})</code> → 40</span></div>
         <div class="item"><span class="n">2</span>dict comprehension<span class="c"><code>{d.hostname: d for d in devices}</code></span></div>
         <div class="item"><span class="n">6</span><code>try</code> / <code>except</code> / <code>else</code> / <code>finally</code><span class="c"><code>finally</code> runs even after <code>continue</code></span></div>
-        <div class="item"><span class="n">3</span>index + item / key + value<span class="c"><code>enumerate(rows)</code> · <code>tags.items()</code></span></div>
-        <div class="item"><span class="n">7</span>signal an error<span class="c"><code>raise ValueError("bad row")</code></span></div>
-        <div class="item"><span class="n">4</span>f-string<span class="c"><code>f"{self.hostname}: SSH {self.mgmt_ip}"</code></span></div>
+        <div class="item"><span class="n">3</span>index + item / key + value<span class="c"><code>enumerate(rows + list(extra_rows))</code><br><code>.tags.items()</code></span></div>
+        <div class="item"><span class="n">7</span>signal an error<span class="c"><code>raise ValueError(</code><br><code>&nbsp;&nbsp;f"no hostname in {row}")</code></span></div>
+        <div class="item"><span class="n">4</span>f-string<span class="c"><code>f"{self.hostname}: SSH</code><br><code>&nbsp;{self.mgmt_ip}:{self.port}"</code></span></div>
         <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>{}</code> = empty <b>dict</b>; <code>(5)</code> = int, <code>(5,)</code> = tuple; use <code>is None</code></div>
       </div></td>
     </tr>
