@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T17 overview: IOS XE and NX-OS device-level APIs</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #17a2b8; --blue-soft: #e3f1f8; --yel: #e0a800; --yel-soft: #fff6dc; --grn: #28a745; --grn-soft: #e3f6ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1440px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; flex: none;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; font-size: 13px; line-height: 1.4; margin-top: 8px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: 220px 46px minmax(0, 1fr) 24px minmax(0, 1.25fr); align-items: stretch; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .zone > h2 { margin: 0; padding: 8px 12px; font-size: 17px; font-weight: 800; color: #fff; }
+  .zone .body { padding: 10px 12px 12px; }
+  .z-client > h2 { background: #555; } .z-xe > h2 { background: #7b4bc4; } .z-nx > h2 { background: #0f7c8f; }
+  .arrow { display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; color: var(--line); }
+  .api { border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; margin-bottom: 7px; font-size: 13px; line-height: 1.45; }
+  .api h4 { margin: 0 0 2px; font-size: 14px; }
+  .api.y { background: var(--yel-soft); border-color: var(--yel); } .api.g { background: var(--grn-soft); border-color: var(--grn); }
+  .api.b { background: var(--blue-soft); border-color: var(--blue); }
+  .api.dash { border-style: dashed; border-color: #999; background: #f4f4f4; }
+  .db { border: 2.5px solid var(--blue); background: #d1ecf1; border-radius: 18px / 10px; text-align: center; padding: 6px 8px;
+        font-size: 13px; font-weight: 700; line-height: 1.4; }
+  .db span { font-weight: 400; }
+  .cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 7px; }
+  .client p { margin: 0 0 7px; font-size: 13px; line-height: 1.45; }
+  .down { text-align: center; font-size: 15px; line-height: 1; margin: 1px 0 4px; color: var(--blue); font-weight: 800; }
+
+  /* bottom panels */
+  .row2 { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px 12px; }
+  .panel > h3 { margin: 0 0 8px; font-size: 17px; font-weight: 800; }
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 13px; }
+  th, td { border: 1.5px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; line-height: 1.4; }
+  th { background: #f1f1ef; font-size: 13px; }
+  th.y { background: var(--yel-soft); } th.g { background: var(--grn-soft); }
+  td:first-child { font-weight: 700; width: 92px; }
+  .tele { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .t { border: 2px solid; border-radius: 8px; padding: 6px 8px; font-size: 12.8px; line-height: 1.45; }
+  .t h4 { margin: 0 0 3px; font-size: 13.5px; }
+  .t.in { background: var(--blue-soft); border-color: var(--blue); } .t.out { background: var(--grn-soft); border-color: var(--grn); }
+  .t.old { background: var(--trap); border-color: #dc3545; }
+  .pick { margin-top: 10px; font-size: 13px; line-height: 1.55; }
+  .pick div { margin-bottom: 3px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: #d1ecf1; border: 1px solid var(--blue); }
+  footer .k5::before { background: var(--yel-soft); border: 1px solid var(--yel); }
+  footer .k6::before { background: var(--grn-soft); border: 1px solid var(--grn); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T17 · <span class="pill">IOS XE &amp; NX-OS device APIs</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.6</b><br>Every T17 concept on one page<br>Code from <code>labs/T17/</code></div>
+  </header>
+
+  <div class="map">
+    <!-- CLIENT -->
+    <div class="zone z-client">
+      <h2>🐍 Client</h2>
+      <div class="body client">
+        <p>Python <code>requests</code>, curl, Ansible, a collector.</p>
+        <p><span class="n">1</span>NX-API CLI: <b>Basic</b> auth<br><code>auth=(user, pw)</code></p>
+        <p><span class="n">2</span>NX-API REST: log in, then <b>cookie</b><br><code>requests.Session()</code></p>
+        <p><span class="n">3</span>RESTCONF: Basic + YANG media type<br><code>application/yang-data+json</code></p>
+        <p><span class="n">4</span>Lab certs are self-signed<br><code>verify=False</code></p>
+      </div>
+    </div>
+    <div class="arrow">➜</div>
+
+    <!-- IOS XE -->
+    <div class="zone z-xe">
+      <h2>🛜 IOS XE <span class="ids" style="color:#e9ddff">T17.01 · Catalyst 9000, ISR, C8000v</span></h2>
+      <div class="body">
+        <div class="cols2">
+          <div class="api b"><h4>NETCONF <span class="ids">T15</span></h4>SSH <code>:830</code> · XML<br><code>netconf-yang</code></div>
+          <div class="api b"><h4>RESTCONF <span class="ids">T16</span></h4>HTTPS <code>:443</code> · <code>/restconf/data</code><br><code>restconf</code> + <code>ip http secure-server</code></div>
+        </div>
+        <div class="api b"><h4>gNMI / gRPC</h4>secure <code>:9339</code> · <code>gnxi</code> + <code>gnxi secure-server</code> · Get / Set / Subscribe</div>
+        <div class="down">▼ all three speak YANG ▼</div>
+        <div class="db">YANG models <span>IETF · OpenConfig · <code>Cisco-IOS-XE-native</code></span></div>
+        <div class="api dash" style="margin-top:8px"><h4>On-box (awareness)</h4>Guest Shell = Linux container with Python: <code>guestshell enable</code> · EEM applets react to events</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> IOS XE has <b>no NX-API</b>. "IOS XE device API" → NETCONF / RESTCONF (/ gNMI)</div>
+      </div>
+    </div>
+    <div class="arrow" style="font-size:0"></div>
+
+    <!-- NX-OS -->
+    <div class="zone z-nx">
+      <h2>🔀 NX-OS <span class="ids" style="color:#d4f3f8">T17.02 · T17.03 · T17.04 · Nexus 3000 / 9000</span></h2>
+      <div class="body">
+        <div class="cols2">
+          <div class="api y"><h4>NX-API CLI <span class="ids">T17.02</span></h4>
+            <code>POST /ins</code> · CLI text in, JSON/XML out<br>
+            <code>cli_show</code> <code>cli_show_ascii</code> <code>cli_conf</code><br>
+            JSON-RPC: <code>application/json-rpc</code><br>
+            <code>feature nxapi</code> · browser sandbox writes the code</div>
+          <div class="api g"><h4>NX-API REST <span class="ids">T17.03</span></h4>
+            <code>POST /api/aaaLogin.json</code> → <code>APIC-cookie</code><br>
+            one MO: <code>/api/mo/sys/intf/phys-[eth1/5].json</code><br>
+            all of a class: <code>/api/class/l1PhysIf.json</code><br>
+            reply: <code>{"totalCount", "imdata": [...]}</code></div>
+        </div>
+        <div class="api b"><h4>NETCONF · RESTCONF · gRPC/gNMI <span class="ids">T17.04</span></h4><code>feature netconf</code> <code>feature restconf</code> <code>feature grpc</code> · Device YANG + OpenConfig</div>
+        <div class="down">▼ every NX-OS interface reads/writes the same store ▼</div>
+        <div class="db">DME: one object tree (MIT) <span>· DNs like <code>sys/bd/bd-[vlan-30]</code> · same model idea as ACI</span></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> NX-API CLI = <b>POST only</b>, even for <code>show</code>. A DN that doesn't exist → <code>200</code> + empty <code>imdata</code>, not <code>404</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <!-- CLI vs REST -->
+    <div class="panel">
+      <h3>⚖️ NX-API CLI vs NX-API REST <span class="ids">T17.02 · T17.03 · T17.06</span></h3>
+      <table>
+        <tr><th></th><th class="y">NX-API CLI</th><th class="g">NX-API REST</th></tr>
+        <tr><td>Input</td><td>CLI commands, <code> ;</code> between them</td><td>JSON/XML objects: class → <code>attributes</code> → <code>children</code></td></tr>
+        <tr><td>URL</td><td>always <code>/ins</code></td><td><code>/api/mo/&lt;dn&gt;.json</code> · <code>/api/class/&lt;class&gt;.json</code></td></tr>
+        <tr><td>Methods</td><td><code>POST</code> only</td><td><code>GET</code> <code>POST</code> <code>PUT</code> <code>DELETE</code></td></tr>
+        <tr><td>Auth</td><td>Basic each call; <code>nxapi_auth</code> cookie (600&nbsp;s)</td><td><code>aaaLogin</code> once → send <code>APIC-cookie</code></td></tr>
+        <tr><td>Output</td><td><code>TABLE_interface</code> → <code>ROW_interface</code></td><td><code>imdata[0]</code> → <code>["l1PhysIf"]["attributes"]</code></td></tr>
+        <tr><td>Pick when</td><td>you know the CLI, want JSON back fast</td><td>model-based config, no CLI parsing, query by class</td></tr>
+      </table>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> 1 command → <code>outputs.output</code> is a <b>dict</b>; 2+ commands → a <b>list</b>. HTTP 200 isn't enough: check each output's <code>code</code> / <code>msg</code></div>
+    </div>
+
+    <!-- telemetry + pick -->
+    <div class="panel">
+      <h3>📡 Model-driven telemetry <span class="ids">T17.05</span></h3>
+      <div class="tele">
+        <div class="t in"><h4>Dial-in (dynamic)</h4>collector connects + subscribes (gNMI, NETCONF). Gone when the session drops.</div>
+        <div class="t out"><h4>Dial-out (configured)</h4>device connects to the receiver. Lives in running-config. <code>receiver ip address</code></div>
+        <div class="t old"><h4>SNMP (old)</h4>NMS <b>polls</b> (pull) every N min. MDT <b>pushes</b> periodic or on-change.</div>
+      </div>
+      <div class="pick">
+        <div><span class="n">1</span>"stream interface counters every 10 s" → <b>MDT</b>, not SNMP polling</div>
+        <div><span class="n">2</span>"device opens the TCP session" → <b>dial-out</b></div>
+        <div><span class="n">3</span>"Nexus, reuse <code>show</code> commands, JSON back" → <b>NX-API CLI</b> <code>/ins</code></div>
+        <div><span class="n">4</span>"Nexus, every interface object" → <b>NX-API REST</b> <code>/api/class/l1PhysIf.json</code></div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> IOS XE <code>update-policy periodic 6000</code> = 60 s (centiseconds); NX-OS <code>sample-interval 10000</code> = 10 s (ms)</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = example / scenario</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span class="k4">blue = YANG / data store</span>
+    <span class="k5">yellow = NX-API CLI</span>
+    <span class="k6">green = NX-API REST</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T17/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

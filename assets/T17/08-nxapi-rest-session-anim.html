@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T17 NX-API REST session animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --sc:#fff3cd; --sc-b:#e0a800; --nx:#d1ecf1; --nx-b:#17a2b8; --dm:#d4edda; --dm-b:#28a745;
+          --bad:#f9c9c9; --bad-b:#dc3545; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:520px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:14px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns: 330px 1fr 330px; gap:0; align-items:stretch; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:300px; padding:10px 12px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.sc { border-color:var(--sc-b); } .lane.nx { border-color:var(--nx-b); } .lane.dm { border-color:var(--dm-b); }
+  .lane.badlane { background:#f9c9c9; border-color:#dc3545; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .mid { display:flex; flex-direction:column; justify-content:center; gap:14px; padding:0 14px; }
+  .box { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:7px; word-break:break-all; }
+  .sc .box { background:var(--sc); border-color:var(--sc-b); } .dm .box { background:var(--dm); border-color:var(--dm-b); }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; word-break:normal; }
+  .box.bad { background:var(--bad) !important; border-color:var(--bad-b) !important; border-width:3px; }
+  .box.new { box-shadow:0 0 0 3px rgba(40,167,69,.45); }
+  .ghost { opacity:.28; border-style:dashed !important; text-decoration:line-through; }
+  .cmd { font-family:Menlo,monospace; font-size:13px; font-weight:700; background:var(--ink); color:#fff; padding:8px 12px;
+         border-radius:8px; line-height:1.45; }
+  .cmd.fwd::before { content:"➜ "; color:#7ee2b8; }
+  .cmd.back { background:#3b3b3f; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .cmd.err { background:#c0261b; }
+  .cmd .h { display:block; font-weight:400; color:#cfd3d6; font-size:12px; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T17 · <span class="pill">NX-API REST</span> one session, start to finish</h1>
+  <div class="sub">From <code>nxapi_rest_demo()</code> in <code>labs/T17/device_apis.py</code>. Each frame = one HTTP call. Watch the cookie jar (left) and the DME objects (right).</div>
+  <div class="lanes">
+    <div class="lane sc" id="sc"><h3>🐍 Script</h3><div class="where">requests.Session() cookie jar</div><div id="sc-f"></div></div>
+    <div class="mid" id="mid"></div>
+    <div class="lane dm" id="dm"><h3>🗄️ Nexus DME</h3><div class="where">children of sys/bd (l2BD)</div><div id="dm-f"></div></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (t, s, cls="") => `<div class="box ${cls}">${t}<small>${s}</small></div>`;
+const V = (extra="", gone=false) => B("sys/bd/bd-[vlan-1]","default") + B("sys/bd/bd-[vlan-10]","SERVERS") +
+  B("sys/bd/bd-[vlan-30]","CAMERAS (made via NX-API CLI)") + (extra ? B("sys/bd/bd-[vlan-40]","PRINTERS", gone ? "ghost" : extra) : "");
+const JAR0 = B("(empty)", "no cookie yet", "ghost");
+const JAR = B("APIC-cookie=pAAowgQO…", "set by aaaLogin · sent on every call");
+const frames = [
+  { active:"sc", sc:JAR0, dm:V(),
+    mid:[["fwd","POST /api/aaaLogin.json",'{"aaaUser": {"attributes": {"name": "admin", "pwd": "…"}}}']],
+    txt:"Log in first: <code>POST /api/aaaLogin.json</code> with an <code>aaaUser</code> body. <b>No Basic auth header</b> on NX-API REST." },
+  { active:"sc", sc:JAR, dm:V(),
+    mid:[["back","200 OK","Set-Cookie: APIC-cookie=&lt;token&gt;<br>imdata[0].aaaLogin.attributes.token"]],
+    txt:"The token comes back in the body <b>and</b> as the <code>APIC-cookie</code>. The Session stores it; later calls send <code>Cookie:</code>, not <code>Authorization:</code>." },
+  { active:"dm", sc:JAR + B("totalCount 3", "vlan-1 · vlan-10 · vlan-30"), dm:V(),
+    mid:[["fwd","GET /api/mo/sys/bd.json?query-target=children","Cookie: APIC-cookie=…"],["back","200 OK",'{"totalCount": "3", "imdata": [{"l2BD": …}, …]}']],
+    txt:"<code>/api/mo/&lt;dn&gt;</code> reads by DN. <code>query-target=children</code> returns the objects under it. VLAN 30 is here although it was made with <b>NX-API CLI</b>: one DME." },
+  { active:"dm", sc:JAR, dm:V("new"),
+    mid:[["fwd","POST /api/mo/sys/bd.json",'{"bdEntity": {"children": [{"l2BD": {"attributes": {"fabEncap": "vlan-40", "name": "PRINTERS"}}}]}}'],["back","200 OK",'{"totalCount": "0", "imdata": []}']],
+    txt:"<code>POST</code> to the <b>parent</b> DN with the child in the body creates (or merges) <code>bd-[vlan-40]</code>." },
+  { active:"dm", sc:JAR, dm:V("new", true),
+    mid:[["fwd","DELETE /api/mo/sys/bd/bd-[vlan-40].json","Cookie: APIC-cookie=…"],["back","200 OK","object removed"]],
+    txt:"<code>DELETE</code> targets the object's own DN. Brackets in a DN: curl needs <code>--globoff</code>." },
+  { active:"sc", sc:JAR + B("totalCount 0 · imdata []", "HTTP 200, not 404"), dm:V("new", true),
+    mid:[["fwd","GET /api/mo/sys/bd/bd-[vlan-40].json",""],["back","200 OK",'{"totalCount": "0", "imdata": []}']],
+    txt:"A DN that doesn't exist returns <b>200 with an empty <code>imdata</code></b>. Check <code>totalCount</code>, not the status code." },
+  { active:"sc", bad:true, sc:B("plain requests.get()", "no Session → no cookie", "bad"), dm:V(),
+    mid:[["fwd err","GET /api/class/l2BD.json","(no Cookie header)"],["back err","403 Forbidden","Need a valid webtoken cookie (named APIC-cookie)"]],
+    txt:"Skip the cookie and every call fails with <b>403</b>. Token expired (600 s)? <code>POST /api/aaaRefresh.json</code> or log in again." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["sc","dm"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  document.getElementById("sc").classList.toggle("badlane", !!f.bad);
+  document.getElementById("mid").innerHTML = f.mid.map(([c, t, h]) =>
+    `<div class="cmd ${c}">${t}${h ? `<span class="h">${h}</span>` : ""}</div>`).join("");
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
