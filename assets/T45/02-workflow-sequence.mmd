@@ -1,0 +1,26 @@
+%%{init: {"sequence": {"actorMargin": 320}}}%%
+sequenceDiagram
+    autonumber
+    participant S as device_audit.py
+    participant C as Catalyst Center
+    S->>C: POST /dna/system/api/v1/auth/token (Basic user:pass)
+    C-->>S: 200 {"Token": "eyJ..."}
+    Note over S,C: headers = {"X-Auth-Token": token, ...}
+    loop get_devices(): until a page is short
+        S->>C: GET /dna/intent/api/v1/network-device?offset=1&limit=3
+        C-->>S: 200 {"response": [3 devices]}
+        S->>C: GET ...?offset=4&limit=3
+        C-->>S: 200 {"response": [3 devices]}
+        S->>C: GET ...?offset=7&limit=3
+        C-->>S: 200 {"response": [1 device]} (short page = stop)
+    end
+    Note over S,C: parse: keep reachabilityStatus != "Reachable" (2 devices)
+    S->>C: PUT /dna/intent/api/v1/network-device/sync ["id1","id2"]
+    C-->>S: 202 taskId "0f3525ca-..." (queued, NOT done)
+    loop wait_for_task(): until endTime exists
+        S->>C: GET /dna/intent/api/v1/task/0f3525ca-...
+        C-->>S: 200 {"progress": "Synchronizing devices"}
+        S->>C: GET /dna/intent/api/v1/task/0f3525ca-...
+        C-->>S: 200 "Device resync completed" + endTime
+    end
+    Note over S,C: print("Resync finished OK")
