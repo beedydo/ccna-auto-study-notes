@@ -257,6 +257,13 @@ if __name__ == "__main__":
 | **MV Sense** | camera → your MQTT broker, **or** you → Meraki REST | **MQTT** (real-time detections, light level) + **REST** (people/vehicle counts, zones; part of the Dashboard API) | turn the camera into a sensor (occupancy, counting) |
 | **Captive portal (ExCaP)** | the AP redirects the guest's browser → your splash page | HTTP redirect with query parameters | custom guest Wi-Fi sign-on pages. Awareness only |
 
+- **Webhooks, from the Meraki docs:**
+  - You add an **HTTP server** in the dashboard with a name, an **HTTPS (TLS) URL** on a public server with a valid certificate, and an optional **shared secret**. You can also pick a payload template.
+  - Each alert is a JSON `POST` that carries `sharedSecret`, `sentAt` and `version` (among others). Your receiver compares `sharedSecret` with the value it expects and drops the alert if they don't match.
+  - The full list of alert types comes from the Dashboard API (the Alert Types endpoint).
+- **Captive Portal API, from the Meraki docs:** there are two methods.
+  - **Click-through** (simple: branding, terms of service, less secure). Meraki appends `base_grant_url`, `user_continue_url`, `node_mac`, `client_ip` and `client_mac` to your splash URL. To let the guest on, redirect the browser with a `GET` to `base_grant_url`, optionally adding `continue_url` and `duration`.
+  - **Sign-on** (adds authentication and accounting; more secure). Meraki appends `login_url` (which carries an mauth token), `continue_url`, `ap_name`, `ap_mac`, `ap_tags`, `client_ip` and `client_mac`. Your page `POST`s `username` + `password` to `login_url`, optionally with `success_url` (which wins over `continue_url`).
 - **Dashboard API is the only one you "call".** Scanning and webhooks are **push**: you host an HTTPS endpoint and Meraki sends to it. That's why they're described as "webhook-style".
 - **Scanning API handshake** (the flow behind "Meraki POSTs to your server"):
 
@@ -809,6 +816,8 @@ A. A Meraki network needs an on-prem controller VM to push configuration  B. MR 
 - SDK 2.2.0 source read locally (`rest_session.py`: Bearer header, 429 `Retry-After` handling, `Link` pagination; `api/*.py`: `total_pages=1` default).
 - Scanning / Location API (POST JSON, validator GET, secret, ~1 min batching, WiFi + BLE): https://developer.cisco.com/meraki/scanning-api/introduction/ · https://developer.cisco.com/meraki/scanning-api/overview · https://developer.cisco.com/meraki/scanning-api/enable-scanning-api · https://documentation.meraki.com/Wireless/Operate_and_Maintain/FAQs/Scanning_API_for_Location_Analytics_Solutions
 - MV Sense (REST + MQTT, people/vehicle detection, broker config): https://developer.cisco.com/meraki/mv-sense · https://developer.cisco.com/meraki/mv-sense/mqtt · https://developer.cisco.com/meraki/mv-sense/mv-camera-intelligence-overview
+- Webhooks (HTTP server setup, HTTPS/TLS requirement, `sharedSecret`, `sentAt`, `version`, Alert Types endpoint): https://developer.cisco.com/meraki/webhooks/introduction/
+- Captive Portal API (Click-through vs Sign-on, `base_grant_url` / `user_continue_url`, `login_url` / `success_url`): https://developer.cisco.com/meraki/captive-portal-api/ · https://developer.cisco.com/meraki/captive-portal-api/click-through-api/ · https://developer.cisco.com/meraki/captive-portal-api/sign-on-api/
 - Cisco 200-901 v1.1 exam topics (3.1, 3.2, 3.9): https://learningcontent.cisco.com/documents/marketing/exam-topics/200-901-CCNAAUTO_v.1.1.pdf
 
 ## To verify
@@ -818,6 +827,6 @@ A. A Meraki network needs an on-prem controller VM to push configuration  B. MR 
 - ⚠ **Rate-limit numbers** (10/s per org + 10 burst, 100/s per IP) are from the current rate-limit page. They have changed before.
 - ⚠ **SDK version:** this session's pip mirror only had `meraki` 2.2.0. Upstream is newer (the README shows 4.x and adds "smart flow" throttling), and `MAXIMUM_RETRIES` defaults to 2 in 2.2.0 vs 5 in the current `config.py`. Method names, `total_pages`, `wait_on_rate_limit` and `APIError` are the same in both.
 - ⚠ **Dashboard menu path** for generating a key (Organization > API & Webhooks > API keys and access, vs the older My Profile > API access) changes with dashboard UI updates.
-- ⚠ **Webhooks and captive portal (ExCaP)** details (shared secret field, redirect parameters) are written from general knowledge and weren't checked against the docs this session. They're awareness-level for the exam.
+- Webhooks and captive portal (ExCaP) details were checked against the Meraki developer docs on 10 Oct 2026. These cover the HTTPS-only receiver, the optional `sharedSecret` in the payload, and the Click-through vs Sign-on parameters (see Sources). ⚠ The webhooks page also carries an HTTP deprecation notice; its exact timeline wasn't read.
 - ⚠ **Scanning API v3 payload field names** (`version`, `secret`, `type`, `data`) are summarised from the receiver guides; check the v3 schema page if a question goes deeper.
 - The mock is a teaching stand-in: base-relative `Link` URLs (the real API sends absolute ones), no burst allowance, fixed data. The Docker commands in Example 1 weren't run here (the image isn't built in this session).
