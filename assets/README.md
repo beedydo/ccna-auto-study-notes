@@ -12,3 +12,13 @@ npx --yes @mermaid-js/mermaid-cli --input assets/T04/01-four-areas.mmd --output 
 ```bash
 for f in assets/T04/*.mmd; do npx --yes @mermaid-js/mermaid-cli --input "$f" --output "${f%.mmd}.png" --scale 2 --backgroundColor white; done
 ```
+
+## One-page overviews (HTML → PNG)
+
+- `assets/TXX/00-overview.html` is a cheat-sheet-style infographic of the whole topic; the note embeds `00-overview.png`.
+- Edit the HTML, then screenshot the `.sheet` element at 2x (auto-sizes to the full page height):
+
+```bash
+npm install --no-save puppeteer-core
+node scripts/render-overview.mjs assets/T02/00-overview.html
+```

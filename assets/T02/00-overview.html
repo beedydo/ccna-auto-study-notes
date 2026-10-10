@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T02 overview: functions, classes, modules</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T02 · <span class="pill">Functions, Classes, Modules</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 1.5</b><br>Every T02 concept on one page<br>Code from <code>labs/T02/</code></div>
+  </header>
+
+  <table>
+    <!-- WHY -->
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">WHY</div><div class="ids">T02.01 · T02.13</div></td>
+      <td class="what"><span class="sig">DRY · readable · testable</span><br>
+        The exam asks for the <b>benefit</b> of organising code. Functions organise <b>logic</b>, classes organise <b>data + logic</b>, modules/packages organise <b>files</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>Reuse (DRY): write once, call many<span class="c"><code>make_device(row)</code> for every row</span></div>
+        <div class="item"><span class="n">4</span>Testability: unit-test pieces alone<span class="c"><code>first_free_vlan({10, 20})</code> → no device</span></div>
+        <div class="item"><span class="n">2</span>Readability: names describe intent<span class="c"><code>main()</code> = load → build → connect → report</span></div>
+        <div class="item"><span class="n">5</span>Separation of concerns: one job each<span class="c"><code>devices.py</code> vs <code>build_inventory.py</code></span></div>
+        <div class="item"><span class="n">3</span>Maintainability: fix in one place<span class="c"><code>MAX_VLAN = 4094</code> lives once</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> "faster execution" or "less memory" is <b>never</b> the benefit</div>
+      </div></td>
+    </tr>
+
+    <!-- FUNCTIONS -->
+    <tr>
+      <td class="label"><span class="icon">🔧</span><div class="name">FUNCTIONS</div><div class="ids">T02.02 · T02.03</div></td>
+      <td class="what"><span class="sig">def f(a, *args, k=1, **kw):</span><br>
+        Reusable block of logic. <b>Parameter</b> = name in <code>def</code>; <b>argument</b> = value in the call. <code>return</code> sends a value back; no <code>return</code> → <code>None</code>. Names resolve <b>L→E→G→B</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>positional, then keyword<span class="c"><code>build_inventory(rows, site="sandbox")</code></span></div>
+        <div class="item"><span class="n">5</span>return several values → tuple<span class="c"><code>devices, skipped = f(...)</code></span></div>
+        <div class="item"><span class="n">2</span>default value<span class="c"><code>def first_free_vlan(used, start=10)</code></span></div>
+        <div class="item"><span class="n">6</span>rebind a global needs <code>global</code><span class="c"><code>global rows_seen; rows_seen += 1</code></span></div>
+        <div class="item"><span class="n">3</span><code>*args</code> → extra positional as <b>tuple</b><span class="c"><code>*extra_rows</code> → <code>({...},)</code></span></div>
+        <div class="item"><span class="n">7</span>docstring = first string in body<span class="c"><code>make_device.__doc__</code> · <code>help(f)</code></span></div>
+        <div class="item"><span class="n">4</span><code>**kwargs</code> → extra keyword as <b>dict</b><span class="c"><code>**tags</code> → <code>{'owner': 'beedy'}</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>def f(x=[])</code> is shared across calls; no <code>return</code> → <code>None</code></div>
+      </div></td>
+    </tr>
+
+    <!-- CLASSES -->
+    <tr>
+      <td class="label"><span class="icon">🧱</span><div class="name">CLASSES</div><div class="ids">T02.04 · T02.05</div></td>
+      <td class="what"><span class="sig">def __init__(self, ...):</span><br>
+        Blueprint bundling <b>data</b> (attributes) + <b>behaviour</b> (methods). <code>Device(...)</code> makes an <b>instance</b>. <code>__init__</code> sets starting attributes; <code>self</code> = this object, passed automatically.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>instance attribute: one per object<span class="c"><code>self.hostname = hostname</code></span></div>
+        <div class="item"><span class="n">4</span><code>@classmethod</code> gets <code>cls</code>: alt constructor<span class="c"><code>IOSXE.from_dict(row)</code> → an IOSXE</span></div>
+        <div class="item"><span class="n">2</span>class attribute: shared by all<span class="c"><code>Device.connections += 1</code></span></div>
+        <div class="item"><span class="n">5</span><code>@staticmethod</code>: no <code>self</code>, no <code>cls</code><span class="c"><code>Device.is_valid_vlan(4095)</code> → False</span></div>
+        <div class="item"><span class="n">3</span>instance method uses <code>self</code><span class="c"><code>d.connect()</code> = <code>Device.connect(d)</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>self.connections += 1</code> makes a private copy; the shared count stays 0</div>
+      </div></td>
+    </tr>
+
+    <!-- OOP -->
+    <tr>
+      <td class="label"><span class="icon">🧬</span><div class="name">OOP</div><div class="ids">T02.06</div></td>
+      <td class="what"><span class="sig">class IOSXE(Device):</span><br>
+        Four principles. A child <b>inherits</b> and can <b>override</b>. If the child defines its own <code>__init__</code>, the parent's runs <b>only</b> through <code>super().__init__()</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><b>Encapsulation</b>: hide state behind methods<span class="c"><code>_token</code> + <code>is_connected()</code></span></div>
+        <div class="item"><span class="n">3</span><b>Polymorphism</b>: same call, different behaviour<span class="c"><code>for d in devices: d.connect()</code></span></div>
+        <div class="item"><span class="n">2</span><b>Inheritance</b>: reuse + extend parent<span class="c"><code>super().__init__(hostname, mgmt_ip, port)</code></span></div>
+        <div class="item"><span class="n">4</span><b>Abstraction</b>: simple interface, details hidden<span class="c"><code>main()</code> never sees ports or URLs</span></div>
+        <div class="item trap" style="grid-column: span 2"><span class="n">!</span><b>Trap:</b> forget <code>super().__init__()</code> → <code>AttributeError: 'IOSXE' object has no attribute 'hostname'</code> · no <code>private</code> keyword (<code>_x</code> convention, <code>__x</code> name-mangles)</div>
+      </div></td>
+    </tr>
+
+    <!-- MODULES -->
+    <tr>
+      <td class="label"><span class="icon">📄</span><div class="name">MODULES</div><div class="ids">T02.07 · T02.08</div></td>
+      <td class="what"><span class="sig">if __name__ == "__main__": main()</span><br>
+        Any <code>.py</code> file = a module with its own namespace. Top-level code runs <b>once</b>, on first import. The guard makes one file both a <b>script</b> and a <b>library</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>import the module<span class="c"><code>import json</code> → <code>json.loads(RAW)</code></span></div>
+        <div class="item"><span class="n">4</span>run directly<span class="c"><code>python3 build_inventory.py</code><br><code>__name__</code> → <code>"__main__"</code></span></div>
+        <div class="item"><span class="n">2</span>import one name<span class="c"><code>from collections import Counter</code></span></div>
+        <div class="item"><span class="n">5</span>imported<span class="c"><code>import build_inventory</code><br><code>__name__</code> → <code>"build_inventory"</code></span></div>
+        <div class="item"><span class="n">3</span>alias<span class="c"><code>import netlib.devices as dev</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> after <code>from math import sqrt</code>, <code>math.pi</code> → <code>NameError</code> · avoid <code>import *</code></div>
+      </div></td>
+    </tr>
+
+    <!-- PACKAGES & DEPS -->
+    <tr>
+      <td class="label"><span class="icon">📦</span><div class="name">PACKAGES<br>&amp; DEPS</div><div class="ids">T02.09 · T02.10</div></td>
+      <td class="what"><span class="sig">netlib/__init__.py</span><br>
+        Package = folder of modules + <code>__init__.py</code>. Dotted path = folder.file. <b>Stdlib</b> ships with Python; <b>third-party</b> comes from PyPI via <code>pip</code>. A venv isolates each project's versions.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>dotted import from a package<span class="c"><code>from netlib.devices import IOSXE</code></span></div>
+        <div class="item"><span class="n">4</span>create + activate a venv<span class="c"><code>python3 -m venv venv</code> <code>source venv/bin/activate</code></span></div>
+        <div class="item"><span class="n">2</span><code>__init__.py</code> re-export<span class="c"><code>from netlib import IOSXE</code></span></div>
+        <div class="item"><span class="n">5</span>pin exact versions<span class="c"><code>pip freeze &gt; requirements.txt</code></span></div>
+        <div class="item"><span class="n">3</span>stdlib vs PyPI<span class="c"><code>json</code> <code>os</code> <code>re</code> vs <code>requests</code> <code>ncclient</code></span></div>
+        <div class="item"><span class="n">6</span>rebuild elsewhere / CI / Docker<span class="c"><code>pip install -r requirements.txt</code></span></div>
+        <div class="item trap" style="grid-column: span 2"><span class="n">!</span><b>Trap:</b> install name ≠ import name: <code>pip install pyyaml</code> → <code>import yaml</code> · module = file, package = folder</div>
+      </div></td>
+    </tr>
+
+    <!-- BASICS -->
+    <tr>
+      <td class="label"><span class="icon">🐍</span><div class="name">PYTHON<br>BASICS</div><div class="ids">T02.11 · T02.12</div></td>
+      <td class="what"><span class="sig">list · tuple · dict · set</span><br>
+        <b>Mutable</b> (list, dict, set) change in place; <b>immutable</b> (str, int, tuple) don't. Control flow: <code>if/elif/else</code>, <code>for</code>, <code>while</code>, <code>try/except/else/finally</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>list comprehension + filter<span class="c"><code>[d.hostname for d in devices</code><br><code>&nbsp;if d.port == 443]</code></span></div>
+        <div class="item"><span class="n">5</span><code>while</code> + <code>break</code> / <code>continue</code><span class="c"><code>first_free_vlan({10,20,30})</code> → 40</span></div>
+        <div class="item"><span class="n">2</span>dict comprehension<span class="c"><code>{d.hostname: d for d in devices}</code></span></div>
+        <div class="item"><span class="n">6</span><code>try</code> / <code>except</code> / <code>else</code> / <code>finally</code><span class="c"><code>finally</code> runs even after <code>continue</code></span></div>
+        <div class="item"><span class="n">3</span>index + item / key + value<span class="c"><code>enumerate(rows)</code> · <code>tags.items()</code></span></div>
+        <div class="item"><span class="n">7</span>signal an error<span class="c"><code>raise ValueError("bad row")</code></span></div>
+        <div class="item"><span class="n">4</span>f-string<span class="c"><code>f"{self.hostname}: SSH {self.mgmt_ip}"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>{}</code> = empty <b>dict</b>; <code>(5)</code> = int, <code>(5,)</code> = tuple; use <code>is None</code></div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = example from the reference program</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Full program + output: <code>labs/T02/</code> · details in each T02.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

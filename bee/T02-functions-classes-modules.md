@@ -16,6 +16,10 @@ cross_study: 2026-10-21
 
 > Owner: **Beedy** · Blueprint: **1.5** · CBT coverage: **Full** · Learn by 2026-10-05 · Teach-back 2026-10-08
 
+![T02 at a glance: every concept on one page](../assets/T02/00-overview.png)
+
+*Every T02 concept on one page. Rows follow the concept sections; numbered examples are lines from the reference program in `labs/T02/`, and red boxes are exam traps.*
+
 ## TL;DR (teach-back card)
 
 - **Why organise code (the 1.5 answer):** reuse (DRY), readability, maintainability (fix once), testability (unit-test each piece), separation of concerns.
@@ -731,6 +735,7 @@ A. (a) package (b) module (c) method  B. (a) module (b) package (c) method  C. (
 
 ## Sources
 
+- Overview image: HTML source `assets/T02/00-overview.html`, rendered to PNG (see `assets/README.md`).
 - Python tutorial, Defining Functions: https://docs.python.org/3/tutorial/controlflow.html#defining-functions
 - Python tutorial, Classes (scopes, `self`, inheritance, private variables): https://docs.python.org/3/tutorial/classes.html
 - Python tutorial, Modules and Packages: https://docs.python.org/3/tutorial/modules.html
