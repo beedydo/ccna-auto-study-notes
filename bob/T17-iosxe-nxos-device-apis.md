@@ -253,7 +253,7 @@ if __name__ == "__main__":
 
 ![IOS XE and NX-OS programmable interfaces](../assets/T17/01-platform-map.png)
 
-*Same script, two platforms. On IOS XE every interface ends in YANG models. On NX-OS every interface (yellow NX-API CLI, green NX-API REST, plus the YANG agents) reads and writes the same DME (blue).*
+*Same script, two platforms. On IOS XE every interface ends in the YANG models. On NX-OS, NX-API CLI, NX-API REST and the YANG agents all read and write the same DME. Glowing boxes are the interfaces the lab program calls.*
 
 ### T17.01 · IOS XE programmability
 
@@ -720,6 +720,7 @@ A. It prints both bodies merged  B. It fails, because `output` is now a list of 
 ## Sources
 
 - Overview image: HTML source `assets/T17/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T17/*.mmd`. Animation: `assets/T17/08-nxapi-rest-session-anim.html` → `.gif`.
+- Architecture diagram: HTML source `assets/T17/01-platform-map.html` (shared kit `assets/_arch/`).
 - Cisco Nexus 9000 NX-OS Programmability Guide 10.5(x), NX-API CLI (enable commands, HTTPS 443 default, `nxapi_auth` cookie 600 s, request/response elements, XML/JSON examples, curl example): https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/105x/programmability/cisco-nexus-9000-series-nx-os-programmability-guide-105x/m-n9k-nx-api-cli-101x.html
 - Same guide 9.3(x), NX-API CLI (JSON-RPC methods `cli`, `cli_ascii`, `cli_array`; `configure terminal` runs first for JSON-RPC): https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/93x/progammability/guide/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x/b-cisco-nexus-9000-series-nx-os-programmability-guide-93x_chapter_010011.html
 - Same guide 10.2(x)/10.3(x), NX-API Developer Sandbox (message formats and command types; NXAPI-REST methods POST/GET/PUT/DELETE; code generation; CLI↔REST conversion): https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/102x/programmability/cisco-nexus-9000-series-nx-os-programmability-guide-release-102x/m-n9k-nx-api-developer-sandbox-101x.html

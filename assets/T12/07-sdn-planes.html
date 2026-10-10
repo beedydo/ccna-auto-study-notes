@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T12 traditional vs SDN planes</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row > .zone > .zb { flex-direction: column; align-items: stretch; gap: 0; padding: 18px 14px 22px; }
+  .top { display: flex; justify-content: center; align-items: center; height: 140px; }
+  .mid { height: 120px; }
+  .ext .top .note { font-size: 14px; max-width: 440px; padding: 12px 16px; }
+  .dev { display: flex; justify-content: space-around; }
+  .top .note { max-width: 400px; font-size: 13px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T12 · <span class="pill">Traditional vs SDN</span> planes</h1>
+    <div class="meta"><b>200-901 blueprint 5.2</b><br>Where the control plane lives<br>Full plane detail in T39</div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="zone ext">
+        <div class="zh">Traditional <small>every box decides for itself</small></div>
+        <div class="zb">
+          <div class="top"><div class="note">No central brain. Each router runs its <b>own control plane</b> (OSPF, BGP, STP) and fills its own tables. The routers agree peer to peer.<br><b>Nothing above them</b> holds a network-wide view.</div></div>
+          <div class="mid"></div>
+          <div class="dev">
+            <div class="node" id="r1" data-icon="router"><div class="nm">R1</div><div class="sub">control + data plane</div></div>
+            <div class="node" id="r2" data-icon="router"><div class="nm">R2</div><div class="sub">control + data plane</div></div>
+            <div class="node" id="r3" data-icon="router"><div class="nm">R3</div><div class="sub">control + data plane</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone ctrl">
+        <div class="zh">SDN <small>control plane centralised</small></div>
+        <div class="zb">
+          <div class="top"><div class="node w hl" id="ctrl" data-icon="controller"><div class="nm">Controller</div><div class="sub">control plane (or its policy part)<br>+ network-wide view</div></div></div>
+          <div class="mid"></div>
+          <div class="dev">
+            <div class="node" id="sw1" data-icon="switch"><div class="nm">sw1</div><div class="sub">data plane</div></div>
+            <div class="node" id="sw2" data-icon="switch"><div class="nm">sw2</div><div class="sub">data plane</div></div>
+            <div class="node" id="sw3" data-icon="switch"><div class="nm">sw3</div><div class="sub">data plane</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Classic SDN</b> used OpenFlow to write flow tables directly. <b>Cisco controllers are hybrids:</b> devices still run routing protocols; the controller owns policy and config.</div>
+      <div class="note trap"><b>Trap:</b> SDN centralises the <b>control</b> plane, not the data plane. If the controller goes down, existing forwarding continues.</div>
+      <div class="note"><b>Planes:</b> data = moves packets (FIB, MAC table) · control = decides where they go · management = configures and monitors (SSH, SNMP, NETCONF, APIs).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw control"></i>control plane (routing protocols, southbound programming)</span>
+    <span><i class="sw data"></i>data plane (user traffic forwarded box to box)</span>
+    <span style="margin-left:auto">Blue glow = the controller holds the control logic</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "r1", b: "r2", k: "data", s: "r-l", ao: 12, bo: 12 },
+  { a: "r2", b: "r3", k: "data", s: "r-l", ao: 12, bo: 12 },
+  { a: "r1", b: "r2", k: "control", s: "r-l", dir: "both", ao: -10, bo: -10, label: "OSPF / STP", ly: -26 },
+  { a: "r2", b: "r3", k: "control", s: "r-l", dir: "both", ao: -10, bo: -10, label: "OSPF / STP", ly: -26 },
+  { a: "ctrl", b: "sw1", k: "control", s: "b-t", ao: -30, mid: 0.25 },
+  { a: "ctrl", b: "sw2", k: "control", s: "b-t", label: "southbound<br>(e.g. OpenFlow, OpFlex)", t: 0.68 },
+  { a: "ctrl", b: "sw3", k: "control", s: "b-t", ao: 30, mid: 0.25 },
+  { a: "sw1", b: "sw2", k: "data", s: "r-l" },
+  { a: "sw2", b: "sw3", k: "data", s: "r-l" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

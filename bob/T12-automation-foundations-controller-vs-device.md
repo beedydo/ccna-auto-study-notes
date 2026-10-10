@@ -349,7 +349,7 @@ if __name__ == "__main__":
 
 ![Device-level management](../assets/T12/05-device-level.png)
 
-*Blue = your script, which knows every switch itself. Yellow = the work you take on: 8 calls, the loop and every failure case.*
+*Your script holds the inventory and opens a session to every switch itself: 3 GETs + 5 PATCHes = 8 calls (blue). The dashed line is the other device-level options. The loop and every failure case are yours.*
 
 ### T12.06 · Controller-level management
 
@@ -377,7 +377,7 @@ if __name__ == "__main__":
 
 ![Controller-level management](../assets/T12/06-controller-level.png)
 
-*Blue = your one northbound call. Grey = the controllers. Green = the devices, with each controller's southbound protocol in bold.*
+*Blue = northbound REST, one call per intent, with each controller's auth style on its line. Under each controller is its southbound protocol to its own domain: grey dashed = management/config, purple dotted = OpFlex policy. Meraki devices dial out to the cloud.*
 
 - **Section 6 of the program is controller level:**
   - `POST /ctrl/api/v1/intents` with `{"intent": "disable-unused-ports", "site": "SG-HQ"}` → `202 Accepted, taskId 14ad84aa...`. The script never names a switch or a port.
@@ -425,7 +425,7 @@ if __name__ == "__main__":
 
 ![Traditional vs SDN](../assets/T12/07-sdn-planes.png)
 
-*Left: each router has its own control plane. Right: one controller (blue) holds the control logic and the network-wide view, and the switches (green) only forward.*
+*Left: each router runs its own control plane (purple dotted, OSPF/STP) and forwards traffic (green). Right: one controller holds the control logic and the network-wide view and programs the switches southbound; the switches only forward.*
 
 - **Intent-based networking (IBN):** you declare **what** you want ("unused ports at SG-HQ are shut"). The controller works out **how** (which ports, which devices, which config), provisions it, then keeps checking the network still matches (assurance). Catalyst Center is Cisco's IBN controller.
 
@@ -724,6 +724,7 @@ A. It needs a controller to translate intent  B. The script itself must handle l
 ## Sources
 
 - Overview image: HTML source `assets/T12/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T12/*.mmd`. Animation: `assets/T12/10-intent-flow-anim.html` → `10-intent-flow.gif`.
+- Architecture diagrams: HTML sources `assets/T12/05-device-level.html`, `assets/T12/06-controller-level.html`, `assets/T12/07-sdn-planes.html` (shared kit `assets/_arch/`).
 - RFC 8040 RESTCONF (media types, `{+restconf}/data`, edits activated on completion, auto-commit of candidate, `ietf-restconf:errors`, `invalid-value` + 400, key encoding): https://www.rfc-editor.org/rfc/rfc8040.html
 - RFC 7426 SDN layers and architecture terminology (control/forwarding/management planes, CPSI/MPSI southbound, northbound in the NSAL, east-west): https://www.rfc-editor.org/rfc/rfc7426.html
 - RFC 8343 `ietf-interfaces` (config leaves vs `config false` state, `oper-status` values): https://www.rfc-editor.org/rfc/rfc8343.html

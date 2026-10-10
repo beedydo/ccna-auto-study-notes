@@ -880,6 +880,7 @@ D. `r.json()["ietf-interfaces:interfaces"]["interface"][0]["ip"]`
 ## Sources
 
 - Overview image: HTML source `assets/T16/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T16/*.mmd`. Animation: `assets/T16/08-loopback-lifecycle-anim.html` → `.gif`.
+- Architecture diagram: HTML source `assets/T16/01-architecture.html` (shared kit `assets/_arch/`).
 - RFC 8040, RESTCONF Protocol: host-meta discovery (§3.1), API resource / data / operations / yang-library-version (§3.3), list key encoding (§3.5.3), methods and their NETCONF mapping (§4), POST `201` + `Location` / `409` (§4.4.1), PUT `201` vs `204` (§4.5), PATCH = merge, `200`/`204` (§4.6), DELETE `204` (§4.7), query parameters (§4.8), `415`/`406` and default encoding (§5.2), error-tag → status table (§7), unified datastore and candidate auto-commit (§1.4): https://www.rfc-editor.org/rfc/rfc8040
 - RFC 7951, JSON encoding of YANG data (module-qualified names, lists as arrays): https://www.rfc-editor.org/rfc/rfc7951
 - RFC 8343, YANG model for interface management (`ietf-interfaces`, NMDA state nodes): https://www.rfc-editor.org/rfc/rfc8343

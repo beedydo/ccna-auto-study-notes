@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T17 architecture: IOS XE and NX-OS programmable interfaces</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client > .zb { display: grid; grid-template-columns: 1fr 1fr 1fr; justify-items: center; align-items: center; }
+  .row > .zone > .zb { flex-direction: column; align-items: stretch; gap: 0; padding: 18px 8px 20px; }
+  .ifs { display: flex; justify-content: space-around; }
+  .ifs .node { width: 176px; }
+  .mid { height: 70px; }
+  .zone.store { margin: 0 6px; border-width: 2px; }
+  .zone.store > .zb { padding: 14px 10px 12px; justify-content: center; }
+  .zone.store .node.xw { width: 440px; }
+  .onbox { margin: 14px 8px 0; font-size: 12.5px; color: var(--muted); text-align: center; min-height: 18px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T17 · <span class="pill">IOS XE and NX-OS</span> device APIs</h1>
+    <div class="meta"><b>200-901 blueprint 3.6</b><br>Same script, two platforms<br>Names as in <code>labs/T17/device_apis.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Automation client</div>
+      <div class="zb">
+        <div class="note"><b>Lab mocks</b> (<code>labs/T17/mock_devices.py</code>):<br>Nexus <code>sbx-n9kv</code> on port 18443<br>IOS XE <code>csr1</code> on port 18444</div>
+        <div class="node w" id="script" data-icon="script"><div class="nm">device_apis.py</div><div class="sub">Python <code>requests</code> · curl · Ansible</div></div>
+        <div class="node w" id="sbx" data-icon="gui"><div class="nm">NX-API Developer Sandbox</div><div class="sub">browser at <code>https://&lt;switch&gt;</code><br>generates Python code</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ext" id="xe">
+        <div class="zh">IOS XE <small>Catalyst 9000 · ISR · ASR · Catalyst 8000 (CSR 1000v) · lab <code style="color:#1d1d1f">csr1</code></small></div>
+        <div class="zb">
+          <div class="ifs">
+            <div class="node" id="xnc" data-icon="server"><div class="nm">NETCONF</div><div class="sub">SSH · TCP 830 · XML</div><span class="tag">netconf-yang</span></div>
+            <div class="node hl" id="xrc" data-icon="server"><div class="nm">RESTCONF</div><div class="sub">HTTPS 443 · <code>/restconf</code><br>JSON or XML</div><span class="tag">restconf</span></div>
+            <div class="node" id="xgn" data-icon="server"><div class="nm">gNMI (gRPC)</div><div class="sub">HTTP/2 · 9339 secure<br>protobuf / JSON_IETF</div><span class="tag">gnxi</span></div>
+          </div>
+          <div class="mid"></div>
+          <div class="zone dashed store" id="xy"><div class="zb">
+            <div class="node xw" data-icon="db"><div class="nm">YANG models</div><div class="sub">IETF · OpenConfig · <code>Cisco-IOS-XE-native</code><br>(native maps to the whole running-config)</div></div>
+          </div></div>
+          <div class="onbox"><b>On-box (awareness only):</b> Guest Shell (Linux container + Python, <code>guestshell run python3</code>) · EEM (event → action)</div>
+        </div>
+      </div>
+
+      <div class="zone fabric" id="nx">
+        <div class="zh">NX-OS <small>Nexus 3000 / 9000 · <code style="color:#1d1d1f">feature nxapi</code> · lab <code style="color:#1d1d1f">sbx-n9kv</code></small></div>
+        <div class="zb">
+          <div class="ifs">
+            <div class="node hl" id="ncli" data-icon="server"><div class="nm">NX-API CLI</div><div class="sub"><code>POST /ins</code><br>CLI in, JSON / XML out</div><span class="tag">cli_show · cli_conf</span></div>
+            <div class="node hl" id="nrest" data-icon="server"><div class="nm">NX-API REST</div><div class="sub"><code>/api/mo</code> · <code>/api/class</code><br>managed objects</div><span class="tag">aaaLogin → APIC-cookie</span></div>
+            <div class="node" id="nyang" data-icon="server"><div class="nm">YANG agents</div><div class="sub">NETCONF · RESTCONF · gNMI<br>Device YANG + OpenConfig</div></div>
+          </div>
+          <div class="mid"></div>
+          <div class="zone dashed store" id="dme"><div class="zb">
+            <div class="node xw" data-icon="db"><div class="nm">DME</div><div class="sub">one object database · Management Information Tree (MIT)<br>Device YANG + OpenConfig = a view of the DME</div></div>
+          </div></div>
+          <div class="onbox"><b>Telemetry (push, both platforms):</b> dial-in = collector subscribes (gNMI <code>Subscribe</code>) · dial-out = device connects from config</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>IOS XE = YANG interfaces only.</b> There's no NX-API on IOS XE. "Device-level API on IOS XE" → NETCONF / RESTCONF (gNMI if streaming).</div>
+      <div class="note trap"><b>Trap:</b> "Nexus + you know the show command + want JSON" → NX-API CLI <code>/ins</code> (always <code>POST</code>, even for show). "Objects / DN / class" → NX-API REST.</div>
+      <div class="note"><b>One DME:</b> a description set through NX-API CLI is seen straight away by NX-API REST and by the YANG agents.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → device)</span>
+    <span><i class="sw mgmt"></i>on-box read / write into the model or object store</span>
+    <span style="margin-left:auto">Blue glow = the interface the lab program calls</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "xe", k: "api", s: "l-t", bo: -190, label: "SSH 830 · HTTPS 443 · gRPC 9339", t: 0.82 },
+  { a: "script", b: "nx", k: "api", s: "r-t", bo: 150, label: "HTTPS 443<br>(nginx on the switch)", t: 0.82 },
+  { a: "sbx", b: "nx", k: "api", s: "b-t" },
+  { a: "xnc", b: "xy", k: "mgmt", s: "b-t", dir: "both" },
+  { a: "xrc", b: "xy", k: "mgmt", s: "b-t", dir: "both" },
+  { a: "xgn", b: "xy", k: "mgmt", s: "b-t", dir: "both" },
+  { a: "ncli", b: "dme", k: "mgmt", s: "b-t", dir: "both" },
+  { a: "nrest", b: "dme", k: "mgmt", s: "b-t", dir: "both" },
+  { a: "nyang", b: "dme", k: "mgmt", s: "b-t", dir: "both" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>
