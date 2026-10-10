@@ -1,0 +1,28 @@
+flowchart TB
+    Q["Need admin rights, write access<br/>or a full multi-device topology?"]
+    Q -- "no: read-mostly API calls, right now" --> AO
+    Q -- "yes: private lab, booked slot" --> RS
+    subgraph AO["Always-On"]
+        direction TB
+        A1["no reservation · instant · always available"]
+        A2["SHARED with every user<br/>others can change state"]
+        A3["restricted (non-admin) access"]
+        A4["reach it over the internet<br/>(most now issue per-user credentials)"]
+        A1 --> A2 --> A3 --> A4
+    end
+    subgraph RS["Reservation (reservable)"]
+        direction TB
+        R1["book a slot · up to 7 days"]
+        R2["PRIVATE to you · 10-40 min setup"]
+        R3["VPN details by email<br/>Cisco Secure Client (AnyConnect)<br/>or OpenConnect"]
+        R4["FULL admin on all equipment<br/>wiped at the end, can't save it"]
+        R1 --> R2 --> R3 --> R4
+    end
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef red fill:#f8d7da,stroke:#c0392b,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class A1,A4 green
+    class A2,A3 red
+    class R1,R2,R3,R4 blue
+    class Q grey

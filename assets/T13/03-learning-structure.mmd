@@ -1,0 +1,19 @@
+flowchart LR
+    T["Learning Track<br/>a full journey<br/>e.g. Network Programmability<br/>for Network Engineers"]
+    M1["Module<br/>one technology<br/>e.g. YANG + NETCONF"]
+    M2["Module<br/>e.g. RESTCONF"]
+    L1["Lab<br/>numbered steps"]
+    L2["Lab<br/>numbered steps"]
+    L3["Lab"]
+    ENV["in-browser environment<br/>or a Sandbox to follow along"]
+    T --> M1 & M2
+    M1 --> L1 & L2
+    M2 --> L3
+    L1 -.-> ENV
+    L2 -.-> ENV
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class T,M1,M2 grey
+    class L1,L2,L3 blue
+    class ENV green
