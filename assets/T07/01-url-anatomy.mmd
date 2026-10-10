@@ -1,0 +1,11 @@
+flowchart LR
+    A["<b>https://</b><br/>scheme"] --- B["<b>sandbox.example.com</b><br/>host"] --- C["<b>:443</b><br/>port"] --- D["<b>/api/v1</b><br/>base path"] --- E["<b>/devices/1</b><br/>endpoint path<br/>(1 = path param)"] --- F["<b>?role=edge&limit=10</b><br/>query params"]
+    subgraph BASE["Base URL (from the API docs)"]
+        A
+        B
+        C
+        D
+    end
+    style BASE fill:#d1ecf1,stroke:#17a2b8
+    style E fill:#fff3cd,stroke:#ffc107
+    style F fill:#d4edda,stroke:#28a745

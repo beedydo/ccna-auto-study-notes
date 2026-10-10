@@ -1,0 +1,22 @@
+flowchart LR
+    subgraph COLL["Collection: /api/v1/devices"]
+        direction TB
+        G1["GET → list all · 200"]
+        P1["POST → create · 201 + Location<br/>server picks the id"]
+    end
+    subgraph ITEM["Item: /api/v1/devices/4"]
+        direction TB
+        G2["GET → read one · 200"]
+        PU["PUT → replace ALL fields · 200<br/>(201 if it didn't exist)"]
+        PA["PATCH → change SOME fields · 200"]
+        D["DELETE → remove · 204"]
+    end
+    P1 == "Location: /api/v1/devices/4" ==> G2
+    style COLL fill:#f8f9fa,stroke:#6c757d
+    style ITEM fill:#f8f9fa,stroke:#6c757d
+    style G1 fill:#d1ecf1,stroke:#17a2b8
+    style G2 fill:#d1ecf1,stroke:#17a2b8
+    style P1 fill:#d4edda,stroke:#28a745
+    style PU fill:#fff3cd,stroke:#ffc107
+    style PA fill:#fff3cd,stroke:#ffc107
+    style D fill:#f8d7da,stroke:#dc3545

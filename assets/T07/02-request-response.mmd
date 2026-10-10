@@ -1,0 +1,7 @@
+sequenceDiagram
+    participant C as Client (script / curl)
+    participant S as REST API server
+    Note over C: REQUEST
+    C->>S: POST /api/v1/devices HTTP/1.1<br/>Host: 127.0.0.1:8080<br/>Authorization: Bearer tok-admin-7f3a<br/>Content-Type: application/json<br/>Accept: application/json<br/><br/>{"hostname": "edge3", ...}
+    Note over S: RESPONSE
+    S-->>C: HTTP/1.1 201 Created  ← status line<br/>Location: /api/v1/devices/4  ← headers<br/>Content-Type: application/json<br/><br/>{"id": 4, "hostname": "edge3", ...}  ← body

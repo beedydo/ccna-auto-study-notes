@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph SAFE["SAFE + idempotent<br/>(read only)"]
+        GET
+        HEAD
+        OPTIONS
+    end
+    subgraph IDEM["Idempotent, NOT safe<br/>(repeat = same end state)"]
+        PUT
+        DELETE
+    end
+    subgraph NEITHER["NEITHER<br/>(repeat may duplicate / differ)"]
+        POST
+        PATCH
+    end
+    SAFE ~~~ IDEM ~~~ NEITHER
+    style SAFE fill:#d1ecf1,stroke:#17a2b8
+    style IDEM fill:#d4edda,stroke:#28a745
+    style NEITHER fill:#f8d7da,stroke:#dc3545

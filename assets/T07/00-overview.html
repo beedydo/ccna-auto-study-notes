@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T07 overview: REST fundamentals, HTTP codes</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+
+  /* T07 extras */
+  .flow { display: grid; grid-template-columns: minmax(0,1fr) 38px minmax(0,1fr); gap: 0; align-items: stretch; }
+  .msg { border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; font-family: Menlo, Consolas, monospace; font-size: 11.8px; line-height: 1.5; background: #fff; }
+  .msg .t { font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; font-weight: 800; font-size: 12px; margin-bottom: 4px; }
+  .msg .sl { background: #d1ecf1; } .msg .hd { background: #fff3cd; } .msg .bd { background: #d4edda; }
+  .msg span { display: block; padding: 0 4px; border-radius: 3px; }
+  .arrow { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; }
+  .codes { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+  .cls { border: 2px solid; border-radius: 8px; padding: 6px 8px; font-size: 12.8px; line-height: 1.45; }
+  .cls h4 { margin: 0 0 4px; font-size: 14px; }
+  .cls code { font-family: Menlo, Consolas, monospace; font-size: 12px; font-weight: 700; }
+  .c2 { background: #e3f6ee; border-color: #28a745; } .c3 { background: #e3f1f8; border-color: #17a2b8; }
+  .c4 { background: #fff6dc; border-color: #e0a800; } .c5 { background: #fde8e8; border-color: #dc3545; }
+  .legend-parts { display: flex; gap: 8px; margin-top: 6px; font-size: 11.5px; }
+  .legend-parts i { font-style: normal; padding: 1px 6px; border-radius: 3px; }
+  .span2 { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T07 · <span class="pill">REST &amp; HTTP Codes</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.1, 2.4–2.6</b><br>Every T07 concept on one page<br>Code from <code>labs/T07/</code></div>
+  </header>
+
+  <table>
+    <!-- ANATOMY -->
+    <tr>
+      <td class="label"><span class="icon">✉️</span><div class="name">ANATOMY</div><div class="ids">T07.01 · T07.05<br>T07.07</div></td>
+      <td class="what"><span class="sig">scheme://host:port/path?query</span><br>
+        REST = an <b>architectural style</b> over HTTP. Everything is a <b>resource</b> with a URI. <b>Request</b> = method + URI + headers + body. <b>Response</b> = status line + headers + body.
+        <div class="legend-parts"><i style="background:#d1ecf1">start/status line</i><i style="background:#fff3cd">headers</i><i style="background:#d4edda">body</i></div></td>
+      <td class="items">
+        <div class="flow">
+          <div class="msg"><div class="t">REQUEST</div>
+            <span class="sl">POST /api/v1/devices HTTP/1.1</span>
+            <span class="hd">Authorization: Bearer tok-admin-7f3a</span>
+            <span class="hd">Content-Type: application/json</span>
+            <span class="hd">Accept: application/json</span>
+            <span class="bd">{"hostname": "edge3", ...}</span></div>
+          <div class="arrow">⇄</div>
+          <div class="msg"><div class="t">RESPONSE</div>
+            <span class="sl">HTTP/1.1 201 Created</span>
+            <span class="hd">Location: /api/v1/devices/4</span>
+            <span class="hd">Content-Type: application/json</span>
+            <span class="bd">{"id": 4, "hostname": "edge3", ...}</span></div>
+        </div>
+        <div class="grid" style="margin-top:9px">
+          <div class="item"><span class="n">1</span>path param = <b>which</b> resource<span class="c"><code>/devices/1</code></span></div>
+          <div class="item"><span class="n">2</span>query param = filter / page<span class="c"><code>?role=edge</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> "where is it?" → code in the <b>status line</b>; <code>Location</code> <code>Retry-After</code> <code>ETag</code> in <b>headers</b>; data + error message in the <b>body</b></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- REST RULES -->
+    <tr>
+      <td class="label"><span class="icon">📐</span><div class="name">REST<br>RULES</div><div class="ids">T07.02</div></td>
+      <td class="what"><span class="sig">6 constraints</span><br>
+        Exam matches a description to the constraint name. <b>Stateless</b> and <b>cacheable</b> are the ones you see in code.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><b>Client-server</b>: UI and data separate</div>
+        <div class="item"><span class="n">4</span><b>Uniform interface</b>: same methods, URIs, self-describing msgs</div>
+        <div class="item"><span class="n">2</span><b>Stateless</b>: token on <b>every</b> call<span class="c"><code>Authorization: Bearer …</code></span></div>
+        <div class="item"><span class="n">5</span><b>Layered</b>: proxy / LB can sit between</div>
+        <div class="item"><span class="n">3</span><b>Cacheable</b>: <code>ETag</code> → <code>If-None-Match</code> → <code>304</code></div>
+        <div class="item"><span class="n">6</span><b>Code on demand</b>: the only <b>optional</b> one</div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> stateless = server keeps no client <b>session</b>, not "stores no data"</div>
+      </div></td>
+    </tr>
+
+    <!-- METHODS -->
+    <tr>
+      <td class="label"><span class="icon">🔧</span><div class="name">METHODS</div><div class="ids">T07.03 · T07.04</div></td>
+      <td class="what"><span class="sig">POST · GET · PUT · PATCH · DELETE</span><br>
+        Map to CRUD. POST targets the <b>collection</b>; PUT / PATCH / DELETE target one <b>item</b>. <b>Safe</b> = read-only. <b>Idempotent</b> = repeat gives the same end state.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><b>C</b>reate: server picks the id<span class="c"><code>POST /devices</code> → <code>201</code> + <code>Location</code></span></div>
+        <div class="item"><span class="n">4</span><b>D</b>elete<span class="c"><code>DELETE /devices/4</code> → <code>204</code></span></div>
+        <div class="item"><span class="n">2</span><b>R</b>ead<span class="c"><code>GET /devices/1</code> → <code>200</code></span></div>
+        <div class="item"><span class="n">5</span>safe: <code>GET</code> <code>HEAD</code> <code>OPTIONS</code><span class="c">idempotent: those + <code>PUT</code> <code>DELETE</code></span></div>
+        <div class="item"><span class="n">3</span><b>U</b>pdate: PUT = <b>all</b> fields, PATCH = <b>some</b><span class="c"><code>PATCH {"role": "core"}</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>POST</code> is neither (repeat = duplicate). DELETE twice → <code>204</code> then <code>404</code>, still idempotent</div>
+      </div></td>
+    </tr>
+
+    <!-- HEADERS -->
+    <tr>
+      <td class="label"><span class="icon">🏷️</span><div class="name">HEADERS<br>&amp; MEDIA</div><div class="ids">T07.06 · T07.13</div></td>
+      <td class="what"><span class="sig">Name: value</span><br>
+        Metadata about the message; names are case-insensitive. <code>Content-Type</code> = what I <b>send</b>. <code>Accept</code> = what I <b>want back</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>request<span class="c"><code>Content-Type</code> <code>Accept</code> <code>Authorization</code></span></div>
+        <div class="item"><span class="n">4</span>REST JSON / XML<span class="c"><code>application/json</code> <code>application/xml</code></span></div>
+        <div class="item"><span class="n">2</span>response<span class="c"><code>Location</code> <code>Retry-After</code> <code>ETag</code></span></div>
+        <div class="item"><span class="n">5</span>RESTCONF (T16)<span class="c"><code>application/yang-data+json</code></span></div>
+        <div class="item"><span class="n">3</span>required on 401 / 405<span class="c"><code>WWW-Authenticate</code> · <code>Allow</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> wrong <code>Content-Type</code> → <code>415</code>; unsupported <code>Accept</code> → <code>406</code></div>
+      </div></td>
+    </tr>
+
+    <!-- STATUS CODES -->
+    <tr>
+      <td class="label"><span class="icon">🚦</span><div class="name">STATUS<br>CODES</div><div class="ids">T07.08 · T07.09</div></td>
+      <td class="what"><span class="sig">HTTP/1.1 201 Created</span><br>
+        Read the <b>first digit</b> first. <code>1xx</code> = informational, interim (rare in APIs). 4xx = <b>you</b> fix the request; 5xx = the <b>server</b> failed.</td>
+      <td class="items">
+        <div class="codes">
+          <div class="cls c2"><h4>2xx ✅ success</h4><code>200</code> OK<br><code>201</code> Created<br><code>202</code> Accepted (queued)<br><code>204</code> No Content</div>
+          <div class="cls c3"><h4>3xx ↪️ go elsewhere</h4><code>301</code> Moved Perm.<br><code>302</code> Found (temp)<br><code>304</code> Not Modified</div>
+          <div class="cls c4"><h4>4xx 🔧 client</h4><code>400</code> Bad Request<br><code>401</code> Unauthorized<br><code>403</code> Forbidden<br><code>404</code> Not Found<br><code>405</code> Method Not Allowed<br><code>409</code> Conflict<br><code>415</code> Unsupp. Media Type<br><code>429</code> Too Many Requests</div>
+          <div class="cls c5"><h4>5xx 🖥️ server</h4><code>500</code> Internal Error<br><code>501</code> Not Implemented<br><code>502</code> Bad Gateway<br><code>503</code> Unavailable<br><code>504</code> Gateway Timeout</div>
+        </div>
+        <div class="grid" style="margin-top:9px">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> <code>202</code> ≠ done (poll the <code>Location</code> job) · <code>204</code> / <code>304</code> have no body · <code>502</code> bad reply vs <code>504</code> no reply from upstream</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- TROUBLESHOOT -->
+    <tr>
+      <td class="label"><span class="icon">🩺</span><div class="name">TROUBLE-<br>SHOOT</div><div class="ids">T07.10 · T07.11<br>T07.14</div></td>
+      <td class="what"><span class="sig">code → error body → API docs</span><br>
+        Each 4xx points to one part of the request. Build calls from the doc: base URL → method + path → headers → body schema → params → check the code.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><code>401</code> who are you? → re-auth<span class="c">no / bad / expired token, wrong scheme</span></div>
+        <div class="item"><span class="n">5</span><code>415</code> wrong <code>Content-Type</code></div>
+        <div class="item"><span class="n">2</span><code>403</code> known, not allowed → role</div>
+        <div class="item"><span class="n">6</span><code>400</code> bad JSON / missing fields</div>
+        <div class="item"><span class="n">3</span><code>404</code> wrong URI or id<span class="c"><code>/device/1</code> vs <code>/devices/1</code></span></div>
+        <div class="item"><span class="n">7</span><code>429</code> wait <code>Retry-After</code> · <code>5xx</code> retry later</div>
+        <div class="item"><span class="n">4</span><code>405</code> right URI, wrong method → <code>Allow</code></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>403</code> → a new token for the same user still fails</div>
+      </div></td>
+    </tr>
+
+    <!-- CURL -->
+    <tr>
+      <td class="label"><span class="icon">⌨️</span><div class="name">CURL</div><div class="ids">T07.12</div></td>
+      <td class="what"><span class="sig">curl -X POST -H "…" -d '…' URL</span><br>
+        CLI HTTP client in most exam snippets. Default method is <b>GET</b>; <code>-d</code> switches it to <b>POST</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>method + header + body<span class="c"><code>--request POST</code> <code>--header</code> <code>--data</code></span></div>
+        <div class="item"><span class="n">4</span>status line + headers<span class="c"><code>-i</code> / <code>--include</code></span></div>
+        <div class="item"><span class="n">2</span>Basic auth · skip TLS check<span class="c"><code>-u user:pass</code> · <code>-k</code></span></div>
+        <div class="item"><span class="n">5</span>full trace (<code>&gt;</code> sent, <code>&lt;</code> got)<span class="c"><code>-v</code> / <code>--verbose</code></span></div>
+        <div class="item"><span class="n">3</span>query string · follow 3xx<span class="c"><code>-G -d "role=core"</code> · <code>-L</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>-d '{...}'</code> alone sends <code>application/x-www-form-urlencoded</code> → <code>415</code></div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = example from the mock API session</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T07/run_lab.sh</code> · details in each T07.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

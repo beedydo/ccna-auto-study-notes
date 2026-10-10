@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T07 CRUD lifecycle animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --wd:#fff3cd; --wd-b:#e0a800; --st:#d4edda; --st-b:#28a745;
+          --lr:#d1ecf1; --lr-b:#17a2b8; --rr:#e8dcf7; --rr-b:#7b4bc4; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.wd { border-color:var(--wd-b); } .lane.st { border-color:var(--st-b); }
+  .lane.lr { border-color:var(--lr-b); } .lane.rr { border-color:var(--rr-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .file { font-family:Menlo,monospace; font-size:13px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; }
+  .wd .file { background:var(--wd); border-color:var(--wd-b); } .st .file { background:var(--st); border-color:var(--st-b); }
+  .lr .file { background:var(--lr); border-color:var(--lr-b); } .rr .file { background:var(--rr); border-color:var(--rr-b); }
+  .file small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.25; border-style:dashed; }
+  .arrowrow { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; height:64px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+
+  .lanes { grid-template-columns: 1.15fr 1fr 1.15fr; }
+  .lane { height: 270px; }
+  .req, .res { font-family:Menlo,monospace; font-size:12.5px; line-height:1.55; border:2px solid; border-radius:7px; padding:7px 9px; }
+  .req { background:#fff3cd; border-color:#e0a800; }
+  .res.ok { background:#d4edda; border-color:#28a745; } .res.err { background:#fde8e8; border-color:#dc3545; }
+  .res.info { background:#d1ecf1; border-color:#17a2b8; }
+  .res b { font-size:14px; }
+  .dev { font-family:Menlo,monospace; font-size:12.5px; border:2px solid #7b4bc4; background:#e8dcf7; border-radius:7px; padding:6px 8px; margin-bottom:7px; }
+  .dev.new { box-shadow:0 0 0 4px rgba(47,179,128,.45); }
+  .dev.gone { opacity:.3; border-style:dashed; text-decoration:line-through; }
+  .dev small { display:block; font-family:-apple-system,Arial,sans-serif; color:#666; font-size:11px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T07 · <span class="pill">CRUD lifecycle</span> one device, start to finish</h1>
+  <div class="sub">Same calls as <code>labs/T07/rest_walkthrough.py</code>. Watch the server state (right) after each request.</div>
+  <div class="lanes">
+    <div class="lane wd" id="wd"><h3>📤 Request</h3><div class="where">method · URI · headers · body</div><div id="wd-f"></div></div>
+    <div class="lane lr" id="lr"><h3>📥 Response</h3><div class="where">status line · headers · body</div><div id="lr-f"></div></div>
+    <div class="lane rr" id="rr"><h3>🗄️ Server state</h3><div class="where">/api/v1/devices</div><div id="rr-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const D = (t, s, cls="") => `<div class="dev ${cls}">${t}<small>${s}</small></div>`;
+const base = D("1 csr1", "edge · iosxe") + D("2 n9k1", "core · nxos") + D("3 edge2", "edge · iosxe");
+const req = (l) => `<div class="req">${l.join("<br>")}</div>`;
+const res = (c, l) => `<div class="res ${c}">${l.join("<br>")}</div>`;
+const frames = [
+  { active:"wd",
+    wd:req(["<b>POST</b> /api/v1/devices", "Content-Type: application/json", "Authorization: Bearer tok-admin-7f3a", "", '{"hostname": "edge3", "role": "edge", ...}']),
+    lr:"", rr:base, cmd:{at:0, t:"POST → collection"},
+    txt:"<b>Create.</b> POST goes to the <b>collection</b>. You don't know the id yet; the server will pick it." },
+  { active:"lr",
+    wd:req(["<b>POST</b> /api/v1/devices"]),
+    lr:res("ok", ["<b>HTTP/1.1 201 Created</b>", "Location: /api/v1/devices/4", "", '{"id": 4, "hostname": "edge3", ...}']),
+    rr:base + D("4 edge3", "edge · iosxe", "new"), cmd:{at:1, t:"201 + Location", back:true},
+    txt:"<code>201 Created</code>. The new URI is in the <b>Location header</b> and the id in the body. Device 4 now exists." },
+  { active:"lr",
+    wd:req(["<b>GET</b> /api/v1/devices/4", "Accept: application/json"]),
+    lr:res("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"id": 4, "hostname": "edge3", "role": "edge"}']),
+    rr:base + D("4 edge3", "edge · iosxe"), cmd:{at:0, t:"GET → item"},
+    txt:"<b>Read.</b> GET the item URI from <code>Location</code>. <b>Safe</b>: nothing on the server changes." },
+  { active:"rr",
+    wd:req(["<b>PATCH</b> /api/v1/devices/4", "Content-Type: application/json", "", '{"role": "core"}']),
+    lr:res("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"id": 4, "hostname": "edge3", "role": "core"}']),
+    rr:base + D("4 edge3", "<b>core</b> · iosxe", "new"), cmd:{at:0, t:"PATCH → item"},
+    txt:"<b>Update some.</b> PATCH sends only <code>role</code>. Other fields stay. (PUT would need <b>all</b> fields.)" },
+  { active:"rr",
+    wd:req(["<b>DELETE</b> /api/v1/devices/4"]),
+    lr:res("info", ["<b>HTTP/1.1 204 No Content</b>", "", "(empty body)"]),
+    rr:base + D("4 edge3", "deleted", "gone"), cmd:{at:0, t:"DELETE → item"},
+    txt:"<b>Delete.</b> <code>204 No Content</code>: it worked and there's <b>no body</b>, so don't call <code>.json()</code>." },
+  { active:"lr",
+    wd:req(["<b>DELETE</b> /api/v1/devices/4", "(same request again)"]),
+    lr:res("err", ["<b>HTTP/1.1 404 Not Found</b>", "", '{"error": "device 4 not found"}']),
+    rr:base + D("4 edge3", "still gone", "gone"), cmd:{at:1, t:"404", back:true},
+    txt:"Repeat DELETE → <code>404</code>, but the end state is the <b>same</b> (device gone), so DELETE is still <b>idempotent</b>." },
+];
+const pos = [0, 1].map(i => [255, 600][i]);
+function show(i) {
+  const f = frames[i];
+  for (const k of ["wd","lr","rr"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+    d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

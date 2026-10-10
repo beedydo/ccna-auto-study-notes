@@ -1,0 +1,17 @@
+flowchart TD
+    S["Got a status code"] --> C{"First digit?"}
+    C -- "2xx" --> OK["✅ Worked<br/>200 data · 201 created · 202 queued · 204 empty"]
+    C -- "3xx" --> R["↪️ Go elsewhere<br/>301/302 → Location header · 304 → use cache"]
+    C -- "4xx" --> Y["🔧 Fix YOUR request"]
+    C -- "5xx" --> SV["🖥️ Server problem<br/>500 bug · 502/504 upstream · 503 retry later"]
+    Y --> A401["401 → who are you?<br/>missing / bad / expired token"]
+    Y --> A403["403 → you can't do that<br/>valid token, wrong role"]
+    Y --> A404["404 → wrong URI or id"]
+    Y --> A405["405 → wrong method<br/>(see Allow header)"]
+    Y --> A415["415 → wrong Content-Type"]
+    Y --> A400["400 → bad / missing body fields"]
+    Y --> A429["429 → too fast<br/>wait Retry-After seconds"]
+    style OK fill:#d4edda,stroke:#28a745
+    style R fill:#d1ecf1,stroke:#17a2b8
+    style Y fill:#fff3cd,stroke:#ffc107
+    style SV fill:#f8d7da,stroke:#dc3545
