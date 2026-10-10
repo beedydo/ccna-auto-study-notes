@@ -1,0 +1,11 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart TB
+    C["<b>4 · Content</b><br/>YANG-modelled XML data<br/>&lt;interfaces xmlns=&quot;...ietf-interfaces&quot;&gt;"]
+    O["<b>3 · Operations</b><br/>&lt;get&gt; &lt;get-config&gt; &lt;edit-config&gt; &lt;lock&gt; &lt;commit&gt; ..."]
+    M["<b>2 · Messages</b><br/>&lt;rpc message-id=&quot;101&quot;&gt; · &lt;rpc-reply&gt; · &lt;notification&gt;"]
+    T["<b>1 · Secure Transport</b><br/>SSH, TCP 830, subsystem netconf"]
+    C --- O --- M --- T
+    style C fill:#d4edda,stroke:#28a745
+    style O fill:#d1ecf1,stroke:#17a2b8
+    style M fill:#fff3cd,stroke:#e0a800
+    style T fill:#e8dcf7,stroke:#7b4bc4

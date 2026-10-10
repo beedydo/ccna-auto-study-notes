@@ -1,0 +1,14 @@
+sequenceDiagram
+  participant A as PC-A (Gi1/0/1, VLAN 10)
+  participant SW as SW1 MAC table
+  participant B as PC-B (Gi1/0/2, VLAN 10)
+  participant C as PC-C (Gi1/0/3, VLAN 20)
+  Note over SW: table empty
+  A->>SW: src 0000.0caa.000a, dst 0000.0cbb.000b
+  Note over SW: LEARN src 0000.0caa.000a<br/>= Gi1/0/1, VLAN 10<br/>dst unknown: FLOOD VLAN 10
+  SW->>B: copy (Gi1/0/2)
+  Note over C: VLAN 20: gets nothing
+  B->>SW: src 0000.0cbb.000b, dst 0000.0caa.000a
+  Note over SW: LEARN src 0000.0cbb.000b<br/>= Gi1/0/2, VLAN 10<br/>dst known: FORWARD
+  SW->>A: Gi1/0/1 only
+  Note over SW: both learned<br/>later frames: FORWARD only

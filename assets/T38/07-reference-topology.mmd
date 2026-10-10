@@ -1,0 +1,41 @@
+flowchart TB
+    EXT1["🌐 ext1 198.51.100.7"] --- ISP1["isp1 · ISP router"]
+    ISP1 -- "outside 203.0.113.0/30" --- FW1["🛡️ fw1 · firewall<br/>zones: outside / dmz / inside"]
+    subgraph DMZ["DMZ 172.16.50.0/24 · VLAN 50 · gw 172.16.50.1"]
+        DSW["dmz-sw · L2"]
+        LB1["⚖️ lb1 VIP .10"]
+        WEB1["web1 .11 up"]
+        WEB2["web2 .12 down"]
+        DSW --- LB1
+        DSW --- WEB1
+        DSW --- WEB2
+    end
+    FW1 -- "dmz" --- DSW
+    FW1 -- "inside 10.0.2.0/30" --- CORE1["core1 · router"]
+    CORE1 -- "10.0.9.0/24" --- WLC1["🎛️ wlc1 10.0.9.10"]
+    subgraph CAMPUS["Campus: access + distribution"]
+        DIST1["dist1 · L3 switch<br/>Vlan10 .1 · Vlan20 .1 · Vlan30 .1"]
+        ACC1["acc1 · L2"]
+        PC1["pc1 10.10.10.21<br/>VLAN 10"]
+        PC2["pc2 10.10.10.22<br/>VLAN 10"]
+        PRN["printer1 10.10.20.30<br/>VLAN 20"]
+        AP1["📶 ap1 10.10.30.40<br/>VLAN 30"]
+        DIST1 -- "trunk" --- ACC1
+        ACC1 --- PC1
+        ACC1 --- PC2
+        ACC1 --- PRN
+        ACC1 --- AP1
+    end
+    CORE1 -- "10.0.1.0/30" --- DIST1
+    subgraph BRANCH["Branch 10.20.10.0/24"]
+        WAN1["wan1 · WAN edge"]
+        BR1["br1 .1"]
+        BPC["br-pc .50"]
+        WAN1 -- "10.255.0.0/30" --- BR1 --- BPC
+    end
+    CORE1 -- "10.0.3.0/30" --- WAN1
+    style DIST1 fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style FW1 fill:#fde8e8,stroke:#dc3545,stroke-width:3px
+    style LB1 fill:#fff3cd,stroke:#e0a800
+    style WEB2 fill:#f8d7da,stroke:#dc3545,stroke-dasharray: 5 5
+    style WEB1 fill:#d4edda,stroke:#28a745

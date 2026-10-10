@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant S as Script (session 21)
+    participant D as Device
+    participant B as Other session 22
+    S->>D: <lock><target><candidate/></target></lock>
+    D-->>S: <ok/>
+    B->>D: <lock> candidate
+    D-->>B: <rpc-error> lock-denied, error-info session-id 21
+    S->>D: <edit-config> target candidate (merge Gi2 description)
+    D-->>S: <ok/>  (running unchanged)
+    S->>D: <validate><source><candidate/></source></validate>
+    D-->>S: <ok/>
+    S->>D: <commit/>
+    D-->>S: <ok/>  candidate → running, now live
+    S->>D: <unlock> candidate
+    D-->>S: <ok/>
+    Note over S,D: unlock BEFORE commit = outstanding candidate changes are discarded

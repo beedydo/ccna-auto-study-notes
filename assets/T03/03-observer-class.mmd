@@ -1,0 +1,27 @@
+classDiagram
+    direction LR
+    class Subject {
+        -_observers: list
+        +attach(observer)
+        +detach(observer)
+        +notify(event)
+    }
+    class Observer {
+        <<interface>>
+        +update(event)
+    }
+    class InterfaceModel {
+        +set_status(intf, status)
+        +interfaces() dict
+    }
+    class SyslogObserver {
+        +update(event)
+    }
+    class AlertObserver {
+        +sent: list
+        +update(event)
+    }
+    Subject <|-- InterfaceModel
+    Subject "1" o-- "*" Observer : notifies
+    Observer <|.. SyslogObserver
+    Observer <|.. AlertObserver

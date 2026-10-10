@@ -1,0 +1,28 @@
+flowchart TB
+    SCR["🐍 Python script / curl / Ansible"]
+    subgraph XE["IOS XE · Catalyst 9000, ISR, ASR, CSR/C8000v"]
+        X1["NETCONF<br/>SSH :830 · XML"]
+        X2["RESTCONF<br/>HTTPS :443 · /restconf · JSON/XML"]
+        X3["gNMI / gRPC<br/>:9339 secure · protobuf/JSON"]
+        XY[("YANG models: IETF · OpenConfig<br/>Cisco-IOS-XE-native")]
+        X4["On-box: Guest Shell (Linux + Python) · EEM"]
+        X1 --> XY
+        X2 --> XY
+        X3 --> XY
+    end
+    subgraph NX["NX-OS · Nexus 3000 / 9000"]
+        N1["NX-API CLI<br/>POST /ins · CLI in, JSON/XML out"]
+        N2["NX-API REST<br/>/api/mo · /api/class · managed objects"]
+        N3["NETCONF · RESTCONF · gRPC/gNMI<br/>Device YANG + OpenConfig"]
+        DME[("DME: one object database<br/>Management Information Tree")]
+        N1 --> DME
+        N2 --> DME
+        N3 --> DME
+    end
+    SCR --> XE
+    SCR --> NX
+    style XY fill:#d1ecf1,stroke:#17a2b8
+    style DME fill:#d1ecf1,stroke:#17a2b8
+    style N1 fill:#fff3cd,stroke:#e0a800
+    style N2 fill:#d4edda,stroke:#28a745
+    style X4 fill:#f2f2f2,stroke:#999,stroke-dasharray: 4 3

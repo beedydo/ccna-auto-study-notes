@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T20 command runner async task animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --sc:#dbeafe; --sc-b:#1d4ed8; --cc:#e8dcf7; --cc-b:#7b4bc4;
+          --tk:#fff3cd; --tk-b:#e0a800; --dv:#d4edda; --dv-b:#28a745; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:500px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:230px; padding:10px; background:#fff; position:relative; overflow:hidden; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.sc { border-color:var(--sc-b); } .lane.cc { border-color:var(--cc-b); }
+  .lane.tk { border-color:var(--tk-b); } .lane.dv { border-color:var(--dv-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; overflow-wrap:anywhere; }
+  .sc .box { background:var(--sc); border-color:var(--sc-b); } .cc .box { background:var(--cc); border-color:var(--cc-b); }
+  .tk .box { background:var(--tk); border-color:var(--tk-b); } .dv .box { background:var(--dv); border-color:var(--dv-b); }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; margin-top:2px; }
+  .box.bad { background:#fee2e2 !important; border-color:#b91c1c !important; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T20 · <span class="pill">Command runner</span> one async task, start to finish</h1>
+  <div class="sub">Real calls from <code>labs/T20/catc_inventory.py</code> step 4. Each frame = one request or event.</div>
+  <div class="lanes">
+    <div class="lane sc" id="sc"><h3>🐍 Script</h3><div class="where">catc_inventory.py</div><div id="sc-f"></div></div>
+    <div class="lane cc" id="cc"><h3>🧠 Catalyst Center</h3><div class="where">/dna/intent/api/v1</div><div id="cc-f"></div></div>
+    <div class="lane tk" id="tk"><h3>⏳ Task a6fbb140…</h3><div class="where">GET /task/{taskId}</div><div id="tk-f"></div></div>
+    <div class="lane dv" id="dv"><h3>🔌 sw1</h3><div class="where">10.10.20.175 · SSH</div><div id="dv-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (t, s, cls="") => `<div class="box ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const req = B('{"commands": ["show version | include uptime"], "deviceUuids": ["6b3dc2dd-…"]}', "request body");
+const frames = [
+  { active:"cc", sc:req, cc:B("POST /network-device-poller/cli/read-request", "received"), tk:"", dv:B("idle", "", "ghost"),
+    cmd:{left:150, t:"POST …/cli/read-request"}, txt:"The script POSTs the CLI command and the device UUID to the command runner." },
+  { active:"sc", sc:req + B("202 Accepted<br>taskId a6fbb140-9bf9-5f83-91c4-b065c164fd63", "no CLI output in this reply"),
+    cc:B("task created", ""), tk:B("isError: false<br>endTime: (none)", "created"), dv:B("idle", "", "ghost"),
+    cmd:{left:150, t:"202 {taskId}", back:true}, txt:"<code>202 Accepted</code> = queued, <b>not done</b>. The body holds only a <code>taskId</code>." },
+  { active:"dv", sc:B("taskId a6fbb140-…", "saved"), cc:B("running task", ""), tk:B("isError: false<br>endTime: (none)", "running"),
+    dv:B("sw1# show version | include uptime", "Catalyst Center logs in and runs it"),
+    cmd:{left:700, t:"SSH: run command"}, txt:"Catalyst Center runs the command on sw1 <b>in the background</b>. The script isn't waiting on this connection." },
+  { active:"tk", sc:B("isError false<br>progress 'CLI Runner request creation'<br>no endTime", "→ sleep 1 s, poll again"),
+    cc:B("GET /task/a6fbb140-…", ""), tk:B("isError: false<br>endTime: (none)<br>progress: CLI Runner request creation", "still running"),
+    dv:B("sw1# show version | include uptime", "running"),
+    cmd:{left:150, t:"GET /task/a6fbb140-…"}, txt:"Poll 1: <code>GET /task/{taskId}</code> → <code>200</code>, but no <code>endTime</code> yet. <b>200 here doesn't mean finished.</b>" },
+  { active:"tk", sc:B("waiting", "sleep(1)", "ghost"), cc:B("output saved as file 589cb9a1-…", ""),
+    tk:B('isError: false<br>endTime: 1791633401604<br>progress: {"fileId": "589cb9a1-…"}', "finished"),
+    dv:B("sw1 uptime is 1 week, 4 days, 22 hours, 0 minutes", "output returned"),
+    cmd:{left:620, t:"CLI output", back:true}, txt:"sw1 returns the output. The task gets an <code>endTime</code> and its <code>progress</code> now holds a <code>fileId</code>." },
+  { active:"sc", sc:B('endTime 1791633401604<br>progress \'{"fileId": "589cb9a1-…"}\'', "json.loads(progress)['fileId']"),
+    cc:B("GET /task/a6fbb140-…", ""), tk:B('isError: false<br>endTime: 1791633401604<br>progress: {"fileId": "589cb9a1-…"}', "finished"),
+    dv:B("idle", "", "ghost"),
+    cmd:{left:150, t:"GET /task/a6fbb140-…"}, txt:"Poll 2: <code>endTime</code> is set and <code>isError</code> is false. <code>progress</code> is a JSON <b>string</b>, so parse it." },
+  { active:"sc", sc:B("SUCCESS 'show version | include uptime':<br>sw1 uptime is 1 week, 4 days, 22 hours, 0 minutes", "done"),
+    cc:B("GET /file/589cb9a1-…", "200, the file body"), tk:B("finished", "", "ghost"), dv:B("idle", "", "ghost"),
+    cmd:{left:150, t:"GET /file/589cb9a1-…"}, txt:"<code>GET /file/{fileId}</code> returns the real output, sorted into <code>SUCCESS</code>, <code>FAILURE</code> and <code>BLOCKLISTED</code>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["sc","cc","tk","dv"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+    d.textContent = f.cmd.t; d.style.left = f.cmd.left + "px"; a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

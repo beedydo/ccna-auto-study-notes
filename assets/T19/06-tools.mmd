@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph LEARN["Find the call (built into APIC)"]
+        INS["API Inspector<br/>GUI action → logs the REST call<br/>(method, URL, payload)"]
+        VIS["Visore /visore.html<br/>read-only MO browser<br/>DN + class queries"]
+    end
+    subgraph AUTO["Automate it"]
+        RQ["requests / curl<br/>raw REST"]
+        COB["Cobra SDK<br/>acicobra + acimodel<br/>1:1 with the MIT"]
+        TK["ACI Toolkit<br/>simplified objects<br/>(lower priority)"]
+        ANS["Ansible cisco.aci<br/>aci_tenant · aci_rest"]
+        TF["Terraform CiscoDevNet/aci<br/>aci_tenant resource"]
+    end
+    INS --> RQ
+    VIS --> RQ
+    RQ & COB & TK & ANS & TF --> API["APIC REST API<br/>/api/mo · /api/class"]
+    style API fill:#cfe2ff,stroke:#0d6efd
+    style LEARN fill:#fff3cd,stroke:#e0a800
+    style AUTO fill:#d4edda,stroke:#28a745

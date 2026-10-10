@@ -1,0 +1,17 @@
+flowchart TD
+    Q["Exam: trace src → dst on the diagram"] --> S{"dst in the<br/>source's subnet?<br/>(mask!)"}
+    S -- "yes" --> L2["Switch only<br/>ARP for dst · no gateway · no router"]
+    S -- "no" --> GW["Go to the DEFAULT GATEWAY<br/>= router / SVI / firewall IP<br/>in the source's own subnet"]
+    GW --> RT["Each L3 box: longest-prefix match<br/>→ next hop → next box"]
+    RT --> FWQ{"Path crosses a<br/>firewall?"}
+    FWQ -- "no" --> DST
+    FWQ -- "yes" --> ZONE{"zone pair + port<br/>matches a permit?"}
+    ZONE -- "no" --> DENY["❌ dropped<br/>(implicit deny)"]
+    ZONE -- "yes" --> VIP{"dst is a VIP?"}
+    VIP -- "yes" --> LBX["LB picks a healthy<br/>server, rewrites dst IP"] --> DST
+    VIP -- "no" --> DST["✅ delivered<br/>(last hop: switch to host)"]
+    style L2 fill:#e3f1f8,stroke:#17a2b8
+    style GW fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style DENY fill:#f8d7da,stroke:#dc3545
+    style DST fill:#d4edda,stroke:#28a745
+    style LBX fill:#fff3cd,stroke:#e0a800

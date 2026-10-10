@@ -1,0 +1,28 @@
+{
+  "ietf-interfaces:interface": [
+    {
+      "name": "GigabitEthernet1",
+      "description": "MANAGEMENT INTERFACE - DON'T TOUCH ME",
+      "type": "iana-if-type:ethernetCsmacd",
+      "enabled": true,
+      "oper-status": "up",
+      "phys-address": "00:50:56:bf:76:4a",
+      "speed": "1000000000",
+      "statistics": {
+        "discontinuity-time": "2026-10-01T06:12:41+00:00",
+        "in-octets": "48213377",
+        "in-errors": 0,
+        "out-octets": "15532090"
+      },
+      "ietf-ip:ipv4": {
+        "address": [
+          {
+            "ip": "10.10.20.48",
+            "netmask": "255.255.255.0"
+          }
+        ]
+      },
+      "campus-vlans:access-vlan": 10
+    }
+  ]
+}

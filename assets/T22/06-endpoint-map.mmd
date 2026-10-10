@@ -1,0 +1,18 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart LR
+    R["<b>/dataservice</b>"] --> AUTH["/client/token<br/>XSRF token"]
+    R --> DEV["<b>/device</b><br/>inventory: host-name, device-type,<br/>system-ip, site-id, reachability"]
+    DEV --> MON["/device/monitor<br/>status per device"]
+    DEV --> CNT["/device/counters<br/>control / OMP / BFD counts"]
+    DEV --> RT["/device/control/connections<br/>/device/omp/peers<br/>/device/bfd/sessions<br/>?deviceId=system-ip (real time)"]
+    R --> STAT["<b>/statistics</b>/interface<br/>POST + query body"]
+    R --> ALM["<b>/alarms</b><br/>POST query · GET /alarms/count"]
+    R --> TPL["<b>/template</b>"]
+    TPL --> TD["/template/device<br/>whole-device templates"]
+    TPL --> TF["/template/feature<br/>building blocks (VPN, OMP, system)"]
+    TD -.->|"made of"| TF
+    style R fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style DEV fill:#d4edda,stroke:#28a745
+    style STAT fill:#fff3cd,stroke:#e0a800
+    style ALM fill:#fff3cd,stroke:#e0a800
+    style TPL fill:#e8dcf7,stroke:#7b4bc4

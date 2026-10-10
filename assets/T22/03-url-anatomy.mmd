@@ -1,0 +1,12 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart LR
+    A["<b>https://</b><br/>scheme"] --- B["<b>manager.example.com</b><br/>host"] --- C["<b>:8443</b><br/>port (on-prem default)<br/>sandbox: :443"] --- D["<b>/dataservice</b><br/>API prefix"] --- E["<b>/device/control/connections</b><br/>resource"] --- F["<b>?deviceId=10.0.0.1</b><br/>query param =<br/>system-ip"]
+    subgraph ROOT["NOT under /dataservice"]
+        R1["/j_security_check<br/>(login)"]
+        R2["/logout"]
+    end
+    C -.- ROOT
+    style D fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style E fill:#fff3cd,stroke:#e0a800
+    style F fill:#d4edda,stroke:#28a745
+    style ROOT fill:#fde8e8,stroke:#dc3545

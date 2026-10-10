@@ -1,0 +1,30 @@
+flowchart TB
+  subgraph T["Traditional: every box has all 3 planes"]
+    direction LR
+    R1["R1<br/>mgmt + control + data"]
+    R2["R2<br/>mgmt + control + data"]
+    R3["R3<br/>mgmt + control + data"]
+    R1 <-->|OSPF| R2 <-->|OSPF| R3
+  end
+  subgraph S["SDN: control plane centralised in a controller"]
+    direction TB
+    APP["📱 Apps / scripts"]
+    CTL["<b>Controller</b><br/>central control + management<br/>e.g. Catalyst Center, APIC, SD-WAN Controller"]
+    S1["Switch 1<br/>data plane"]
+    S2["Switch 2<br/>data plane"]
+    S3["Switch 3<br/>data plane"]
+    APP <-->|"Northbound API<br/>REST"| CTL
+    SB["Southbound API<br/>OpenFlow, NETCONF, OpFlex, OMP"]
+    CTL --> SB
+    SB --> S1
+    SB --> S2
+    SB --> S3
+  end
+  T ~~~ S
+  classDef all fill:#f2f2f2,stroke:#555,stroke-width:2px
+  classDef c fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px
+  classDef d fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+  class R1,R2,R3 all
+  class CTL,APP c
+  class SB all
+  class S1,S2,S3 d

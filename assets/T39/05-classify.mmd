@@ -1,0 +1,13 @@
+flowchart LR
+  X["Protocol or function<br/>in the question"] --> A{"Does it carry or act on<br/>USER traffic passing through?"}
+  A -->|Yes| D["<b>DATA</b><br/>forwarding, ACL, NAT,<br/>QoS, encapsulation, TTL"]
+  A -->|No| B{"Do DEVICES exchange it<br/>to build tables?"}
+  B -->|Yes| C["<b>CONTROL</b><br/>OSPF, BGP, EIGRP, STP,<br/>ARP, LACP, CDP/LLDP, HSRP"]
+  B -->|No| E{"Does a human, NMS or<br/>script configure / monitor the box?"}
+  E -->|Yes| M["<b>MANAGEMENT</b><br/>SSH, SNMP, NETCONF,<br/>RESTCONF, syslog, NTP, AAA"]
+  classDef d fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+  classDef c fill:#fff6dc,stroke:#e0a800,stroke-width:2px
+  classDef m fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px
+  class D d
+  class C c
+  class M m

@@ -1,0 +1,20 @@
+flowchart TD
+    S{"Status code?"}
+    S -- "200" --> A["GET OK (body) · RPC with output"]
+    S -- "201" --> B["POST / PUT created it<br/>(Location header, no body)"]
+    S -- "204" --> C["PUT replaced · PATCH · DELETE<br/>· RPC without output (no body)"]
+    S -- "4xx" --> E{"Which one?"}
+    E -- "400" --> E1["bad payload / value / query param<br/>read error-tag + error-path"]
+    E -- "401" --> E2["no or wrong Basic credentials"]
+    E -- "403" --> E3["authenticated, not authorised"]
+    E -- "404" --> E4["path, module or key not found<br/>(or '/' in key not %2F)"]
+    E -- "405" --> E5["method not allowed on that resource"]
+    E -- "406 / 415" --> E6["406 = bad Accept<br/>415 = bad Content-Type"]
+    E -- "409" --> E7["POST but it already exists<br/>(data-exists) · lock held"]
+    S -- "5xx" --> F["device-side failure<br/>(operation-failed, rollback-failed)"]
+    classDef ok fill:#e3f6ee,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef c4 fill:#fff6dc,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef c5 fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+    class A,B,C ok
+    class E,E1,E2,E3,E4,E5,E6,E7 c4
+    class F c5

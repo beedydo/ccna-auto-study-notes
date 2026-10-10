@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant P as Script (requests)
+    participant N as Nexus nginx /ins
+    participant C as NX-OS CLI parser
+    P->>N: POST /ins · Authorization: Basic · Content-Type: application/json<br/>{"ins_api": {"type": "cli_show", "input": "show version #59;show interface brief", "output_format": "json"}}
+    N->>C: run "show version", then "show interface brief"
+    C-->>N: structured output per command
+    N-->>P: 200 · Set-Cookie: nxapi_auth=… (600 s)<br/>{"ins_api": {"outputs": {"output": [ {…code 200…}, {…code 200…} ]}}}
+    Note over P,N: 2+ commands → "output" is a LIST · 1 command → a single object
+    P->>N: POST /ins · Cookie: nxapi_auth=… · type cli_conf<br/>"interface ethernet1/5 #59;description to-core"
+    N->>C: configure terminal → apply both lines in order
+    N-->>P: 200 · one output for all config lines · msg "Success"

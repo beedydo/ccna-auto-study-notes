@@ -1,0 +1,22 @@
+sequenceDiagram
+  autonumber
+  participant C as Client (RESTCONF)
+  participant N as NSO (CDB + transaction)
+  participant A as ios0
+  participant B as xr0
+  participant J as junos0
+  C->>N: POST /restconf/data (service T25-LO100)
+  N->>N: FASTMAP runs mapping → 3 device diffs
+  par prepare on every device
+    N->>A: CLI: interface Loopback100 ...
+    N->>B: CLI: interface Loopback100 ...
+    N->>J: edit-config (candidate)
+  end
+  alt every device OK
+    N->>N: write service + device config to CDB
+    N-->>C: 201 Created (+ rollback id)
+  else any device fails (e.g. xr0 unreachable)
+    N->>A: send reverse (no interface Loopback100)
+    N->>J: discard-changes
+    N-->>C: error · CDB and all devices unchanged
+  end

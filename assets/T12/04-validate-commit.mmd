@@ -1,0 +1,21 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant D as Switch
+    Note over S,D: RESTCONF: each edit is checked against the model, then applied to running
+    S->>D: PATCH .../interface=GigabitEthernet1%2F0%2F3/config {"enabled": "no"}
+    D-->>S: 400 invalid-value "for type boolean" (nothing applied)
+    S->>D: PATCH same path {"description": "UNUSED", "enabled": false}
+    D-->>S: 204 No Content (live now)
+    Note over S,D: NETCONF: stage in candidate, then commit as one transaction
+    S->>D: <lock> candidate
+    S->>D: <edit-config> target candidate (many changes)
+    S->>D: <validate> candidate
+    alt all good
+        S->>D: <commit> (optionally confirmed: auto-rollback if not confirmed)
+        D-->>S: <ok/> candidate copied to running
+    else something wrong
+        S->>D: <discard-changes>
+        D-->>S: <ok/> running never changed
+    end
+    S->>D: <unlock>

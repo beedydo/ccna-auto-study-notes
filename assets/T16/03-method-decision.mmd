@@ -1,0 +1,16 @@
+flowchart TD
+    Q{"What do you want<br/>to do to the config?"}
+    Q -- "read it" --> G["GET the resource<br/>→ 200 OK + body"]
+    Q -- "create a new<br/>list entry" --> P["POST to the PARENT<br/>/interfaces<br/>→ 201 + Location<br/>exists → 409"]
+    Q -- "create or replace<br/>the whole entry" --> U["PUT to the RESOURCE<br/>/interface=Lo100<br/>→ 201 new · 204 replaced"]
+    Q -- "change a few leaves,<br/>keep the rest" --> PA["PATCH to the RESOURCE<br/>(merge)<br/>→ 204"]
+    Q -- "remove it" --> D["DELETE the RESOURCE<br/>→ 204 · gone → 404"]
+    Q -- "run an RPC<br/>(e.g. save-config)" --> O["POST /restconf/operations/<br/>module:rpc<br/>→ 200 output · 204 none"]
+    classDef safe fill:#e3f6ee,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef rec fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+    classDef warn fill:#fff6dc,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+    class G safe
+    class P,PA,O rec
+    class U warn
+    class D bad

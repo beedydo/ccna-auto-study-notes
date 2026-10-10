@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant C as Catalyst Center
+    S->>C: POST /dna/system/api/v1/auth/token<br/>Authorization: Basic base64(user:pass)
+    C-->>S: 200 {"Token": "eyJhbGci..."}
+    Note over S,C: script stores the token (valid 60 min)
+    S->>C: GET /dna/intent/api/v1/network-device<br/>X-Auth-Token: eyJhbGci...
+    C-->>S: 200 {"response": [...], "version": "1.0"}
+    S->>C: GET /dna/intent/api/v1/network-device<br/>(no X-Auth-Token)
+    C-->>S: 401 {"message": "Unauthorized"}
+    Note over S,C: Basic auth ONLY on the token call.<br/>Every other call: X-Auth-Token header

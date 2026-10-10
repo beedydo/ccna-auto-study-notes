@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant S as Script (requests.Session)
+    participant M as SD-WAN Manager
+    S->>M: POST /j_security_check<br/>Content-Type: application/x-www-form-urlencoded<br/>j_username=devnetuser&j_password=...
+    M-->>S: 200, EMPTY body<br/>Set-Cookie: JSESSIONID=...
+    Note over S: Session stores the cookie
+    S->>M: GET /dataservice/client/token<br/>Cookie: JSESSIONID=...
+    M-->>S: 200, body = the token (plain text)
+    Note over S: session.headers["X-XSRF-TOKEN"] = token
+    S->>M: GET /dataservice/device<br/>Cookie (token optional on GET)
+    M-->>S: 200 {"header": {...}, "data": [...]}
+    S->>M: POST /dataservice/alarms<br/>Cookie + X-XSRF-TOKEN
+    M-->>S: 200 (no token → 403 SessionTokenFilter)
+    S->>M: POST /logout<br/>Cookie + X-XSRF-TOKEN
+    M-->>S: 302 → /welcome.html, session invalid

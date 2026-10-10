@@ -1,0 +1,26 @@
+sequenceDiagram
+    participant C as Client 10.10.20.10:49270
+    participant S as Server 10.10.20.48
+    rect rgb(227, 246, 238)
+    Note over C,S: TCP to :22 (SSH) — connection first, then reliable ordered bytes
+    C->>S: SYN  seq=100
+    S-->>C: SYN-ACK  seq=300 ack=101
+    C->>S: ACK  ack=301   (connection ESTABLISHED)
+    C->>S: data "show version"
+    S-->>C: ACK + data (lost segment = retransmit)
+    C->>S: FIN  (each side closes its half)
+    S-->>C: ACK, FIN
+    C->>S: ACK
+    end
+    rect rgb(255, 246, 220)
+    Note over C,S: UDP to :514 (syslog) — no setup, no ack, no order
+    C->>S: datagram "#lt;189#gt;%SYS-5-CONFIG_I"
+    Note right of S: lost? sender never knows.<br/>App retries if it cares (DNS, SNMP)
+    end
+    rect rgb(253, 232, 232)
+    Note over C,S: Closed port
+    C->>S: SYN to :5099
+    S-->>C: RST  (TCP refuses at once)
+    C->>S: UDP datagram to :5099
+    Note right of S: ICMP port unreachable at most<br/>UDP itself sends nothing back
+    end

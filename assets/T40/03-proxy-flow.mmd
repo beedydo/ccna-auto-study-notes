@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant A as App (requests / curl)
+    participant P as Corp proxy :3128
+    participant S as API server :443
+    A->>P: CONNECT api.example.com:443
+    P-->>A: 407 Proxy Authentication Required<br/>Proxy-Authenticate: Basic realm="corp-proxy"
+    A->>P: CONNECT … + Proxy-Authorization: Basic …
+    P-->>A: 200 Connection established
+    rect rgb(255, 243, 205)
+    Note over A,S: TLS inspection: proxy terminates TLS and re-signs
+    A->>P: TLS ClientHello (SNI api.example.com)
+    P->>S: new TLS session to the real server
+    P-->>A: cert for api.example.com issued by "Corp TLS Inspection CA"
+    end
+    alt Corp CA not in the app's trust store
+      A--xP: CERTIFICATE_VERIFY_FAILED (SSLError / curl 60)
+    else verify=corp-ca.pem / REQUESTS_CA_BUNDLE / --cacert
+      A->>S: GET /api/v1/... (through the proxy)
+      S-->>A: 200 OK
+    end

@@ -1,0 +1,14 @@
+flowchart LR
+    C["🐍 Client<br/>curl / requests / Postman"]
+    subgraph DEV["IOS XE device"]
+        direction LR
+        N["nginx :443<br/>HTTPS + Basic auth<br/>/restconf"] --> Y["YANG layer<br/>(confd / DMI)"]
+        Y --> DS[("running-config<br/>unified datastore")]
+    end
+    C -- "① HTTPS request<br/>method + URI + Accept / Content-Type" --> N
+    N -- "② status code + yang-data JSON/XML" --> C
+    classDef blue fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+    classDef green fill:#e3f6ee,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    class C blue
+    class N,Y,DS green
+    style DEV fill:#f7f7f5,stroke:#2b2b2b,stroke-width:2px

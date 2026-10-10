@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T14 tree to RESTCONF path animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --blue:#dbeafe; --blue-b:#1d4ed8; --green:#dcfce7; --green-b:#15803d;
+          --purple:#f3e8ff; --purple-b:#7e22ce; --red:#fee2e2; --red-b:#b91c1c; --yellow:#fef9c3; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:14px; }
+  .sub code { font-family:Menlo,Consolas,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:13px; }
+  .cols { display:grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap:18px; }
+  .panel { border:2.5px solid var(--line); border-radius:12px; background:#fff; padding:10px 12px; height:330px; }
+  .panel h3 { margin:0 0 6px; font-size:15px; }
+  .panel h3 small { font-weight:400; color:var(--muted); }
+  .tree { font-family:Menlo,Consolas,monospace; font-size:13.2px; line-height:1.5; white-space:pre; }
+  .tree div { padding:0 6px; border-radius:4px; border:2px solid transparent; }
+  .tree .done { background:var(--blue); }
+  .tree .now { background:var(--yellow); border-color:#a16207; }
+  .tree .skip { background:var(--red); border-color:var(--red-b); text-decoration:line-through; }
+  .tree .dim { color:#aaa; }
+  .rule { font-size:14.5px; line-height:1.5; }
+  .rule .big { font-family:Menlo,Consolas,monospace; font-size:15px; font-weight:700; background:var(--ink); color:#fff;
+               display:inline-block; padding:5px 10px; border-radius:8px; margin:4px 0 10px; }
+  .rule .bad { background:var(--red); border:2px solid var(--red-b); border-radius:8px; padding:6px 9px; margin-top:8px; font-size:13.5px; }
+  .rule .bad b { color:var(--red-b); }
+  .rule code { font-family:Menlo,Consolas,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:13px; }
+  .url { margin-top:14px; border:2.5px solid var(--line); border-radius:12px; background:#fff; padding:10px 14px; }
+  .url h3 { margin:0 0 6px; font-size:15px; }
+  .url .bar { font-family:Menlo,Consolas,monospace; font-size:15px; line-height:1.6; word-break:break-all; }
+  .url .seg { padding:2px 3px; border-radius:4px; }
+  .url .seg.old { background:var(--blue); }
+  .url .seg.new { background:var(--yellow); outline:2px solid #a16207; }
+  .url .seg.aug { background:var(--purple); }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,Consolas,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T14 · <span class="pill">Tree → RESTCONF path</span> one segment per frame</h1>
+  <div class="sub">Goal: the netmask of address 10.10.20.48 on GigabitEthernet1. Tree from <code>pyang -f tree ietf-interfaces ietf-ip</code> (lines trimmed).</div>
+  <div class="cols">
+    <div class="panel"><h3>🌳 pyang tree <small>ietf-interfaces + ietf-ip augment</small></h3><div class="tree" id="tree"></div></div>
+    <div class="panel"><h3>📐 Rule for this segment</h3><div class="rule" id="rule"></div></div>
+  </div>
+  <div class="url"><h3>🔗 URL so far</h3><div class="bar" id="url"></div></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const TREE = [
+  "module: ietf-interfaces",
+  "  +--rw interfaces",
+  "     +--rw interface* [name]",
+  "        +--rw name                string",
+  "        +--rw description?        string",
+  "        +--ro oper-status         enumeration",
+  "        +--rw ip:ipv4!",
+  "        |  +--rw ip:address* [ip]",
+  "        |  |  +--rw ip:ip         inet:ipv4-address-no-zone",
+  "        |  |  +--rw (ip:subnet)",
+  "        |  |  |  +--:(ip:netmask)",
+  "        |  |  |     +--rw ip:netmask?   yang:dotted-quad",
+];
+const SEGS = [
+  ["/restconf/data", "old"],
+  ["/ietf-interfaces:interfaces", "old"],
+  ["/interface=GigabitEthernet1", "old"],
+  ["/ietf-ip:ipv4", "aug"],
+  ["/address=10.10.20.48", "old"],
+  ["/netmask", "old"],
+];
+// each frame: segments shown, tree line states, rule html, caption
+const frames = [
+  { segs:1, now:[], done:[], skip:[],
+    rule:`<span class="big">/restconf/data</span><br>The data resource = the datastore root. Every config or state path starts here.<br>Discover the root with <code>GET /.well-known/host-meta</code>.`,
+    txt:`Start at <code>/restconf/data</code>. Nothing from the tree is used yet.` },
+  { segs:2, now:[1], done:[0], skip:[],
+    rule:`<span class="big">module-name:container</span><br>Top node is <b>always</b> qualified with the <b>module name</b>.<div class="bad"><b>Wrong:</b> <code>/if:interfaces</code>. <code>if</code> is the YANG <b>prefix</b>; URLs and JSON use the module name.</div>`,
+    txt:`Top container <code>interfaces</code> gets the <b>module name</b>: <code>ietf-interfaces:interfaces</code>.` },
+  { segs:3, now:[2,3], done:[1], skip:[],
+    rule:`<span class="big">list=key-value</span><br><code>[name]</code> says the key is <code>name</code>. Put the key <b>value</b> after <code>=</code>. Same module as the parent, so no prefix.<div class="bad"><b>Wrong:</b> <code>/interface/GigabitEthernet1</code> or <code>/interface/name=GigabitEthernet1</code></div>`,
+    txt:`List <code>interface* [name]</code> becomes <code>interface=GigabitEthernet1</code>. The key leaf <b>name</b> is not its own segment.` },
+  { segs:4, now:[6], done:[1,2], skip:[],
+    rule:`<span class="big">new-module:node</span><br><code>ipv4</code> was <b>augmented in</b> by ietf-ip (the tree shows <code>ip:</code>). The module changed, so qualify it again with the module name.<div class="bad"><b>Wrong:</b> <code>/ip:ipv4</code> or plain <code>/ipv4</code></div>`,
+    txt:`Augmented container: module changed, so prefix again with <code>ietf-ip:ipv4</code>.` },
+  { segs:5, now:[7,8], done:[1,2,6], skip:[],
+    rule:`<span class="big">list=key-value</span><br><code>address* [ip]</code>: key leaf is <code>ip</code>. Still module ietf-ip, so no prefix.<br>Two keys? <code>list=k1,k2</code> in key order.`,
+    txt:`Second list: <code>address=10.10.20.48</code>. Same module as its parent, so no prefix.` },
+  { segs:6, now:[11], done:[1,2,6,7], skip:[9,10],
+    rule:`<span class="big">leaf</span><br><code>(subnet)</code> = choice, <code>:(netmask)</code> = case. They are schema-only: <b>never</b> in a URL or a payload.<div class="bad"><b>Wrong:</b> <code>/subnet/netmask/netmask</code></div>`,
+    txt:`Skip the <b>choice</b> and <b>case</b> lines. The leaf <code>netmask</code> ends the path.` },
+  { segs:6, now:[], done:[1,2,6,7,11], skip:[9,10], enc:true,
+    rule:`<span class="big">percent-encode keys</span><br>Key values with reserved characters are encoded:<br><code>GigabitEthernet1/0/1</code> → <code>GigabitEthernet1%2F0%2F1</code><br>(a raw <code>/</code> would start a new segment).<br>Read-only nodes (<code>ro</code>) can be read with GET but never written.`,
+    txt:`Done: a GET on this URL returns <code>{"ietf-ip:netmask": "255.255.255.0"}</code>. Keys with <code>/</code> need <code>%2F</code>.` },
+];
+function show(i) {
+  const f = frames[i];
+  document.getElementById("tree").innerHTML = TREE.map((t, j) => {
+    let c = f.now.includes(j) ? "now" : f.skip.includes(j) ? "skip" : f.done.includes(j) ? "done" : (j === 0 ? "" : "dim");
+    if (f.segs === 1 && j > 0) c = "dim";
+    return `<div class="${c}">${t.replace(/</g, "&lt;")}</div>`;
+  }).join("");
+  document.getElementById("rule").innerHTML = f.rule;
+  document.getElementById("url").innerHTML = SEGS.slice(0, f.segs).map((s, j) =>
+    `<span class="seg ${j === f.segs - 1 && !f.enc ? "new" : s[1]}">${s[0]}</span>`).join("");
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

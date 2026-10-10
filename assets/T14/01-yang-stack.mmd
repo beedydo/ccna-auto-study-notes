@@ -1,0 +1,25 @@
+flowchart LR
+    Y["<b>YANG module</b><br/>ietf-interfaces.yang<br/><i>the schema: shape, types, rules</i>"]
+    subgraph P["Protocol (transport + operations)"]
+        direction TB
+        NC["NETCONF<br/>SSH :830"]
+        RC["RESTCONF<br/>HTTPS :443"]
+        GN["gNMI<br/>gRPC"]
+    end
+    subgraph E["Encoding (the data on the wire)"]
+        direction TB
+        X["XML"]
+        J["JSON / XML"]
+        G["Protobuf / JSON"]
+    end
+    D[("Device datastores<br/>running · candidate · operational")]
+    Y -. defines the shape of .-> D
+    Y --> NC & RC & GN
+    NC --> X
+    RC --> J
+    GN --> G
+    X & J & G --> D
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111
+    classDef ok fill:#dcfce7,stroke:#15803d,color:#111
+    class Y rec
+    class D ok

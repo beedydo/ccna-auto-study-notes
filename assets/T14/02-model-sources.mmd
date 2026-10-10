@@ -1,0 +1,13 @@
+flowchart LR
+    I["<b>IETF</b><br/>standards body, RFCs<br/>e.g. ietf-interfaces"] --> PI["/ietf-interfaces:interfaces/interface=GigabitEthernet1/description"]
+    O["<b>OpenConfig</b><br/>operator group, vendor-neutral<br/>e.g. openconfig-interfaces"] --> PO["/openconfig-interfaces:interfaces/interface=GigabitEthernet1/config/description"]
+    N["<b>Native</b><br/>vendor-specific, mirrors the CLI<br/>e.g. Cisco-IOS-XE-native"] --> PN["/Cisco-IOS-XE-native:native/interface/GigabitEthernet=1/description"]
+    PI & PO & PN --> F["<b>Find them</b><br/>github.com/YangModels/yang<br/>(vendor/cisco/xe/17151/)<br/>yangcatalog.org<br/>the device: NETCONF hello"]
+    classDef ietf fill:#dcfce7,stroke:#15803d,color:#111
+    classDef oc fill:#fef9c3,stroke:#a16207,color:#111
+    classDef nat fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef path fill:#f3f4f6,stroke:#6b7280,color:#111
+    class I ietf
+    class O oc
+    class N nat
+    class PI,PO,PN path

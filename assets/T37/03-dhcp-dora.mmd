@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant C as Client (no IP yet)
+    participant R as Router Gi0/1<br/>ip helper-address 10.10.30.5
+    participant D as DHCP server 10.10.30.5
+    C->>R: 1 DISCOVER  0.0.0.0:68 → 255.255.255.255:67 (broadcast)
+    R->>D: relayed as unicast, giaddr = 10.10.20.1
+    D-->>R: 2 OFFER  yiaddr 10.10.20.101, mask, gw, DNS, lease
+    R-->>C: OFFER  → UDP 68
+    C->>R: 3 REQUEST  broadcast, server-id 10.10.30.5 ("I pick this one")
+    R->>D: relayed
+    D-->>R: 4 ACK  lease committed
+    R-->>C: ACK  → client now uses 10.10.20.101
+    Note over C,D: Broadcasts stop at the router. Server on another subnet needs a relay (ip helper-address).<br/>REQUEST is broadcast so other servers see their offers were declined. Renew = unicast REQUEST at 50% of lease (T1).

@@ -1,0 +1,29 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart LR
+    ROOT["topRoot"] --> SYS["sys<br/><i>topSystem</i>"]
+    ROOT --> ORG["org-root<br/><i>orgOrg</i>"]
+    SYS --> SW["switch-A<br/><i>networkElement</i>"]
+    SYS --> CH["chassis-1<br/><i>equipmentChassis</i>"]
+    SYS --> RU["rack-unit-1<br/><i>computeRackUnit</i>"]
+    CH --> BL["blade-1<br/><i>computeBlade</i>"]
+    BL --> AD["adaptor-1<br/><i>adaptorUnit</i>"]
+    ORG --> SP["ls-ESX-01<br/><i>lsServer</i> = service profile"]
+    SP --> VN["ether-eth0<br/><i>vnicEther</i>"]
+    SP --> VH["fc-vhba0<br/><i>vnicFc</i>"]
+    BL -. "assignedToDn" .-> SP
+    DN1["DN = sys/chassis-1/blade-1"]
+    DN2["DN = org-root/ls-ESX-01/ether-eth0"]
+    BL --- DN1
+    VN --- DN2
+    style SYS fill:#d4edda,stroke:#28a745
+    style CH fill:#d4edda,stroke:#28a745
+    style BL fill:#d4edda,stroke:#28a745
+    style RU fill:#d4edda,stroke:#28a745
+    style SW fill:#d4edda,stroke:#28a745
+    style AD fill:#d4edda,stroke:#28a745
+    style ORG fill:#fff3cd,stroke:#e0a800
+    style SP fill:#fff3cd,stroke:#e0a800
+    style VN fill:#fff3cd,stroke:#e0a800
+    style VH fill:#fff3cd,stroke:#e0a800
+    style DN1 fill:#cfe2ff,stroke:#0d6efd
+    style DN2 fill:#cfe2ff,stroke:#0d6efd

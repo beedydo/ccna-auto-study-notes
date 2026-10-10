@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T42 overview: Webex + Webex devices</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --you: #f3e8fd; --you-b: #9b59d0; --cloud: #d1ecf1; --cloud-b: #17a2b8;
+    --dev: #d4edda; --dev-b: #28a745; --mac: #fff3cd; --mac-b: #e0a800;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 600; }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: minmax(0, 0.75fr) 165px minmax(0, 1.3fr) 150px minmax(0, 1.05fr); align-items: stretch;
+         border: 2.5px solid var(--line); background: #fff; border-radius: 10px; padding: 14px; gap: 0; }
+  .zone { border: 2.5px solid; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .zone h3 { margin: 0; padding: 7px 10px; color: #fff; font-size: 15px; letter-spacing: 0.3px; }
+  .zone .body { padding: 10px; font-size: 13.2px; line-height: 1.45; flex: 1; }
+  .z-you { border-color: var(--you-b); } .z-you h3 { background: var(--you-b); } .z-you .body { background: var(--you); }
+  .z-cloud { border-color: var(--cloud-b); } .z-cloud h3 { background: var(--cloud-b); } .z-cloud .body { background: #eef8fa; }
+  .z-dev { border-color: var(--dev-b); } .z-dev h3 { background: var(--dev-b); } .z-dev .body { background: #eef8f0; }
+  .box { background: #fff; border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; margin-bottom: 8px; font-size: 12.8px; }
+  .box b.t { display: block; font-size: 13px; margin-bottom: 2px; }
+  .box.cloud { border-color: var(--cloud-b); } .box.dev { border-color: var(--dev-b); } .box.mac { border-color: var(--mac-b); background: var(--mac); }
+  .links { display: flex; flex-direction: column; justify-content: space-around; padding: 0 6px; }
+  .lnk { font-size: 11.5px; line-height: 1.3; text-align: center; }
+  .lnk .ar { display: block; font-size: 20px; font-weight: 800; line-height: 1; }
+  .lnk.dash .ar { color: #888; letter-spacing: 2px; }
+  .chips code { display: inline-block; margin: 2px 2px 0 0; }
+
+  /* panels */
+  .panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .panel { border: 2.5px solid var(--line); background: #fff; border-radius: 10px; padding: 12px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .icon { font-size: 24px; }
+  .panel h2 .ids { margin-left: auto; }
+  .item { font-size: 13.2px; line-height: 1.4; margin-bottom: 6px; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item .c { display: block; margin: 2px 0 0 25px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 13px; line-height: 1.4; margin-top: 6px; }
+  .trap .n { background: var(--trap-ink); }
+  .trap b { color: var(--trap-ink); }
+  table.tok { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; margin-bottom: 4px; }
+  table.tok td { border: 1.5px solid var(--line); padding: 4px 6px; vertical-align: top; }
+  table.tok td:first-child { width: 32%; font-weight: 700; }
+  .types { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; margin-bottom: 4px; }
+  .ty { border: 2px solid; border-radius: 7px; padding: 5px 7px; font-size: 12.5px; line-height: 1.35; }
+  .ty b { font-size: 13.5px; }
+  .ty.cmd { background: #fde8e8; border-color: #dc3545; } .ty.cfg { background: #fff3cd; border-color: #e0a800; }
+  .ty.st { background: #d4edda; border-color: #28a745; } .ty.ev { background: #d1ecf1; border-color: #17a2b8; }
+  .flow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; font-size: 12.3px; margin-bottom: 4px; }
+  .flow span.s { border: 2px solid var(--line); border-radius: 6px; padding: 2px 6px; background: #fff; }
+  .flow span.s.red { background: var(--trap); border-color: #dc3545; }
+  .flow span.a { font-weight: 800; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--cloud); border: 1px solid var(--cloud-b); }
+  footer .k5::before { background: var(--dev); border: 1px solid var(--dev-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T42 · <span class="pill">Webex + Webex devices</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.4, 3.9.b</b><br>Every T42 concept on one page<br>Code from <code>labs/T42/</code></div>
+  </header>
+
+  <!-- SYSTEM MAP -->
+  <div class="map">
+    <div class="zone z-you"><h3>💻 YOUR CODE <span class="ids" style="color:#f3e8fd">T42.06</span></h3><div class="body">
+      <div class="box"><b class="t">webex_bot.py</b>Python <code>requests</code>, one <code>Session</code> with the Bearer header</div>
+      <div class="box"><b class="t">webex_sdk.py</b><code>webexpythonsdk</code> (was <code>webexteamssdk</code>)<br><code>WebexAPI()</code> reads <code>WEBEX_ACCESS_TOKEN</code></div>
+      <div class="box"><b class="t">JS</b>Webex JS SDK (npm <code>webex</code>) · device: <code>jsxapi</code></div>
+    </div></div>
+
+    <div class="links">
+      <div class="lnk"><span class="ar">➜</span>HTTPS · JSON<br><code>Authorization:</code><br><code>Bearer &lt;token&gt;</code></div>
+      <div class="lnk"><span class="ar">➜</span>token needs<br><code>spark:xapi_*</code> scopes</div>
+      <div class="lnk dash"><span class="ar">- - ➜</span>LAN, no cloud:<br>SSH / HTTPS<br>(see right)</div>
+    </div>
+
+    <div class="zone z-cloud"><h3>☁️ WEBEX CLOUD · <code style="background:#e9f7fa;color:#0b5560">https://webexapis.com/v1</code> <span class="ids" style="color:#e9f7fa">T42.01 · T42.03</span></h3><div class="body">
+      <div class="box cloud"><b class="t">Messaging resources</b>
+        <span class="chips"><code>/people</code><code>/rooms</code> (= spaces)<code>/messages</code><code>/memberships</code><code>/teams</code><code>/webhooks</code><code>/meetings</code></span></div>
+      <div class="box cloud"><b class="t">Calls in the bot</b>
+        <div class="item" style="margin:2px 0"><span class="n">1</span><code>GET /rooms?type=group&amp;max=2</code> → follow <code>Link rel="next"</code></div>
+        <div class="item" style="margin:2px 0"><span class="n">2</span><code>POST /rooms {"title": "T42-NOC-Alerts"}</code> → <code>200</code></div>
+        <div class="item" style="margin:2px 0"><span class="n">3</span><code>POST /memberships {"roomId", "personEmail"}</code></div>
+        <div class="item" style="margin:2px 0"><span class="n">4</span><code>POST /messages {"roomId", "markdown"}</code> · or <code>"toPersonEmail"</code> for 1:1</div>
+      </div>
+      <div class="box cloud"><b class="t">Devices</b><code>GET /devices</code> → <code>deviceId</code> · <code>GET /xapi/status?deviceId=…&amp;name=Audio.Volume</code><br><code>POST /xapi/command/Audio.Volume.Set</code><br><code>{"deviceId", "arguments": {"Level": 30}}</code></div>
+    </div></div>
+
+    <div class="links">
+      <div class="lnk"><span class="ar">➜</span>cloud-registered<br>device</div>
+      <div class="lnk dash"><span class="ar">- - ➜</span><code>ssh admin@device</code><br><code>/getxml</code> <code>/putxml</code><br>Basic auth · XML</div>
+    </div>
+
+    <div class="zone z-dev"><h3>📺 ROOMOS DEVICE <span class="ids" style="color:#eef8f0">T42.05</span></h3><div class="body">
+      <div class="box dev"><b class="t">xAPI (same tree everywhere)</b>
+        SSH: <code>xCommand Audio Volume Set Level: 30</code><br>
+        HTTP: <code>GET /getxml?location=</code><br><code>/Status/Audio/Volume</code><br>
+        <code>POST /putxml</code> + <code>&lt;Command&gt;…&lt;/Command&gt;</code></div>
+      <div class="box mac"><b class="t">🧩 Macros = JavaScript on the device</b>
+        <code>import xapi from 'xapi';</code><br><code>xapi.Command.Audio.Volume</code><br><code>.Set({ Level: MAX });</code><br>enable: <code>xConfiguration Macros Mode: On</code></div>
+    </div></div>
+  </div>
+
+  <div class="panels">
+    <!-- AUTH -->
+    <div class="panel"><h2><span class="icon">🔐</span>TOKENS<span class="ids">T42.02</span></h2>
+      <table class="tok">
+        <tr><td>Personal</td><td>you · portal copy · <b>12 h</b> · testing only</td></tr>
+        <tr><td>Bot</td><td>own identity <code>@webex.bot</code> · long-lived · shown once</td></tr>
+        <tr><td>Integration</td><td>OAuth 2.0 as <b>any user</b> · access ~14 d + refresh ~90 d</td></tr>
+        <tr><td>Guest issuer</td><td>guests, awareness only (legacy)</td></tr>
+      </table>
+      <div class="item"><span class="n">1</span>OAuth: <code>/v1/authorize</code> → <code>?code=</code> → <code>POST /v1/access_token</code></div>
+      <div class="item"><span class="n">2</span>no / bad token → <code>401</code> · missing scope → <code>403</code></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> "worked yesterday, <code>401</code> today" = expired personal token → use a bot / integration</div>
+    </div>
+
+    <!-- BOT -->
+    <div class="panel"><h2><span class="icon">🤖</span>BOTS + WEBHOOKS<span class="ids">T42.04</span></h2>
+      <div class="flow"><span class="s">POST /webhooks</span><span class="a">→</span><span class="s">@mention</span><span class="a">→</span><span class="s">Webex POSTs targetUrl</span><span class="a">→</span><span class="s">verify sig</span><span class="a">→</span><span class="s">GET /messages/{id}</span><span class="a">→</span><span class="s">reply parentId</span></div>
+      <div class="item"><span class="n">1</span>webhook body: <code>resource</code> <code>event</code> <code>targetUrl</code> <code>filter</code> <code>secret</code></div>
+      <div class="item"><span class="n">2</span><code>X-Spark-Signature</code> = HMAC-SHA1(secret, raw body)</div>
+      <div class="item"><span class="n">3</span>group space: bot gets only messages that <b>@mention</b> it</div>
+      <div class="item"><span class="n">4</span>complete the code <span class="ids">T42.07</span><span class="c"><code>resp = requests.post(url,</code> <code>headers=headers, json=body)</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> the webhook carries <b>IDs only, no text</b>; Webex <b>pushes</b>, the bot never polls</div>
+    </div>
+
+    <!-- XAPI -->
+    <div class="panel"><h2><span class="icon">🎛️</span>xAPI: 4 TYPES<span class="ids">T42.05 · T42.07</span></h2>
+      <div class="types">
+        <div class="ty cmd"><b>xCommand</b> action now<br><code>Audio Volume Set</code> <code>Level: 30</code></div>
+        <div class="ty cfg"><b>xConfiguration</b> setting, persists<br><code>Audio DefaultVolume: 50</code></div>
+        <div class="ty st"><b>xStatus</b> state, read-only<br><code>Audio Volume</code></div>
+        <div class="ty ev"><b>xEvent</b> it happened<br><code>xFeedback register</code> <code>/Event/…</code></div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> survive a reboot → <code>xConfiguration</code>; <code>xStatus</code> never changes anything. Cloud = Bearer + JSON; device = Basic + XML</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = call / step from labs/T42/</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">cloud (webexapis.com)</span>
+    <span class="k k5">on the device</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T42/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

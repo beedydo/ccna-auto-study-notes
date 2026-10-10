@@ -1,0 +1,26 @@
+%%{init: {"flowchart": {"wrappingWidth": 420}}}%%
+flowchart LR
+  subgraph ROAS["Router-on-a-stick: external router, one trunk link"]
+    direction TB
+    R1["Router Gi0/0 (one physical link)<br/>Gi0/0.10: encapsulation dot1Q 10 · 10.10.10.1<br/>Gi0/0.20: encapsulation dot1Q 20 · 10.10.20.1"]
+    S1["L2 switch<br/>Gi1/0/24 switchport mode trunk"]
+    PA1["PC-A VLAN 10<br/>gw 10.10.10.1"]
+    PC1["PC-C VLAN 20<br/>gw 10.10.20.1"]
+    R1 <== "802.1Q trunk<br/>tags 10, 20" ==> S1
+    S1 --- PA1
+    S1 --- PC1
+  end
+  subgraph SVI["SVI: L3 switch routes internally"]
+    direction TB
+    L3["L3 switch: ip routing<br/>interface vlan 10 · 10.10.10.1<br/>interface vlan 20 · 10.10.20.1"]
+    PA2["PC-A VLAN 10<br/>gw 10.10.10.1"]
+    PC2["PC-C VLAN 20<br/>gw 10.10.20.1"]
+    L3 --- PA2
+    L3 --- PC2
+  end
+  classDef yellow fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+  classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+  class R1 yellow
+  class L3 blue
+  class PA1,PC1,PA2,PC2,S1 green

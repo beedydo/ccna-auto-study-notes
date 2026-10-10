@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T23 overview: Security platforms</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.6px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: #e8f0ff; font-weight: 400; margin-left: 6px; }
+
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; }
+  .card h3 .old { font-size: 11px; font-weight: 400; opacity: .9; }
+  .card .body { padding: 9px 12px 11px; font-size: 13px; line-height: 1.4; display: flex; flex-direction: column; gap: 7px; flex: 1; }
+  .row { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 6px; align-items: start; }
+  .row .k { font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; padding-top: 2px; }
+  .chips code { display: inline-block; margin: 0 3px 3px 0; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.5px; margin-top: auto; }
+  .trap b { color: var(--trap-ink); }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+  .c-fmc h3 { background: #b42318; } .c-fdm h3 { background: #d9480f; } .c-ise h3 { background: #0d6efd; }
+  .c-xdr h3 { background: #6f42c1; } .c-se h3 { background: #198754; } .c-sma h3 { background: #0f766e; }
+  .c-sc h3 { background: #0891b2; } .c-auth h3 { background: #343a40; }
+  .mini { display: flex; align-items: center; gap: 4px; font-size: 11.5px; flex-wrap: wrap; }
+  .mini span { border: 1.8px solid var(--line); border-radius: 5px; padding: 1px 5px; background: #fff; white-space: nowrap; }
+  .mini i { font-style: normal; font-weight: 800; }
+  .mini .hl { background: var(--blue); border-color: var(--blue-b); }
+  table.auth { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+  table.auth td { border-bottom: 1px solid #ddd; padding: 3px 2px; vertical-align: top; }
+  table.auth td:first-child { width: 92px; font-weight: 700; }
+
+  .wide { margin-top: 14px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .wide h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; background: var(--ink); }
+  .wide .body { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 16px; padding: 11px 14px; }
+  .map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px 12px; font-size: 13px; }
+  .map div { line-height: 1.3; }
+  .map b { display: inline-block; background: var(--blue); border: 2px solid var(--blue-b); border-radius: 6px; padding: 0 6px; margin-top: 2px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T23 · <span class="pill">Security platforms</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.5</b><br>Every T23 concept on one page<br>Code from <code>labs/T23/incident_response.py</code> (local mock)</div>
+  </header>
+
+  <div class="cards">
+    <!-- FMC -->
+    <div class="card c-fmc"><h3>🧱 FMC <span class="old">(Firepower Management Center)</span><span class="ids">T23.01</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span>central manager for <b>many</b> Secure Firewall (FTD) devices: objects, access policies, deploy</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips"><code>POST /api/fmc_platform/v1/</code><code>auth/generatetoken</code> Basic → <code>204</code>, tokens in <b>headers</b></span></div>
+      <div class="row"><span class="k">Calls</span><span class="chips"><code>/api/fmc_config/v1/domain/</code><code>{DOMAIN_UUID}</code> <code>/object/hosts</code> <code>/policy/accesspolicies</code></span></div>
+      <div class="row"><span class="k">Send</span><span class="chips"><code>X-auth-access-token: &lt;token&gt;</code> · 30 min · 3 refreshes</span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> token is a <b>header</b>, not Bearer. A rule POST (<code>201</code>) changes nothing on the FTDs until <code>deploymentrequests</code></div>
+    </div></div>
+    <!-- FDM -->
+    <div class="card c-fdm"><h3>🔥 FDM <span class="old">(on-box)</span><span class="ids">T23.02</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span>Firepower Device Manager: web UI + REST API <b>on one firewall</b>, no FMC</span></div>
+      <div class="mini"><span>Script</span><i>→</i><span class="hl">FDM on the FTD</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips"><code>POST /api/fdm/latest/fdm/token</code> JSON <code>"grant_type": "password"</code></span></div>
+      <div class="row"><span class="k">Send</span><span class="chips"><code>Authorization: Bearer</code><code>&lt;access_token&gt;</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> FDM = 1 box (OAuth-style token). FMC = many boxes (<code>X-auth-access-token</code>). Same FTD, never both</div>
+    </div></div>
+    <!-- ISE -->
+    <div class="card c-ise"><h3>🪪 ISE <span class="old">(Identity Services Engine)</span><span class="ids">T23.03</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span><b>AAA</b>, network access control (802.1X/MAB), posture, guest, quarantine (ANC)</span></div>
+      <div class="row"><span class="k">ERS</span><span class="chips"><code>https://&lt;ise&gt;:9060</code><code>/ers/config/networkdevice</code> Basic auth on every call · <code>Accept: application/json</code></span></div>
+      <div class="row"><span class="k">More</span><span class="chips"><b>pxGrid</b> <code>:8910</code> shares context (pub/sub) · <b>OpenAPI</b> <code>/api/v1/</code> on <code>443</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> ERS port <code>9060</code>, off by default; user needs <b>ERS Admin</b> (RW) / ERS Operator (RO). pxGrid ≠ ERS</div>
+    </div></div>
+    <!-- XDR -->
+    <div class="card c-xdr"><h3>🧠 XDR <span class="ids">T23.04</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span>extended detection &amp; response: correlates endpoint, network, email, cloud telemetry</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips"><code>POST /iroh/oauth2/token</code> client ID:secret + <code>grant_type=client_credentials</code> → Bearer, <code>600</code> s</span></div>
+      <div class="row"><span class="k">Calls</span><span class="chips"><code>/iroh/iroh-inspect/inspect</code> <code>/iroh/iroh-enrich/</code><code>observe/observables</code> <code>/iroh/iroh-response/</code><code>respond/observables</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> XDR <b>orchestrates</b>; the response runs in the integrated product (isolate = Secure Endpoint)</div>
+    </div></div>
+    <!-- SE -->
+    <div class="card c-se"><h3>💻 Secure Endpoint <span class="old">(AMP)</span><span class="ids">T23.05</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span>endpoint malware protection + EDR on laptops/servers</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips"><b>Basic</b> = client ID : API key · <code>https://api.amp.cisco.com/v1/</code></span></div>
+      <div class="row"><span class="k">Calls</span><span class="chips"><code>GET /v1/computers</code> <code>GET /v1/events</code> <code>PUT /v1/computers/{guid}/isolation</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> isolation is <code>PUT</code> on the computer's <b>connector GUID</b>, not its hostname</div>
+    </div></div>
+    <!-- SMA -->
+    <div class="card c-sma"><h3>🧪 Malware Analytics <span class="old">(TG)</span><span class="ids">T23.06</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span><b>sandbox</b>: detonates files/URLs, reports behaviours + threat score 0-100</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips"><code>api_key</code> parameter · <code>https://panacea.threatgrid.com</code><code>/api/v2/</code></span></div>
+      <div class="row"><span class="k">Calls</span><span class="chips"><code>POST /api/v2/samples</code> <code>/samples/{id}/state</code> <code>/samples/{id}/threat</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> it <b>analyses, never blocks</b>. Async: poll <code>state</code> until <code>succ</code></div>
+    </div></div>
+    <!-- SC -->
+    <div class="card c-sc"><h3>☁️ Secure Connect <span class="ids">T23.07</span></h3><div class="body">
+      <div class="row"><span class="k">What</span><span>Cisco <b>SASE/SSE</b> cloud on Umbrella + Meraki: remote access, DNS-layer + web security</span></div>
+      <div class="row"><span class="k">Auth</span><span class="chips">key + secret → <code>POST https://api.umbrella.com</code><code>/auth/v2/token</code> → Bearer, <code>3600</code> s</span></div>
+      <div class="row"><span class="k">Calls</span><span class="chips"><code>/policies/v2/destinationlists</code> · Meraki: <code>/organizations/{id}/</code><code>secureConnect/sites</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> the API key is <b>not</b> sent as Bearer itself: key + secret buy a token first</div>
+    </div></div>
+    <!-- AUTH -->
+    <div class="card c-auth"><h3>🔐 Auth styles side by side <span class="ids">T23.01-07</span></h3><div class="body">
+      <table class="auth">
+        <tr><td>FMC</td><td>Basic → <code>X-auth-access-token</code></td></tr>
+        <tr><td>FDM</td><td>JSON password grant → Bearer</td></tr>
+        <tr><td>ISE ERS</td><td>Basic on every call</td></tr>
+        <tr><td>XDR</td><td>OAuth client credentials → Bearer</td></tr>
+        <tr><td>Secure Endpoint</td><td>Basic (client ID : API key)</td></tr>
+        <tr><td>Malware Analytics</td><td><code>api_key</code> parameter</td></tr>
+        <tr><td>Secure Connect</td><td>key + secret → OAuth Bearer</td></tr>
+      </table>
+    </div></div>
+  </div>
+
+  <div class="wide"><h3>🎯 Exam angle: match the scenario to the platform <span class="ids">T23.08</span></h3><div class="body">
+    <div class="map">
+      <div><span class="n">1</span>detonate a file, threat score<br><b>Malware Analytics</b></div>
+      <div><span class="n">2</span>isolate a laptop, EDR events<br><b>Secure Endpoint</b></div>
+      <div><span class="n">3</span>NAC, 802.1X, guest, quarantine MAC<br><b>ISE</b></div>
+      <div><span class="n">4</span>rules on many firewalls<br><b>FMC</b></div>
+      <div><span class="n">5</span>one firewall, no manager<br><b>FDM</b></div>
+      <div><span class="n">6</span>correlate across products<br><b>XDR</b></div>
+      <div><span class="n">7</span>remote users, DNS/web, SASE<br><b>Secure Connect</b></div>
+      <div><span class="n">8</span>share identity context<br><b>ISE pxGrid</b></div>
+    </div>
+    <div class="trap" style="margin:0"><span class="n">!</span><b>Traps:</b> "sandbox" → Malware Analytics, not Secure Endpoint. "Who is on the network" → ISE, not FMC. Names: Secure Endpoint = AMP, Malware Analytics = Threat Grid, FMC = Firepower Management Center</div>
+  </div></div>
+
+  <footer>
+    <span class="k k1">numbered = scenario → answer</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the platform to pick</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T23/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

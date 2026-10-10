@@ -1,0 +1,69 @@
+{
+  "site": "HQ campus + DMZ + one branch (T38 reference topology)",
+  "devices": {
+    "pc1":      {"role": "host", "ip": "10.10.10.21/24", "gateway": "10.10.10.1", "switch": "acc1", "vlan": 10},
+    "pc2":      {"role": "host", "ip": "10.10.10.22/24", "gateway": "10.10.10.1", "switch": "acc1", "vlan": 10},
+    "printer1": {"role": "host", "ip": "10.10.20.30/24", "gateway": "10.10.20.1", "switch": "acc1", "vlan": 20},
+    "ap1":      {"role": "access_point", "ip": "10.10.30.40/24", "gateway": "10.10.30.1", "switch": "acc1", "vlan": 30, "controller": "10.0.9.10"},
+
+    "acc1":  {"role": "switch", "layer": 2, "vlans": [10, 20, 30]},
+    "dist1": {"role": "l3_switch",
+              "interfaces": {"Vlan10": "10.10.10.1/24", "Vlan20": "10.10.20.1/24", "Vlan30": "10.10.30.1/24",
+                             "Gi1/0/48": "10.0.1.2/30"},
+              "routes": [["0.0.0.0/0", "10.0.1.1"]]},
+    "core1": {"role": "router",
+              "interfaces": {"Gi0/0/1": "10.0.1.1/30", "Gi0/0/2": "10.0.2.1/30", "Gi0/0/3": "10.0.3.1/30",
+                             "Gi0/0/4": "10.0.9.1/24"},
+              "routes": [["10.10.0.0/16", "10.0.1.2"], ["10.20.0.0/16", "10.0.3.2"], ["0.0.0.0/0", "10.0.2.2"]]},
+    "wlc1":  {"role": "wlc", "ip": "10.0.9.10/24", "gateway": "10.0.9.1", "switch": null},
+
+    "fw1":   {"role": "firewall",
+              "interfaces": {"inside": "10.0.2.2/30", "dmz": "172.16.50.1/24", "outside": "203.0.113.2/30"},
+              "routes": [["10.0.0.0/8", "10.0.2.1"], ["0.0.0.0/0", "203.0.113.1"]],
+              "policy": [
+                {"id": 1, "from": "inside",  "to": "outside", "proto": "any", "port": "any", "dst": "0.0.0.0/0",       "action": "permit"},
+                {"id": 2, "from": "inside",  "to": "dmz",     "proto": "tcp", "port": 443,   "dst": "172.16.50.10/32", "action": "permit"},
+                {"id": 3, "from": "outside", "to": "dmz",     "proto": "tcp", "port": 443,   "dst": "172.16.50.10/32", "action": "permit"}
+              ]},
+    "dmz-sw": {"role": "switch", "layer": 2, "vlans": [50]},
+    "lb1":   {"role": "load_balancer", "ip": "172.16.50.5/24", "gateway": "172.16.50.1", "switch": "dmz-sw",
+              "vip": "172.16.50.10", "vip_port": 443,
+              "pool": [{"name": "web1", "ip": "172.16.50.11", "health": "up"},
+                       {"name": "web2", "ip": "172.16.50.12", "health": "down"}]},
+    "web1":  {"role": "host", "ip": "172.16.50.11/24", "gateway": "172.16.50.1", "switch": "dmz-sw", "vlan": 50},
+    "web2":  {"role": "host", "ip": "172.16.50.12/24", "gateway": "172.16.50.1", "switch": "dmz-sw", "vlan": 50},
+
+    "isp1":  {"role": "router",
+              "interfaces": {"to-hq": "203.0.113.1/30", "internet": "198.51.100.1/24"},
+              "routes": [["172.16.50.0/24", "203.0.113.2"]]},
+    "ext1":  {"role": "host", "ip": "198.51.100.7/24", "gateway": "198.51.100.1", "switch": null},
+
+    "wan1":  {"role": "router",
+              "interfaces": {"Gi0/0/0": "10.0.3.2/30", "Gi0/0/1": "10.255.0.1/30"},
+              "routes": [["10.20.0.0/16", "10.255.0.2"], ["0.0.0.0/0", "10.0.3.1"]]},
+    "br1":   {"role": "router",
+              "interfaces": {"Gi0/0/0": "10.255.0.2/30", "Gi0/0/1.10": "10.20.10.1/24"},
+              "routes": [["0.0.0.0/0", "10.255.0.1"]]},
+    "br-sw1": {"role": "switch", "layer": 2, "vlans": [10]},
+    "br-pc":  {"role": "host", "ip": "10.20.10.50/24", "gateway": "10.20.10.1", "switch": "br-sw1", "vlan": 10}
+  },
+  "cables": [
+    ["pc1", "eth0", "acc1", "Gi1/0/5"],
+    ["pc2", "eth0", "acc1", "Gi1/0/6"],
+    ["printer1", "eth0", "acc1", "Gi1/0/9"],
+    ["ap1", "Gi0", "acc1", "Gi1/0/12"],
+    ["acc1", "Gi1/0/48", "dist1", "Gi1/0/1"],
+    ["dist1", "Gi1/0/48", "core1", "Gi0/0/1"],
+    ["core1", "Gi0/0/2", "fw1", "inside"],
+    ["core1", "Gi0/0/3", "wan1", "Gi0/0/0"],
+    ["core1", "Gi0/0/4", "wlc1", "Te1"],
+    ["fw1", "dmz", "dmz-sw", "Gi1/0/1"],
+    ["dmz-sw", "Gi1/0/2", "lb1", "eth0"],
+    ["dmz-sw", "Gi1/0/3", "web1", "eth0"],
+    ["dmz-sw", "Gi1/0/4", "web2", "eth0"],
+    ["fw1", "outside", "isp1", "to-hq"],
+    ["wan1", "Gi0/0/1", "br1", "Gi0/0/0"],
+    ["br1", "Gi0/0/1", "br-sw1", "Gi1/0/24"],
+    ["br-sw1", "Gi1/0/3", "br-pc", "eth0"]
+  ]
+}

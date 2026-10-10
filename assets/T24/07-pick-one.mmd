@@ -1,0 +1,11 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart TB
+    Q{"What does the task say?"}
+    Q -- "one UCS domain, on-prem,<br/>no internet / XML API / ucsmsdk" --> UCSM["<b>UCS Manager</b><br/>XML over HTTPS to /nuova<br/>aaaLogin → cookie"]
+    Q -- "many sites or domains, cloud,<br/>SaaS / OpenAPI / API key" --> IS["<b>Intersight</b><br/>REST/JSON /api/v1<br/>keyId + private key signs each request"]
+    Q -- "one standalone rack server,<br/>no FIs" --> IMC["CIMC (IMC XML API / Redfish)<br/>or claim it into Intersight"]
+    Q -- "UCS Director or PowerTool" --> SKIP["Not on 200-901 v1.1<br/>(skip)"]
+    style UCSM fill:#d4edda,stroke:#28a745
+    style IS fill:#cfe2ff,stroke:#0d6efd
+    style IMC fill:#fff3cd,stroke:#e0a800
+    style SKIP fill:#fde8e8,stroke:#b42318

@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph TCP["TCP · connection-oriented"]
+        t1["20/21 FTP data / control<br/>22 SSH<br/>23 Telnet (cleartext)<br/>25 SMTP<br/>80 HTTP<br/>443 HTTPS"]
+        t2["830 NETCONF over SSH<br/>443 RESTCONF (HTTPS only)"]
+    end
+    subgraph BOTH["UDP and TCP"]
+        b1["53 DNS<br/>UDP = normal queries<br/>TCP = zone transfer,<br/>replies too big for UDP"]
+    end
+    subgraph UDP["UDP · connectionless"]
+        u1["67 DHCP server · 68 DHCP client<br/>69 TFTP<br/>123 NTP<br/>161 SNMP get/set (to agent)<br/>162 SNMP trap/inform (to manager)<br/>514 syslog"]
+    end
+    TCP ~~~ BOTH ~~~ UDP
+    style TCP fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+    style BOTH fill:#fff6dc,stroke:#e0a800,stroke-width:2px
+    style UDP fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px
+    style t2 fill:#d6e4ff,stroke:#1f5bd6,stroke-width:2px
+    style t1 text-align:left
+    style u1 text-align:left

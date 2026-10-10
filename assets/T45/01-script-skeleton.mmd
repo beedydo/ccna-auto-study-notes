@@ -1,0 +1,15 @@
+%%{init: {"flowchart": {"wrappingWidth": 260}}}%%
+flowchart LR
+    A["<b>1 · Imports</b><br/>import os, json, time<br/>import requests"] --> B["<b>2 · Constants</b><br/>BASE_URL, USERNAME,<br/>PASSWORD from os.environ"]
+    B --> C["<b>3 · Auth</b><br/>get_token()<br/>POST /auth/token"]
+    C --> D["<b>4 · API calls</b><br/>get_devices()<br/>sync_devices()<br/>wait_for_task()"]
+    D --> E["<b>5 · Parse / loop</b><br/>for device in devices:<br/>keep the unreachable ones"]
+    E --> F["<b>6 · Act + output</b><br/>PUT /sync, poll task<br/>print(...)"]
+    classDef setup fill:#eef1f5,stroke:#555,color:#111
+    classDef auth fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef apicall fill:#e3f6ee,stroke:#2fb380,color:#111
+    classDef act fill:#fff4d6,stroke:#c99a06,color:#111
+    class A,B setup
+    class C auth
+    class D,E apicall
+    class F act

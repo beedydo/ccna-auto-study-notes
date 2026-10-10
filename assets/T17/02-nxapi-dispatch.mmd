@@ -1,0 +1,8 @@
+flowchart LR
+    REQ["HTTP(S) request<br/>to the switch (nginx)"] --> SW{"Which URL?"}
+    SW -- "POST /ins<br/>CLI text in a JSON / XML / JSON-RPC wrapper" --> CLI["NX-API CLI<br/>runs the commands"]
+    SW -- "GET / POST / PUT / DELETE<br/>/api/mo/&lt;dn&gt;.json · /api/class/&lt;class&gt;.json" --> REST["NX-API REST<br/>reads / writes managed objects"]
+    CLI --> OUT1["Structured JSON/XML of the CLI output<br/>TABLE_x / ROW_x keys"]
+    REST --> OUT2["imdata list of objects<br/>class → attributes → children"]
+    style CLI fill:#fff3cd,stroke:#e0a800
+    style REST fill:#d4edda,stroke:#28a745

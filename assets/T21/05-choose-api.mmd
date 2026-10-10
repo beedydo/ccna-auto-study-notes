@@ -1,0 +1,16 @@
+flowchart LR
+  START(["Task on CUCM"]) --> Q1{"Change / bulk-read<br/>system config?"}
+  Q1 -- yes --> AXL["AXL<br/>SOAP, HTTPS POST<br/>app user + AXL role"]
+  Q1 -- no --> Q2{"One user's own data<br/>or directory lookup?"}
+  Q2 -- yes --> UDS["UDS<br/>REST, XML only<br/>end-user creds"]
+  Q2 -- no --> Q3{"Registered<br/>right now?"}
+  Q3 -- yes --> RIS["RisPort70<br/>Serviceability SOAP"]
+  Q3 -- no --> Q4{"Control live<br/>calls?"}
+  Q4 -- yes --> CTI["JTAPI (Java)<br/>TAPI (Windows)"]
+  Q4 -- no --> FIN["Agent state:<br/>Finesse REST"]
+  classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px;
+  classDef usr fill:#e3f6ee,stroke:#28a745,stroke-width:2px;
+  classDef other fill:#f3f4f6,stroke:#6b7280;
+  class AXL rec
+  class UDS usr
+  class RIS,CTI,FIN other

@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant P as Script (requests.Session)
+    participant N as Nexus NX-API REST
+    participant D as DME
+    P->>N: POST /api/aaaLogin.json<br/>{"aaaUser": {"attributes": {"name": "admin", "pwd": "…"}}}
+    N-->>P: 200 · imdata[0].aaaLogin.attributes.token<br/>Set-Cookie: APIC-cookie=#lt;token#gt;
+    P->>N: GET /api/mo/sys/intf/phys-[eth1/5].json · Cookie: APIC-cookie
+    N->>D: look up DN
+    N-->>P: 200 · {"totalCount": "1", "imdata": [{"l1PhysIf": {"attributes": {…}}}]}
+    P->>N: POST /api/mo/sys/bd.json · Cookie<br/>{"bdEntity": {"children": [{"l2BD": {"attributes": {"fabEncap": "vlan-40"}}}]}}
+    N->>D: create / merge child MO
+    N-->>P: 200 · {"imdata": []}
+    P->>N: DELETE /api/mo/sys/bd/bd-[vlan-40].json · Cookie
+    N-->>P: 200
+    P->>N: GET /api/mo/sys/bd/bd-[vlan-40].json
+    N-->>P: 200 · totalCount "0" · imdata [] (not a 404)
+    Note over P,D: token expires (refreshTimeoutSeconds 600) → POST /api/aaaRefresh.json or log in again

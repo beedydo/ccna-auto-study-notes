@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T35 switch learning animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --g:#d4edda; --g-b:#28a745; --y:#fff3cd; --y-b:#e0a800; --r:#fde8e8; --r-b:#dc3545; --b:#d1ecf1; --b-b:#17a2b8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code, .step code, td code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .main { display:grid; grid-template-columns:300px 250px minmax(0,1fr); gap:20px; }
+  .hosts { display:flex; flex-direction:column; gap:10px; }
+  .host { border:2.5px solid var(--line); border-radius:10px; background:#fff; padding:7px 10px; height:72px; position:relative; }
+  .host h3 { margin:0; font-size:15px; } .host .p { font-family:Menlo,monospace; font-size:12px; color:var(--muted); }
+  .host .st { position:absolute; right:8px; top:8px; font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px; border:2px solid; }
+  .st.src { background:var(--b); border-color:var(--b-b); } .st.copy { background:var(--g); border-color:var(--g-b); }
+  .st.none { background:#f0f0f0; border-color:#bbb; color:#888; border-style:dashed; }
+  .host.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .v20 { border-color:var(--r-b); }
+  .sw { border:3px solid var(--line); border-radius:12px; background:#fff; height:318px; padding:12px; display:flex; flex-direction:column; justify-content:center; text-align:center; }
+  .sw h2 { margin:0 0 8px; font-size:22px; }
+  .act { font-family:Menlo,monospace; font-size:14px; font-weight:700; color:#fff; background:var(--ink); padding:8px 10px; border-radius:8px; margin:6px 0; }
+  .why { font-size:13.5px; line-height:1.4; color:var(--ink); }
+  .why code { white-space:nowrap; font-size:11.5px; }
+  .tbl { border:2.5px solid var(--b-b); border-radius:12px; background:#fff; padding:10px 12px; height:318px; }
+  .tbl h3 { margin:0 0 6px; font-size:16px; }
+  table { width:100%; border-collapse:collapse; font-family:Menlo,monospace; font-size:13px; }
+  th { text-align:left; border-bottom:2px solid var(--line); padding:4px; font-size:12px; }
+  td { padding:5px 4px; border-bottom:1px solid #ddd; }
+  tr.new td { background:var(--y); font-weight:700; } tr.gone td { color:#aaa; text-decoration:line-through; }
+  .empty { color:var(--muted); font-style:italic; font-size:13px; padding:8px 4px; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; } .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T35 · <span class="pill">Switch learning</span> frame by frame</h1>
+  <div class="sub">SW1 from <code>labs/T35/l2_switch.py</code>. Each frame = one Ethernet frame arriving. Watch what goes into the MAC table and which ports get a copy.</div>
+  <div class="main">
+    <div class="hosts">
+      <div class="host" id="h1"><h3>PC-A · VLAN 10</h3><div class="p">Gi1/0/1 · 0000.0caa.000a</div><span class="st" id="s1"></span></div>
+      <div class="host" id="h2"><h3>PC-B · VLAN 10</h3><div class="p">Gi1/0/2 · 0000.0cbb.000b</div><span class="st" id="s2"></span></div>
+      <div class="host v20" id="h3"><h3>PC-C · VLAN 20</h3><div class="p">Gi1/0/3 · 0242.ac11.0002</div><span class="st" id="s3"></span></div>
+      <div class="host" id="h4"><h3>Router · trunk</h3><div class="p">Gi1/0/24 · native 99</div><span class="st" id="s4"></span></div>
+    </div>
+    <div class="sw"><h2>🔀 SW1</h2><div class="why" id="frame"></div><div class="act" id="act"></div><div class="why" id="why"></div></div>
+    <div class="tbl"><h3>📋 show mac address-table</h3>
+      <table><thead><tr><th>Vlan</th><th>Mac Address</th><th>Ports</th></tr></thead><tbody id="tb"></tbody></table>
+      <div class="empty" id="empty"></div>
+    </div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const A = ["10","0000.0caa.000a","Gi1/0/1"], B = ["10","0000.0cbb.000b","Gi1/0/2"], C = ["20","0242.ac11.0002","Gi1/0/3"];
+const frames = [
+  { src:1, st:{2:"copy",3:"none",4:"copy tag 10"}, rows:[[A,"new"]],
+    frame:"src <code>0000.0caa.000a</code><br>dst <code>0000.0cbb.000b</code>", act:"FLOOD (unknown unicast)", why:"table empty, dst unknown",
+    txt:"A → B. Switch learns the <b>source</b> (A = Gi1/0/1). B is unknown, so it floods <b>VLAN 10 only</b>. PC-C gets nothing." },
+  { src:2, st:{1:"copy",3:"none",4:"none"}, rows:[[A,""],[B,"new"]],
+    frame:"src <code>0000.0cbb.000b</code><br>dst <code>0000.0caa.000a</code>", act:"FORWARD (known unicast)", why:"A is in the table → Gi1/0/1",
+    txt:"B replies. Learns B = Gi1/0/2. A is <b>known</b>, so the frame goes out <b>one port only</b>." },
+  { src:1, st:{2:"copy",3:"none",4:"none"}, rows:[[A,""],[B,""]],
+    frame:"src <code>0000.0caa.000a</code><br>dst <code>0000.0cbb.000b</code>", act:"FORWARD (known unicast)", why:"B is in the table → Gi1/0/2",
+    txt:"A → B again. Both known: no more flooding. The A entry's aging timer resets to 300 s." },
+  { src:1, st:{2:"copy",3:"none",4:"copy tag 10"}, rows:[[A,""],[B,""]],
+    frame:"src <code>0000.0caa.000a</code><br>dst <code>ffff.ffff.ffff</code>", act:"FLOOD (broadcast)", why:"broadcast is always flooded",
+    txt:"ARP broadcast. Flooded to every VLAN 10 port except the one it came in on. <b>A VLAN = a broadcast domain.</b>" },
+  { src:3, st:{1:"none",2:"none",4:"copy tag 20"}, rows:[[A,""],[B,""],[C,"new"]],
+    frame:"src <code>0242.ac11.0002</code><br>dst <code>0000.0caa.000a</code>", act:"FLOOD (unknown unicast)", why:"A is known in VLAN <b>10</b>, not in VLAN 20",
+    txt:"C (VLAN 20) → A's MAC. The table is <b>per VLAN</b>: no match in VLAN 20, so flood VLAN 20 → only the trunk. C needs a <b>router</b> to reach A." },
+  { src:0, st:{1:"none",2:"none",3:"none",4:"none"}, rows:[[A,""],[B,"gone"],[C,"gone"]],
+    frame:"no frames from B or C<br>for 300 s", act:"AGE OUT", why:"<code>mac address-table aging-time</code><br>default 300 s",
+    txt:"B and C stay silent for more than 300 s, so their dynamic entries are removed. The next frame to B is <b>flooded</b> again." },
+];
+function show(i) {
+  const f = frames[i];
+  for (let h = 1; h <= 4; h++) {
+    const s = document.getElementById("s"+h);
+    const v = h === f.src ? "src" : f.st[h];
+    s.className = "st " + (v ? (v === "src" ? "src" : v.startsWith("copy") ? "copy" : "none") : "");
+    s.textContent = v === "src" ? "SENDS ➜" : v ? (v.startsWith("copy") ? "gets " + v : "nothing") : "";
+    s.style.display = v ? "" : "none";
+    document.getElementById("h"+h).classList.toggle("active", h === f.src);
+  }
+  document.getElementById("frame").innerHTML = f.frame;
+  document.getElementById("act").textContent = f.act;
+  document.getElementById("why").innerHTML = f.why;
+  document.getElementById("tb").innerHTML = f.rows.map(([r, c]) => `<tr class="${c}"><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join("");
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

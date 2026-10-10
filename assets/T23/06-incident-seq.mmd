@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant P as incident_response.py
+    participant SE as Secure Endpoint
+    participant SMA as Malware Analytics
+    participant X as XDR
+    participant I as ISE
+    participant F as FMC
+    participant U as Secure Connect (Umbrella API)
+    P->>SE: GET /v1/computers, /v1/events
+    SE-->>P: laptop GUID + MAC, file sha256
+    P->>SMA: POST /api/v2/samples (file + api_key)
+    SMA-->>P: poll /state → succ, /threat → score 95
+    P->>X: OAuth token → inspect → enrich → respond
+    X-->>P: observables Malicious + available actions
+    P->>SE: PUT /v1/computers/{guid}/isolation
+    P->>I: PUT /ers/config/ancendpoint/apply (Quarantine MAC)
+    P->>F: token → host object → BLOCK rule → deploy
+    P->>U: OAuth token → add domain to block destination list
+    Note over SMA: analyses only, never blocks

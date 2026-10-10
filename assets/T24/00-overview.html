@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T24 overview: UCS Manager + Intersight</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd; --teal: #d1ecf1; --teal-b: #17a2b8;
+    --ok: #d4edda; --ok-b: #28a745; --warn: #fff3cd; --warn-b: #e0a800;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1460px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: minmax(0, 0.9fr) 54px minmax(0, 1.4fr) 54px minmax(0, 0.9fr); align-items: stretch; margin-bottom: 16px; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .zone h3 { margin: 0; padding: 7px 12px; font-size: 15px; color: #fff; }
+  .zone .body { padding: 10px 12px; font-size: 13.5px; line-height: 1.45; }
+  .z-client h3 { background: var(--ink); } .z-apic h3 { background: var(--blue-b); } .z-fab h3 { background: var(--ok-b); }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .zone h3 .ids { color: #e8f0ff; margin-left: 6px; }
+  .link { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; }
+  .link b { font-size: 26px; color: var(--ink); line-height: 1; }
+  .tree { white-space: nowrap; font-family: Menlo, Consolas, monospace; font-size: 11.3px; line-height: 1.55; background: #fafafa; border: 1.5px solid #bbb; border-radius: 8px; padding: 6px 10px; }
+  .tree .hl { background: var(--teal); border-radius: 3px; padding: 0 3px; }
+  .tree .c { color: var(--muted); }
+  .dn { margin-top: 6px; background: var(--blue); border: 2px solid var(--blue-b); border-radius: 8px; padding: 5px 8px; font-family: Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .twocol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .fab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center; font-size: 12px; font-weight: 700; }
+  .fab div { border: 2px solid var(--ok-b); background: var(--ok); border-radius: 6px; padding: 4px 2px; }
+  .fab .sp { grid-column: span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 0; background: none; padding: 0; }
+  .fab .sp div { background: #fff; }
+  .mesh { font-size: 11px; color: var(--muted); text-align: center; margin: 3px 0; }
+
+  /* panels */
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 14px 6px; }
+  td.label .icon { font-size: 36px; line-height: 1; display: block; margin-bottom: 6px; }
+  td.label .name { font-weight: 800; font-size: 16px; letter-spacing: 0.3px; }
+  td.what { width: 360px; padding: 12px 14px; font-size: 14px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 8px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 11px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 18px; }
+  .item { font-size: 13.3px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  .span2 { grid-column: span 2; }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12.5px; }
+  .chain span { border: 2px solid var(--line); border-radius: 6px; padding: 3px 7px; background: #fff; }
+  .chain .ep { background: var(--ok); border-color: var(--ok-b); }
+  .chain .ct { background: var(--blue); border-color: var(--blue-b); font-weight: 700; }
+  .chain i { font-style: normal; font-weight: 800; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  table.cmp { border: 1.5px solid #999; font-size: 12.5px; }
+  table.cmp td, table.cmp th { border: 1px solid #bbb; padding: 3px 7px; text-align: left; }
+  table.cmp th { background: #f0f0f0; }
+  table.cmp td:first-child { width: 70px; font-weight: 700; color: var(--muted); }
+  table.cmp tr td:nth-child(2) { background: #f1faf3; } table.cmp tr td:nth-child(3) { background: #eef4ff; }
+  .chain small { font-size: 10.5px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T24 · <span class="pill">UCS Manager + Intersight</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.3</b><br>Every T24 concept on one page<br>Code from <code>labs/T24/compute_inventory.py</code></div>
+  </header>
+
+  <div class="map">
+    <div class="zone z-fab"><h3>🧱 One UCS domain: UCS Manager <span class="ids">T24.01</span></h3><div class="body">
+      <div class="fab"><div class="sp"><div>FI-A</div><div>FI-B</div></div></div>
+      <div class="mesh"><b>UCSM runs ON the fabric interconnects</b> (active / standby)</div>
+      <div class="fab"><div>blade-1</div><div>blade-2</div><div>blade-3</div></div>
+      <div style="margin-top:7px">Blades in a chassis + rack servers behind the FI pair. <b>1 UCSM = 1 domain.</b> On-prem.</div>
+    </div></div>
+    <div class="link"><b>⇄</b>XML<br>POST<br>/nuova</div>
+    <div class="zone z-client"><h3>🐍 compute_inventory.py <span class="ids">T24.04 · T24.05</span></h3><div class="body">
+      <div class="twocol" style="grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px">
+        <div><b>Part 1</b> <code>ucsmsdk</code><br>
+          <code>UcsHandle(...)</code><br><code>handle.login()</code><br><code>query_classid("computeBlade")</code><br><code>handle.logout()</code></div>
+        <div><b>Part 2</b> <code>requests</code> + <code>IntersightAuth</code><br>
+          or SDK <code>intersight</code><br>
+          <code style="font-size:11.3px">GET /api/v1/compute/PhysicalSummaries</code></div>
+      </div>
+      <div class="ids" style="margin-top:6px">Same blade <code>FLM2341001A</code> seen from both sides: DN <code>sys/chassis-1/blade-1</code> (UCSM) vs <code>UCS-SG-DC1-1-1 … mode=UCSM</code> (Intersight)</div>
+    </div></div>
+    <div class="link"><b>⇄</b>REST<br>JSON<br>signed</div>
+    <div class="zone z-apic"><h3>☁️ Many domains: Intersight <span class="ids">T24.05</span></h3><div class="body">
+      <b>SaaS</b> <code>intersight.com</code> or on-prem <b>virtual appliance</b> (Connected / Private).<br>
+      Each target's <b>device connector</b> dials <b>out</b> to Intersight:
+      <div class="fab" style="margin-top:6px"><div>SG-DC1 UCSM</div><div>TY-DC2 IMM</div><div>C-series / HX</div></div>
+    </div></div>
+  </div>
+
+  <table>
+    <tr>
+      <td class="label"><span class="icon">📄</span><div class="name">SERVICE<br>PROFILE</div><div class="ids">T24.02</div></td>
+      <td class="what"><span class="sig">org-root/ls-ESX-01 (lsServer)</span><br>
+        The server's identity as software: <b>UUID · MAC · WWN · boot order · BIOS · firmware</b>. Built from <b>pools + policies + templates</b>.</td>
+      <td class="items">
+        <div class="chain">
+          <span>pools</span><i>+</i><span>policies</span><i>→</i><span>template<br><small>initial / updating</small></span><i>→</i><span class="ct">service profile</span><i>→</i><span class="ep">blade-1</span><i>✗ fails →</i><span class="ep">blade-3</span>
+        </div>
+        <div class="grid" style="margin-top:9px">
+          <div class="item"><span class="n">1</span>create from template<span class="c"><code>LsServer(parent_mo_or_dn="org-root", name="T24-web01",</code> <code>src_templ_name="ESX-template")</code></span></div>
+          <div class="item"><span class="n">2</span>identity from the pools<span class="c"><code>uuid=1b4e28ba-2fa1-11d2-0001-0025b5000004</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> identity belongs to the <b>profile</b>, not the blade. Move it → same UUID/MAC/WWPN = <b>stateless computing</b> (no SAN rezoning)</div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🌳</span><div class="name">UCSM<br>XML API</div><div class="ids">T24.03</div></td>
+      <td class="what"><span class="sig">POST https://&lt;ucsm&gt;/nuova</span><br>
+        Every MO has a <b>class</b> + <b>DN</b> in one tree (like ACI): <code>sys</code> = hardware, <code>org-root</code> = logical. <code>aaaLogin</code> → <code>outCookie</code>, refresh before <code>600</code> s.</td>
+      <td class="items"><div class="grid">
+        <div class="item span2"><span class="n">1</span>login<span class="c"><code>&lt;aaaLogin inName="ucspe" inPassword="ucspe" /&gt;</code> → <code>outCookie="1791635060/7f27..."</code></span></div>
+        <div class="item span2"><span class="n">2</span>by class = all of them<span class="c"><code>&lt;configResolveClass cookie="..." classId="computeBlade" /&gt;</code></span></div>
+        <div class="item span2"><span class="n">3</span>by DN = one object<span class="c"><code>&lt;configResolveDn cookie="..." dn="sys/chassis-1/blade-3" /&gt;</code></span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> cookie goes <b>inside the XML</b>; errors are <b>HTTP 200</b> + <code>errorCode="551"</code> (login) / <code>"552"</code> (cookie) / <code>"103"</code> (exists). Unknown DN → empty <code>&lt;outConfig/&gt;</code></div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🧰</span><div class="name">UCSM<br>SDK</div><div class="ids">T24.04</div></td>
+      <td class="what"><span class="sig">pip install ucsmsdk</span><br>
+        Python objects over the same XML. XML <code>operPower</code> → Python <code>oper_power</code>. Errors raise <code>UcsException</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>connect<span class="c"><code>handle = UcsHandle(ip, user, pw)</code> · <code>handle.login()</code></span></div>
+        <div class="item"><span class="n">2</span>query<span class="c"><code>handle.query_classid("computeBlade")</code> · <code>handle.query_dn(dn)</code></span></div>
+        <div class="item"><span class="n">3</span>change<span class="c"><code>handle.add_mo(sp)</code> · <code>handle.commit()</code> · <code>handle.remove_mo(sp)</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>add_mo()</code> only stages; <b><code>commit()</code> sends</b> (<code>configConfMos</code>)</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🔐</span><div class="name">INTERSIGHT<br>API</div><div class="ids">T24.05</div></td>
+      <td class="what"><span class="sig">GET https://intersight.com/api/v1/...</span><br>
+        OpenAPI REST/JSON. OData <code>$filter</code> <code>$select</code> <code>$top</code>. <b>API key = key ID + private key</b>; <b>every</b> request is signed. SDK <code>pip install intersight</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item span2"><span class="n">1</span>body hash + time<span class="c"><code>Digest: SHA-256=47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=</code> · <code>Date</code></span></div>
+        <div class="item"><span class="n">2</span>signed headers<span class="c"><code>headers="(request-target) host date digest"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <b>no login, no token</b>; private key never sent. Bad/stale signature → <code>401</code></div>
+        <div class="item span2"><span class="n">3</span>the header Intersight checks<span class="c"><code>Authorization: Signature keyId="...",algorithm="hs2019",</code> <code>headers="(request-target) host date digest",signature="..."</code></span></div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">⚖️</span><div class="name">PICK<br>ONE</div><div class="ids">T24.06 · .07 · .08</div></td>
+      <td class="what"><span class="sig">1 domain → UCSM · many → Intersight</span><br>
+        Read the scenario for <b>scope</b> and <b>API words</b>. UCS Director and PowerTool are <b>not tested</b>.</td>
+      <td class="items">
+        <table class="cmp">
+          <tr><th></th><th>UCS Manager</th><th>Intersight</th></tr>
+          <tr><td>runs</td><td>on the FIs, on-prem</td><td>SaaS / virtual appliance</td></tr>
+          <tr><td>scope</td><td>one domain</td><td>many domains + sites</td></tr>
+          <tr><td>API</td><td>XML, <code>POST /nuova</code>, DN</td><td>REST/JSON OpenAPI, Moid</td></tr>
+          <tr><td>auth</td><td><code>aaaLogin</code> → cookie</td><td>key ID + private key signs each call</td></tr>
+          <tr><td>identity</td><td>service profile <code>lsServer</code></td><td>server profile <code>server.Profile</code></td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k k1">numbered = example from <code>compute_inventory.py</code> / <code>curl_drill.sh</code></span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the answer to remember</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T24/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

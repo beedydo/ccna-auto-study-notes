@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 overview: topology diagrams + components</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #0d6efd; --blue-s: #cfe2ff; --teal: #17a2b8; --teal-s: #e3f1f8;
+    --red: #dc3545; --red-s: #fde8e8; --yel: #e0a800; --yel-s: #fff3cd; --pur: #7b4bc4; --pur-s: #e8dcf7; --grn-s: #e3f6ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1440px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .top { display: grid; grid-template-columns: 430px minmax(0, 1fr); gap: 16px; }
+  .bottom { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; margin-top: 16px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 17px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; }
+  .panel h2 .ic { font-size: 22px; }
+  .panel h2 .ids { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  /* components */
+  .comp { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 4px 8px; align-items: start; padding: 6px 0; border-bottom: 1px dashed #ccc; font-size: 13px; line-height: 1.35; }
+  .comp .e { font-size: 22px; line-height: 1; }
+  .comp b.k { font-size: 13.5px; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-left: 4px; vertical-align: 1px; }
+  .t-l2 { background: var(--teal-s); color: #0c6675; } .t-l3 { background: var(--blue-s); color: #0a4fb8; }
+  .t-fw { background: var(--red-s); color: var(--trap-ink); } .t-lb { background: var(--yel-s); color: #7a5b00; } .t-w { background: var(--grn-s); color: #1d7a55; }
+
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; font-size: 12.8px; line-height: 1.38; margin-top: 8px; }
+  .trap b { color: var(--trap-ink); }
+
+  /* map */
+  .map { display: grid; grid-template-columns: minmax(0, 1.15fr) 26px minmax(0, 0.8fr) 26px minmax(0, 0.95fr) 26px minmax(0, 1.05fr); grid-template-rows: auto 26px auto; }
+  .zone { border: 2px solid; border-radius: 10px; padding: 0 0 8px; background: #fff; }
+  .zone .zh { font-size: 12px; font-weight: 800; padding: 4px 8px; border-radius: 8px 8px 0 0; color: #fff; margin-bottom: 6px; }
+  .z-campus { border-color: var(--teal); } .z-campus .zh { background: var(--teal); }
+  .z-core { border-color: var(--pur); } .z-core .zh { background: var(--pur); }
+  .z-fw { border-color: var(--red); } .z-fw .zh { background: var(--red); }
+  .z-dmz { border-color: var(--yel); } .z-dmz .zh { background: var(--yel); }
+  .z-br { border-color: var(--green); } .z-br .zh { background: var(--green); }
+  .z-inet { border-color: #888; } .z-inet .zh { background: #888; }
+  .dev { margin: 4px 8px; border: 1.8px solid var(--line); border-radius: 7px; padding: 4px 7px; font-size: 12.2px; line-height: 1.32; background: #fff; }
+  .dev b { font-size: 12.8px; }
+  .dev.gw { background: var(--blue-s); border-color: var(--blue); border-width: 2.5px; }
+  .dev.fw { background: var(--red-s); border-color: var(--red); border-width: 2.5px; }
+  .dev.lb { background: var(--yel-s); border-color: var(--yel); }
+  .dev.up { background: #d4edda; border-color: #28a745; }
+  .dev.down { background: #f8d7da; border-color: var(--red); border-style: dashed; }
+  .dev.sw { background: var(--teal-s); border-color: var(--teal); }
+  .hosts { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 0; }
+  .hosts .dev { margin: 3px 4px; font-size: 11.5px; }
+  .hosts .dev:first-child { margin-left: 8px; } .hosts .dev:nth-child(2n) { margin-right: 8px; }
+  .hosts .dev:nth-child(2n+1) { margin-left: 8px; }
+  .ar { display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; color: var(--line); }
+  .arv { display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700;
+       align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .n.r { background: var(--trap-ink); }
+  .lbl { font-size: 10.5px; color: var(--muted); text-align: center; line-height: 1.1; }
+  .flowkey { grid-column: 1 / 2; grid-row: 3; font-size: 12.3px; line-height: 1.45; padding: 4px 6px 0 2px; }
+  .flowkey .trap { margin-top: 4px; }
+  .results { grid-column: 7 / 8; grid-row: 3; font-size: 11.8px; }
+  .results table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .results td { border: 1px solid #bbb; padding: 3px 5px; vertical-align: top; }
+  .results td:first-child { width: 30px; font-weight: 800; text-align: center; }
+  .ok { color: #1e7e34; font-weight: 700; } .no { color: var(--trap-ink); font-weight: 700; }
+
+  /* bottom panels */
+  .pl { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .box { border: 2px solid; border-radius: 8px; padding: 6px 8px; font-size: 12.6px; line-height: 1.4; }
+  .box h4 { margin: 0 0 3px; font-size: 13.5px; }
+  .b-phy { border-color: #888; background: #f4f4f4; } .b-log { border-color: var(--blue); background: #eef4ff; }
+  .designs { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .dz { border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12.4px; line-height: 1.38; }
+  .dz h4 { margin: 0 0 4px; font-size: 13.5px; }
+  .tiers { display: grid; grid-template-rows: repeat(3, auto); gap: 2px; margin-bottom: 3px; }
+  .tiers div { border-radius: 4px; padding: 1px 6px; font-size: 11.5px; }
+  .mini { display: flex; gap: 4px; justify-content: center; margin: 2px 0 4px; }
+  .mini span { border: 1.5px solid; border-radius: 4px; padding: 0 5px; font-size: 11px; }
+  .steps { font-size: 13px; line-height: 1.42; }
+  .steps div { display: flex; align-items: flex-start; margin-bottom: 4px; }
+  footer { display: flex; gap: 18px; white-space: nowrap; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-s); border: 2px solid var(--blue); }
+  footer .k5::before { background: var(--red-s); border: 2px solid var(--red); } footer .k6::before { background: var(--yel-s); border: 2px solid var(--yel); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">Topology diagrams</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.3, 6.4</b><br>Every T38 concept on one page<br>Map + flows from <code>labs/T38/trace_path.py</code></div>
+  </header>
+
+  <div class="top">
+    <!-- COMPONENTS -->
+    <div class="panel">
+      <h2><span class="ic">🧱</span>COMPONENTS<span class="ids">T38.01</span></h2>
+      <div class="comp"><span class="e">🔀</span><div><b class="k">Switch</b><span class="tag t-l2">L2 · dst MAC</span><br>MAC table, VLANs, trunks <code>802.1Q</code>. Changes <b>nothing</b> in the frame.</div></div>
+      <div class="comp"><span class="e">🧭</span><div><b class="k">Router / L3 switch</b><span class="tag t-l3">L3 · dst IP</span><br>Longest-prefix match, default <code>0.0.0.0/0</code>. Is the <b>gateway</b> (router port or SVI <code>Vlan10</code>).</div></div>
+      <div class="comp"><span class="e">🛡️</span><div><b class="k">Firewall</b><span class="tag t-fw">L3–L4 · state</span><br><b>Zones</b> inside / dmz / outside, rules per zone pair, <b>stateful</b> (reply allowed), <b>implicit deny</b>.</div></div>
+      <div class="comp"><span class="e">⚖️</span><div><b class="k">Load balancer</b><span class="tag t-lb">L4–L7 · VIP</span><br>Clients hit the <b>VIP</b>; <b>health checks</b> pick a healthy server; rewrites dst IP.</div></div>
+      <div class="comp" style="border-bottom:0"><span class="e">📶</span><div><b class="k">AP + WLC</b><span class="tag t-w">wireless</span><br>AP = radio ↔ wire. Lightweight AP joins a <b>WLC</b> over CAPWAP <code>UDP 5246</code> ctrl · <code>5247</code> data.</div></div>
+      <div style="font-size:12.3px; color:var(--muted); margin-top:6px">Cisco icons: router = round puck · switch = flat box with arrows · firewall = brick wall. Read the <b>label</b> too.</div>
+      <div class="trap"><b>Trap:</b> routers rewrite the <b>MAC</b> per hop, never the <b>IP</b>. Only NAT and the LB's VIP → server step change an IP.</div>
+    </div>
+
+    <!-- SYSTEM MAP -->
+    <div class="panel">
+      <h2><span class="ic">🗺️</span>REFERENCE TOPOLOGY · flow C: pc1 → web VIP tcp/443<span class="ids">T38.02 · T38.04 · numbers = hop order</span></h2>
+      <div class="map">
+        <div class="zone z-campus" style="grid-column:1; grid-row:1">
+          <div class="zh">CAMPUS · access + distribution</div>
+          <div class="hosts">
+            <div class="dev"><span class="n">1</span><b>pc1</b> .21<br>VLAN 10</div>
+            <div class="dev"><b>pc2</b> .22<br>VLAN 10</div>
+            <div class="dev"><b>printer1</b><br>10.10.20.30 · V20</div>
+            <div class="dev"><b>ap1</b> 📶<br>10.10.30.40 · V30</div>
+          </div>
+          <div class="dev sw"><span class="n">2</span><b>acc1</b> · L2 access · trunk ↓</div>
+          <div class="dev gw"><span class="n">3</span><b>dist1</b> · L3 switch = <b>gateway</b><br><code>Vlan10 10.10.10.1</code><br><code>Vlan20 10.10.20.1</code></div>
+        </div>
+        <div class="ar">→</div>
+        <div class="zone z-core" style="grid-column:3; grid-row:1">
+          <div class="zh">CORE</div>
+          <div class="lbl">10.0.1.0/30 from dist1</div>
+          <div class="dev"><span class="n">4</span><b>core1</b> · router<br><code>10.20.0.0/16</code> → wan1<br><code>0.0.0.0/0</code> → fw1</div>
+          <div class="dev"><b>wlc1</b> 🎛️ 10.0.9.10<br>ap1 joins via CAPWAP</div>
+        </div>
+        <div class="ar">→</div>
+        <div class="zone z-fw" style="grid-column:5; grid-row:1">
+          <div class="zh">INTERNET EDGE</div>
+          <div class="dev fw"><span class="n">5</span><b>fw1</b> · the <b>only filter</b><br>inside → dmz <code>tcp/443</code> to VIP: <b>rule 2</b></div>
+          <div class="dev" style="font-size:11.5px">1 inside → outside: any<br>2 inside → dmz: 443 VIP<br>3 outside → dmz: 443 VIP<br><span class="no">else implicit deny</span></div>
+        </div>
+        <div class="ar">→</div>
+        <div class="zone z-dmz" style="grid-column:7; grid-row:1">
+          <div class="zh">DMZ · 172.16.50.0/24 · gw fw1 .1</div>
+          <div class="dev sw"><b>dmz-sw</b> · L2</div>
+          <div class="dev lb"><span class="n">6</span><b>lb1</b> VIP <code>172.16.50.10:443</code><br>pool: web1 ✅ · web2 ❌ health</div>
+          <div class="dev up"><span class="n">7</span><b>web1</b> 172.16.50.11 · up</div>
+          <div class="dev down"><b>web2</b> 172.16.50.12 · down</div>
+        </div>
+
+        <div class="arv" style="grid-column:3; grid-row:2">↓</div>
+        <div class="arv" style="grid-column:5; grid-row:2">↕</div>
+
+        <div class="flowkey">
+          <div><b>Flow C answers</b> (program output):</div>
+          <div>gateway <code>10.10.10.1</code> (dist1 Vlan10) · filter <b>fw1</b> · 3 L3 hops + LB · <span class="ok">DELIVERED</span></div>
+          <div class="trap"><b>Trap:</b> gateway = L3 interface <b>in the source's own subnet</b>. Here it's an SVI, not a router icon.</div>
+        </div>
+        <div class="zone z-br" style="grid-column:3; grid-row:3">
+          <div class="zh">BRANCH via WAN</div>
+          <div class="dev"><b>wan1</b> → <code>10.255.0.0/30</code></div>
+          <div class="dev gw"><b>br1</b> = branch gw<br><code>10.20.10.1</code> → br-pc .50</div>
+        </div>
+        <div class="zone z-inet" style="grid-column:5; grid-row:3">
+          <div class="zh">INTERNET (outside)</div>
+          <div class="dev"><b>isp1</b> <code>203.0.113.1</code></div>
+          <div class="dev"><b>ext1</b> 198.51.100.7</div>
+        </div>
+        <div class="results">
+          <table>
+            <tr><td>A</td><td>pc1 → pc2: switch only, no gw <span class="ok">✓</span></td></tr>
+            <tr><td>B</td><td>pc1 → printer1: dist1 inter-VLAN <span class="ok">✓</span></td></tr>
+            <tr><td>D</td><td>Internet → VIP 443: rule 3 <span class="ok">✓</span></td></tr>
+            <tr><td>E</td><td>Internet → web1 :22 <span class="no">✗ implicit deny</span></td></tr>
+            <tr><td>F</td><td>web1 → pc1 :445 <span class="no">✗ dmz → inside</span></td></tr>
+            <tr><td>G</td><td>pc1 → branch: core1 <code>/16</code> beats default <span class="ok">✓</span></td></tr>
+            <tr><td>H</td><td>ap1 → wlc1 <code>udp/5246</code> <span class="ok">✓</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <!-- PHYSICAL VS LOGICAL -->
+    <div class="panel">
+      <h2><span class="ic">🔌</span>PHYSICAL vs LOGICAL<span class="ids">T38.02</span></h2>
+      <div class="pl">
+        <div class="box b-phy"><h4>Physical</h4>boxes, <b>cables, ports</b>, racks, speeds<br><code>pc1 eth0</code> ↔ <code>acc1 Gi1/0/5</code><br><code>acc1 Gi1/0/48</code> trunk<br>"which port / which switch?"</div>
+        <div class="box b-log"><h4>Logical</h4><b>subnets, VLANs, IPs, gateways</b>, routing<br>VLAN 10 = <code>10.10.10.0/24</code><br>gw <code>dist1 Vlan10</code><br>"which subnet / gw / path?"</div>
+      </div>
+      <div style="font-size:12.6px; line-height:1.4; margin-top:7px">Segment = VLAN = subnet: count <b>L3 interfaces</b>, not switches. <code>/30</code> = transit link (2 hosts).</div>
+      <div class="trap"><b>Trap:</b> IPs + VLANs, no ports → <b>logical</b>. Two VLANs on one switch still need the gateway.</div>
+    </div>
+
+    <!-- DESIGNS -->
+    <div class="panel">
+      <h2><span class="ic">🏗️</span>COMMON DESIGNS<span class="ids">T38.03</span></h2>
+      <div class="designs">
+        <div class="dz"><h4>🏢 Three-tier campus</h4>
+          <div class="tiers"><div style="background:var(--pur-s)"><b>Core</b>: fast L3, no policy</div><div style="background:var(--blue-s)"><b>Distribution</b>: SVIs = gw, ACLs</div><div style="background:var(--teal-s)"><b>Access</b>: ports, VLANs, PoE</div></div>
+          Two-tier = <b>collapsed core</b> (core + dist merged)</div>
+        <div class="dz"><h4>🏭 Spine-leaf DC</h4>
+          <div class="mini"><span style="border-color:var(--pur)">spine1</span><span style="border-color:var(--pur)">spine2</span></div>
+          <div class="mini"><span style="border-color:var(--teal)">leaf1</span><span style="border-color:var(--teal)">leaf2</span><span style="border-color:var(--teal)">border</span></div>
+          every leaf ↔ every spine · server→server = leaf→spine→leaf · <b>ECMP</b>, east-west</div>
+        <div class="dz"><h4>🛡️ DMZ</h4>3rd firewall zone for <b>public</b> servers (web, mail, DNS). outside → DMZ on published ports only; DMZ → inside <b>denied</b>.</div>
+        <div class="dz"><h4>🌐 WAN / branch</h4>branch router = branch gw + WAN edge. Transport: MPLS · Internet VPN · <b>SD-WAN</b>. Hub-and-spoke to HQ/DC.</div>
+      </div>
+      <div class="trap"><b>Trap:</b> no leaf–leaf or spine–spine links; servers plug into <b>leaves</b> only.</div>
+    </div>
+
+    <!-- EXAM ANGLE -->
+    <div class="panel">
+      <h2><span class="ic">🎯</span>EXAM: TRACE ANY PATH<span class="ids">T38.04</span></h2>
+      <div class="steps">
+        <div><span class="n">1</span><span><b>Same subnet?</b> (apply the mask) → switch only, ARP for dst</span></div>
+        <div><span class="n">2</span><span>No → <b>gateway</b> = router / SVI / FW IP in the source's subnet</span></div>
+        <div><span class="n">3</span><span>Each L3 box: <b>most specific</b> route → next hop</span></div>
+        <div><span class="n">4</span><span><b>Firewall</b> on path? zone pair + port matches a permit, else deny</span></div>
+        <div><span class="n">5</span><span><b>VIP?</b> LB sends to a healthy server (none healthy → fails)</span></div>
+        <div><span class="n">6</span><span>Reply: <b>state table</b> lets it back; new reverse session still denied</span></div>
+      </div>
+      <div class="trap"><b>Trap:</b> frame leaving pc1 for a remote server: dst <b>MAC = gateway</b>, dst <b>IP = server</b>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = hop order of flow C</span>
+    <span class="k k4">blue = default gateway</span>
+    <span class="k k5">red = firewall / deny</span>
+    <span class="k k6">yellow = LB / DMZ</span>
+    <span class="k k2">red box = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>python3 labs/T38/trace_path.py</code></span>
+  </footer>
+</div>
+</body>
+</html>

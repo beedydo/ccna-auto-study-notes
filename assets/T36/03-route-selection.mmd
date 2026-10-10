@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph INSTALL["1 - Install into RIB (per identical prefix)"]
+        direction TB
+        I1["Same prefix + length<br/>from several sources?<br/>10.20.30.0/24: OSPF and EIGRP"] --> I2["Lowest AD wins<br/>EIGRP 90 beats OSPF 110"]
+        I2 --> I3["Same AD? lowest metric<br/>(within one protocol)"]
+    end
+    subgraph FORWARD["2 - Forward each packet (FIB)"]
+        direction TB
+        F1["All installed routes<br/>containing dst 10.20.30.40:<br/>/0, /16, /24"] --> F2["Longest prefix wins<br/>/24 via 10.1.20.3"]
+        F2 --> F3["Nothing but /0 matches?<br/>default route"]
+        F3 --> F4["No default either?<br/>drop + ICMP unreachable"]
+    end
+    INSTALL --> FORWARD
+    classDef rec fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    classDef mid fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    class I2,F2 rec
+    class F3 mid
+    class F4 bad

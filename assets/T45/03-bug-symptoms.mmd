@@ -1,0 +1,14 @@
+flowchart TD
+    Q{"What did the<br/>script print?"}
+    Q -->|"HTTPError 405<br/>Method Not Allowed"| B1["Wrong HTTP method<br/>requests.post where docs say PUT"]
+    Q -->|"HTTPError 401<br/>on a data call"| B2["Missing / wrong auth header<br/>no X-Auth-Token, or Bearer on Catalyst Center"]
+    Q -->|"HTTPError 415<br/>Unsupported Media Type"| B3["Missing Content-Type<br/>data=json.dumps(...) without the header"]
+    Q -->|"KeyError / TypeError<br/>on resp.json()[...]"| B4["Wrong JSON key path<br/>'token' vs 'Token', missing ['response']"]
+    Q -->|"KeyError far from the cause<br/>after a failed call"| B5["Missing raise_for_status()<br/>error body parsed as if it were data"]
+    Q -->|"No error, but too few items<br/>Found 3 devices"| B6["No pagination<br/>only page 1 read"]
+    classDef q fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef err fill:#fde8e8,stroke:#b42318,color:#111
+    classDef silent fill:#fff4d6,stroke:#c99a06,color:#111
+    class Q q
+    class B1,B2,B3,B4,B5 err
+    class B6 silent

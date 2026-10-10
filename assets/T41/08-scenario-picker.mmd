@@ -1,0 +1,10 @@
+flowchart LR
+    Q{"What does the<br/>scenario need?"}
+    Q -->|"users type a name,<br/>need an IP / site failover"| DNS["DNS<br/>(GSLB, round robin, TTL)"]
+    Q -->|"block a port, protocol<br/>or source IP; segment tiers"| FW["Firewall<br/>(stateful, ACL)"]
+    Q -->|"block SQLi / XSS<br/>in HTTP requests"| WAF["WAF"]
+    Q -->|"scale out: many servers,<br/>one address, survive a failure"| LB["Load balancer<br/>(VIP + health checks)"]
+    Q -->|"hide servers, TLS offload,<br/>cache, route by URL path"| RP["Reverse proxy"]
+    Q -->|"control / filter what<br/>internal users browse"| FP["Forward proxy"]
+    classDef rec fill:#e3f1f8,stroke:#1f6feb,color:#1d1d1f
+    class DNS,FW,WAF,LB,RP,FP rec

@@ -1,0 +1,12 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart LR
+    F["&lt;filter type=&quot;subtree&quot;&gt;"] --> NS["namespace<br/>xmlns=&quot;...ietf-interfaces&quot;<br/>picks the model"]
+    F --> CT["containment node<br/>&lt;interfaces&gt; &lt;interface&gt;<br/>has children: walk into it"]
+    F --> CM["content match node<br/>&lt;name&gt;GigabitEthernet2&lt;/name&gt;<br/>leaf with a value: only matching entries"]
+    F --> SE["selection node<br/>&lt;oper-status/&gt;<br/>empty leaf: return only this field"]
+    CM --> R1["only content match nodes →<br/>whole matching entry returned"]
+    SE --> R2["selection nodes present →<br/>only the selected leaves returned"]
+    style NS fill:#e8dcf7,stroke:#7b4bc4
+    style CT fill:#fff3cd,stroke:#e0a800
+    style CM fill:#d1ecf1,stroke:#17a2b8
+    style SE fill:#d4edda,stroke:#28a745

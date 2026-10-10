@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph HQ["HQ campus"]
+        CORE["core1"] --- WAN1["wan1<br/>WAN edge router"]
+    end
+    subgraph WAN["WAN transport (provider or overlay)"]
+        MPLS["☁️ MPLS / leased line"]
+        INET["☁️ Internet + VPN / SD-WAN"]
+    end
+    subgraph BR["Branch"]
+        BR1["br1<br/>branch router = gateway<br/>10.20.10.1"] --- BSW["br-sw1"] --- BPC["br-pc 10.20.10.50"]
+    end
+    WAN1 --- MPLS --- BR1
+    WAN1 -.- INET -.- BR1
+    style HQ fill:#e3f1f8,stroke:#17a2b8
+    style BR fill:#e3f6ee,stroke:#2fb380
+    style WAN fill:#fff3cd,stroke:#e0a800
+    style BR1 fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px

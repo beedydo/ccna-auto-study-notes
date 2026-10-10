@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T45 overview: reading Python scripts using Cisco APIs</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 330px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  td.what .sig { white-space: normal; line-height: 1.45; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T45 · <span class="pill">Reading Cisco API scripts</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.7</b><br>Every T45 concept on one page<br>Code from <code>labs/T45/device_audit.py</code></div>
+  </header>
+
+  <table>
+    <tr>
+      <td class="label"><span class="icon">🧱</span><div class="name">SCRIPT<br>SHAPE</div><div class="ids">T45.01</div></td>
+      <td class="what"><span class="sig">imports → constants → auth → calls → parse → act</span><br>
+        Almost every exam script has the same skeleton. Find the <b>constants</b> (where + who), the <b>auth</b> function, the <b>call</b> functions, then read <code>main()</code> top to bottom.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>imports: stdlib + HTTP library<span class="c"><code>import os</code> <code>import requests</code></span></div>
+        <div class="item"><span class="n">4</span>API call functions take the headers<span class="c"><code>def get_devices(headers):</code></span></div>
+        <div class="item"><span class="n">2</span>constants: base URL + creds from env<span class="c"><code>BASE_URL = os.environ.get(</code><br><code>"DNAC_URL", "http://127.0.0.1:18045")</code></span></div>
+        <div class="item"><span class="n">5</span>entry point runs <code>main()</code><span class="c"><code>if __name__ == "__main__":</code></span></div>
+        <div class="item"><span class="n">3</span>auth function returns a token<span class="c"><code>def get_token():</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> order in the file ≠ run order. The sequence lives in <code>main()</code></div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔎</span><div class="name">WHICH<br>PLATFORM?</div><div class="ids">T45.02</div></td>
+      <td class="what"><span class="sig">read the URL, the login call, the library</span><br>
+        The host or path names the platform before you read any logic. The auth style confirms it: header token, cookie, session or SSH.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><code>api.meraki.com</code> → <b>Meraki</b> (Bearer key)</div>
+        <div class="item"><span class="n">5</span><code>webexapis.com</code> → <b>Webex</b> (Bearer token)</div>
+        <div class="item"><span class="n">2</span><code>/dna/</code> + <code>X-Auth-Token</code> → <b>Catalyst Center</b></div>
+        <div class="item"><span class="n">6</span><code>/restconf/data</code> → <b>RESTCONF</b> (yang-data+json)</div>
+        <div class="item"><span class="n">3</span><code>/api/aaaLogin.json</code> → <b>ACI</b> (<code>uni/</code>) or <b>NX-API REST</b> (<code>sys/</code>)</div>
+        <div class="item"><span class="n">7</span><code>from ncclient import manager</code> → <b>NETCONF</b> :830</div>
+        <div class="item"><span class="n">4</span><code>/dataservice</code> + <code>j_security_check</code> → <b>SD-WAN Manager</b></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>/ins</code> + <code>"ins_api"</code> = NX-API <b>CLI</b>, not REST</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔁</span><div class="name">READ THE<br>WORKFLOW</div><div class="ids">T45.03</div></td>
+      <td class="what"><span class="sig">auth → request → parse → act → confirm</span><br>
+        Ask four questions: <b>which call is first</b> (auth), <b>what is extracted</b> (key path), <b>what the loop does</b> (pages? filter?), <b>what is printed or changed</b> (GET reads, PUT/POST/DELETE change).</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>first call = auth, Basic creds<span class="c"><code>auth=(USERNAME, PASSWORD)</code></span></div>
+        <div class="item"><span class="n">4</span>parse: filter in a <code>for</code> loop<span class="c"><code>if device["reachabilityStatus"]</code><br><code>&nbsp;&nbsp;!= "Reachable":</code></span></div>
+        <div class="item"><span class="n">2</span>extract the token from the body<span class="c"><code>return resp.json()["Token"]</code></span></div>
+        <div class="item"><span class="n">5</span>act: the only write call<span class="c"><code>resp = requests.put(url,</code><br><code>&nbsp;&nbsp;headers=headers,</code></span></div>
+        <div class="item"><span class="n">3</span><code>while</code> loop = pagination<span class="c"><code>offset += PAGE_SIZE</code></span></div>
+        <div class="item"><span class="n">6</span>confirm: poll the task<span class="c"><code>if "endTime" in task:</code></span></div>
+        <div class="item trap" style="grid-column: span 2"><span class="n">!</span><b>Trap:</b> <code>202</code> + <code>taskId</code> = <b>queued, not done</b>. The change is confirmed only when the task has <code>endTime</code></div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🐞</span><div class="name">SPOT THE<br>BUG</div><div class="ids">T45.04</div></td>
+      <td class="what"><span class="sig">symptom → line</span><br>
+        Each classic bug has a fingerprint in the output. HTTP errors point at the <b>request</b>; <code>KeyError</code> points at the <b>parse</b>; "too few items, no error" points at <b>pagination</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>wrong method → <code>405</code><span class="c"><code>requests.post(</code> on <code>/network-device/sync</code></span></div>
+        <div class="item"><span class="n">4</span>wrong key path → <code>KeyError: 'token'</code><span class="c"><code>resp.json()["token"]</code></span></div>
+        <div class="item"><span class="n">2</span>no auth header → <code>401</code><span class="c"><code>"X-Auth-Token": token,</code> missing</span></div>
+        <div class="item"><span class="n">5</span>no <code>resp.raise_for_status()</code> + bad creds<span class="c">→ <code>KeyError: 'Token'</code>, real cause 401</span></div>
+        <div class="item"><span class="n">3</span>no content header → <code>415</code><span class="c"><code>"Content-Type": "application/json",</code> missing</span></div>
+        <div class="item"><span class="n">6</span>no pagination → silent wrong answer<span class="c"><code>Found 3 devices</code> instead of 7</span></div>
+        <div class="item trap" style="grid-column: span 2"><span class="n">!</span><b>Trap:</b> <code>json=body</code> sets <code>Content-Type</code> for you; <code>data=json.dumps(device_ids)</code> does not</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T45.05</div></td>
+      <td class="what"><span class="sig">"What does this script do?" · "Order the steps"</span><br>
+        Answer with <b>platform + verbs + objects</b>, taken from <code>main()</code>. For ordering, the auth call is always first and the output/confirm step is last.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>one-line summary<span class="c">auth to Catalyst Center → list all devices → resync unreachable → wait for task</span></div>
+        <div class="item"><span class="n">3</span>count the HTTP calls<span class="c">1 POST · 3 GET pages · 1 PUT · 2 GET task</span></div>
+        <div class="item"><span class="n">2</span>order: auth, request, parse, act, confirm<span class="c"><code>get_token()</code> → <code>get_devices()</code> → <code>sync_devices()</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> a script with only <code>requests.get</code> <b>changes nothing</b>; distractors say it "configures"</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = example from the reference script</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Script, mock, bug drill: <code>labs/T45/</code> · details in each T45.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

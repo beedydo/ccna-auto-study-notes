@@ -1,0 +1,26 @@
+flowchart TB
+    LS["SPINE<br/>connects only leaves<br/>(no servers, no spine-to-spine)"]
+    LL["LEAF<br/>servers, firewalls, routers,<br/>storage plug in here"]
+    LS ~~~ LL
+    S1["spine1"]
+    S2["spine2"]
+    S1 --- L1["leaf1"]
+    S1 --- L2["leaf2"]
+    S1 --- L3["border leaf<br/>to WAN / Internet"]
+    S2 --- L1
+    S2 --- L2
+    S2 --- L3
+    L1 --- SV1["🖥️ server A"]
+    L2 --- SV2["🖥️ server B"]
+    N["server A → server B = leaf1 → spine → leaf2<br/>always the same hop count · ECMP over every spine<br/>built for east-west traffic · scale out: add a spine or a leaf"]
+    SV1 ~~~ N
+    style LS fill:#e8dcf7,stroke:#7b4bc4
+    style S1 fill:#e8dcf7,stroke:#7b4bc4
+    style S2 fill:#e8dcf7,stroke:#7b4bc4
+    style LL fill:#e3f1f8,stroke:#17a2b8
+    style L1 fill:#e3f1f8,stroke:#17a2b8
+    style L2 fill:#e3f1f8,stroke:#17a2b8
+    style L3 fill:#e3f1f8,stroke:#17a2b8
+    style N fill:#cfe2ff,stroke:#0d6efd
+    style SV1 fill:#e3f6ee,stroke:#2fb380
+    style SV2 fill:#e3f6ee,stroke:#2fb380

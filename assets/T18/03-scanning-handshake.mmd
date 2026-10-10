@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    participant Admin as Admin
+    participant M as Meraki cloud
+    participant R as Your receiver
+    Admin->>M: enable Scanning API: Post URL + secret + version
+    M->>R: GET Post URL (validation)
+    R-->>M: 200, body = validator string
+    Note over M,R: URL validated, data starts flowing
+    loop about every minute per AP
+        M->>R: POST JSON {version, secret, type: WiFi or BLE, data}
+        R->>R: check secret matches, store observations
+        R-->>M: 2xx
+    end

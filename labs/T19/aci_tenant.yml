@@ -1,0 +1,40 @@
+---
+# T19 Ansible example: the same tenant/VRF objects through the cisco.aci collection.
+#   ansible-galaxy collection install cisco.aci
+#   export APIC_HOST=sandboxapicdc.cisco.com APIC_USER=admin APIC_PASS='...'
+#   ansible-playbook labs/T19/aci_tenant.yml
+- name: T19 ACI tenant with cisco.aci
+  hosts: localhost
+  gather_facts: false
+  module_defaults:
+    group/cisco.aci.all:
+      host: "{{ lookup('env', 'APIC_HOST') | default('sandboxapicdc.cisco.com', true) }}"
+      username: "{{ lookup('env', 'APIC_USER') | default('admin', true) }}"
+      password: "{{ lookup('env', 'APIC_PASS') }}"
+      validate_certs: false
+  tasks:
+    - name: Tenant exists
+      cisco.aci.aci_tenant:
+        tenant: T19-Ansible
+        state: present
+
+    - name: VRF exists in the tenant
+      cisco.aci.aci_vrf:
+        tenant: T19-Ansible
+        vrf: Prod_VRF
+        state: present
+
+    - name: Raw class query when no module fits (aci_rest = any APIC REST path)
+      cisco.aci.aci_rest:
+        path: /api/class/fabricNode.json?query-target-filter=eq(fabricNode.role,"spine")
+        method: get
+      register: spines
+
+    - name: Show the spine names
+      ansible.builtin.debug:
+        msg: "{{ spines.imdata | map(attribute='fabricNode.attributes.name') | list }}"
+
+    - name: Clean up (state absent deletes the tenant and everything under it)
+      cisco.aci.aci_tenant:
+        tenant: T19-Ansible
+        state: absent

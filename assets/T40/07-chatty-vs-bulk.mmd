@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant A as Script
+    participant S as API (RTT 40 ms)
+    rect rgb(248, 215, 218)
+    Note over A,S: Chatty: 20 calls × RTT ≈ 0.8 s (lab measured 0.92 s)
+    A->>S: GET /api/v1/devices/1
+    S-->>A: 200
+    A->>S: GET /api/v1/devices/2
+    S-->>A: 200
+    Note over A,S: … 18 more round trips …
+    end
+    rect rgb(212, 237, 218)
+    Note over A,S: Bulk: 1 call × RTT ≈ 0.04 s (lab measured 0.05 s)
+    A->>S: GET /api/v1/devices  (Accept-Encoding: gzip)
+    S-->>A: 200, 20 devices, 337 B gzip vs 2349 B plain
+    end

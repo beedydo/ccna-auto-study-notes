@@ -1,0 +1,14 @@
+flowchart TD
+    Q{"Which device?"} -- "IOS XE" --> XE{"What's the task?"}
+    Q -- "NX-OS (Nexus)" --> NX{"What's the task?"}
+    XE -- "config / state with YANG over SSH, candidate, lock" --> A1["NETCONF :830"]
+    XE -- "same YANG data over HTTPS, JSON" --> A2["RESTCONF /restconf/data"]
+    XE -- "stream counters to a collector" --> A3["Model-driven telemetry<br/>(gNMI dial-in or configured dial-out)"]
+    XE -- "script runs ON the box" --> A4["Guest Shell Python · EEM"]
+    NX -- "reuse known show / config commands,<br/>get JSON back" --> B1["NX-API CLI<br/>POST /ins"]
+    NX -- "read/write objects by DN or class,<br/>no CLI parsing" --> B2["NX-API REST<br/>/api/mo · /api/class"]
+    NX -- "standard YANG / OpenConfig, multi-vendor" --> B3["NETCONF · RESTCONF · gNMI"]
+    style B1 fill:#fff3cd,stroke:#e0a800
+    style B2 fill:#d4edda,stroke:#28a745
+    style A1 fill:#d1ecf1,stroke:#17a2b8
+    style A2 fill:#d1ecf1,stroke:#17a2b8

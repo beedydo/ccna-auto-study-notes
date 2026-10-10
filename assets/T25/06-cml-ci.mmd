@@ -1,0 +1,17 @@
+flowchart LR
+  pr["Git push / PR<br/>(new loopback service)"] --> ci["CI runner"]
+  ci --> imp["CML: POST /api/v0/import<br/>topology.yaml → lab id"]
+  imp --> st["CML: PUT .../start<br/>poll check_if_converged"]
+  st --> t["pyATS tests on the twin<br/>(GET .../pyats_testbed)"]
+  t -->|pass| dr["NSO dry-run<br/>review the<br/>per-device diff"]
+  dr --> co["NSO: commit<br/>to production"]
+  t -->|fail| stop["Pipeline stops<br/>production untouched"]
+  t --> td["CML: stop → wipe → DELETE lab"]
+  classDef rec fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+  classDef safe fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef bad fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+  classDef part fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  class imp,st,t,td part
+  class dr,co safe
+  class stop bad
+  class pr,ci rec

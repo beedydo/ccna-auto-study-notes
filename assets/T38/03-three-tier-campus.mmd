@@ -1,0 +1,29 @@
+flowchart TB
+    LC["CORE<br/>fast L3 transport<br/>no policy · redundant pair"]
+    LD["DISTRIBUTION<br/>L2/L3 boundary: SVIs = gateways<br/>ACLs, summarisation"]
+    LA["ACCESS<br/>end devices plug in<br/>VLANs, PoE, port security"]
+    LC ~~~ LD ~~~ LA
+    C1["core1"]
+    C2["core2"]
+    D1["dist1"]
+    D2["dist2"]
+    C1 --- D1
+    C2 --- D2
+    C1 --- D2
+    C2 --- D1
+    D1 --- A1["acc1 💻 PCs"]
+    D1 --- A2["acc2 📶 APs"]
+    D2 --- A1
+    D2 --- A2
+    N["Two-tier = collapsed core:<br/>core + distribution in one pair<br/>(small site / one building)"]
+    A1 ~~~ N
+    style LC fill:#e8dcf7,stroke:#7b4bc4
+    style C1 fill:#e8dcf7,stroke:#7b4bc4
+    style C2 fill:#e8dcf7,stroke:#7b4bc4
+    style LD fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style D1 fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style D2 fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style LA fill:#e3f1f8,stroke:#17a2b8
+    style A1 fill:#e3f1f8,stroke:#17a2b8
+    style A2 fill:#e3f1f8,stroke:#17a2b8
+    style N fill:#fff3cd,stroke:#e0a800
