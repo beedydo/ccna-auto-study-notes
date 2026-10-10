@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T23 incident playbook animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --ok:#d4edda; --ok-b:#28a745; --warn:#fff3cd; --warn-b:#e0a800;
+          --bad:#fde8e8; --bad-b:#b42318; --blue:#cfe2ff; --blue-b:#0d6efd; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1220px; height:498px; padding:22px 26px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:14px; }
+  .lanes { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:12px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:212px; padding:9px; background:#fff; }
+  .lane h3 { margin:0; font-size:15px; } .lane .where { font-size:11.5px; color:var(--muted); margin-bottom:8px; }
+  .lane.active { border-color:var(--blue-b); box-shadow:0 0 0 5px rgba(13,110,253,.25); }
+  .lane.idle { opacity:.45; }
+  .chip { font-size:12.5px; line-height:1.35; border:2px solid; border-radius:7px; padding:5px 7px; margin-bottom:6px; }
+  .chip code { font-family:Menlo,monospace; font-size:11px; background:none; padding:0; white-space:nowrap; }
+  .chip.info { background:var(--blue); border-color:var(--blue-b); }
+  .chip.done { background:var(--ok); border-color:var(--ok-b); }
+  .chip.wait { background:var(--warn); border-color:var(--warn-b); }
+  .cmdrow { height:44px; position:relative; margin-top:6px; }
+  .cmd { position:absolute; top:4px; font-family:Menlo,monospace; font-size:13px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .state { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; margin-top:2px; }
+  .st { border:2.5px solid var(--line); border-radius:10px; padding:7px 10px; font-size:13px; background:#fff; }
+  .st b { display:block; font-size:11.5px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:.4px; }
+  .st span { font-weight:800; font-size:15px; }
+  .st.open { border-color:var(--bad-b); background:var(--bad); } .st.open span { color:var(--bad-b); }
+  .st.closed { border-color:var(--ok-b); background:var(--ok); } .st.closed span { color:#1e7e34; }
+  .st.pend { border-color:var(--warn-b); background:var(--warn); } .st.pend span { color:#8a6d00; }
+  .step { position:absolute; left:26px; bottom:20px; right:26px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T23 · <span class="pill">Security platforms</span> one incident, six APIs</h1>
+  <div class="sub">Each frame = one call from <code>labs/T23/incident_response.py</code>. Watch the four threat paths at the bottom: only the <b>enforcing</b> products close them.</div>
+  <div class="lanes">
+    <div class="lane" id="se"><h3>💻 Secure Endpoint</h3><div class="where">EDR on the laptop</div><div id="se-c"></div></div>
+    <div class="lane" id="sma"><h3>🧪 Malware Analytics</h3><div class="where">sandbox</div><div id="sma-c"></div></div>
+    <div class="lane" id="xdr"><h3>🧠 XDR</h3><div class="where">correlate + orchestrate</div><div id="xdr-c"></div></div>
+    <div class="lane" id="ise"><h3>🪪 ISE</h3><div class="where">network access (NAC)</div><div id="ise-c"></div></div>
+    <div class="lane" id="fmc"><h3>🧱 FMC</h3><div class="where">manages the FTDs</div><div id="fmc-c"></div></div>
+    <div class="lane" id="sc"><h3>☁️ Secure Connect</h3><div class="where">Umbrella API (SASE)</div><div id="sc-c"></div></div>
+  </div>
+  <div class="cmdrow" id="cmd"></div>
+  <div class="state">
+    <div class="st" id="s0"><b>Laptop on the LAN</b><span></span></div>
+    <div class="st" id="s1"><b>Laptop network access</b><span></span></div>
+    <div class="st" id="s2"><b>C2 IP 203.0.113.66 at the firewall</b><span></span></div>
+    <div class="st" id="s3"><b>C2 domain for remote users</b><span></span></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (cls, t) => `<div class="chip ${cls}">${t}</div>`;
+const SE1 = C("info", "Threat Detected<br><code>invoice_2026.pdf.exe</code><br><code>sha256 a9f1b6e2c47d…</code>");
+const SMA1 = C("info", "<code>score=95/100</code><br>3 behaviours<br>analysis only");
+const XDR1 = C("info", "sha256 · ip · domain<br>= <b>Malicious</b>") + C("info", "actions: Isolate Host, Block domain…");
+const SE2 = SE1 + C("done", "<code>status=pending_start</code><br>isolating");
+const ISE1 = C("done", "ANC <b>Quarantine</b><br><code>00:50:56:A1:23:23</code>");
+const FMC1 = C("wait", "rule <code>T23-block-C2</code><br><code>201</code> saved on FMC<br><b>not deployed</b>");
+const FMC2 = C("done", "rule <code>T23-block-C2</code><br><code>202</code> deploy →<br><code>T23-BR1-FTD</code>");
+const SC1 = C("done", "<code>update-checker.example</code><br>added to <b>T23 Block List</b>");
+// state: o = open (red), p = pending (yellow), c = closed (green)
+const frames = [
+  { a:"se", c:{se:SE1}, cmd:[0,"GET /v1/events"], s:["o","o","o","o"],
+    txt:"Secure Endpoint reports a <b>Threat Detected</b> event on <code>T23-LAPTOP-07</code>. Every threat path is still open." },
+  { a:"sma", c:{se:SE1, sma:SMA1}, cmd:[1,"POST /api/v2/samples"], s:["o","o","o","o"],
+    txt:"Malware Analytics detonates the file: score <code>95</code>. It <b>analyses only</b>: nothing is blocked yet." },
+  { a:"xdr", c:{se:SE1, sma:SMA1, xdr:XDR1}, cmd:[2,"POST /iroh/iroh-enrich/observe/observables"], s:["o","o","o","o"],
+    txt:"XDR enriches the observables across modules and lists response actions. The <b>products</b> carry them out." },
+  { a:"se", c:{se:SE2, sma:SMA1, xdr:XDR1}, cmd:[0,"PUT /v1/computers/{guid}/isolation"], s:["c","o","o","o"],
+    txt:"Secure Endpoint <b>isolates the host</b>: the laptop can no longer talk to the LAN." },
+  { a:"ise", c:{se:SE2, sma:SMA1, xdr:XDR1, ise:ISE1}, cmd:[3,"PUT /ers/config/ancendpoint/apply"], s:["c","c","o","o"],
+    txt:"ISE applies the ANC <code>Quarantine</code> policy to the MAC: <b>network access</b> is restricted at the switch/WLC." },
+  { a:"fmc", c:{se:SE2, sma:SMA1, xdr:XDR1, ise:ISE1, fmc:FMC1}, cmd:[3,"POST .../accesspolicies/{id}/accessrules"], s:["c","c","p","o"],
+    txt:"FMC returns <code>201</code>, but the rule only lives on FMC. The <b>firewalls still pass the C2 IP</b>." },
+  { a:"fmc", c:{se:SE2, sma:SMA1, xdr:XDR1, ise:ISE1, fmc:FMC2}, cmd:[3,"POST .../deployment/deploymentrequests"], s:["c","c","c","o"],
+    txt:"<code>deploymentrequests</code> → <code>202</code>: FMC pushes the policy, so the FTDs now <b>block 203.0.113.66</b>." },
+  { a:"sc", c:{se:SE2, sma:SMA1, xdr:XDR1, ise:ISE1, fmc:FMC2, sc:SC1}, cmd:[4,"POST /policies/v2/destinationlists/15755711/destinations"], s:["c","c","c","c"],
+    txt:"Secure Connect (Umbrella API) blocks the domain for <b>remote users</b> too. All four paths closed." },
+];
+const LABEL = { o:"open", p:"pending deploy", c:"blocked" };
+const LABEL0 = { o:"reachable", c:"isolated" };
+const LABEL1 = { o:"full access", c:"quarantined" };
+const lanePos = i => 26 + i * ((1168 - 60) / 6 + 12);
+function show(i) {
+  const f = frames[i];
+  for (const k of ["se","sma","xdr","ise","fmc","sc"]) {
+    document.getElementById(k + "-c").innerHTML = f.c[k] || "";
+    const el = document.getElementById(k);
+    el.classList.toggle("active", f.a === k);
+    el.classList.toggle("idle", !f.c[k]);
+  }
+  const cmd = document.getElementById("cmd"); cmd.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd[1];
+  d.style.left = Math.min(lanePos(f.cmd[0]) - 26, 1168 - 9 * f.cmd[1].length - 60) + "px";
+  cmd.appendChild(d);
+  f.s.forEach((v, j) => {
+    const el = document.getElementById("s" + j);
+    el.className = "st " + ({o:"open", p:"pend", c:"closed"})[v];
+    el.querySelector("span").textContent = (j === 0 ? LABEL0 : j === 1 ? LABEL1 : LABEL)[v];
+  });
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

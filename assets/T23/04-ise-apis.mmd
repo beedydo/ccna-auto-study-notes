@@ -1,0 +1,18 @@
+flowchart LR
+    ISE["<b>ISE</b><br/>AAA · NAC · posture · guest"]
+    ERS["<b>ERS API</b><br/>HTTPS :9060 (or :443 on ISE 3.1+)<br/>Basic auth · ERS Admin / ERS Operator<br/>CRUD: /ers/config/networkdevice, endpoint,<br/>identitygroup, internaluser, ancendpoint"]
+    OAPI["<b>OpenAPI</b> (ISE 3.1+)<br/>HTTPS :443 · /api/v1/...<br/>newer REST, same Basic auth"]
+    PX["<b>pxGrid 2.0</b><br/>:8910 · REST + WebSocket (STOMP)<br/>publishes context: user, device,<br/>posture, session, ANC"]
+    MNT["<b>MnT API</b><br/>live sessions, auth status<br/>(read-only)"]
+    CFG["Your script:<br/>add a switch, quarantine a MAC"]
+    SUB["Other products:<br/>FMC, XDR, SIEM subscribe"]
+    CFG --> ERS --> ISE
+    CFG --> OAPI --> ISE
+    ISE --> PX --> SUB
+    ISE --> MNT
+    classDef rec fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    classDef box fill:#ffffff,stroke:#2b2b2b,stroke-width:2px
+    classDef ctx fill:#d4edda,stroke:#28a745,stroke-width:2px
+    class ERS rec
+    class OAPI,MNT,ISE box
+    class PX ctx

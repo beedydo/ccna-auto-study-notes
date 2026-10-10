@@ -1,0 +1,33 @@
+flowchart TB
+    XDR["<b>XDR</b><br/>correlates telemetry from every box below<br/>enrich observables · trigger response"]
+    subgraph EP["Endpoint"]
+        SE["<b>Secure Endpoint</b><br/>(AMP for Endpoints)<br/>EDR on laptops/servers<br/>isolate host"]
+    end
+    subgraph SB["Sandbox"]
+        SMA["<b>Secure Malware Analytics</b><br/>(Threat Grid)<br/>detonate file/URL<br/>threat score 0-100"]
+    end
+    subgraph NET["Campus / branch network"]
+        ISE["<b>ISE</b><br/>who/what is on the network<br/>AAA · NAC · posture · guest"]
+        FMC["<b>FMC</b><br/>central firewall manager"]
+        FTD1["FTD firewall"]
+        FTD2["FTD firewall"]
+        FDM["<b>FDM</b><br/>on-box manager<br/>of ONE FTD"]
+    end
+    subgraph CL["Cloud edge (SASE)"]
+        SC["<b>Secure Connect</b><br/>Umbrella + Meraki<br/>remote access · DNS/web security"]
+    end
+    XDR -.-> SE
+    XDR -.-> SMA
+    XDR -.-> ISE
+    XDR -.-> FMC
+    XDR -.-> SC
+    FMC -->|policy| FTD1
+    FMC -->|policy| FTD2
+    FDM --- FTD3["FTD firewall<br/>(standalone)"]
+    ISE <-->|pxGrid context| FMC
+    classDef x fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    classDef p fill:#ffffff,stroke:#2b2b2b,stroke-width:2px
+    classDef d fill:#d4edda,stroke:#28a745
+    class XDR x
+    class SE,SMA,ISE,FMC,FDM,SC p
+    class FTD1,FTD2,FTD3 d
