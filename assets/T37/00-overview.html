@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T37 overview: Transport, ports, IP services</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --tcp: #e3f6ee; --tcp-b: #28a745; --udp: #e3f1f8; --udp-b: #17a2b8; --both: #fff6dc; --both-b: #e0a800;
+    --blue: #d6e4ff; --blue-b: #1f5bd6;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .n { display: inline-flex; flex: none; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.8px; line-height: 1.4; margin-top: 8px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+
+  /* top strip */
+  .top { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 14px; margin-bottom: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 18px; font-weight: 800; }
+  .vs { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .proto { border: 2px solid; border-radius: 9px; padding: 8px 10px; font-size: 12.8px; line-height: 1.45; }
+  .proto h3 { margin: 0 0 4px; font-size: 15px; }
+  .proto.t { background: var(--tcp); border-color: var(--tcp-b); } .proto.u { background: var(--udp); border-color: var(--udp-b); }
+  .seq { font-family: Menlo, Consolas, monospace; font-size: 11.5px; background: #fff; border: 1.5px solid #999; border-radius: 6px; padding: 4px 6px; margin: 5px 0; line-height: 1.5; }
+  .ports { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr) minmax(0, 1fr); gap: 8px; }
+  .pcol { border: 2px solid; border-radius: 9px; padding: 6px 8px; font-size: 12.5px; line-height: 1.55; }
+  .pcol h3 { margin: 0 0 3px; font-size: 13.5px; }
+  .pcol.t { background: var(--tcp); border-color: var(--tcp-b); } .pcol.u { background: var(--udp); border-color: var(--udp-b); }
+  .pcol.b { background: var(--both); border-color: var(--both-b); }
+  .pcol .p { font-family: Menlo, Consolas, monospace; font-weight: 700; display: inline-block; min-width: 46px; }
+  .pcol .hl { background: var(--blue); border-radius: 4px; padding: 0 3px; }
+
+  /* service cards */
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 11px 13px; display: flex; flex-direction: column; }
+  .card .hd { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .card .hd .icon { font-size: 26px; }
+  .card .hd .name { font-weight: 800; font-size: 17px; }
+  .card .hd .port { margin-left: auto; background: var(--ink); color: #fff; font-family: Menlo, monospace; font-size: 12px; padding: 4px 9px; border-radius: 8px; white-space: nowrap; }
+  .card .job { font-size: 13px; line-height: 1.4; margin-bottom: 6px; }
+  .mini { display: flex; align-items: center; gap: 4px; font-size: 11.5px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .mini .box { border: 2px solid var(--line); border-radius: 6px; padding: 3px 6px; background: #fff; font-weight: 700; }
+  .mini .ok { background: var(--tcp); border-color: var(--tcp-b); } .mini .bl { background: var(--blue); border-color: var(--blue-b); }
+  .mini .ar { font-weight: 800; color: var(--muted); }
+  .kv { font-size: 12.6px; line-height: 1.55; }
+  .kv .c { display: block; margin-top: 2px; }
+  .card .trap { margin-top: auto; }
+  .spacer { height: 8px; }
+  .scen { font-size: 12.4px; line-height: 1.5; }
+  .scen div { display: flex; gap: 6px; } .scen div span:first-child { flex: 1; color: var(--muted); } .scen div b { white-space: nowrap; }
+
+  footer { display: flex; gap: 16px; white-space: nowrap; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--tcp); border: 1px solid var(--tcp-b); }
+  footer .k5::before { background: var(--udp); border: 1px solid var(--udp-b); }
+  footer .k6::before { background: var(--blue); border: 1px solid var(--blue-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T37 · <span class="pill">Transport, Ports &amp; IP Services</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.6, 6.7</b><br>Every T37 concept on one page<br>Code from <code>labs/T37/</code></div>
+  </header>
+
+  <div class="top">
+    <!-- TCP vs UDP -->
+    <div class="panel">
+      <h2>🚚 TCP vs UDP <span class="ids">T37.01</span></h2>
+      <div class="vs">
+        <div class="proto t"><h3>TCP · proto 6</h3>
+          connection first, acked, ordered, 20-byte header
+          <div class="seq">SYN ➜<br>⬅ SYN-ACK<br>ACK ➜ · data · FIN</div>
+          closed port → <b>RST</b> <code>ConnectionRefusedError</code></div>
+        <div class="proto u"><h3>UDP · proto 17</h3>
+          no setup, no ack, no order, 8-byte header
+          <div class="seq">datagram ➜<br>(nothing back)</div>
+          closed port → silence, <code>recvfrom()</code> times out</div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> UDP <code>sendto()</code> to a closed port raises <b>nothing</b>. The app must time out and retry</div>
+    </div>
+
+    <!-- PORTS -->
+    <div class="panel">
+      <h2>🔢 Ports to memorise <span class="ids">T37.02 · T37.04</span></h2>
+      <div class="ports">
+        <div class="pcol t"><h3>TCP</h3>
+          <span class="p">20/21</span>FTP data/ctrl<br>
+          <span class="p">22</span>SSH<br>
+          <span class="p">23</span>Telnet (cleartext)<br>
+          <span class="p">25</span>SMTP<br>
+          <span class="p">80</span>HTTP<br>
+          <span class="p">443</span>HTTPS<br>
+          <span class="hl"><span class="p">830</span>NETCONF (SSH)</span><br>
+          <span class="hl"><span class="p">443</span>RESTCONF</span></div>
+        <div class="pcol b"><h3>UDP + TCP</h3>
+          <span class="p">53</span>DNS<br>
+          UDP = queries<br>TCP = zone transfer, big replies</div>
+        <div class="pcol u"><h3>UDP</h3>
+          <span class="p">67</span>DHCP server<br>
+          <span class="p">68</span>DHCP client<br>
+          <span class="p">69</span>TFTP<br>
+          <span class="p">123</span>NTP<br>
+          <span class="p">161</span>SNMP → agent<br>
+          <span class="p">162</span>trap → manager<br>
+          <span class="p">514</span>syslog</div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> NETCONF is <b>830</b>, not 22 · RESTCONF has no own port: <b>443</b> · 161 = to device, 162 = to NMS</div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <!-- DHCP -->
+    <div class="card">
+      <div class="hd"><span class="icon">📦</span><span class="name">DHCP</span><span class="ids">T37.03</span><span class="port">UDP 67 / 68</span></div>
+      <div class="job">Hands a host IP, mask, gateway, DNS and a lease.</div>
+      <div class="mini"><span class="box">Discover</span><span class="ar">→</span><span class="box">Offer</span><span class="ar">→</span><span class="box">Request</span><span class="ar">→</span><span class="box ok">Ack</span></div>
+      <div class="kv"><span class="n">1</span>Discover + Request are <b>broadcast</b>
+        <span class="c"><span class="n">2</span>other subnet → relay <code>ip helper-address</code></span>
+        <span class="c"><span class="n">3</span>verify <code>show ip dhcp binding</code></span></div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> server = 67, client = 68. Request is broadcast, not unicast</div>
+    </div>
+
+    <!-- DNS -->
+    <div class="card">
+      <div class="hd"><span class="icon">📖</span><span class="name">DNS</span><span class="ids">T37.03</span><span class="port">UDP/TCP 53</span></div>
+      <div class="job">Names ↔ addresses. Client asks the resolver (recursive); resolver walks root → TLD → authoritative (iterative), caches for the TTL.</div>
+      <div class="kv"><span class="n">1</span><b>A</b> name→IPv4 · <b>AAAA</b> name→IPv6
+        <span class="c"><span class="n">2</span><b>CNAME</b> alias→name · <b>MX</b> mail, lowest pref wins</span>
+        <span class="c"><span class="n">3</span><b>PTR</b> IP→name <code>dig -x 10.10.20.48</code></span>
+        <span class="c"><span class="n">4</span>no such name → <code>NXDOMAIN</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> PTR name is reversed: <code>48.20.10.10.in-addr.arpa</code></div>
+    </div>
+
+    <!-- NAT -->
+    <div class="card">
+      <div class="hd"><span class="icon">🔀</span><span class="name">NAT / PAT</span><span class="ids">T37.03</span><span class="port">router function</span></div>
+      <div class="job">Rewrites private (RFC 1918) to public. PAT = many hosts, one IP, told apart by source port.</div>
+      <div class="mini"><span class="box ok">10.10.20.10:51000</span><span class="ar">→</span><span class="box bl">203.0.113.5:51000</span></div>
+      <div class="kv"><span class="n">1</span>inside local = private · inside global = public
+        <span class="c"><span class="n">2</span>static 1:1 · dynamic pool · PAT overload</span>
+        <span class="c"><span class="n">3</span><code>ip nat inside source list 1</code></span>
+        <span class="c" style="margin-left:25px"><code style="font-size:11.3px">interface GigabitEthernet0/0 overload</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> PAT = NAT <b>overload</b>; static NAT to publish a server</div>
+    </div>
+
+    <!-- SNMP -->
+    <div class="card">
+      <div class="hd"><span class="icon">📈</span><span class="name">SNMP</span><span class="ids">T37.03</span><span class="port">UDP 161 / 162</span></div>
+      <div class="job">Manager (NMS) polls the agent's MIB; each object named by an OID, e.g. <code>1.3.6.1.2.1.1.5.0</code>.</div>
+      <div class="mini"><span class="box">NMS</span><span class="ar">— Get/Set → :161 —</span><span class="box">agent</span><span class="ar">— Trap/Inform → :162</span></div>
+      <div class="kv"><span class="n">1</span>Trap = no ack · Inform = acked
+        <span class="c"><span class="n">2</span>v1/v2c community = cleartext</span>
+        <span class="c"><span class="n">3</span>v3 <code>authPriv</code> = auth + encryption</span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>authNoPriv</code> is <b>not</b> encrypted; only v3 <code>authPriv</code> is</div>
+    </div>
+
+    <!-- NTP -->
+    <div class="card">
+      <div class="hd"><span class="icon">⏱️</span><span class="name">NTP</span><span class="ids">T37.03</span><span class="port">UDP 123</span></div>
+      <div class="job">One clock for logs, SNMP timestamps and certificates.</div>
+      <div class="mini"><span class="box bl">0 GPS</span><span class="ar">→</span><span class="box ok">1</span><span class="ar">→</span><span class="box ok">2</span><span class="ar">→</span><span class="box ok">3</span><span class="ar">⇢</span><span class="box" style="background:var(--trap);border-color:var(--trap-ink)">16 unsynced</span></div>
+      <div class="kv"><span class="n">1</span>stratum = hops from the reference clock
+        <span class="c"><span class="n">2</span>client <code>ntp server 10.10.20.1</code></span>
+        <span class="c"><span class="n">3</span>verify <code>show ntp status</code></span>
+        <span class="c"><span class="n">4</span>lab: <code>stratum=2 refid=10.10.20.1</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> lower stratum = closer to the source; <b>16 = unsynchronised</b></div>
+    </div>
+
+    <!-- EXAM ANGLE -->
+    <div class="card">
+      <div class="hd"><span class="icon">🎯</span><span class="name">Scenario → answer</span><span class="ids">T37.04</span></div>
+      <div class="scen">
+        <div><span>hosts need IP automatically</span><b>DHCP</b></div>
+        <div><span>no address, server in DC</span><b><code>ip helper-address</code></b></div>
+        <div><span>IP works, hostname fails</span><b>DNS</b></div>
+        <div><span>IP in a log → hostname</span><b>DNS PTR</b></div>
+        <div><span>200 hosts, 1 public IP</span><b>PAT</b></div>
+        <div><span>alert NMS on link down</span><b>SNMP trap</b></div>
+        <div><span>log times disagree</span><b>NTP</b></div>
+        <div><span>firewall: allow NETCONF</span><b>TCP 830</b></div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> Telnet 23 is never the secure answer → SSH 22</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = key point</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">TCP</span>
+    <span class="k k5">UDP</span>
+    <span class="k k6">recommended</span>
+    <span style="margin-left:auto">Run it: <code>python3 labs/T37/transport_services.py</code></span>
+  </footer>
+</div>
+</body>
+</html>

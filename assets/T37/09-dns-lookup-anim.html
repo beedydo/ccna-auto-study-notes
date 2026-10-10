@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T37 DNS lookup chain animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:15px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); border-color:#2fb380; }
+  .card { font-family:Menlo,Consolas,monospace; font-size:12px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.4; }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .q { background:#e3f1f8; border-color:#17a2b8; }
+  .ref { background:#fff6dc; border-color:#e0a800; }
+  .ans { background:#e3f6ee; border-color:#28a745; }
+  .cache { background:#d6e4ff; border-color:#1f5bd6; }
+  .ghost { opacity:.28; border-style:dashed; }
+  .arrowrow { position:relative; height:58px; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T37 · <span class="pill">DNS lookup</span> who asks whom</h1>
+  <div class="sub">One name, <code>www.example.com</code>, resolved over UDP 53. Each frame = one query or reply.</div>
+  <div class="lanes">
+    <div class="lane" id="c"><h3>💻 Client stub</h3><div class="where">10.10.20.10 · asks once</div><div id="c-f"></div></div>
+    <div class="lane" id="l"><h3>🔁 Recursive resolver</h3><div class="where">10.10.30.53 · does the walk</div><div id="l-f"></div></div>
+    <div class="lane" id="r"><h3>🌐 Root "."</h3><div class="where">knows TLD servers only</div><div id="r-f"></div></div>
+    <div class="lane" id="t"><h3>🏷️ TLD ".com"</h3><div class="where">knows example.com NS only</div><div id="t-f"></div></div>
+    <div class="lane" id="a"><h3>📗 Authoritative</h3><div class="where">example.com zone · has the A</div><div id="a-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (cls, t, s) => `<div class="card ${cls}">${t}<small>${s}</small></div>`;
+const Q = C("q", "A? www.example.com", "query, RD=1 (recursion desired)");
+const frames = [
+  { active:"c", c:Q, l:C("cache ghost","cache: empty",""), r:"", t:"", a:"",
+    cmd:{at:0, t:"A? www.example.com"}, txt:"The client sends <b>one recursive query</b> to its configured resolver on <code>UDP 53</code>. It never talks to root itself." },
+  { active:"r", c:Q, l:C("q","A? www.example.com","iterative query"), r:C("ref","referral: .com NS","a.gtld-servers.net …"), t:"", a:"",
+    cmd:{at:1, t:"ask root"}, txt:"The resolver asks a root server. Root doesn't know the IP; it returns a <b>referral</b> to the <code>.com</code> servers." },
+  { active:"t", c:Q, l:C("q","A? www.example.com","iterative query"), r:C("ref ghost","referral: .com NS",""), t:C("ref","referral: example.com NS","ns1.example.com …"), a:"",
+    cmd:{at:2, t:"ask .com"}, txt:"The resolver asks the <code>.com</code> TLD server. Another <b>referral</b>: here are the example.com name servers." },
+  { active:"a", c:Q, l:C("q","A? www.example.com","iterative query"), r:"", t:C("ref ghost","referral: example.com NS",""), a:C("ans","A 192.0.2.80","TTL 3600 · authoritative (AA=1)"),
+    cmd:{at:3, t:"ask example.com"}, txt:"The <b>authoritative</b> server owns the zone and returns the record: <code>A 192.0.2.80</code>, TTL 3600 s." },
+  { active:"c", c:C("ans","www.example.com → 192.0.2.80","answer received"), l:C("cache","cache: www.example.com A 192.0.2.80","TTL 3600 s"), r:"", t:"", a:"",
+    cmd:{at:0, t:"answer", back:true}, txt:"The resolver <b>caches</b> the answer for the TTL and replies to the client. Total: 1 query from the client, 3 by the resolver." },
+  { active:"l", c:C("q","A? www.example.com","second client, 60 s later"), l:C("cache","cache hit: 192.0.2.80","TTL now 3540 s"), r:C("ref ghost","not asked",""), t:C("ref ghost","not asked",""), a:C("ans ghost","not asked",""),
+    cmd:{at:0, t:"answered from cache", back:true}, txt:"A second client asks the same name: <b>answered from cache</b>, no walk. Change the record and old answers live until the TTL runs out." },
+];
+const lanePos = i => i * 228;
+function show(i) {
+  const f = frames[i];
+  for (const k of ["c","l","r","t","a"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = (lanePos(f.cmd.at) + 120) + "px";
+  a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

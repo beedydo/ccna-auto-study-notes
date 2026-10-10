@@ -1,0 +1,21 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart LR
+    q["Scenario keyword"] --> a{"What is the need?"}
+    a -->|"host needs IP, mask, gateway, DNS automatically"| dhcp["DHCP · UDP 67/68"]
+    a -->|"name ↔ IP"| dns["DNS · UDP/TCP 53"]
+    a -->|"private hosts reach internet via one public IP"| nat["NAT / PAT (overload)<br/>no port: a router function"]
+    a -->|"poll counters / get alerts from devices"| snmp["SNMP · UDP 161 / traps 162"]
+    a -->|"log timestamps don't line up · certs fail"| ntp["NTP · UDP 123"]
+    a -->|"central log collection"| sys["syslog · UDP 514"]
+    a -->|"model-driven config over SSH"| nc["NETCONF · TCP 830"]
+    a -->|"model-driven config over HTTPS"| rc["RESTCONF · TCP 443"]
+    a -->|"copy IOS image, no auth"| tftp["TFTP · UDP 69"]
+    style dhcp fill:#d6e4ff,stroke:#1f5bd6
+    style dns fill:#d6e4ff,stroke:#1f5bd6
+    style nat fill:#d6e4ff,stroke:#1f5bd6
+    style snmp fill:#d6e4ff,stroke:#1f5bd6
+    style ntp fill:#d6e4ff,stroke:#1f5bd6
+    style sys fill:#d6e4ff,stroke:#1f5bd6
+    style nc fill:#d6e4ff,stroke:#1f5bd6
+    style rc fill:#d6e4ff,stroke:#1f5bd6
+    style tftp fill:#d6e4ff,stroke:#1f5bd6
