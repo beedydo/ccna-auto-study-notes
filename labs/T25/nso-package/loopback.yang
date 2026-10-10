@@ -1,0 +1,22 @@
+// T25 service model: one "anycast loopback" service = the same Loopback<id> on many devices.
+// In a real NSO package this file lives at packages/loopback/src/yang/loopback.yang.
+module loopback {
+  namespace "http://example.com/loopback";
+  prefix loopback;
+
+  import ietf-inet-types { prefix inet; }
+  import tailf-ncs { prefix ncs; }
+
+  list loopback {
+    key name;
+    uses ncs:service-data;                    // NSO keeps FASTMAP bookkeeping here
+    ncs:servicepoint "loopback-servicepoint";  // links this model to the template below
+
+    leaf name { type string; }
+    leaf-list device {                        // must be devices NSO already manages
+      type leafref { path "/ncs:devices/ncs:device/ncs:name"; }
+    }
+    leaf id { type uint32 { range "0..2147483647"; } }
+    leaf ipv4 { type inet:ipv4-address; }
+  }
+}

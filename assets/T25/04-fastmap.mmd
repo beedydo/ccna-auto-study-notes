@@ -1,0 +1,12 @@
+flowchart LR
+  c["① CREATE<br/>run mapping<br/>devices: ios0, xr0, junos0"] --> s[("NSO stores<br/>reverse diff<br/>(what the service owns)")]
+  s --> m["② MODIFY<br/>drop junos0<br/>re-run mapping on new input"]
+  m -->|diff old vs new| md["only junos0 changes:<br/>delete lo0 unit 100"]
+  s --> d["③ DELETE service"]
+  d -->|apply stored reverse diff| dd["ios0, xr0:<br/>no interface Loopback100<br/>(nothing else touched)"]
+  classDef rec fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+  classDef safe fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef bad fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+  class c,m,d rec
+  class s safe
+  class md,dd bad

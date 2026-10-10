@@ -1,0 +1,44 @@
+<!-- T25 service template: maps one loopback service instance to device config.
+     Real package path: packages/loopback/templates/loopback-template.xml
+     {/device} iterates over the leaf-list. NSO applies only the block whose namespace
+     matches each device's NED, so one template serves IOS, IOS XR and Junos. -->
+<config-template xmlns="http://tail-f.com/ns/config/1.0"
+                 servicepoint="loopback-servicepoint">
+  <devices xmlns="http://tail-f.com/ns/ncs">
+    <device>
+      <name>{/device}</name>
+      <config>
+        <!-- Cisco IOS / IOS XE: cisco-ios-cli NED -->
+        <interface xmlns="urn:ios">
+          <Loopback>
+            <name>{/id}</name>
+            <ip><address><primary>
+              <address>{/ipv4}</address>
+              <mask>255.255.255.255</mask>
+            </primary></address></ip>
+          </Loopback>
+        </interface>
+        <!-- Cisco IOS XR: cisco-iosxr-cli NED -->
+        <interface xmlns="http://tail-f.com/ned/cisco-ios-xr">
+          <Loopback>
+            <id>{/id}</id>
+            <ipv4><address>
+              <ip>{/ipv4}</ip>
+              <mask>255.255.255.255</mask>
+            </address></ipv4>
+          </Loopback>
+        </interface>
+        <!-- Juniper Junos: juniper-junos-nc NED (NETCONF) -->
+        <configuration xmlns="http://xml.juniper.net/xnm/1.1/xnm">
+          <interfaces><interface>
+            <name>lo0</name>
+            <unit>
+              <name>{/id}</name>
+              <family><inet><address><name>{/ipv4}/32</name></address></inet></family>
+            </unit>
+          </interface></interfaces>
+        </configuration>
+      </config>
+    </device>
+  </devices>
+</config-template>
