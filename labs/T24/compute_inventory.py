@@ -26,7 +26,7 @@ UCSM_SECURE = os.environ.get("UCSM_SECURE", "false") == "true"   # real UCSM: tr
 UCSM_USER = os.environ.get("UCSM_USER", "ucspe")
 UCSM_PASS = os.environ.get("UCSM_PASS", "ucspe")
 
-INTERSIGHT_URL = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:8125")   # real: https://intersight.com
+INTERSIGHT_URL = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:18024")   # real: https://intersight.com
 INTERSIGHT_KEY_ID = os.environ.get("INTERSIGHT_KEY_ID", "")
 INTERSIGHT_KEY_FILE = os.environ.get("INTERSIGHT_KEY_FILE", "/tmp/t24-lab/SecretKey.txt")   # PEM private key
 

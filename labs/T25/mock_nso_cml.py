@@ -1,6 +1,6 @@
 """Mock NSO RESTCONF + CML REST API for the T25 lab (stdlib + PyYAML).
 
-Run:  python3 labs/T25/mock_nso_cml.py      -> http://127.0.0.1:8125
+Run:  python3 labs/T25/mock_nso_cml.py      -> http://127.0.0.1:18025
   NSO part: /restconf/...   (real NSO: http://<nso>:8080/restconf, Basic auth)
   CML part: /api/v0/...     (real CML: https://<cml>/api/v0, Bearer JWT)
 
@@ -20,7 +20,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 
 import yaml
 
-HOST, PORT = "127.0.0.1", 8125
+HOST, PORT = "127.0.0.1", 18025
 NSO_USER, NSO_PASS = "admin", "admin"
 CML_USER, CML_PASS = "admin", "T25-mock-pass"
 CML_TOKEN = "eyJhbGciOiJIUzI1NiJ9.t25-mock.jwt"

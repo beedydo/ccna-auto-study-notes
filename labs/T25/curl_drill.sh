@@ -2,7 +2,7 @@
 # T25 curl drill: NSO RESTCONF actions and dry-run by hand. Start the mock first:
 #   python3 labs/T25/mock_nso_cml.py      (or: bash labs/T25/run_lab.sh labs/T25/curl_drill.sh)
 set -u
-NSO="${NSO_URL:-http://127.0.0.1:8125}"
+NSO="${NSO_URL:-http://127.0.0.1:18025}"
 AUTH="${NSO_USER:-admin}:${NSO_PASS:-admin}"
 JSON="application/yang-data+json"
 

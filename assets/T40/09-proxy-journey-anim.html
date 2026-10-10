@@ -45,8 +45,8 @@
   <div class="sub">The <code>labs/T40/conn_doctor.py</code> section 5 calls, one per frame. Watch which box the error comes from.</div>
   <div class="lanes">
     <div class="lane app" id="app"><h3>💻 App (requests)</h3><div class="where">trust store: certifi</div><div id="app-f"></div></div>
-    <div class="lane px" id="px"><h3>🧭 Corp proxy</h3><div class="where">127.0.0.1:18043</div><div id="px-f"></div></div>
-    <div class="lane sv" id="sv"><h3>🖥️ API server</h3><div class="where">127.0.0.1:18044</div><div id="sv-f"></div></div>
+    <div class="lane px" id="px"><h3>🧭 Corp proxy</h3><div class="where">127.0.0.1:18143</div><div id="px-f"></div></div>
+    <div class="lane sv" id="sv"><h3>🖥️ API server</h3><div class="where">127.0.0.1:18144</div><div id="sv-f"></div></div>
   </div>
   <div class="arrowrow" id="arrows"></div>
   <div class="step"><div class="num" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
@@ -55,8 +55,8 @@
 const C = (cls, t, s="") => `<div class="card ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
 const idle = C("n ghost", "not contacted", "nothing reached the server");
 const frames = [
-  { active:"px", cmd:{at:0, t:"CONNECT 127.0.0.1:18044"},
-    app:C("n", "proxies=http://127.0.0.1:18043", "no credentials"),
+  { active:"px", cmd:{at:0, t:"CONNECT 127.0.0.1:18144"},
+    app:C("n", "proxies=http://127.0.0.1:18143", "no credentials"),
     px:C("bad", "407 Proxy Authentication Required", 'Proxy-Authenticate: Basic realm="corp-proxy"'),
     sv:idle,
     txt:"No credentials: the <b>proxy</b> answers <code>407</code>. The server never sees the request." },
@@ -66,8 +66,8 @@ const frames = [
     sv:idle,
     txt:"For HTTPS, <code>requests</code> raises <code>ProxyError</code> (no response object). For plain HTTP you get <code>r.status_code == 407</code>." },
   { active:"px", cmd:{at:0, t:"CONNECT + Proxy-Authorization: Basic …"},
-    app:C("n", "http://labuser:labpass@127.0.0.1:18043", "credentials in the proxy URL"),
-    px:C("good", "200 Connection established", "opens TCP to :18044 and relays bytes"),
+    app:C("n", "http://labuser:labpass@127.0.0.1:18143", "credentials in the proxy URL"),
+    px:C("good", "200 Connection established", "opens TCP to :18144 and relays bytes"),
     sv:C("n", "TCP connection from the proxy"),
     txt:"With credentials the proxy builds a <b>CONNECT tunnel</b>. Everything after this is TLS, end to end through the tunnel." },
   { active:"app", cmd:{at:1, t:"cert: issued by Corp TLS Inspection CA", back:true},

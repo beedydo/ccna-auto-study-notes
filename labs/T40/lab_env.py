@@ -1,6 +1,6 @@
 """T40 lab environment: fake "network path" services on 127.0.0.1 for diagnosing app connectivity.
 
-Ports (base = T40_BASE_PORT, default 18040):
+Ports (base = T40_BASE_PORT, default 18140):
   base+0  APP       HTTP JSON API (adds T40_DELAY_MS of fake WAN latency per request)
   base+1  CLOSED    nothing listens -> the OS answers SYN with RST -> "connection refused"
   base+2  FILTERED  accept queue is kept full, so the kernel silently drops new SYNs -> "timed out"
@@ -27,7 +27,7 @@ import time
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-BASE = int(os.environ.get("T40_BASE_PORT", "18040"))
+BASE = int(os.environ.get("T40_BASE_PORT", "18140"))
 APP, CLOSED, FILTERED, PROXY, TLS_APP = BASE, BASE + 1, BASE + 2, BASE + 3, BASE + 4
 DELAY = int(os.environ.get("T40_DELAY_MS", "40")) / 1000          # fake one-way-ish WAN delay per request
 PROXY_USER = os.environ.get("T40_PROXY_USER", "labuser")

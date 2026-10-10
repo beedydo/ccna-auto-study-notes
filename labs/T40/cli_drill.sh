@@ -3,7 +3,7 @@
 # Run with the lab up:  bash labs/T40/run_lab.sh labs/T40/cli_drill.sh
 set -u
 H=127.0.0.1
-P="${T40_BASE_PORT:-18040}"
+P="${T40_BASE_PORT:-18140}"
 CA="${T40_CA:-/tmp/t40-certs/corp-ca.pem}"
 export no_proxy='' NO_PROXY=''             # use only the proxies we name on the command line
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy

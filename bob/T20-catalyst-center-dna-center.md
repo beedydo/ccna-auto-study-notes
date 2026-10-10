@@ -646,13 +646,13 @@ HTTP 202  {"response": {"taskId": "a6fbb140-9bf9-5f83-91c4-b065c164fd63", "url":
 
 ### 4. Break it on purpose
 
-Copy `labs/T20/catc_inventory.py`, make one edit, and run it against the mock: `python3 labs/T20/mock_catc.py &`, then `DNAC_URL=http://127.0.0.1:8443 python3 copy.py`. All five were run; the result shown is the real last line.
+Copy `labs/T20/catc_inventory.py`, make one edit, and run it against the mock: `python3 labs/T20/mock_catc.py &`, then `DNAC_URL=http://127.0.0.1:18020 python3 copy.py`. All five were run; the result shown is the real last line.
 
 | Edit | Result | Lesson |
 |---|---|---|
 | In `intent()`, change `{"X-Auth-Token": token,` to `{"Authorization": token,` | `GET /dna/intent/api/v1/network-device -> 401`, then `KeyError: 'response'` | wrong header name = not authenticated; the 401 body is `{"message": "Unauthorized"}` with no `response` key |
 | In `get_token()`, change `["Token"]` to `["token"]` | `KeyError: 'token'` | JSON keys are case-sensitive |
-| Run with `DNAC_PASS=wrong` | `requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: http://127.0.0.1:8443/dna/system/api/v1/auth/token` | bad credentials fail at the token call |
+| Run with `DNAC_PASS=wrong` | `requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url: http://127.0.0.1:18020/dna/system/api/v1/auth/token` | bad credentials fail at the token call |
 | Change `COMMAND = "show version \| include uptime"` to `COMMAND = "configure terminal"` | `BLOCKLISTED 'configure terminal': The command is on the blocked list and is not supported` | command runner is read-only |
 | Replace `task = wait_for_task(token, task_id)` with `task = resp.json()["response"]` | `KeyError: 'progress'` | the `202` body has only `taskId` and `url`; the result needs polling |
 

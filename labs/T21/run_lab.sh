@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Make a throwaway self-signed cert, start the mock CUCM on https://127.0.0.1:${CUCM_PORT:-8443},
+# Make a throwaway self-signed cert, start the mock CUCM on https://127.0.0.1:${CUCM_PORT:-18021},
 # wait until it answers, run a client, then stop the mock.
 # Usage:  bash labs/T21/run_lab.sh                      (runs cucm_lab.py)
 #         bash labs/T21/run_lab.sh labs/T21/curl_drill.sh
@@ -7,7 +7,7 @@ set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CLIENT="${1:-$HERE/cucm_lab.py}"
 PYTHON="${PYTHON:-python3}"
-export CUCM_PORT="${CUCM_PORT:-8443}"
+export CUCM_PORT="${CUCM_PORT:-18021}"
 TMP="$(mktemp -d)"
 
 openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj "/CN=cucm-pub.lab.local" \

@@ -16,7 +16,7 @@ import xml.etree.ElementTree as ET
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import parse_qs, urlparse
 
-HOST, PORT = "127.0.0.1", int(os.environ.get("CUCM_PORT", "8443"))
+HOST, PORT = "127.0.0.1", int(os.environ.get("CUCM_PORT", "18021"))
 AXL_VERSION = "14.0"
 AXL_NS = f"http://www.cisco.com/AXL/API/{AXL_VERSION}"
 SOAP_ENV = "http://schemas.xmlsoap.org/soap/envelope/"

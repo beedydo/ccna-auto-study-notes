@@ -3,7 +3,7 @@
 # Run:  bash labs/T21/run_lab.sh labs/T21/curl_drill.sh
 # Real CUCM: export CUCM_HOST, AXL_USER, AXL_PASS, UDS_USER, UDS_PASS first.
 set -u
-BASE="https://${CUCM_HOST:-127.0.0.1}:${CUCM_PORT:-8443}"
+BASE="https://${CUCM_HOST:-127.0.0.1}:${CUCM_PORT:-18021}"
 AXL_USER="${AXL_USER:-axladmin}"; AXL_PASS="${AXL_PASS:-C1sco12345}"
 UDS_USER="${UDS_USER:-jkam}";     UDS_PASS="${UDS_PASS:-Us3rPass}"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT

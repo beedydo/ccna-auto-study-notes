@@ -34,7 +34,7 @@ The whole topic is one CI story, told by one program.
 - `labs/T25/pipeline.py` is the **reference program**. It runs in two stages:
   - **Stage 1, CML** (blueprint 5.3): import `topology.yaml`, start the lab, wait until it converges, fetch the pyATS testbed, then stop, wipe and delete the lab.
   - **Stage 2, NSO** (blueprint 3.2 / 5.6): push one "anycast loopback" service to an IOS, an IOS XR and a Junos device as **one** transaction. Along the way it shows check-sync, a refused commit, sync-from, dry-run, rollback ids and FASTMAP.
-- `labs/T25/mock_nso_cml.py` is a local stand-in for NSO RESTCONF (`/restconf`) and the CML API (`/api/v0`) on `127.0.0.1:8125`. Its URL paths are taken from the NSO and CML docs. Real NSO listens on `:8080`, and CML on `https://<host>`.
+- `labs/T25/mock_nso_cml.py` is a local stand-in for NSO RESTCONF (`/restconf`) and the CML API (`/api/v0`) on `127.0.0.1:18025`. Its URL paths are taken from the NSO and CML docs. Real NSO listens on `:8080`, and CML on `https://<host>`.
   - DevNet's always-on NSO sandbox now issues per-user credentials, so the program wasn't run against it (see To verify).
 - `labs/T25/nso-package/` holds the service model (`loopback.yang`) and the mapping template (`loopback-template.xml`) that the mock imitates.
 - Run it all with `bash labs/T25/run_lab.sh`.
@@ -59,10 +59,10 @@ import time
 
 import requests
 
-CML_URL = os.environ.get("CML_URL", "http://127.0.0.1:8125")      # real CML: https://<cml-host>
+CML_URL = os.environ.get("CML_URL", "http://127.0.0.1:18025")      # real CML: https://<cml-host>
 CML_USER = os.environ.get("CML_USER", "admin")
 CML_PASS = os.environ.get("CML_PASS", "T25-mock-pass")
-NSO_URL = os.environ.get("NSO_URL", "http://127.0.0.1:8125")      # real NSO: http://<nso-host>:8080
+NSO_URL = os.environ.get("NSO_URL", "http://127.0.0.1:18025")      # real NSO: http://<nso-host>:8080
 NSO_USER = os.environ.get("NSO_USER", "admin")
 NSO_PASS = os.environ.get("NSO_PASS", "admin")
 TOPOLOGY = pathlib.Path(__file__).with_name("topology.yaml")
@@ -583,7 +583,7 @@ python3 labs/T25/pipeline.py
 # T25 curl drill: NSO RESTCONF actions and dry-run by hand. Start the mock first:
 #   python3 labs/T25/mock_nso_cml.py      (or: bash labs/T25/run_lab.sh labs/T25/curl_drill.sh)
 set -u
-NSO="${NSO_URL:-http://127.0.0.1:8125}"
+NSO="${NSO_URL:-http://127.0.0.1:18025}"
 AUTH="${NSO_USER:-admin}:${NSO_PASS:-admin}"
 JSON="application/yang-data+json"
 

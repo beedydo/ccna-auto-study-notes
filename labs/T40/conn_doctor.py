@@ -13,7 +13,7 @@ import time
 import requests
 
 HOST = os.environ.get("T40_HOST", "127.0.0.1")
-BASE = int(os.environ.get("T40_BASE_PORT", "18040"))
+BASE = int(os.environ.get("T40_BASE_PORT", "18140"))
 APP, CLOSED, FILTERED, PROXY, TLS_APP = BASE, BASE + 1, BASE + 2, BASE + 3, BASE + 4
 PROXY_USER = os.environ.get("T40_PROXY_USER", "labuser")
 PROXY_PASS = os.environ.get("T40_PROXY_PASS", "labpass")

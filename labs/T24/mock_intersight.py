@@ -1,6 +1,6 @@
 """Mock Cisco Intersight REST API for the T24 lab.
 
-Run:  python3 labs/T24/mock_intersight.py      -> http://127.0.0.1:8125/api/v1
+Run:  python3 labs/T24/mock_intersight.py      -> http://127.0.0.1:18024/api/v1
 Needs: cryptography (pip install cryptography; the lab container has it via ansible-core).
 
 Response shapes follow developer.cisco.com/docs/intersight (OData query syntax, .List
@@ -31,7 +31,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, rsa
 
-HOST, PORT = "127.0.0.1", int(os.environ.get("MOCK_INTERSIGHT_PORT", "8125"))
+HOST, PORT = "127.0.0.1", int(os.environ.get("MOCK_INTERSIGHT_PORT", "18024"))
 KEY_ID = os.environ.get("MOCK_INTERSIGHT_KEY_ID", "5f7b3c9e7564612d33a1b2c3/5f7b3c9e7564612d33a1b2c4/6702a1b07564612d30c0ffee")
 PUBLIC_KEY_FILE = os.environ.get("MOCK_INTERSIGHT_PUBKEY", "/tmp/t24-lab/PublicKey.pem")
 

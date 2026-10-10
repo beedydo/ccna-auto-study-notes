@@ -15,10 +15,10 @@ import time
 
 import requests
 
-CML_URL = os.environ.get("CML_URL", "http://127.0.0.1:8125")      # real CML: https://<cml-host>
+CML_URL = os.environ.get("CML_URL", "http://127.0.0.1:18025")      # real CML: https://<cml-host>
 CML_USER = os.environ.get("CML_USER", "admin")
 CML_PASS = os.environ.get("CML_PASS", "T25-mock-pass")
-NSO_URL = os.environ.get("NSO_URL", "http://127.0.0.1:8125")      # real NSO: http://<nso-host>:8080
+NSO_URL = os.environ.get("NSO_URL", "http://127.0.0.1:18025")      # real NSO: http://<nso-host>:8080
 NSO_USER = os.environ.get("NSO_USER", "admin")
 NSO_PASS = os.environ.get("NSO_PASS", "admin")
 TOPOLOGY = pathlib.Path(__file__).with_name("topology.yaml")

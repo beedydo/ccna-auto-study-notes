@@ -12,7 +12,7 @@ from intersight.api import compute_api
 
 KEY_ID = os.environ["INTERSIGHT_KEY_ID"]
 KEY_FILE = os.environ.get("INTERSIGHT_KEY_FILE", "/tmp/t24-lab/SecretKey.txt")
-HOST = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:8125")
+HOST = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:18024")
 
 with open(KEY_FILE) as fh:
     pem = fh.read()

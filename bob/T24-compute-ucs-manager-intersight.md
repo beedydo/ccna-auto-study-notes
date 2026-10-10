@@ -34,7 +34,7 @@ Every section below explains one part of the same program. Read it once first.
 - `labs/T24/compute_inventory.py` is the **reference program**. Part 1 inventories one UCS domain through UCS Manager with `ucsmsdk` and creates/deletes a service profile. Part 2 inventories every claimed domain through Intersight with `requests` and a hand-written request signer.
 - Neither platform has a free always-on sandbox, so the program runs against two local mocks written for this lab:
   - `labs/T24/mock_ucsm.py`: a UCS Manager XML API on `http://127.0.0.1:8124/nuova` (method names, attributes and error codes from the UCSM XML API guide).
-  - `labs/T24/mock_intersight.py`: an Intersight REST API on `http://127.0.0.1:8125/api/v1` that **really verifies** the HTTP signature with the public key, the way Intersight does.
+  - `labs/T24/mock_intersight.py`: an Intersight REST API on `http://127.0.0.1:18024/api/v1` that **really verifies** the HTTP signature with the public key, the way Intersight does.
 - To run everything: `bash labs/T24/run_lab.sh`. It makes a throwaway API key pair (`labs/T24/make_mock_key.py`), starts both mocks, runs the program, then stops the mocks. It needs `pip install ucsmsdk requests cryptography`.
 
 **`labs/T24/compute_inventory.py`**
@@ -68,7 +68,7 @@ UCSM_SECURE = os.environ.get("UCSM_SECURE", "false") == "true"   # real UCSM: tr
 UCSM_USER = os.environ.get("UCSM_USER", "ucspe")
 UCSM_PASS = os.environ.get("UCSM_PASS", "ucspe")
 
-INTERSIGHT_URL = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:8125")   # real: https://intersight.com
+INTERSIGHT_URL = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:18024")   # real: https://intersight.com
 INTERSIGHT_KEY_ID = os.environ.get("INTERSIGHT_KEY_ID", "")
 INTERSIGHT_KEY_FILE = os.environ.get("INTERSIGHT_KEY_FILE", "/tmp/t24-lab/SecretKey.txt")   # PEM private key
 
@@ -622,7 +622,7 @@ from intersight.api import compute_api
 
 KEY_ID = os.environ["INTERSIGHT_KEY_ID"]
 KEY_FILE = os.environ.get("INTERSIGHT_KEY_FILE", "/tmp/t24-lab/SecretKey.txt")
-HOST = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:8125")
+HOST = os.environ.get("INTERSIGHT_URL", "http://127.0.0.1:18024")
 
 with open(KEY_FILE) as fh:
     pem = fh.read()

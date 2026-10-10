@@ -5,7 +5,7 @@
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CLIENT="${1:-$HERE/conn_doctor.py}"
-PORT="${T40_BASE_PORT:-18040}"
+PORT="${T40_BASE_PORT:-18140}"
 PY="${PYTHON:-python3}"
 export T40_CERT_DIR="${T40_CERT_DIR:-/tmp/t40-certs}"
 export T40_CA="$T40_CERT_DIR/corp-ca.pem"

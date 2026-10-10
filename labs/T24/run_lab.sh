@@ -19,7 +19,7 @@ trap 'kill $UCSM_PID $IS_PID 2>/dev/null' EXIT
 
 for _ in $(seq 1 40); do
   curl --silent --output /dev/null --data '<aaaLogout inCookie=""/>' "http://127.0.0.1:8124/nuova" \
-    && curl --silent --output /dev/null "http://127.0.0.1:8125/api/v1/compute/Blades" && break
+    && curl --silent --output /dev/null "http://127.0.0.1:18024/api/v1/compute/Blades" && break
   sleep 0.25
 done
 

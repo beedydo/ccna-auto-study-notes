@@ -4,7 +4,7 @@ Admin side  (AXL, SOAP)  : version check, add line + phone, link phone to user, 
 Live state  (RisPort70)  : is the phone registered? (AXL can't tell you)
 User side   (UDS, REST)  : what the new hire's Jabber / web app sees.
 
-Run:  bash labs/T21/run_lab.sh          (starts labs/T21/mock_cucm.py on https://127.0.0.1:8443)
+Run:  bash labs/T21/run_lab.sh          (starts labs/T21/mock_cucm.py on https://127.0.0.1:18021)
 Real CUCM: export CUCM_HOST, AXL_USER, AXL_PASS, UDS_USER, UDS_PASS first.
 """
 import os
@@ -16,7 +16,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)   # lab CUCM uses a self-signed cert
 
 CUCM = os.environ.get("CUCM_HOST", "127.0.0.1")
-PORT = os.environ.get("CUCM_PORT", "8443")
+PORT = os.environ.get("CUCM_PORT", "18021")
 BASE = f"https://{CUCM}:{PORT}"
 AXL_VERSION = "14.0"                                       # must match the CUCM schema version
 AXL_AUTH = (os.environ.get("AXL_USER", "axladmin"), os.environ.get("AXL_PASS", "C1sco12345"))  # application user

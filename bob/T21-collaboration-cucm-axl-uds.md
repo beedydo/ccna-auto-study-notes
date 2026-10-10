@@ -31,7 +31,7 @@ cross_study: 2026-10-22
 
 Every section below explains part of one run: **onboarding a new hire, Jun Hao Kam (`jkam`), extension 2001, Cisco 8845 phone `SEP001122334455`.**
 
-- `labs/T21/mock_cucm.py` is a fake CUCM, written with the Python standard library only. It serves HTTPS on `https://127.0.0.1:8443` with a throwaway self-signed cert, like a real CUCM. It implements AXL (`/axl/`), UDS (`/cucm-uds/...`) and RisPort70 (`/realtimeservice2/services/RISService70`), with response shapes trimmed from the Cisco developer guides.
+- `labs/T21/mock_cucm.py` is a fake CUCM, written with the Python standard library only. It serves HTTPS on `https://127.0.0.1:18021` with a throwaway self-signed cert, like a real CUCM. It implements AXL (`/axl/`), UDS (`/cucm-uds/...`) and RisPort70 (`/realtimeservice2/services/RISService70`), with response shapes trimmed from the Cisco developer guides.
 - `labs/T21/cucm_lab.py` (below) is the **reference program**. Admin side: AXL version check, add line + phone, link phone to user, read it back three ways. Live side: RisPort70. User side: UDS.
 - Run both: `bash labs/T21/run_lab.sh`. It makes the cert, starts the mock, runs the client, then stops the mock.
 - No always-on DevNet CUCM exists, so this didn't run against a live sandbox (see `## To verify`). To point it at a real CUCM, export `CUCM_HOST`, `AXL_USER`, `AXL_PASS`, `UDS_USER`, `UDS_PASS`.
@@ -53,7 +53,7 @@ Admin side  (AXL, SOAP)  : version check, add line + phone, link phone to user, 
 Live state  (RisPort70)  : is the phone registered? (AXL can't tell you)
 User side   (UDS, REST)  : what the new hire's Jabber / web app sees.
 
-Run:  bash labs/T21/run_lab.sh          (starts labs/T21/mock_cucm.py on https://127.0.0.1:8443)
+Run:  bash labs/T21/run_lab.sh          (starts labs/T21/mock_cucm.py on https://127.0.0.1:18021)
 Real CUCM: export CUCM_HOST, AXL_USER, AXL_PASS, UDS_USER, UDS_PASS first.
 """
 import os
@@ -65,7 +65,7 @@ import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)   # lab CUCM uses a self-signed cert
 
 CUCM = os.environ.get("CUCM_HOST", "127.0.0.1")
-PORT = os.environ.get("CUCM_PORT", "8443")
+PORT = os.environ.get("CUCM_PORT", "18021")
 BASE = f"https://{CUCM}:{PORT}"
 AXL_VERSION = "14.0"                                       # must match the CUCM schema version
 AXL_AUTH = (os.environ.get("AXL_USER", "axladmin"), os.environ.get("AXL_PASS", "C1sco12345"))  # application user
@@ -507,7 +507,7 @@ Needs Python 3 with `requests`, plus `openssl` and `curl`. No CUCM needed.
 ```bash
 bash labs/T21/run_lab.sh                         # mock CUCM + cucm_lab.py
 bash labs/T21/run_lab.sh labs/T21/curl_drill.sh  # mock CUCM + curl drill
-CUCM_PORT=28443 bash labs/T21/run_lab.sh         # if 8443 is already in use
+CUCM_PORT=28443 bash labs/T21/run_lab.sh         # if 18021 is already in use
 ```
 
 In the lab container:
@@ -536,7 +536,7 @@ The same two APIs with nothing hidden: AXL is a SOAP file POSTed with two header
 # Run:  bash labs/T21/run_lab.sh labs/T21/curl_drill.sh
 # Real CUCM: export CUCM_HOST, AXL_USER, AXL_PASS, UDS_USER, UDS_PASS first.
 set -u
-BASE="https://${CUCM_HOST:-127.0.0.1}:${CUCM_PORT:-8443}"
+BASE="https://${CUCM_HOST:-127.0.0.1}:${CUCM_PORT:-18021}"
 AXL_USER="${AXL_USER:-axladmin}"; AXL_PASS="${AXL_PASS:-C1sco12345}"
 UDS_USER="${UDS_USER:-jkam}";     UDS_PASS="${UDS_PASS:-Us3rPass}"
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
@@ -599,7 +599,7 @@ HTTP 500
 HTTP 405
 
 == 4. UDS: plain GET, no envelope, no SOAPAction; XML back
-<users version="14.0.1" uri="https://127.0.0.1:8443/cucm-uds/users" start="0" requestedCount="64" returnedCount="1" totalCount="1"><user uri="https://127.0.0.1:8443/cucm-uds/user/jkam"><id>a3c1e2f0-1111-4c4c-9a9a-000000000001</id><userName>jkam</userName><firstName>Jun Hao</firstName><lastName>Kam</lastName><phoneNumber>2001</phoneNumber><email>jkam@lab.local</email></user></users>
+<users version="14.0.1" uri="https://127.0.0.1:18021/cucm-uds/users" start="0" requestedCount="64" returnedCount="1" totalCount="1"><user uri="https://127.0.0.1:18021/cucm-uds/user/jkam"><id>a3c1e2f0-1111-4c4c-9a9a-000000000001</id><userName>jkam</userName><firstName>Jun Hao</firstName><lastName>Kam</lastName><phoneNumber>2001</phoneNumber><email>jkam@lab.local</email></user></users>
 
 == 5. UDS: personal resource needs the END USER's own credentials
 no auth   -> HTTP 401

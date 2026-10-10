@@ -11,11 +11,11 @@ API_PID=$!
 trap 'kill $API_PID 2>/dev/null' EXIT
 
 for _ in $(seq 1 40); do
-  curl --silent --output /dev/null "http://127.0.0.1:8443/dna/intent/api/v1/network-device" && break
+  curl --silent --output /dev/null "http://127.0.0.1:18020/dna/intent/api/v1/network-device" && break
   sleep 0.25
 done
 
-export DNAC_URL="http://127.0.0.1:8443" DNAC_USER="devnetuser" DNAC_PASS="Cisco123!"
+export DNAC_URL="http://127.0.0.1:18020" DNAC_USER="devnetuser" DNAC_PASS="Cisco123!"
 case "$CLIENT" in
   *.py) python3 "$CLIENT" ;;
   *)    bash "$CLIENT" ;;

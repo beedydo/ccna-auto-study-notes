@@ -35,15 +35,15 @@ Every section below explains one part of the same lab, so read it once first.
 
   | Port | Role | What it simulates |
   |---|---|---|
-  | `18040` | APP | HTTP JSON API that adds `T40_DELAY_MS` (default 40 ms) to every request |
-  | `18041` | CLOSED | nothing listens, so the kernel answers SYN with RST |
-  | `18042` | FILTERED | accept queue kept full, so the kernel **silently drops** new SYNs (same symptom as a firewall drop) |
-  | `18043` | PROXY | corporate forward proxy: `407` without `Proxy-Authorization`, forwards HTTP, tunnels HTTPS with `CONNECT`, and connects upstream **from `127.0.0.2`** |
-  | `18044` | TLS-APP | HTTPS API whose cert is issued by `Corp TLS Inspection CA` (what a TLS-inspecting proxy presents) |
+  | `18140` | APP | HTTP JSON API that adds `T40_DELAY_MS` (default 40 ms) to every request |
+  | `18141` | CLOSED | nothing listens, so the kernel answers SYN with RST |
+  | `18142` | FILTERED | accept queue kept full, so the kernel **silently drops** new SYNs (same symptom as a firewall drop) |
+  | `18143` | PROXY | corporate forward proxy: `407` without `Proxy-Authorization`, forwards HTTP, tunnels HTTPS with `CONNECT`, and connects upstream **from `127.0.0.2`** |
+  | `18144` | TLS-APP | HTTPS API whose cert is issued by `Corp TLS Inspection CA` (what a TLS-inspecting proxy presents) |
 
 - `labs/T40/conn_doctor.py` (below) is the **reference program**. It's a diagnostic client that walks the ladder (DNS → TCP → HTTP → proxy → TLS), then measures two constraints.
 - To run both: `bash labs/T40/run_lab.sh`. It starts the fake network, waits for it, runs the client, then stops everything.
-- Ports are `18040 + n` and can be moved with `T40_BASE_PORT`. Proxy credentials come from `T40_PROXY_USER` / `T40_PROXY_PASS` (lab defaults `labuser` / `labpass`).
+- Ports are `18140 + n` and can be moved with `T40_BASE_PORT`. Proxy credentials come from `T40_PROXY_USER` / `T40_PROXY_PASS` (lab defaults `labuser` / `labpass`).
 
 **`labs/T40/conn_doctor.py`**
 
@@ -63,7 +63,7 @@ import time
 import requests
 
 HOST = os.environ.get("T40_HOST", "127.0.0.1")
-BASE = int(os.environ.get("T40_BASE_PORT", "18040"))
+BASE = int(os.environ.get("T40_BASE_PORT", "18140"))
 APP, CLOSED, FILTERED, PROXY, TLS_APP = BASE, BASE + 1, BASE + 2, BASE + 3, BASE + 4
 PROXY_USER = os.environ.get("T40_PROXY_USER", "labuser")
 PROXY_PASS = os.environ.get("T40_PROXY_PASS", "labpass")
@@ -192,9 +192,9 @@ if __name__ == "__main__":
   DNS  api.corp.invalid   -> FAIL (Name or service not known) => DNS problem, not the network path
 
 == 2. Transport port: open vs refused vs filtered ==
-  TCP  127.0.0.1:18040  OPEN     -> SYN, SYN-ACK: something is listening (0.0s)
-  TCP  127.0.0.1:18041  REFUSED  -> RST came back: host reachable, port closed / service down (0.0s)
-  TCP  127.0.0.1:18042  TIMEOUT  -> no reply at all: firewall/ACL dropping, or no route (2.0s)
+  TCP  127.0.0.1:18140  OPEN     -> SYN, SYN-ACK: something is listening (0.0s)
+  TCP  127.0.0.1:18141  REFUSED  -> RST came back: host reachable, port closed / service down (0.0s)
+  TCP  127.0.0.1:18142  TIMEOUT  -> no reply at all: firewall/ACL dropping, or no route (2.0s)
 
 == 3. HTTP timeouts: connect vs read ==
   GET filtered port                  -> ConnectTimeout: no SYN-ACK: firewall drop, wrong route, or VPN tunnel down
@@ -476,7 +476,7 @@ T40_CA=/tmp/t40-certs/corp-ca.pem python3 labs/T40/conn_doctor.py
 # Run with the lab up:  bash labs/T40/run_lab.sh labs/T40/cli_drill.sh
 set -u
 H=127.0.0.1
-P="${T40_BASE_PORT:-18040}"
+P="${T40_BASE_PORT:-18140}"
 CA="${T40_CA:-/tmp/t40-certs/corp-ca.pem}"
 export no_proxy='' NO_PROXY=''             # use only the proxies we name on the command line
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY ALL_PROXY all_proxy
@@ -536,35 +536,35 @@ rtt min/avg/max/mdev = 0.013/0.023/0.034/0.010 ms
 
 == 1. Is the port open? (nc = TCP handshake only) ==
 
-$ nc -zv -w 2 127.0.0.1 18040
-Connection to 127.0.0.1 18040 port [tcp/*] succeeded!
+$ nc -zv -w 2 127.0.0.1 18140
+Connection to 127.0.0.1 18140 port [tcp/*] succeeded!
 
-$ nc -zv -w 2 127.0.0.1 18041
-nc: connect to 127.0.0.1 port 18041 (tcp) failed: Connection refused
+$ nc -zv -w 2 127.0.0.1 18141
+nc: connect to 127.0.0.1 port 18141 (tcp) failed: Connection refused
 
-$ nc -zv -w 2 127.0.0.1 18042
-nc: connect to 127.0.0.1 port 18042 (tcp) timed out: Operation now in progress
+$ nc -zv -w 2 127.0.0.1 18142
+nc: connect to 127.0.0.1 port 18142 (tcp) timed out: Operation now in progress
 
 == 2. curl -v: where does it stop? ==
 
-$ curl -sSv --max-time 3 http://127.0.0.1:18041/health
-*   Trying 127.0.0.1:18041...
-* connect to 127.0.0.1 port 18041 failed: Connection refused
-* Failed to connect to 127.0.0.1 port 18041 after 0 ms: Connection refused
+$ curl -sSv --max-time 3 http://127.0.0.1:18141/health
+*   Trying 127.0.0.1:18141...
+* connect to 127.0.0.1 port 18141 failed: Connection refused
+* Failed to connect to 127.0.0.1 port 18141 after 0 ms: Connection refused
 * Closing connection 0
-curl: (7) Failed to connect to 127.0.0.1 port 18041 after 0 ms: Connection refused
+curl: (7) Failed to connect to 127.0.0.1 port 18141 after 0 ms: Connection refused
 
-$ curl -sSv --connect-timeout 2 http://127.0.0.1:18042/health
-*   Trying 127.0.0.1:18042...
+$ curl -sSv --connect-timeout 2 http://127.0.0.1:18142/health
+*   Trying 127.0.0.1:18142...
 * After 2000ms connect time, move on!
-* connect to 127.0.0.1 port 18042 failed: Connection timed out
+* connect to 127.0.0.1 port 18142 failed: Connection timed out
 * Connection timeout after 2001 ms
 * Closing connection 0
 curl: (28) Connection timeout after 2001 ms
 
 == 3. Proxy: 407 then --proxy-user ==
 
-$ curl --silent --include --proxy http://127.0.0.1:18043 http://127.0.0.1:18040/whoami
+$ curl --silent --include --proxy http://127.0.0.1:18143 http://127.0.0.1:18140/whoami
 HTTP/1.1 407 Proxy Authentication Required
 Server: BaseHTTP/0.6 Python/3.10.12
 Date: Sat, 10 Oct 2026 12:35:39 GMT
@@ -573,11 +573,11 @@ Content-Type: application/json
 Content-Length: 42
 
 {"error": "proxy authentication required"}
-$ curl --silent --proxy http://127.0.0.1:18043 --proxy-user labuser:labpass http://127.0.0.1:18040/whoami
+$ curl --silent --proxy http://127.0.0.1:18143 --proxy-user labuser:labpass http://127.0.0.1:18140/whoami
 {"seen_client": "127.0.0.2:58173", "x_forwarded_for": "127.0.0.1"}
 == 4. HTTPS via proxy: TLS inspection CA ==
 
-$ curl --silent --show-error --proxy http://labuser:labpass@127.0.0.1:18043 https://127.0.0.1:18044/health
+$ curl --silent --show-error --proxy http://labuser:labpass@127.0.0.1:18143 https://127.0.0.1:18144/health
 curl: (60) SSL certificate problem: unable to get local issuer certificate
 More details here: https://curl.se/docs/sslcerts.html
 
@@ -585,18 +585,18 @@ curl failed to verify the legitimacy of the server and therefore could not
 establish a secure connection to it. To learn more about this situation and
 how to fix it, please visit the web page mentioned above.
 
-$ curl --silent --show-error --proxy http://labuser:labpass@127.0.0.1:18043 --cacert /tmp/t40-certs/corp-ca.pem https://127.0.0.1:18044/health
+$ curl --silent --show-error --proxy http://labuser:labpass@127.0.0.1:18143 --cacert /tmp/t40-certs/corp-ca.pem https://127.0.0.1:18144/health
 {"status": "ok"}
 == 5. Who is listening locally? ==
 
 $ ss -ltn | grep 1804
-LISTEN 0      5               127.0.0.1:18044      0.0.0.0:*          
-LISTEN 0      5               127.0.0.1:18043      0.0.0.0:*          
-LISTEN 1      0               127.0.0.1:18042      0.0.0.0:*          
-LISTEN 0      5               127.0.0.1:18040      0.0.0.0:*          
+LISTEN 0      5               127.0.0.1:18144      0.0.0.0:*          
+LISTEN 0      5               127.0.0.1:18143      0.0.0.0:*          
+LISTEN 1      0               127.0.0.1:18142      0.0.0.0:*          
+LISTEN 0      5               127.0.0.1:18140      0.0.0.0:*          
 ```
 
-- Read the `LISTEN` rows: `18042` shows `Recv-Q 1` / `Send-Q 0` because its accept queue (backlog 0) is full. That's how the lab fakes a silent drop.
+- Read the `LISTEN` rows: `18142` shows `Recv-Q 1` / `Send-Q 0` because its accept queue (backlog 0) is full. That's how the lab fakes a silent drop.
 
 ### 3. Proxy settings from the environment (`labs/T40/env_proxy_demo.py`)
 
@@ -606,11 +606,11 @@ LISTEN 0      5               127.0.0.1:18040      0.0.0.0:*
 """T40: how requests picks up proxy/CA settings from the environment (trust_env=True, the default).
 
 Run with the lab up, changing only the env vars, e.g.:
-  HTTPS_PROXY=http://127.0.0.1:18043 python3 labs/T40/env_proxy_demo.py
+  HTTPS_PROXY=http://127.0.0.1:18143 python3 labs/T40/env_proxy_demo.py
 """
 import requests
 
-for url in ("http://127.0.0.1:18040/health", "https://127.0.0.1:18044/health"):
+for url in ("http://127.0.0.1:18140/health", "https://127.0.0.1:18144/health"):
     try:
         r = requests.get(url, timeout=(2, 5))
         print(f"{url} -> {r.status_code} {r.text}")
@@ -621,21 +621,21 @@ for url in ("http://127.0.0.1:18040/health", "https://127.0.0.1:18044/health"):
 Start the lab (`python3 labs/T40/lab_env.py`), then in another shell run each line. Real output:
 
 ```text
-$ HTTPS_PROXY=http://127.0.0.1:18043 python3 labs/T40/env_proxy_demo.py
-http://127.0.0.1:18040/health -> 200 {"status": "ok"}
-https://127.0.0.1:18044/health -> ProxyError: ...roxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 407 Proxy Authentication Required')))
+$ HTTPS_PROXY=http://127.0.0.1:18143 python3 labs/T40/env_proxy_demo.py
+http://127.0.0.1:18140/health -> 200 {"status": "ok"}
+https://127.0.0.1:18144/health -> ProxyError: ...roxyError('Unable to connect to proxy', OSError('Tunnel connection failed: 407 Proxy Authentication Required')))
 
-$ HTTP_PROXY=http://127.0.0.1:18043 HTTPS_PROXY=http://labuser:labpass@127.0.0.1:18043 python3 labs/T40/env_proxy_demo.py
-http://127.0.0.1:18040/health -> 407 {"error": "proxy authentication required"}
-https://127.0.0.1:18044/health -> SSLError: ...: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1007)')))
+$ HTTP_PROXY=http://127.0.0.1:18143 HTTPS_PROXY=http://labuser:labpass@127.0.0.1:18143 python3 labs/T40/env_proxy_demo.py
+http://127.0.0.1:18140/health -> 407 {"error": "proxy authentication required"}
+https://127.0.0.1:18144/health -> SSLError: ...: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1007)')))
 
-$ HTTP_PROXY=http://labuser:labpass@127.0.0.1:18043 HTTPS_PROXY=http://labuser:labpass@127.0.0.1:18043 REQUESTS_CA_BUNDLE=/tmp/t40-certs/corp-ca.pem python3 labs/T40/env_proxy_demo.py
-http://127.0.0.1:18040/health -> 200 {"status": "ok"}
-https://127.0.0.1:18044/health -> 200 {"status": "ok"}
+$ HTTP_PROXY=http://labuser:labpass@127.0.0.1:18143 HTTPS_PROXY=http://labuser:labpass@127.0.0.1:18143 REQUESTS_CA_BUNDLE=/tmp/t40-certs/corp-ca.pem python3 labs/T40/env_proxy_demo.py
+http://127.0.0.1:18140/health -> 200 {"status": "ok"}
+https://127.0.0.1:18144/health -> 200 {"status": "ok"}
 
-$ HTTP_PROXY=http://127.0.0.1:18043 HTTPS_PROXY=http://127.0.0.1:18043 NO_PROXY=127.0.0.1 REQUESTS_CA_BUNDLE=/tmp/t40-certs/corp-ca.pem python3 labs/T40/env_proxy_demo.py
-http://127.0.0.1:18040/health -> 200 {"status": "ok"}
-https://127.0.0.1:18044/health -> 200 {"status": "ok"}
+$ HTTP_PROXY=http://127.0.0.1:18143 HTTPS_PROXY=http://127.0.0.1:18143 NO_PROXY=127.0.0.1 REQUESTS_CA_BUNDLE=/tmp/t40-certs/corp-ca.pem python3 labs/T40/env_proxy_demo.py
+http://127.0.0.1:18140/health -> 200 {"status": "ok"}
+https://127.0.0.1:18144/health -> 200 {"status": "ok"}
 ```
 
 - Run 1: only `HTTPS_PROXY` is set, so the `http://` URL went **direct** (200) and only the HTTPS call hit the proxy's 407.
@@ -652,7 +652,7 @@ Each edit was run against the lab; the result shown is real.
 | In `main()`, change the slow-report call to `timeout=(2, 5)` | `GET slow report (read timeout 5s)  -> 200 OK` after 3.0 s. The server was slow, not broken |
 | Remove `proxies=proxies(True)` credentials (use `proxies(False)`) on the `verify=corp-ca` call | same `ProxyError` as the no-creds line: the 407 hits before TLS starts |
 | Drop `verify=CORP_CA` from the last HTTPS call | `SSLError` (the "default CAs" line) |
-| `export HTTPS_PROXY=http://127.0.0.1:18043` and set `direct.trust_env = True` | the "direct" HTTPS calls start failing with `ProxyError`: an env proxy silently reroutes traffic |
+| `export HTTPS_PROXY=http://127.0.0.1:18143` and set `direct.trust_env = True` | the "direct" HTTPS calls start failing with `ProxyError`: an env proxy silently reroutes traffic |
 
 ### 5. Real network drills (run on your own laptop / jump host)
 

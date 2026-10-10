@@ -1,7 +1,7 @@
 """Mock Catalyst Center (DNA Center) Intent API for the T20 lab (Python stdlib only).
 
-Run:  python3 labs/T20/mock_catc.py          -> http://127.0.0.1:8443
-Then: DNAC_URL=http://127.0.0.1:8443 python3 labs/T20/catc_inventory.py
+Run:  python3 labs/T20/mock_catc.py          -> http://127.0.0.1:18020
+Then: DNAC_URL=http://127.0.0.1:18020 python3 labs/T20/catc_inventory.py
 (or just: bash labs/T20/run_lab.sh)
 
 Device, site, topology and command-runner data were copied from the DevNet
@@ -15,7 +15,7 @@ import re
 import uuid
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-HOST, PORT = "127.0.0.1", 8443
+HOST, PORT = "127.0.0.1", 18020
 USERS = {"devnetuser": "Cisco123!"}
 TOKEN = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.mock-catc-token.c2lnbmF0dXJl"
 INTENT = "/dna/intent/api/v1"
