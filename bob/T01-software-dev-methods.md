@@ -406,7 +406,7 @@ A. Waterfall  B. Lean  C. Scrum  D. Design patterns
 | Aid | Type | Title | Est. min | Resource |
 |---|---|---|---|---|
 | T01.1 | Video | Software Development Practices for all IT Professionals | 4 | CBT module |
-| T01.2 | Top-up | Agile vs lean vs waterfall comparison | 30 | DevNet Learning Labs / OCG ch. 1 |
+| T01.2 | Top-up | Agile vs lean vs waterfall comparison | 30 | DevNet Learning Labs / OCG ch. 2 |
 
 - CBT coverage is **Partial** (blueprint 1.4). The gap: no side-by-side comparison of agile vs lean vs waterfall. This note's T01.05 table, the decision diagram and the drills are the T01.2 top-up.
 - Skip / low priority: Ceremony detail
@@ -423,7 +423,7 @@ A. Waterfall  B. Lean  C. Scrum  D. Design patterns
 
 ## To verify
 
-- ⚠ verify `data/study-aids.csv` / `data/top-ups.csv` say the top-up is "OCG ch. 1". The Cisco Press table of contents puts Waterfall / Lean / Agile in **chapter 2** (Software Development and Design). Chapter 1 is the certification intro. Fix the CSV if Bob agrees (not edited here: `data/*` is out of scope for this pass).
+- Fixed: `data/study-aids.csv` / `data/top-ups.csv` said the top-up is "OCG ch. 1". The Cisco Press table of contents puts Waterfall / Lean / Agile in **chapter 2** (Software Development and Design, pp. 27–29); chapter 1 is the certification intro. Both CSVs and the Study aids table now say ch. 2.
 - ⚠ verify The seven software wastes are listed slightly differently across sources ("relearning" vs "extra processes", "delays" vs "waiting"). This note uses the Poppendieck book list; check against the OCG wording if a practice question uses a different term.
 - Fix to Bob's round-1 note: lean's "Tools: Kanban" stays, but the note now says Kanban is an **agile framework that implements lean**, so the two aren't presented as the same thing. The Scrum role "dev team" is now "Developers" (2020 Scrum Guide), with the old name kept.
 - Scrum timeboxes (8 h / 15 min / 4 h / 3 h for a one-month sprint) are from the 2020 Scrum Guide. The exam is unlikely to test them (ceremony detail is low priority).

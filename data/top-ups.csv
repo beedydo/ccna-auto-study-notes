@@ -5,7 +5,7 @@ T41,4.9,None,"Firewall, DNS, load balancer, reverse proxy roles",T41.1 Map AWS A
 T46,5.13,None,Code review principles and benefits,T46.1 Code review principles + benefits,15,Own notes
 T47,5.14,None,Reading sequence diagrams with API calls,T47.1 Token-auth + async-poll sequence diagrams,30,Catalyst Center / Webex docs
 T09,2.8,Partial,RPC comparison; sync vs async,T09.1 Async taskId polling (30) + T09.2 REST vs RPC (20),50,Catalyst Center task API docs; NSO docs; own notes
-T01,1.4,Partial,Agile vs lean vs waterfall comparison,T01.2 Agile vs lean vs waterfall comparison,30,DevNet Learning Labs / OCG ch. 1
+T01,1.4,Partial,Agile vs lean vs waterfall comparison,T01.2 Agile vs lean vs waterfall comparison,30,DevNet Learning Labs / OCG ch. 2
 T23,3.5,Partial,"XDR, Secure Endpoint, Secure Connect, Malware Analytics",T23.4 One-liner each,50,developer.cisco.com product API pages
 T42,3.4,Partial,Webex devices (xAPI),T42.2 Webex devices xAPI overview,20,Webex developer docs
 T40,6.8,Partial,Proxy and VPN connectivity diagnosis,"T40.2 Diagnose NAT, blocked port, proxy, VPN issues",30,Own notes
