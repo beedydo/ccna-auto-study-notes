@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T39 overview: management, control, data planes</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --m: #e3f1f8; --m-b: #17a2b8; --c: #fff6dc; --c-b: #e0a800; --d: #e3f6ee; --d-b: #28a745;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11.5px;
+       font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; font-size: 13px; line-height: 1.4; margin-top: 8px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  .map { display: grid; grid-template-columns: 190px minmax(0, 1fr) 360px; gap: 16px; align-items: stretch; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .zone > h2 { margin: 0; padding: 7px 12px; font-size: 15px; color: #fff; background: var(--ink); letter-spacing: .3px; }
+  .zone .body { padding: 10px 12px; flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+  .actor { border: 2px solid var(--line); border-radius: 9px; padding: 8px 10px; font-size: 13px; line-height: 1.4; }
+  .actor .t { font-weight: 800; font-size: 14px; }
+  .actor.m { background: var(--m); border-color: var(--m-b); } .actor.c { background: var(--c); border-color: var(--c-b); }
+  .actor.d { background: var(--d); border-color: var(--d-b); }
+  .actor code { font-size: 11px; display: inline-block; margin-top: 3px; }
+  .actor .ar { display: block; font-weight: 800; font-size: 13px; margin-top: 3px; }
+
+  .plane { border: 2.5px solid; border-radius: 10px; padding: 9px 12px; display: grid;
+           grid-template-columns: 150px minmax(0, 1fr) minmax(0, 1fr); gap: 4px 16px; }
+  .plane.m { background: var(--m); border-color: var(--m-b); } .plane.c { background: var(--c); border-color: var(--c-b); }
+  .plane.d { background: var(--d); border-color: var(--d-b); }
+  .plane .head { grid-row: span 2; }
+  .plane .head .icon { font-size: 30px; line-height: 1; }
+  .plane .head .name { font-weight: 800; font-size: 17px; margin-top: 3px; }
+  .plane .head .q { font-size: 13px; margin-top: 3px; font-style: italic; }
+  .plane .col { font-size: 13px; line-height: 1.55; }
+  .plane .col .k { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); display: block; }
+  .plane .trap { grid-column: 2 / span 2; margin-top: 2px; }
+  .down { text-align: center; font-size: 12.5px; font-weight: 700; color: var(--muted); margin: -4px 0; }
+
+  .sdn { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px; }
+  .mini { border: 2px dashed #999; border-radius: 8px; padding: 6px; font-size: 12px; text-align: center; }
+  .mini h4 { margin: 0 0 6px; font-size: 13px; }
+  .box { border: 2px solid var(--line); border-radius: 6px; padding: 3px 4px; margin: 4px 0; font-size: 11.5px; line-height: 1.3; }
+  .box.all { background: #f2f2f2; } .box.ctl { background: var(--m); border-color: var(--m-b); font-weight: 700; }
+  .box.dp { background: var(--d); border-color: var(--d-b); }
+  .row3 { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
+  .arr { font-size: 11px; color: var(--muted); }
+
+  .strip { margin-top: 16px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; display: grid;
+           grid-template-columns: 170px repeat(3, minmax(0,1fr)) 300px; }
+  .strip > div { padding: 10px 12px; border-left: 1.5px solid var(--line); font-size: 13px; line-height: 1.75; }
+  .strip > div:first-child { border-left: none; text-align: center; }
+  .strip .lab .icon { font-size: 34px; display: block; } .strip .lab .name { font-weight: 800; font-size: 16px; }
+  .strip h4 { margin: 0 0 4px; font-size: 14px; }
+  .strip .cm { background: var(--m); } .strip .cc { background: var(--c); } .strip .cd { background: var(--d); }
+  .strip .trap { margin-top: 0; }
+
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; border-width: 2px !important; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--m); border: 1px solid var(--m-b); }
+  footer .k5::before { background: var(--c); border: 1px solid var(--c-b); }
+  footer .k6::before { background: var(--d); border: 1px solid var(--d-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T39 · <span class="pill">Management, Control &amp; Data Planes</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.5</b><br>Every T39 concept on one page<br>Code from <code>labs/T39/</code></div>
+  </header>
+
+  <div class="map">
+    <!-- OUTSIDE -->
+    <div class="zone">
+      <h2>OUTSIDE THE BOX</h2>
+      <div class="body">
+        <div class="actor m"><div class="t">👤 Admin / NMS / script</div>SSH, SNMP, RESTCONF to the router's <b>own IP</b><span class="ar">➜ management</span></div>
+        <div class="actor c"><div class="t">🔁 Neighbour routers / switches</div>OSPF hellos, BGP updates, BPDUs, ARP<span class="ar">➜ control</span></div>
+        <div class="actor d"><div class="t">💻 User hosts</div>traffic <b>through</b> the box, to someone else<span class="ar">➜ data</span></div>
+        <div class="actor" style="background:var(--trap);border-color:var(--trap-ink)"><div class="t">🛡️ CoPP gate</div>polices all traffic <b>to the CPU</b> (mgmt + control)<br><code>control-plane</code><br><code>service-policy input</code></div>
+      </div>
+    </div>
+
+    <!-- DEVICE -->
+    <div class="zone">
+      <h2>ONE ROUTER / SWITCH</h2>
+      <div class="body">
+        <div class="plane m">
+          <div class="head"><div class="icon">🛠️</div><div class="name">MANAGEMENT</div><div class="ids">T39.01</div><div class="q">"how do I reach and watch the box?"</div></div>
+          <div class="col"><span class="k">Protocols</span><code>SSH :22</code> <code>SNMP :161/162</code> <code>NETCONF :830</code> <code>RESTCONF :443</code> <code>syslog :514</code> NTP, AAA</div>
+          <div class="col"><span class="k">Runs on / speed</span>route-processor CPU · minutes to days · config is <b>persistent</b></div>
+          <div class="trap"><span class="n">!</span><b>Trap:</b> RESTCONF reading <b>routing</b> or <b>counter</b> data is still <b>management</b>: it's how you ask, not what you get</div>
+        </div>
+        <div class="down">⬇ config (<code>router ospf 1</code>, <code>ip route</code>)</div>
+        <div class="plane c">
+          <div class="head"><div class="icon">🧭</div><div class="name">CONTROL</div><div class="ids">T39.02</div><div class="q">"where should traffic go?"</div></div>
+          <div class="col"><span class="k">Protocols</span>OSPF, EIGRP, BGP, IS-IS · STP · ARP · LACP · CDP/LLDP · HSRP</div>
+          <div class="col"><span class="k">Builds</span><b>RIB</b> <code>show ip route</code> · MAC table · ARP <code>show ip arp</code> · ms, ephemeral</div>
+          <div class="trap"><span class="n">!</span><b>Trap:</b> OSPF doesn't forward a single user packet; it only <b>decides</b> and fills tables</div>
+        </div>
+        <div class="down">⬇ programs FIB + adjacency (CEF)</div>
+        <div class="plane d">
+          <div class="head"><div class="icon">⚡</div><div class="name">DATA</div><div class="ids">T39.03</div><div class="q">"move this packet, now"</div></div>
+          <div class="col"><span class="k">Does</span>FIB lookup <code>show ip cef</code> · L2 rewrite <code>show adjacency</code> · TTL−1 · ACL · NAT · QoS · encap</div>
+          <div class="col"><span class="k">Runs on</span><b>ASIC / NPU</b> hardware, line rate; CPU never sees transit traffic</div>
+          <div class="trap"><span class="n">!</span><b>Trap:</b> a.k.a. <b>forwarding plane</b>. SSH <b>to</b> the router is not data plane: it's punted to the CPU (CoPP polices it)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDN -->
+    <div class="zone">
+      <h2>SDN LINK <span class="ids" style="color:#ccc">T39.04</span></h2>
+      <div class="body">
+        <div class="sdn">
+          <div class="mini"><h4>Traditional</h4>
+            <div class="box all">R1: M + C + D</div><div class="arr">⇅ OSPF</div>
+            <div class="box all">R2: M + C + D</div><div class="arr">⇅ OSPF</div>
+            <div class="box all">R3: M + C + D</div>
+            <div style="margin-top:6px">control plane <b>distributed</b>, box by box</div></div>
+          <div class="mini"><h4>SDN</h4>
+            <div class="arr">apps ⇅ <b>northbound</b> REST</div>
+            <div class="box ctl">Controller<br>central C (+ M)</div>
+            <div class="arr">⇣ <b>southbound</b><br>OpenFlow · NETCONF · OpFlex · OMP</div>
+            <div class="row3"><div class="box dp">D</div><div class="box dp">D</div><div class="box dp">D</div></div>
+            <div style="margin-top:6px">devices <b>keep</b> the data plane</div></div>
+        </div>
+        <div style="font-size:13px; line-height:1.5">
+          <div><span class="n">1</span>Catalyst Center (DNA Center), APIC, SD-WAN Controller (vSmart)</div>
+          <div><span class="n">2</span>ONF: control plane <b>physically separated</b> from forwarding, one controller for many devices</div>
+          <div><span class="n">3</span>RFC 7426: southbound = control <b>and</b> management interfaces (OpenFlow vs NETCONF/SNMP)</div>
+        </div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> SDN moves the <b>control</b> plane, never the data plane. Packets still don't flow through the controller</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXAM STRIP -->
+  <div class="strip">
+    <div class="lab"><span class="icon">🎯</span><div class="name">PLACE IT</div><div class="ids">T39.05</div></div>
+    <div class="cm"><h4>🛠️ Management</h4>SSH · Telnet · SNMP · NETCONF · RESTCONF · gNMI · syslog · NTP · TACACS+ / RADIUS · NetFlow export</div>
+    <div class="cc"><h4>🧭 Control</h4>OSPF · EIGRP · BGP · IS-IS · STP · ARP · LACP · CDP / LLDP · HSRP · BFD · PIM</div>
+    <div class="cd"><h4>⚡ Data</h4>MAC / FIB lookup · ACL permit/deny · NAT · QoS queue · VXLAN / GRE encap · TTL decrement</div>
+    <div><div class="trap"><span class="n">!</span><b>Trap:</b> test = who uses it. Device-to-device to build tables → <b>control</b>. Human/NMS to the box → <b>management</b>. Acts on user packets → <b>data</b></div></div>
+  </div>
+
+  <footer>
+    <span class="k k4">management</span><span class="k k5">control</span><span class="k k6">data</span>
+    <span class="k k1">numbered = example</span><span class="k k2">red = exam trap</span><span class="k k3">grey = exact syntax / port</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T39/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

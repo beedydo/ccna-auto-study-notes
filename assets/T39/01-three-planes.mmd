@@ -1,0 +1,20 @@
+flowchart LR
+  NMS["👤 Admin / NMS / script<br/>SSH · SNMP · NETCONF · RESTCONF"]
+  subgraph DEV["One router or switch"]
+    direction TB
+    MP["<b>MANAGEMENT plane</b> (CPU)<br/>configure + monitor the box<br/>SSH, SNMP, NETCONF/RESTCONF, syslog, NTP, AAA"]
+    CP["<b>CONTROL plane</b> (CPU)<br/>decide where traffic goes<br/>OSPF, BGP, EIGRP, STP, ARP, LACP<br/>builds RIB, MAC, ARP tables"]
+    DP["<b>DATA plane</b> (ASIC / NPU)<br/>forward frames + packets<br/>FIB + adjacency lookup, ACL, NAT, QoS"]
+  end
+  NBR["🔁 Neighbour routers<br/>hellos, LSAs, BGP updates, BPDUs"]
+  IN["📥 Transit packet in"] --> DP --> OUT["📤 Transit packet out"]
+  NMS <-->|config + telemetry| MP
+  MP -->|config: router ospf, ip route| CP
+  NBR <-->|protocol messages| CP
+  CP -->|programs FIB / MAC table| DP
+  classDef m fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px
+  classDef c fill:#fff6dc,stroke:#e0a800,stroke-width:2px
+  classDef d fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+  class MP,NMS m
+  class CP,NBR c
+  class DP,IN,OUT d

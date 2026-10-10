@@ -1,0 +1,25 @@
+flowchart LR
+  subgraph C["CONTROL plane (CPU, software)"]
+    direction TB
+    OSPF["OSPF LSAs → SPF"]
+    BGP["BGP updates → best path"]
+    ST["static route<br/>(typed in via mgmt plane)"]
+    RIB["<b>RIB</b> = routing table<br/>show ip route"]
+    ARP["ARP / ND<br/>show ip arp"]
+    OSPF --> RIB
+    BGP --> RIB
+    ST --> RIB
+  end
+  subgraph D["DATA plane (ASIC, hardware)"]
+    direction TB
+    FIB["<b>FIB</b> (CEF)<br/>show ip cef"]
+    ADJ["<b>Adjacency table</b><br/>next-hop MAC rewrite<br/>show adjacency"]
+    FWD["forward at line rate"]
+    FIB --> ADJ --> FWD
+  end
+  RIB -->|best routes copied| FIB
+  ARP -->|L2 rewrite| ADJ
+  classDef c fill:#fff6dc,stroke:#e0a800,stroke-width:2px
+  classDef d fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+  class OSPF,BGP,ST,RIB,ARP c
+  class FIB,ADJ,FWD d

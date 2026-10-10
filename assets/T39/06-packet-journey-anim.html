@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T39 three planes animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --w:#f2f2f2; --w-b:#555; --m:#e3f1f8; --m-b:#17a2b8; --c:#fff6dc; --c-b:#e0a800; --d:#e3f6ee; --d-b:#28a745; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:540px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:300px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.w { border-color:var(--w-b); } .lane.m { border-color:var(--m-b); } .lane.c { border-color:var(--c-b); } .lane.d { border-color:var(--d-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .lane.idle { opacity:.45; border-style:dashed; }
+  .card { font-family:Menlo,Consolas,monospace; font-size:12.5px; overflow-wrap:anywhere; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.4; }
+  .w .card { background:var(--w); border-color:var(--w-b); } .m .card { background:var(--m); border-color:var(--m-b); }
+  .c .card { background:var(--c); border-color:var(--c-b); } .d .card { background:var(--d); border-color:var(--d-b); }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.3; border-style:dashed !important; }
+  .tag { position:absolute; left:10px; right:10px; bottom:10px; font-family:Menlo,Consolas,monospace; font-size:12.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 10px; border-radius:8px; }
+  .tag::before { content:"➜ "; color:#7ee2b8; } .tag.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T39 · <span class="pill">Three planes</span> who handles which packet</h1>
+  <div class="sub">One router (mgmt IP <code>10.10.20.48</code>). Each frame = one packet or event. Lane glow = the plane doing the work.</div>
+  <div class="lanes">
+    <div class="lane w" id="w"><h3>🔌 On the wire</h3><div class="where">what arrives on a port</div><div id="w-f"></div></div>
+    <div class="lane m" id="m"><h3>🛠️ Management plane</h3><div class="where">CPU · configure + monitor</div><div id="m-f"></div></div>
+    <div class="lane c" id="c"><h3>🧭 Control plane</h3><div class="where">CPU · decide paths (RIB)</div><div id="c-f"></div></div>
+    <div class="lane d" id="d"><h3>⚡ Data plane</h3><div class="where">ASIC · forward (FIB)</div><div id="d-f"></div></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const K = (t, s, cls="") => `<div class="card ${cls}">${t}<small>${s}</small></div>`;
+const RIB = K("O 172.16.10.0/24<br>via 192.168.1.2, Gi2", "RIB · show ip route");
+const FIB = K("172.16.10.0/24 → Gi2<br>rewrite 52:54:00:1a:2b:3c", "FIB + adjacency · show ip cef");
+const frames = [
+  { active:["w","c"], idle:["m","d"],
+    w:K("OSPF LSU from 192.168.1.2<br>dst 224.0.0.5, proto 89", "arrives on Gi2"),
+    m:"", c:K("LSA for 172.16.10.0/24", "punted to CPU, into the LSDB"), d:"",
+    tag:{lane:"c", t:"OSPF receives LSA"},
+    txt:"An <b>OSPF</b> update arrives. It's addressed to the router itself, so it goes up to the <b>control plane</b>." },
+  { active:["c"], idle:["m","d"],
+    w:K("OSPF LSU", "processed", "ghost"), m:"", c:K("SPF run", "best path computed")+RIB, d:"",
+    tag:{lane:"c", t:"SPF → install in RIB"},
+    txt:"SPF runs and the best route lands in the <b>RIB</b>. Nothing has been forwarded yet: the control plane only <b>decides</b>." },
+  { active:["d"], idle:["m"],
+    w:"", m:"", c:RIB+K("ARP 192.168.1.2<br>= 52:54:00:1a:2b:3c", "show ip arp"), d:FIB,
+    tag:{lane:"d", t:"program FIB (CEF)"},
+    txt:"The RIB route and the ARP entry are pushed down into the <b>FIB + adjacency table</b> in hardware." },
+  { active:["w","d"], idle:["m","c"],
+    w:K("10.10.20.10 → 172.16.10.5<br>TCP 443, TTL 64", "transit: not for this router"),
+    m:"", c:RIB, d:FIB+K("TTL 64 → 63, out Gi2", "forwarded at line rate"),
+    tag:{lane:"d", t:"FIB lookup, forward"},
+    txt:"A user packet passes <b>through</b> the router. The <b>data plane</b> forwards it in the ASIC. <b>The CPU never sees it.</b>" },
+  { active:["w","m"], idle:["c"],
+    w:K("10.10.20.10 → 10.10.20.48<br>TCP 22 (SSH)", "dst = router's own IP"),
+    m:K("vty session: admin", "CoPP allowed it to the CPU"), c:RIB, d:FIB+K("receive entry 10.10.20.48/32", "punt to CPU"),
+    tag:{lane:"m", t:"SSH login"},
+    txt:"SSH <b>to the router</b> isn't transit: the FIB has a <b>receive</b> entry, so it's punted to the <b>management plane</b>." },
+  { active:["m","d"], idle:["c"],
+    w:K("10.10.20.10 → 10.10.20.48<br>TCP 443: GET /restconf/data/<br>ietf-interfaces:interfaces-state/<br>interface=GigabitEthernet2/<br>statistics", "RESTCONF to the router's own IP"),
+    m:K("RESTCONF server", "reads counters for you"), c:RIB, d:FIB+K("in-unicast-pkts 1404115", "counters kept by the ASIC"),
+    tag:{lane:"m", t:"read data-plane counters", back:true},
+    txt:"A script asks via <b>RESTCONF</b> (management plane) for <b>data-plane</b> counters. Reading a plane ≠ being in that plane." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["w","m","c","d"]) {
+    let html = f[k];
+    if (f.tag && f.tag.lane === k) html += `<div class="tag ${f.tag.back ? "back" : ""}">${f.tag.t}</div>`;
+    document.getElementById(k+"-f").innerHTML = html;
+    const el = document.getElementById(k);
+    el.classList.toggle("active", f.active.includes(k));
+    el.classList.toggle("idle", (f.idle || []).includes(k));
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
