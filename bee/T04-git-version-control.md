@@ -87,6 +87,10 @@ cross_study: 2026-10-21
 
 *Left to right = saving work (add → commit → push). Right to left = getting work back (fetch, pull, restore).*
 
+![Animated git workflow](../assets/T04/10-workflow.gif)
+
+*The same flow, animated one command per frame: edit → `add` → `commit` → `push`, then Bob pushes and you `fetch` (your files don't change) and `pull` (they do).*
+
 - Staging area = `.git/index`. Lets you commit **some** of your changes, not all.
 - Local repo = `.git/` folder. Delete it → folder is no longer a repo.
 - `origin` = default **name** of the remote that `git clone` creates. Just a label, not special.
@@ -555,7 +559,7 @@ A. Commits can be made offline  B. Code runs faster  C. Every clone holds the fu
 
 ## Sources
 
-- Diagrams: Mermaid sources in `assets/T04/*.mmd`, rendered to PNG (see `assets/README.md`).
+- Diagrams: Mermaid sources in `assets/T04/*.mmd`, rendered to PNG. Animation: `assets/T04/10-workflow-anim.html` → `.gif` (see `assets/README.md`).
 - git-pull (default ff-only behaviour on divergent branches): https://git-scm.com/docs/git-pull
 - Pro Git, Recording Changes (file lifecycle, `rm --cached`, `diff --staged`): https://git-scm.com/book/en/v2/Git-Basics-Recording-Changes-to-the-Repository
 - Pro Git, Basic Branching and Merging (fast-forward, conflict markers): https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging

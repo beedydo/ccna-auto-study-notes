@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T04 git workflow animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --wd:#fff3cd; --wd-b:#e0a800; --st:#d4edda; --st-b:#28a745;
+          --lr:#d1ecf1; --lr-b:#17a2b8; --rr:#e8dcf7; --rr-b:#7b4bc4; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.wd { border-color:var(--wd-b); } .lane.st { border-color:var(--st-b); }
+  .lane.lr { border-color:var(--lr-b); } .lane.rr { border-color:var(--rr-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .file { font-family:Menlo,monospace; font-size:13px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; }
+  .wd .file { background:var(--wd); border-color:var(--wd-b); } .st .file { background:var(--st); border-color:var(--st-b); }
+  .lr .file { background:var(--lr); border-color:var(--lr-b); } .rr .file { background:var(--rr); border-color:var(--rr-b); }
+  .file small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.25; border-style:dashed; }
+  .arrowrow { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; height:64px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T04 · <span class="pill">Git workflow</span> one change, start to finish</h1>
+  <div class="sub">Watch <code>ntp.py</code> move through the four areas. Each frame = one command.</div>
+  <div class="lanes">
+    <div class="lane wd" id="wd"><h3>📝 Working directory</h3><div class="where">files you edit</div><div id="wd-f"></div></div>
+    <div class="lane st" id="st"><h3>📋 Staging area</h3><div class="where">.git/index</div><div id="st-f"></div></div>
+    <div class="lane lr" id="lr"><h3>🗄️ Local repo</h3><div class="where">.git/ commits</div><div id="lr-f"></div></div>
+    <div class="lane rr" id="rr"><h3>☁️ Remote (origin)</h3><div class="where">GitHub</div><div id="rr-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const F = (t, s, cls="") => `<div class="file ${cls}">${t}<small>${s}</small></div>`;
+const frames = [
+  { active:"wd", wd:F("ntp.py","modified · status ' M'"), st:"", lr:F("a1b2c3 Initial","main"), rr:F("a1b2c3 Initial","origin/main"),
+    cmd:null, txt:"Edit <code>ntp.py</code>. Only the working directory changes. <code>git status</code> shows <code> M</code>." },
+  { active:"st", wd:F("ntp.py","same as staged","ghost"), st:F("ntp.py","staged · status 'M '"), lr:F("a1b2c3 Initial","main"), rr:F("a1b2c3 Initial","origin/main"),
+    cmd:{at:0, t:"git add ntp.py"}, txt:"<code>git add ntp.py</code> copies the change into staging. <code>git diff --staged</code> now shows it." },
+  { active:"lr", wd:F("ntp.py","clean","ghost"), st:"", lr:F("d4e5f6 Fix NTP","main · HEAD")+F("a1b2c3 Initial","parent"), rr:F("a1b2c3 Initial","origin/main"),
+    cmd:{at:1, t:'git commit -m "Fix NTP"'}, txt:"<code>git commit</code> saves a snapshot with a new SHA. Still <b>only on your laptop</b>." },
+  { active:"rr", wd:F("ntp.py","clean","ghost"), st:"", lr:F("d4e5f6 Fix NTP","main · HEAD")+F("a1b2c3 Initial","parent"), rr:F("d4e5f6 Fix NTP","origin/main")+F("a1b2c3 Initial","parent"),
+    cmd:{at:2, t:"git push origin main"}, txt:"<code>git push</code> uploads the commit. Now teammates can see it." },
+  { active:"lr", wd:F("ntp.py","clean","ghost"), st:"", lr:F("d4e5f6 Fix NTP","main")+F("9f8e7d Add VLAN","origin/main (fetched)"), rr:F("9f8e7d Add VLAN","Bob pushed")+F("d4e5f6 Fix NTP","parent"),
+    cmd:{at:2, t:"git fetch", back:true}, txt:"Bob pushed a commit. <code>git fetch</code> downloads it to <code>origin/main</code>. <b>Your files don't change.</b>" },
+  { active:"wd", wd:F("vlan.py","new from Bob"), st:"", lr:F("9f8e7d Add VLAN","main · HEAD")+F("d4e5f6 Fix NTP","parent"), rr:F("9f8e7d Add VLAN","origin/main")+F("d4e5f6 Fix NTP","parent"),
+    cmd:{at:0, t:"git pull = fetch + merge", back:true}, txt:"<code>git pull</code> = fetch <b>+ merge</b>, so Bob's change lands in your working directory." },
+];
+const pos = [0, 1, 2].map(i => 18 + i * (1044/4 + 4.5) + 165);
+function show(i) {
+  const f = frames[i];
+  for (const k of ["wd","st","lr","rr"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+    d.textContent = f.cmd.t; d.style.left = (f.cmd.back ? pos[f.cmd.at] - 60 : pos[f.cmd.at] - 90) + "px";
+    a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
