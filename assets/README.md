@@ -35,3 +35,14 @@ node scripts/render-animation.mjs assets/T04/10-workflow-anim.html 2.5
 ```
 
 - The last argument is seconds per frame. The last frame is held twice as long.
+
+## Linux
+
+- Both render scripts default to the macOS Chrome path. On Linux, point them at Chrome (and at ffmpeg, if it isn't on `PATH`):
+
+```bash
+CHROME_PATH=/usr/bin/google-chrome node scripts/render-overview.mjs assets/T19/00-overview.html
+CHROME_PATH=/usr/bin/google-chrome FFMPEG=/path/to/ffmpeg node scripts/render-animation.mjs assets/T15/08-candidate-commit-anim.html 2.5
+```
+
+- For Mermaid, pass a puppeteer config with `{"executablePath": "/usr/bin/google-chrome", "args": ["--no-sandbox"]}` via `npx @mermaid-js/mermaid-cli -p puppeteer.json ...`.

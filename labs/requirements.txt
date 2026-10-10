@@ -8,5 +8,7 @@ dnacentersdk
 webexpythonsdk
 ansible-core
 pytest
+ucsmsdk
+intersight
 # pyATS is large; uncomment when you reach T44
 # pyats[full]
