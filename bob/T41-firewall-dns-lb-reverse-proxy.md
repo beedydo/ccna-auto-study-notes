@@ -697,7 +697,7 @@ if __name__ == "__main__":
 
 ![Firewall tiers: only internet to VIP 443, web to app 8443 and app to DB 5432 are allowed](../assets/T41/01-firewall-tiers.png)
 
-*Green = permitted by a rule. Red dashed = implicit deny. The edge firewall carries the WAF too.*
+*Green = permitted, with the rule number on the line. Red dashed = denied (rule 1 or implicit deny). The WAF sits at the edge next to the L3/L4 firewall.*
 
 - **Drop vs reject**, as the client sees it (T40.02):
   - **Drop** = silently discard, so the client waits → **timeout**. Proof: `real GET from 127.0.0.66 -> TimeoutError: no reply, the packet was dropped` (rule 1).
@@ -1154,7 +1154,7 @@ A. The firewall is still permitting the old IP  B. Resolvers and clients cached 
 
 ## Sources
 
-- Overview image: HTML source `assets/T41/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T41/*.mmd`. Animation: `assets/T41/09-request-journey-anim.html` → `.gif`.
+- Overview image: HTML source `assets/T41/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T41/*.mmd`. Architecture diagrams: HTML sources `assets/T41/01-firewall-tiers.html`, `03-dns-gslb.html`, `04-lb-health.html`, `06-forward-vs-reverse.html` (shared kit `assets/_arch/`). Animation: `assets/T41/09-request-journey-anim.html` → `.gif`.
 - Cisco 200-901 v1.1 exam topics (4.9 "Explain how firewall, DNS, load balancers, and reverse proxy in application deployment"): https://learningcontent.cisco.com/documents/marketing/exam-topics/200-901-CCNAAUTO_v.1.1.pdf
 - Cisco, What is a firewall? (packet filtering, stateful inspection, proxy, NGFW, WAF): https://www.cisco.com/site/us/en/learn/topics/security/what-is-a-firewall.html
 - RFC 1035, DNS (TTL definition, header RCODE 3 = name error): https://www.rfc-editor.org/rfc/rfc1035

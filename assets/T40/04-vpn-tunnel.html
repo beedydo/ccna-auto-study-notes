@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T40 architecture: VPN split vs full tunnel</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row.top { gap: 280px; }
+  .row.top > .zone.site { flex: 0.95; }
+  .zone.site .col { gap: 130px; } .row.top > .zone.fabric { flex: 1.25; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 60px; width: 100%; }
+  .line { display: flex; justify-content: space-around; width: 100%; }
+  .inet { width: 760px; margin: 0 auto; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 400px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T40 · <span class="pill">VPN</span> split vs full tunnel</h1>
+    <div class="meta"><b>200-901 blueprint 6.8</b><br>Routes, split DNS and overlap<br>Check: <code>ip route get 10.1.1.10</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row top">
+      <div class="zone site">
+        <div class="zh">Home LAN <small>192.168.1.0/24</small></div>
+        <div class="zb">
+          <div class="col">
+            <div class="node w" id="laptop" data-icon="laptop"><div class="nm">Laptop on VPN</div><div class="sub">connected route <code>192.168.1.0/24</code></div></div>
+            <div class="line">
+              <div class="node" id="home" data-icon="router"><div class="nm">Home router</div><div class="sub">ISP · home resolver</div></div>
+              <div class="node" id="printer" data-icon="server"><div class="nm">Home device</div><div class="sub"><code>192.168.1.10</code></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone fabric">
+        <div class="zh">Corp network behind the VPN</div>
+        <div class="zb">
+          <div class="col">
+            <div class="node w" id="hub" data-icon="firewall"><div class="nm">VPN head-end</div><div class="sub">pushes routes + corp DNS</div></div>
+            <div class="line">
+              <div class="node n" id="dns" data-icon="dns"><div class="nm">Corp DNS</div><div class="sub"><code>10.0.0.53</code><br><code>api.corp.local</code></div></div>
+              <div class="node n" id="app" data-icon="server"><div class="nm">Internal API</div><div class="sub"><code>10.1.1.10</code><br>in <code>10.0.0.0/8</code></div></div>
+              <div class="node n down" id="ovl" data-icon="server"><div class="nm">Corp host</div><div class="sub"><code>192.168.1.10</code><br>overlapping /24 · never reached</div></div>
+              <div class="node n" id="proxy" data-icon="proxy"><div class="nm">Corp proxy</div><div class="sub">+ firewall rules</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap"></div>
+
+    <div class="zone ext inet">
+      <div class="zh">Internet</div>
+      <div class="zb">
+        <div class="node w" id="saas" data-icon="internet"><div class="nm">Public SaaS / API</div><div class="sub">e.g. <code>api.meraki.com</code></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Split tunnel</b>: only corp prefixes (<code>10.0.0.0/8</code>) enter the tunnel. A corp prefix <b>missing</b> from the list goes to the ISP → timeout.</div>
+      <div class="note trap"><b>Trap:</b> overlap. Corp <code>192.168.1.0/24</code> = home <code>192.168.1.0/24</code>: the <b>connected</b> local route wins, so the tunnel is never used. Fix: renumber, more-specific routes, or NAT at the head-end.</div>
+      <div class="note"><b>Full tunnel</b>: <code>0.0.0.0/0</code> enters the tunnel, so public APIs now hit the corp proxy → <code>407</code> / TLS inspection. MTU drops too (diagram 05).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>data (user traffic / tunnel)</span>
+    <span><i class="sw control"></i>DNS lookup</span>
+    <span><i class="sw error"></i>fails / never reached</span>
+    <span><i class="sw phys"></i>LAN link</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "laptop", b: "hub", k: "data", dir: "both", ao: -9, bo: -9, label: "VPN tunnel (IPsec)<br>split: <code>10.0.0.0/8</code> · full: <code>0.0.0.0/0</code>", t: 0.5 },
+  { a: "laptop", b: "hub", k: "control", ao: 9, bo: 9, label: "split DNS: <code>nslookup api.corp.local 10.0.0.53</code>", t: 0.5, ly: 18 },
+  { a: "laptop", b: "home", k: "phys", s: "b-t", ao: -40, mid: 0.3 },
+  { a: "laptop", b: "home", k: "error", s: "b-t", ao: -20, bo: 22, mid: 0.6, label: "<code>api.corp.local</code> via<br>home resolver → NXDOMAIN", t: 0.86, lx: 4 },
+  { a: "laptop", b: "printer", k: "data", dir: "fwd", s: "b-t", ao: 30, mid: 0.45, label: "dst <code>192.168.1.10</code><br>connected /24 wins", t: 0.86 },
+  { a: "hub", b: "dns", k: "phys", s: "b-t", ao: -30, mid: 0.35 },
+  { a: "hub", b: "app", k: "phys", s: "b-t", ao: -10, mid: 0.35 },
+  { a: "hub", b: "ovl", k: "error", s: "b-t", ao: 10, mid: 0.7 },
+  { a: "hub", b: "proxy", k: "phys", s: "b-t", ao: 30, mid: 0.35 },
+  { a: "home", b: "saas", k: "data", dir: "fwd", s: "b-l", label: "split: everything else → local ISP", t: 0.62 },
+  { a: "proxy", b: "saas", k: "data", dir: "fwd", s: "b-r", label: "full: internet via corp proxy", t: 0.62 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

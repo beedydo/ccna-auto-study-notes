@@ -801,6 +801,7 @@ E. Disable TLS certificate verification
 - RFC 9110 HTTP Semantics (§9.3.6 CONNECT, §11.7.1 Proxy-Authenticate, §11.7.2 Proxy-Authorization, §15.5.8 407): https://www.rfc-editor.org/rfc/rfc9110.html
 - Cisco, Troubleshoot DMVPN Issues (MTU/MSS: `ip mtu 1400`, `ip tcp adjust-mss 1360`): https://www.cisco.com/c/en/us/support/docs/security/dynamic-multipoint-vpn-dmvpn/111976-dmvpn-troubleshoot-00.html
 - Diagrams: Mermaid sources in `assets/T40/*.mmd` (rendered `.png` next to each).
+- Architecture diagrams: HTML sources `assets/T40/01-nat-inbound.html`, `assets/T40/04-vpn-tunnel.html` (shared kit `assets/_arch/`).
 - Overview image: HTML source `assets/T40/00-overview.html`, rendered to `assets/T40/00-overview.png`.
 - Animation: `assets/T40/09-proxy-journey-anim.html`, rendered to `assets/T40/09-proxy-journey.gif`.
 

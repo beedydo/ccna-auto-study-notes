@@ -37,7 +37,7 @@ Every section explains one part of the same small network. Read it once first.
 
 ![Reference topology used by every example](../assets/T38/07-reference-topology.png)
 
-*Blue = the campus default gateway (dist1 SVIs). Red = the only device that filters. Yellow = the load balancer. Dashed red = web2, which fails its health check.*
+*Every device and cable in `topology.json`; link labels are the subnet or VLAN on that cable. Blue glow = the campus default gateway (dist1 SVIs). fw1 (brick wall) is the only device that filters. Faded ✗ = web2, which fails its health check.*
 
 <details><summary><b><code>labs/T38/topology.json</code></b> (the data the program reads)</summary>
 
@@ -448,7 +448,7 @@ LOGICAL view: L3 segments, members and gateway
 
 ![What each component reads and decides](../assets/T38/01-components.png)
 
-*Read left to right: each box looks one layer deeper into the packet. Blue = the box that is the default gateway.*
+*Read left to right: each box looks one layer deeper into the packet. Blue glow = the box that is the default gateway. Red dashed = lb1 sends nothing to web2 (failed health check).*
 
 | Component | Layer | Decides on | Key table / feature | On the path in the program |
 |---|---|---|---|---|
@@ -514,7 +514,7 @@ LOGICAL view: L3 segments, members and gateway
 
 ![Three-tier campus: access, distribution, core](../assets/T38/03-three-tier-campus.png)
 
-*Each access switch dual-homes to both distribution switches; each distribution switch connects to both cores. Blue = where the default gateways live.*
+*Each access switch dual-homes to both distribution switches; each distribution switch connects to both cores. Blue glow = where the default gateways live.*
 
 | Layer | Job | In the program |
 |---|---|---|
@@ -529,7 +529,7 @@ LOGICAL view: L3 segments, members and gateway
 
 ![Spine-leaf fabric](../assets/T38/04-spine-leaf.png)
 
-*Full mesh between the two layers only. Server A to server B always crosses leaf → spine → leaf.*
+*Full mesh between the two layers only. Server A to server B always crosses leaf → spine → leaf (green = one such flow).*
 
 - **Every leaf connects to every spine.** Leaves never connect to each other; spines never connect to each other.
 - Servers, firewalls, load balancers and routers connect to **leaves** only. A **border leaf** connects the fabric to the WAN/Internet.
@@ -562,7 +562,7 @@ LOGICAL view: L3 segments, members and gateway
 
 ![HQ and branch joined by a WAN](../assets/T38/06-wan-branch.png)
 
-*The branch router (blue) is the branch's gateway and its WAN edge. Solid = private WAN, dotted = Internet-based overlay.*
+*The branch router (blue glow) is the branch's gateway and its WAN edge. Thin dark line = private WAN (MPLS / leased line), thick green = encrypted tunnel over the Internet.*
 
 - **Branch:** small site, usually a router (gateway + WAN edge) and an access switch, sometimes a small firewall. `br1` `Gi0/0/1.10` is a subinterface (router-on-a-stick) acting as the gateway for VLAN 10.
 - **WAN transport:** MPLS / leased line (provider-managed, private), Internet + IPsec VPN, or **SD-WAN** (overlay over any transport, centrally managed by SD-WAN Manager (vManage); see [T22](T22-catalyst-sd-wan.md)).
@@ -888,7 +888,7 @@ D. Nothing; APs and WLCs must be in the same VLAN
 
 ## Sources
 
-- Overview image: HTML source `assets/T38/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T38/*.mmd`. Animation: `assets/T38/09-packet-path-anim.html` → `09-packet-path.gif`.
+- Overview image: HTML source `assets/T38/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T38/*.mmd` (02, 08). Architecture diagrams: HTML sources `assets/T38/01-components.html`, `03-three-tier-campus.html`, `04-spine-leaf.html`, `05-dmz.html`, `06-wan-branch.html`, `07-reference-topology.html` (shared kit `assets/_arch/`). Animation: `assets/T38/09-packet-path-anim.html` → `09-packet-path.gif`.
 - Cisco Borderless Campus 1.0 Design Guide, design models (three-tier, two-tier collapsed core): https://www.cisco.com/c/en/us/td/docs/solutions/Enterprise/Campus/Borderless_Campus_Network_1-0/Borderless_Campus_1-0_Design_Guide/BN_Campus_Models.html
 - Cisco Collapsed Data Center and Campus Core Deployment Guide (core layer role, L3-only core): https://www.cisco.com/c/dam/global/en_ca/solutions/strategy/docs/sbaGov_nexus7000Dguide_new.pdf
 - Cisco Massively Scalable Data Center Network Fabric White Paper (spine-leaf, full mesh, ECMP, east-west): https://www.cisco.com/c/en/us/products/collateral/switches/nexus-9000-series-switches/white-paper-c11-743245.html

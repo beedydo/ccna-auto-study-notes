@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 three-legged firewall with a DMZ</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .g3 { display: grid; grid-template-columns: 420px 340px 428px; column-gap: 26px; }
+  .zone > .zb.cols { display: grid; grid-template-columns: 417.5px 26px 340px 26px 425.5px; padding: 18px 0; gap: 50px 0; justify-items: center; align-items: start; }
+  .edge > .zb { padding: 18px 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 400px; }
+  .note.pol { background: #fff; border-color: #2b2b2b; }
+  .note.pol table { border-collapse: collapse; width: 100%; font-size: 12px; }
+  .note.pol td { padding: 1px 4px; border-bottom: 1px solid #eee; }
+  .ok { color: #1a7f37; font-weight: 700; } .no { color: #b42318; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">DMZ</span> three-legged firewall</h1>
+    <div class="meta"><b>200-901 blueprint 6.3</b><br>One firewall, three zones<br>Values from <code>labs/T38/topology.json</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="g3">
+      <div class="zone ext">
+        <div class="zh">Outside <small>untrusted</small></div>
+        <div class="zb">
+          <div class="node n" id="ext1" data-icon="internet"><div class="nm">ext1</div><div class="sub">198.51.100.7<br>Internet client</div></div>
+          <div class="node n" id="isp1" data-icon="router"><div class="nm">isp1</div><div class="sub">ISP router<br>203.0.113.1</div></div>
+        </div>
+      </div>
+      <div class="zone edge">
+        <div class="zh">Firewall</div>
+        <div class="zb">
+          <div class="node w" id="fw1" data-icon="firewall"><div class="nm">fw1</div><div class="sub">stateful · one zone per interface<br>first match · implicit deny</div></div>
+        </div>
+      </div>
+      <div class="zone fabric">
+        <div class="zh">Inside <small>trusted</small></div>
+        <div class="zb">
+          <div class="node" id="core1" data-icon="router"><div class="nm">core1</div><div class="sub">10.0.2.1</div></div>
+          <div class="node" id="campus" data-icon="laptop"><div class="nm">campus</div><div class="sub">10.10.0.0/16</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone dmz" id="dmzzone">
+      <div class="zh">DMZ <small>172.16.50.0/24 · VLAN 50 · servers the Internet must reach</small></div>
+      <div class="zb cols">
+        <div></div><div></div>
+        <div class="node" id="dmzsw" data-icon="switch"><div class="nm">dmz-sw</div><div class="sub">L2 · VLAN 50</div></div>
+        <div></div><div></div>
+        <div class="node w" id="lb1" data-icon="lb"><div class="nm">lb1</div><div class="sub">load balancer · 172.16.50.5</div><span class="tag">VIP 172.16.50.10:443</span></div>
+        <div></div>
+        <div class="node" id="web1" data-icon="server"><div class="nm">web1</div><div class="sub">172.16.50.11</div><span class="tag">health: up</span></div>
+        <div></div>
+        <div class="node down" id="web2" data-icon="server"><div class="nm">web2</div><div class="sub">172.16.50.12</div><span class="tag">health: down</span></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note pol"><b>fw1 policy</b> (from → to)
+        <table>
+          <tr><td>1</td><td>inside → outside</td><td>any</td><td class="ok">permit</td></tr>
+          <tr><td>2</td><td>inside → dmz</td><td>tcp/443 to VIP</td><td class="ok">permit</td></tr>
+          <tr><td>3</td><td>outside → dmz</td><td>tcp/443 to VIP</td><td class="ok">permit</td></tr>
+          <tr><td>—</td><td colspan="2">outside → inside, dmz → inside, other ports</td><td class="no">deny</td></tr>
+        </table>
+      </div>
+      <div class="note trap"><b>Trap:</b> outside → DMZ on published ports = allowed; <b>DMZ → inside = denied</b>; outside → inside = denied. SSH from ext1 to web1 is denied: rule 3 is only <b>443 to the VIP</b>.</div>
+      <div class="note"><b>Gateway of every DMZ host</b> = the firewall's dmz interface <code>172.16.50.1</code>. Clients target the <b>VIP</b>; lb1 forwards only to healthy web1.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>cable (label = firewall interface and its IP)</span>
+    <span><i class="sw data"></i>VIP → healthy real server</span>
+    <span style="margin-left:auto">Faded ✗ = fails its health check, taken out of the pool</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "ext1", b: "isp1", k: "phys" },
+  { a: "isp1", b: "fw1", k: "phys", label: "outside<br><code>203.0.113.2/30</code>", t: 0.62 },
+  { a: "fw1", b: "core1", k: "phys", label: "inside<br><code>10.0.2.2/30</code>", t: 0.38 },
+  { a: "core1", b: "campus", k: "phys" },
+  { a: "fw1", b: "dmzsw", k: "phys", s: "b-t", label: "dmz <code>172.16.50.1/24</code>", t: 0.4 },
+  { a: "dmzsw", b: "lb1", k: "phys", s: "b-t", ao: -20 },
+  { a: "dmzsw", b: "web1", k: "phys", s: "b-t" },
+  { a: "dmzsw", b: "web2", k: "phys", s: "b-t", ao: 20 },
+  { a: "lb1", b: "web1", k: "data", s: "r-l", label: "VIP → web1" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 architecture: load balancer with a failed member</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .clients { width: 640px; margin: 0 auto; }
+  .lbz { width: 640px; margin: 0 auto; }
+  .pool > .zb { justify-content: space-around; padding: 22px 60px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T41 · <span class="pill">Load balancer</span> health checks</h1>
+    <div class="meta"><b>200-901 blueprint 4.9</b><br>One VIP, a pool, failed member removed<br>Names as in <code>labs/T41/stack.py</code> <code>Pool("api", apps)</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client clients">
+      <div class="zh">Clients <small>only ever know the VIP</small></div>
+      <div class="zb">
+        <div class="node" id="c1" data-icon="laptop"><div class="nm">Client</div></div>
+        <div class="node" id="c2" data-icon="laptop"><div class="nm">Client</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ctrl lbz">
+      <div class="zh">Load balancer <small>L7 · also the reverse proxy</small></div>
+      <div class="zb">
+        <div class="node xw hl" id="lb" data-icon="lb"><div class="nm">VIP <code>127.0.41.1:18041</code></div><div class="sub">pool <code>api</code> · round robin<br>active check: <code>GET /health</code>, <code>200</code> = UP</div></div>
+      </div>
+    </div>
+
+    <div class="gap l" style="height:140px"></div>
+
+    <div class="zone site pool">
+      <div class="zh">Pool <code style="color:#1d1d1f">api</code> <small>AWS: target group</small></div>
+      <div class="zb">
+        <div class="node" id="a1" data-icon="server"><div class="nm">app1</div><div class="sub"><code>127.0.42.1:18041</code><br>UP</div></div>
+        <div class="node down" id="a2" data-icon="server"><div class="nm">app2</div><div class="sub"><code>127.0.42.2:18041</code><br>DOWN · no traffic</div></div>
+        <div class="node" id="a3" data-icon="server"><div class="nm">app3</div><div class="sub"><code>127.0.42.3:18041</code><br>UP</div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Lab proof:</b> <code>app2 crashes</code> → <code>app2=DOWN</code> → <code>round robin : app1 app3 app1 app3</code>.</div>
+      <div class="note trap"><b>Trap:</b> whole pool down → the <b>LB itself</b> answers <code>503 Service Unavailable</code>. A backend that refuses mid-request → <code>502</code> (passive check marks it DOWN).</div>
+      <div class="note"><b>Sticky cookie</b> <code>T41_STICKY=app1</code> pins a client to app1. If app1 dies, the session moves (<code>app3 &lt;- moved</code>) and in-memory state is lost.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>client requests</span>
+    <span><i class="sw mgmt"></i>health check probe</span>
+    <span><i class="sw error"></i>failed check → out of rotation</span>
+    <span style="margin-left:auto">Blue glow = the address clients use</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "c1", b: "lb", k: "data", dir: "fwd", s: "b-t", bo: -20, label: "<code>https://VIP</code>", t: 0.4 },
+  { a: "c2", b: "lb", k: "data", dir: "fwd", s: "b-t", bo: 20 },
+  { a: "lb", b: "a1", k: "data", dir: "fwd", s: "b-t", ao: -60, bo: -14, mid: 0.2, label: "req 1, 3", t: 0.62, lx: -40 },
+  { a: "lb", b: "a1", k: "mgmt", s: "b-t", ao: -40, bo: 14, mid: 0.48, label: "<code>GET /health</code> → 200", t: 0.5 },
+  { a: "lb", b: "a2", k: "error", s: "b-t", label: "<code>GET /health</code> fails → DOWN", t: 0.66 },
+  { a: "lb", b: "a3", k: "mgmt", s: "b-t", ao: 40, bo: -14, mid: 0.48, label: "<code>GET /health</code> → 200", t: 0.5 },
+  { a: "lb", b: "a3", k: "data", dir: "fwd", s: "b-t", ao: 60, bo: 14, mid: 0.2, label: "req 2, 4", t: 0.62, lx: 40 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

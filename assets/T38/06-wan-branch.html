@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 HQ and branch over a WAN</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row > .hq { flex: 1 1 0; }
+  .row > .wan { flex: 0.8 1 0; }
+  .row > .br { flex: 1.35 1 0; }
+  .wan > .zb { flex-direction: column; align-items: center; gap: 40px; padding: 18px 10px 22px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 400px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">WAN / branch</span> HQ ↔ branch</h1>
+    <div class="meta"><b>200-901 blueprint 6.3</b><br>Hub-and-spoke over a WAN<br>Values from <code>labs/T38/topology.json</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="zone fabric hq">
+        <div class="zh">HQ campus <small>hub</small></div>
+        <div class="zb">
+          <div class="node n" id="core1" data-icon="router"><div class="nm">core1</div><div class="sub">10.20.0.0/16 → wan1</div></div>
+          <div class="node" id="wan1" data-icon="router"><div class="nm">wan1</div><div class="sub">HQ WAN edge router<br>Gi0/0/0 10.0.3.2<br>Gi0/0/1 10.255.0.1</div></div>
+        </div>
+      </div>
+      <div class="zone ext wan">
+        <div class="zh">WAN transport <small>provider or overlay</small></div>
+        <div class="zb">
+          <div class="node w" id="mpls" data-icon="cloud"><div class="nm">MPLS / leased line</div><div class="sub">private · provider-managed<br>wan1 .1 ↔ br1 .2 · <code>10.255.0.0/30</code></div></div>
+          <div class="node w" id="inet" data-icon="internet"><div class="nm">Internet</div><div class="sub">+ IPsec VPN or SD-WAN</div></div>
+        </div>
+      </div>
+      <div class="zone site br">
+        <div class="zh">Branch <small>spoke · 10.20.10.0/24</small></div>
+        <div class="zb">
+          <div class="node hl" id="br1" data-icon="router"><div class="nm">br1</div><div class="sub">branch router<br>= gateway + WAN edge<br>Gi0/0/0 10.255.0.2</div><span class="tag">Gi0/0/1.10 10.20.10.1</span></div>
+          <div class="node n" id="brsw1" data-icon="switch"><div class="nm">br-sw1</div><div class="sub">L2 · VLAN 10</div></div>
+          <div class="node n" id="brpc" data-icon="laptop"><div class="nm">br-pc</div><div class="sub">10.20.10.50/24<br>gw 10.20.10.1</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Hub-and-spoke:</b> pc1 → br-pc crosses <b>dist1 → core1 → wan1 → br1</b>. core1 uses the specific route <code>10.20.0.0/16</code>, not the default.</div>
+      <div class="note trap"><b>Trap:</b> the branch hosts' gateway is <b>br1's subinterface</b> <code>Gi0/0/1.10</code> (router-on-a-stick), in their own subnet. wan1 is HQ's WAN edge, not the branch gateway.</div>
+      <div class="note"><b>SD-WAN</b> = an overlay over any transport, centrally managed by SD-WAN Manager (vManage). See T22.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>cable / private WAN circuit</span>
+    <span><i class="sw data"></i>encrypted tunnel over the Internet (user traffic)</span>
+    <span style="margin-left:auto">Blue glow = the branch's default gateway</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "core1", b: "wan1", k: "phys", label: "<code>10.0.3.0/30</code>" },
+  { a: "wan1", b: "mpls", k: "phys", s: "r-l" },
+  { a: "mpls", b: "br1", k: "phys", s: "r-l" },
+  { a: "wan1", b: "inet", k: "data", s: "r-l", ao: 14, mid: 0.5 },
+  { a: "inet", b: "br1", k: "data", s: "r-l", bo: 14, mid: 0.5, label: "IPsec / SD-WAN tunnel", t: 0.2 },
+  { a: "br1", b: "brsw1", k: "phys", label: "trunk" },
+  { a: "brsw1", b: "brpc", k: "phys", label: "VLAN 10" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

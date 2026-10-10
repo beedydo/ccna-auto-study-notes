@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 architecture: forward proxy vs reverse proxy</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row.halves { gap: 40px; }
+  .half > .zb { flex-direction: column; align-items: stretch; gap: 0; padding: 16px 18px 18px; }
+  .half .zone > .zb { justify-content: space-around; }
+  .mid { display: flex; justify-content: center; padding: 70px 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T41 · <span class="pill">Forward vs reverse</span> proxy</h1>
+    <div class="meta"><b>200-901 blueprint 4.9</b><br>Same box, opposite side<br>Reverse proxy = <code>FrontDoor</code> in <code>labs/T41/stack.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row halves">
+      <div class="zone dashed half">
+        <div class="zh" style="background:transparent;color:var(--ink)">Forward proxy <small style="opacity:1;color:var(--muted)">works for CLIENTS · clients → internet</small></div>
+        <div class="zb">
+          <div class="zone client">
+            <div class="zh">Corp LAN <small>protected side · the client configures the proxy</small></div>
+            <div class="zb">
+              <div class="node" id="u1" data-icon="laptop"><div class="nm">Corp laptop</div><div class="sub"><code>HTTPS_PROXY=...</code></div></div>
+              <div class="node" id="u2" data-icon="script"><div class="nm">Your script</div><div class="sub"><code>proxies={...}</code></div></div>
+            </div>
+          </div>
+          <div class="mid">
+            <div class="node xw" id="fp" data-icon="proxy"><div class="nm">Forward proxy</div><div class="sub">filter / log browsing · cache<br>one egress IP for every user</div></div>
+          </div>
+          <div class="zone ext">
+            <div class="zh">Internet</div>
+            <div class="zb">
+              <div class="node w" id="i1" data-icon="internet"><div class="nm">Any site</div><div class="sub">sees only the proxy's IP</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="zone dashed half">
+        <div class="zh" style="background:transparent;color:var(--ink)">Reverse proxy <small style="opacity:1;color:var(--muted)">works for SERVERS · internet → servers</small></div>
+        <div class="zb">
+          <div class="zone ext">
+            <div class="zh">Internet</div>
+            <div class="zb">
+              <div class="node w" id="i2" data-icon="laptop"><div class="nm">Any client</div><div class="sub">never sees the backends</div></div>
+            </div>
+          </div>
+          <div class="mid">
+            <div class="node xw hl" id="rp" style="width:330px" data-icon="proxy"><div class="nm">Reverse proxy <code>app.t41.lab</code></div><div class="sub"><code>Server: t41-proxy</code> · <code>Via: 1.1 t41-proxy</code><br>TLS · cache · gzip · path routing</div></div>
+          </div>
+          <div class="zone site">
+            <div class="zh">App servers</div>
+            <div class="zb">
+              <div class="node" id="b1" data-icon="server"><div class="nm">app1</div><div class="sub"><code>/api/*</code> pool</div></div>
+              <div class="node" id="b2" data-icon="server"><div class="nm">static1</div><div class="sub"><code>/static/*</code> pool</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Forward symptom:</b> script works at home, times out in the office → set the proxy (T40.03).</div>
+      <div class="note trap"><b>Trap:</b> backend logs show the <b>proxy's</b> IP (<code>peer_ip: 127.0.0.1</code>). The real client is in <code>X-Forwarded-For</code> (<code>127.0.0.10</code>), or RFC 7239 <code>Forwarded</code>.</div>
+      <div class="note"><b>Reverse proxy vs LB:</b> an L7 LB <b>is</b> a reverse proxy with a pool and an algorithm. A reverse proxy can front one server with no balancing.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>HTTP(S) traffic</span>
+    <span style="margin-left:auto">Blue glow = the address the client actually calls</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "u1", b: "fp", k: "data", dir: "fwd", s: "b-t", bo: -20 },
+  { a: "u2", b: "fp", k: "data", dir: "fwd", s: "b-t", bo: 20, label: "to the proxy, not the site", t: 0.3 },
+  { a: "fp", b: "i1", k: "data", dir: "fwd", s: "b-t", label: "one egress IP", t: 0.5 },
+  { a: "i2", b: "rp", k: "data", dir: "fwd", s: "b-t", label: "<code>https://app.t41.lab</code>", t: 0.5 },
+  { a: "rp", b: "b1", k: "data", dir: "fwd", s: "b-t", ao: -20, mid: 0.45, label: "+ <code>X-Forwarded-For</code>", t: 0.12, lx: -82 },
+  { a: "rp", b: "b2", k: "data", dir: "fwd", s: "b-t", ao: 20, mid: 0.45 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

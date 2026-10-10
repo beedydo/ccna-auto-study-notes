@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 reference topology (labs/T38/topology.json)</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  /* Three fixed columns (A | B | C) shared by every row, so nodes in the same column line up and vertical links stay straight. */
+  .g3 { display: grid; grid-template-columns: 640px 270px 478px; column-gap: 26px; }
+  .span2 { grid-column: 1 / 3; }
+  .zone > .zb.cols { display: grid; padding: 18px 0; gap: 0; justify-items: center; align-items: start; }
+  .hq > .zb.cols { grid-template-columns: 637.5px 26px 270px 26px 475.5px; }
+  .campus > .zb.cols { grid-template-columns: 637.5px 26px 267.5px; row-gap: 56px; }
+  .zone > .zb.stack { flex-direction: column; align-items: center; gap: 50px !important; }
+  .line { display: flex; gap: 30px; justify-content: center; }
+  .hosts { display: flex; gap: 20px; justify-content: center; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 345px; }
+  .note.pol2 { background: #fff; border-color: #2b2b2b; } .note.pol2 b { color: #1a7f37; } .note.pol2 b:first-child { color: var(--ink); }
+  .edge > .zb { padding-bottom: 10px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">Reference topology</span> HQ + DMZ + branch</h1>
+    <div class="meta"><b>200-901 blueprint 6.3, 6.4</b><br>Every device and cable in <code>labs/T38/topology.json</code><br>Traced by <code>labs/T38/trace_path.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <!-- Row 1: DMZ | Internet edge | Internet -->
+    <div class="g3">
+      <div class="zone dmz">
+        <div class="zh">DMZ <small>172.16.50.0/24 · VLAN 50 · gw 172.16.50.1 (fw1)</small></div>
+        <div class="zb stack">
+          <div class="node" id="dmzsw" data-icon="switch"><div class="nm">dmz-sw</div><div class="sub">L2 switch · VLAN 50</div></div>
+          <div class="line">
+            <div class="node" id="lb1" data-icon="lb"><div class="nm">lb1</div><div class="sub">load balancer · 172.16.50.5</div><span class="tag">VIP 172.16.50.10:443</span></div>
+            <div class="node n" id="web1" data-icon="server"><div class="nm">web1</div><div class="sub">172.16.50.11</div><span class="tag">health: up</span></div>
+            <div class="node n down" id="web2" data-icon="server"><div class="nm">web2</div><div class="sub">172.16.50.12</div><span class="tag">health: down</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="zone edge">
+        <div class="zh">Internet edge</div>
+        <div class="zb" style="flex-direction: column; align-items: center; gap: 0">
+          <div class="node w" id="fw1" data-icon="firewall"><div class="nm">fw1</div><div class="sub">stateful firewall · 3 zones<br>inside 10.0.2.2 · dmz 172.16.50.1<br>outside 203.0.113.2</div><span class="tag">the only device that filters</span></div>
+        </div>
+      </div>
+      <div class="zone ext">
+        <div class="zh">Internet <small>198.51.100.0/24</small></div>
+        <div class="zb stack">
+          <div class="node w" id="isp1" data-icon="router"><div class="nm">isp1</div><div class="sub">ISP router<br>to-hq 203.0.113.1<br>internet 198.51.100.1</div></div>
+          <div class="node" id="ext1" data-icon="laptop"><div class="nm">ext1</div><div class="sub">198.51.100.7 · gw .1</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <!-- Row 2: HQ core and transit links -->
+    <div class="zone fabric hq">
+      <div class="zh">HQ core <small>every link here is an L3 point-to-point or service subnet</small></div>
+      <div class="zb cols">
+        <div class="node w" id="wlc1" data-icon="wlc"><div class="nm">wlc1</div><div class="sub">WLC · 10.0.9.10 · gw 10.0.9.1</div><span class="tag">CAPWAP UDP 5246 / 5247 from ap1</span></div>
+        <div></div>
+        <div class="node xw" id="core1" data-icon="router"><div class="nm">core1</div><div class="sub">core router<br>10.10.0.0/16 → dist1 · 10.20.0.0/16 → wan1<br>0.0.0.0/0 → fw1</div></div>
+        <div></div>
+        <div class="node xw" id="wan1" data-icon="router"><div class="nm">wan1</div><div class="sub">HQ WAN edge router<br>10.20.0.0/16 → br1 · 0.0.0.0/0 → core1</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <!-- Row 3: Campus (A+B) | Branch (C) -->
+    <div class="g3">
+      <div class="zone site campus span2">
+        <div class="zh">HQ campus <small>access + distribution · 10.10.0.0/16</small></div>
+        <div class="zb cols">
+          <div class="node" id="acc1" data-icon="switch"><div class="nm">acc1</div><div class="sub">access switch · L2<br>VLANs 10, 20, 30</div></div>
+          <div></div>
+          <div class="node xw hl" id="dist1" data-icon="l3switch"><div class="nm">dist1</div><div class="sub">distribution · L3 switch<br>Vlan10 10.10.10.1 · Vlan20 10.10.20.1<br>Vlan30 10.10.30.1 · 0.0.0.0/0 → 10.0.1.1</div><span class="tag">default gateway (SVIs)</span></div>
+          <div class="hosts">
+            <div class="node n" id="pc1" data-icon="laptop"><div class="nm">pc1</div><div class="sub">10.10.10.21/24</div><span class="tag">VLAN 10 · Gi1/0/5</span></div>
+            <div class="node n" id="pc2" data-icon="laptop"><div class="nm">pc2</div><div class="sub">10.10.10.22/24</div><span class="tag">VLAN 10 · Gi1/0/6</span></div>
+            <div class="node n" id="prn1" data-icon="laptop"><div class="nm">printer1</div><div class="sub">10.10.20.30/24</div><span class="tag">VLAN 20 · Gi1/0/9</span></div>
+            <div class="node n" id="ap1" data-icon="ap"><div class="nm">ap1</div><div class="sub">10.10.30.40/24</div><span class="tag">VLAN 30 · Gi1/0/12</span></div>
+          </div>
+          <div></div>
+          <div class="note" style="margin-top: 14px; max-width: 250px"><b>3 VLANs on one access switch = 3 segments.</b> Each host's gateway is the dist1 SVI <b>.1</b> of its own subnet.</div>
+        </div>
+      </div>
+      <div class="zone site">
+        <div class="zh">Branch <small>10.20.10.0/24 · VLAN 10</small></div>
+        <div class="zb stack">
+          <div class="node xw" id="br1" data-icon="router"><div class="nm">br1</div><div class="sub">branch router = gateway<br>Gi0/0/1.10 10.20.10.1 · 0.0.0.0/0 → wan1</div></div>
+          <div class="line" style="gap: 60px">
+            <div class="node" id="brsw1" data-icon="switch"><div class="nm">br-sw1</div><div class="sub">L2 · VLAN 10</div></div>
+            <div class="node" id="brpc" data-icon="laptop"><div class="nm">br-pc</div><div class="sub">10.20.10.50/24 · gw .1</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>/30 = transit link</b> between two L3 boxes (2 usable IPs): <code>10.0.1.0/30</code>, <code>10.0.2.0/30</code>, <code>10.0.3.0/30</code>, <code>10.255.0.0/30</code>, <code>203.0.113.0/30</code>.</div>
+      <div class="note trap"><b>Trap:</b> the gateway isn't always a router icon. Campus hosts use the <b>dist1 SVIs</b>; DMZ hosts use the <b>firewall's dmz interface</b> <code>172.16.50.1</code>.</div>
+      <div class="note pol2"><b>fw1 policy</b> (first match):<br>1 inside → outside any: <b>permit</b><br>2 inside → dmz tcp/443 to VIP: <b>permit</b><br>3 outside → dmz tcp/443 to VIP: <b>permit</b><br>anything else: <b style="color:#b42318">implicit deny</b></div>
+      <div class="note"><b>Clients target the VIP</b> <code>172.16.50.10:443</code>, never web1/web2. lb1 sends everything to web1 because web2 fails its health check.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>cable (label = subnet / VLAN on that link)</span>
+    <span>Pink = DMZ zone · grey = outside · green = HQ core · orange = sites</span>
+    <span style="margin-left:auto">Blue glow = campus default gateway · faded ✗ = failed health check</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "isp1", b: "fw1", k: "phys", label: "outside · <code>203.0.113.0/30</code><br>.1 ↔ .2", t: 0.3 },
+  { a: "fw1", b: "dmzsw", k: "phys", label: "dmz · <code>172.16.50.1/24</code>", t: 0.45 },
+  { a: "isp1", b: "ext1", k: "phys", label: "<code>198.51.100.0/24</code>" },
+  { a: "dmzsw", b: "lb1", k: "phys", s: "b-t" },
+  { a: "dmzsw", b: "web1", k: "phys", s: "b-t" },
+  { a: "dmzsw", b: "web2", k: "phys", s: "b-t" },
+  { a: "fw1", b: "core1", k: "phys", s: "b-t", label: "inside · <code>10.0.2.0/30</code><br>fw1 .2 · core1 .1", t: 0.66 },
+  { a: "core1", b: "wlc1", k: "phys", label: "Gi0/0/4 · <code>10.0.9.0/24</code>" },
+  { a: "core1", b: "wan1", k: "phys", label: "Gi0/0/3 · <code>10.0.3.0/30</code>" },
+  { a: "core1", b: "dist1", k: "phys", s: "b-t", label: "<code>10.0.1.0/30</code><br>core1 .1 · dist1 .2" },
+  { a: "wan1", b: "br1", k: "phys", s: "b-t", label: "WAN · <code>10.255.0.0/30</code><br>wan1 .1 · br1 .2" },
+  { a: "dist1", b: "acc1", k: "phys", label: "trunk 802.1Q · VLAN 10, 20, 30" },
+  { a: "acc1", b: "pc1", k: "phys", s: "b-t" },
+  { a: "acc1", b: "pc2", k: "phys", s: "b-t" },
+  { a: "acc1", b: "prn1", k: "phys", s: "b-t" },
+  { a: "acc1", b: "ap1", k: "phys", s: "b-t" },
+  { a: "br1", b: "brsw1", k: "phys", s: "b-t", label: "Gi0/0/1.10" },
+  { a: "brsw1", b: "brpc", k: "phys", label: "VLAN 10" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>
