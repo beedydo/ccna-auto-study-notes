@@ -1,0 +1,18 @@
+flowchart LR
+    CL["curl http://127.0.0.1:8127/api/v1/devices"]
+    subgraph H["Host (your laptop)"]
+        HP["host port 8127"]
+        subgraph BR["bridge network (default: 'bridge')"]
+            subgraph CT["container t27-api · 172.17.0.x"]
+                APP["mock_api.py listening on 0.0.0.0:8080<br/>(EXPOSE 8080 = documentation only)"]
+            end
+        end
+    end
+    CL --> HP
+    HP == "--publish 8127:8080<br/>HOST : CONTAINER" ==> APP
+    style HP fill:#d1ecf1,stroke:#17a2b8
+    style APP fill:#d4edda,stroke:#28a745
+    style CL fill:#f8f9fa,stroke:#6c757d
+    style H fill:#ffffff,stroke:#6c757d
+    style BR fill:#f8f9fa,stroke:#6c757d
+    style CT fill:#ffffff,stroke:#28a745

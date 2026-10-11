@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T27 overview: Docker</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --y: #fff3cd; --yb: #e0a800; --b: #d1ecf1; --bb: #17a2b8; --g: #d4edda; --gb: #28a745;
+    --p: #e8dcf7; --pb: #7b4bc4; --r: #f8d7da; --rb: #dc3545;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1480px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .map { display: grid; grid-template-columns: minmax(0, 1.05fr) 46px minmax(0, 1fr) 46px minmax(0, 1.25fr); align-items: stretch; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .zone > h2 { margin: 0; padding: 8px 12px; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--line); }
+  .zone > h2 .ids { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--muted); }
+  .zone .body { padding: 10px 12px; font-size: 13.2px; line-height: 1.4; flex: 1; }
+  .z-df > h2 { background: var(--y); } .z-img > h2 { background: var(--b); } .z-ct > h2 { background: var(--g); }
+  .z-reg > h2 { background: var(--p); } .z-net > h2 { background: #e9ecef; } .z-st > h2 { background: #e9ecef; } .z-dev > h2 { background: #e9ecef; }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 26px; }
+  .arrow small { font-size: 10.5px; font-weight: 700; writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 6px; font-family: Menlo, monospace; }
+
+  .df { font-family: Menlo, Consolas, monospace; font-size: 11.6px; line-height: 1.55; border: 2px solid var(--yb); border-radius: 8px; background: #fffdf5; padding: 6px 8px; }
+  .df .ln { display: inline-block; width: 22px; color: #999; }
+  .df .k { font-weight: 800; }
+  .df .bt { background: #fff3cd; } .df .rt { background: #d4edda; } .df .meta { color: #666; }
+  .tag { display: inline-block; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 10px; margin-right: 4px; }
+  .tag.bt { background: #fff3cd; border: 1px solid var(--yb); } .tag.rt { background: #d4edda; border: 1px solid var(--gb); } .tag.mt { background: #fff; border: 1px dashed #888; }
+
+  .item { margin: 6px 0; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; margin-top: 8px; font-size: 12.8px; }
+  .trap b { color: var(--trap-ink); }
+  .trap .n { background: var(--trap-ink); }
+  .c { display: block; margin: 2px 0 0 24px; }
+
+  .layers { display: flex; flex-direction: column; gap: 3px; margin: 6px 0; }
+  .layer { border: 2px solid var(--bb); background: var(--b); border-radius: 5px; padding: 2px 8px; font-family: Menlo, monospace; font-size: 11.3px; }
+  .layer.w { border-color: var(--gb); background: var(--g); }
+  .cmdtab { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; margin-top: 4px; }
+  .cmdtab td { border: 1px solid #bbb; padding: 3px 5px; vertical-align: top; }
+  .cmdtab td:first-child { width: 47%; }
+  .cmdtab code { font-size: 11px; white-space: nowrap; }
+
+  .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.95fr); gap: 16px; margin-top: 16px; }
+  .portmap { display: grid; grid-template-columns: minmax(0,1fr) 70px minmax(0,1fr); align-items: center; margin: 4px 0 6px; }
+  .pbox { border: 2px solid; border-radius: 7px; padding: 5px 6px; text-align: center; font-size: 12px; font-weight: 700; }
+  .pbox.h { border-color: var(--bb); background: var(--b); } .pbox.c2 { border-color: var(--gb); background: var(--g); }
+  .parrow { text-align: center; font-family: Menlo, monospace; font-size: 11px; font-weight: 700; }
+  .vs { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+  .vs th, .vs td { border: 1px solid #bbb; padding: 3px 5px; text-align: left; vertical-align: top; }
+  .vs th { background: #f1f1f1; }
+  .vs .bind { background: #fff8e1; } .vs .vol { background: #e8f6ec; } .vs .wl { background: #fdecee; }
+  .vs code { font-size: 10.8px; }
+
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 2px solid var(--trap-ink); }
+  footer .k3::before { background: #d6d6d6; border: 2px solid #777; }
+  footer .k4::before { background: #ffe08a; border: 2px solid var(--yb); } footer .k5::before { background: #a8dcb5; border: 2px solid var(--gb); }
+  footer .k6::before { background: #a6dbe6; border: 2px solid var(--bb); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T27 · <span class="pill">Docker</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.3, 4.6, 4.7</b><br>Every T27 concept on one page<br>Code from <code>labs/T27/</code></div>
+  </header>
+
+  <div class="map">
+    <!-- DOCKERFILE -->
+    <div class="zone z-df">
+      <h2>📝 Dockerfile <span class="ids">T27.02 · T27.03 · T27.09</span></h2>
+      <div class="body">
+        <div class="df">
+<span class="ln">4</span><span class="k">ARG</span> PYTHON_VERSION=3.12<br>
+<span class="ln">5</span><span class="k">FROM</span> python:${PYTHON_VERSION}-slim<br>
+<span class="ln">7</span><span class="k meta">LABEL</span> <span class="meta">org.opencontainers.image.title=…</span><br>
+<span class="ln">10</span><span class="k">ENV</span> API_PORT=8080 ACCESS_LOG=1<br>
+<span class="ln">13</span><span class="k">WORKDIR</span> /app<br>
+<span class="bt"><span class="ln">15</span><span class="k">RUN</span> apt-get update &amp;&amp; … curl … useradd</span><br>
+<span class="bt"><span class="ln">22</span><span class="k">COPY</span> mock_api.py .</span><br>
+<span class="ln">24</span><span class="k">EXPOSE</span> 8080<br>
+<span class="ln">26</span><span class="k">USER</span> apiuser<br>
+<span class="rt"><span class="ln">28</span><span class="k">ENTRYPOINT</span> ["python3", "mock_api.py"]</span><br>
+<span class="rt"><span class="ln">29</span><span class="k">CMD</span> ["--host", "0.0.0.0"]</span>
+        </div>
+        <div style="margin-top:6px"><span class="tag bt">build time</span>RUN · COPY/ADD add layers <span class="tag rt" style="margin-left:6px">container start</span>ENTRYPOINT + CMD</div>
+        <div class="item"><span class="n">1</span><b>COPY</b> local files · <b>ADD</b> also URL / Git / auto-extract local tar</div>
+        <div class="item"><span class="n">2</span><b>ARG</b> build only (<code>--build-arg</code>) · <b>ENV</b> kept at run (<code>-e</code>)</div>
+        <div class="item"><span class="n">3</span>Run args <b>replace CMD</b>, <b>append to ENTRYPOINT</b>:<span class="c"><code>docker run t27-mock-api:1.0 --help</code></span><span class="c">→ <code>python3 mock_api.py --help</code></span></div>
+        <div class="item"><span class="n">4</span>Cache: change a layer → <b>all later layers rebuild</b>. Code last.</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>EXPOSE 8080</code> only documents. Only the <b>last</b> CMD counts. RUN never runs at start.</div>
+      </div>
+    </div>
+
+    <div class="arrow">➜<small>docker build</small></div>
+
+    <!-- IMAGE + REGISTRY -->
+    <div style="display:flex; flex-direction:column; gap:14px">
+      <div class="zone z-img">
+        <h2>🧱 Image <span class="ids">T27.01 · T27.04</span></h2>
+        <div class="body">
+          Read-only, immutable <b>layers</b> + config. Built once, run many times.
+          <div class="layers">
+            <div class="layer">COPY mock_api.py .</div>
+            <div class="layer">RUN apt-get … curl, useradd</div>
+            <div class="layer">FROM python:3.12-slim</div>
+          </div>
+          <div class="item"><span class="n">1</span><code>docker build --tag t27-mock-api:1.0 labs/T27</code><span class="c">last arg = <b>build context</b> (what COPY can see)</span></div>
+          <div class="item"><span class="n">2</span><code>docker images</code> · <code>docker tag</code> · <code>docker rmi</code></div>
+          <div class="trap"><span class="n">!</span><b>Trap:</b> <code>docker rmi</code> = image, <code>docker rm</code> = container. <code>tag</code> adds a name, copies nothing.</div>
+        </div>
+      </div>
+      <div class="zone z-reg">
+        <h2>🌐 Registry <span class="ids">T27.01 · T27.04</span></h2>
+        <div class="body">
+          <code>[host[:port]/]namespace/repo:tag</code>
+          <div class="item"><span class="n">1</span><code>python:3.12-slim</code> = <code>docker.io/library/python:3.12-slim</code></div>
+          <div class="item"><span class="n">2</span><code>docker pull nginx</code> · <code>docker push repo/myapp:1.0</code><span class="c">(<code>docker login</code> + tag with the registry host first)</span></div>
+          <div class="trap"><span class="n">!</span><b>Trap:</b> no tag → <code>latest</code>, a default name, <b>not</b> "newest".</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">➜<small>docker run</small></div>
+
+    <!-- CONTAINER -->
+    <div class="zone z-ct">
+      <h2>📦 Container <span class="ids">T27.01 · T27.05 · T27.06 · T27.09</span></h2>
+      <div class="body">
+        Image + own <b>writable layer</b> + one process (PID 1). Engine <code>dockerd</code> runs it; <code>docker</code> CLI is just the client.
+        <div class="layers"><div class="layer w">writable layer (deleted by docker rm)</div><div class="layer">image layers (shared, read-only)</div></div>
+        <div class="item"><span class="n">1</span><code>docker run --detach --name t27-api</code><span class="c"><code>--publish 8127:8080 t27-mock-api:1.0</code></span></div>
+        <table class="cmdtab">
+          <tr><td><code>-d</code> background</td><td><code>-e KEY=value</code> env</td></tr>
+          <tr><td><code>-it</code> interactive shell</td><td><code>-v src:/path</code> mount</td></tr>
+          <tr><td><code>--rm</code> delete on exit</td><td><code>--name web</code> fixed name</td></tr>
+          <tr><td><code>docker ps</code> running only</td><td><code>docker ps -a</code> all</td></tr>
+          <tr><td><code>docker stop</code> / <code>start</code></td><td><code>docker rm</code> delete</td></tr>
+          <tr><td><code>docker logs -f t27-api</code></td><td><code>docker inspect t27-api</code></td></tr>
+          <tr><td colspan="2"><code>docker exec -it t27-api /bin/bash</code> joins a <b>running</b> one · <code>run</code> makes a <b>new</b> one</td></tr>
+        </table>
+        <div class="item"><span class="n">2</span>Inside: <code>whoami</code> → <code>apiuser</code> · <code>pwd</code> → <code>/app</code></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> options go <b>before</b> the image. <code>docker ps</code> hides stopped containers. <code>stop</code> keeps it; <code>rm</code> deletes it.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <!-- NETWORK -->
+    <div class="zone z-net">
+      <h2>🔌 Ports &amp; networks <span class="ids">T27.05 · T27.07</span></h2>
+      <div class="body">
+        <div class="portmap">
+          <div class="pbox h">host<br>127.0.0.1:8127</div>
+          <div class="parrow">-p<br>8127:8080<br>➜</div>
+          <div class="pbox c2">container<br>0.0.0.0:8080</div>
+        </div>
+        <div class="item"><span class="n">1</span>Default <code>bridge</code>: private IP, NAT, reach by IP only</div>
+        <div class="item"><span class="n">2</span>User-defined bridge / Compose: DNS by <b>name</b></div>
+        <div class="item"><span class="n">3</span><code>--network host</code>: host's stack, <code>-p</code> ignored</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <b>HOST : CONTAINER</b>. App bound to 127.0.0.1 inside = unreachable.</div>
+      </div>
+    </div>
+
+    <!-- STORAGE -->
+    <div class="zone z-st">
+      <h2>💾 Storage <span class="ids">T27.05 · T27.07</span></h2>
+      <div class="body">
+        <table class="vs">
+          <tr><th style="width:34%">type</th><th>after <code>docker rm</code></th></tr>
+          <tr class="bind"><td><b>Bind mount</b></td><td>your host folder, untouched</td></tr>
+          <tr class="bind"><td colspan="2"><code>-v "$LAB/seed":/data:ro</code></td></tr>
+          <tr class="vol"><td><b>Named volume</b></td><td>kept until <code>docker volume rm</code></td></tr>
+          <tr class="vol"><td colspan="2"><code>-v t27-data:/data</code></td></tr>
+          <tr class="wl"><td><b>Writable layer</b></td><td>deleted (no flag needed)</td></tr>
+        </table>
+        <div class="item"><span class="n">1</span>Path = bind mount · plain name = volume</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>--rm</code> / <code>rm -v</code> delete <b>anonymous</b> volumes, never named ones.</div>
+      </div>
+    </div>
+
+    <!-- LOCAL DEV -->
+    <div class="zone z-dev">
+      <h2>💻 Local dev &amp; Compose <span class="ids">T27.08</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">1</span>Same image for everyone → no "works on my machine"</div>
+        <div class="item"><span class="n">2</span>Deps as throwaway containers (DB, mock API, test tools)<span class="c"><code>-v "$(pwd)":/work</code> for live code</span></div>
+        <div class="item"><span class="n">3</span><code>compose.yaml</code>: services · ports · volumes<span class="c"><code>docker compose up --build --detach</code></span><span class="c"><code>docker compose down --volumes</code></span></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> client calls <code>http://api:8080</code> (service name), not localhost.</div>
+      </div>
+    </div>
+
+    <!-- PICK THE COMMAND -->
+    <div class="zone z-dev">
+      <h2>🎯 Pick the command <span class="ids">T27.09</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">1</span>Detached + port<span class="c"><code>docker run -d -p 8080:80 nginx</code></span></div>
+        <div class="item"><span class="n">2</span>Shell in running <code>web</code><span class="c"><code>docker exec -it web sh</code></span></div>
+        <div class="item"><span class="n">3</span>Why did it crash?<span class="c"><code>docker ps -a</code> → <code>docker logs web</code></span></div>
+        <div class="item"><span class="n">4</span>Build from here<span class="c"><code>docker build -t myapp:1.0 .</code></span></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>docker run</code> ≠ <code>docker exec</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = item / drill step</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">yellow = build time</span>
+    <span class="k k5">green = run time / kept</span>
+    <span class="k k6">blue = read-only image</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T27/docker_drill.sh</code> · details in each T27.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

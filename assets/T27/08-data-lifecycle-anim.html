@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T27 data lifecycle animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:540px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code, .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns:1.25fr 1fr 1fr; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px 12px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  #ct { border-color:#28a745; } #vol { border-color:#17a2b8; } #img { border-color:#7b4bc4; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12.5px; line-height:1.5; border:2px solid; border-radius:7px; padding:6px 9px; margin-bottom:8px; }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:#555; font-size:11.5px; }
+  .run { background:#d4edda; border-color:#28a745; } .stop { background:#fff3cd; border-color:#e0a800; }
+  .gone { background:#fde8e8; border-color:#dc3545; opacity:.55; border-style:dashed; text-decoration:line-through; }
+  .vol { background:#d1ecf1; border-color:#17a2b8; } .img { background:#e8dcf7; border-color:#7b4bc4; }
+  .new { box-shadow:0 0 0 4px rgba(47,179,128,.45); }
+  .cmdrow { height:58px; position:relative; margin-top:12px; }
+  .cmd { position:absolute; left:0; top:4px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:8px 14px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T27 · <span class="pill">What survives?</span> stop, rm and a named volume</h1>
+  <div class="sub">Same steps as drill step 8b in <code>labs/T27/docker_drill.sh</code>. Watch the volume (middle) while the container comes and goes.</div>
+  <div class="lanes">
+    <div class="lane" id="ct"><h3>📦 Container</h3><div class="where">image + own writable layer</div><div id="ct-f"></div></div>
+    <div class="lane" id="vol"><h3>💾 Named volume t27-data</h3><div class="where">mounted at /data · managed by Docker</div><div id="vol-f"></div></div>
+    <div class="lane" id="img"><h3>🧱 Image</h3><div class="where">read-only · never changes</div><div id="img-f"></div></div>
+  </div>
+  <div class="cmdrow"><div class="cmd" id="cmd"></div></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (cls, t, s) => `<div class="box ${cls}">${t}<small>${s}</small></div>`;
+const IMG = B("img", "t27-mock-api:1.0", "FROM python:3.12-slim … CMD");
+const EMPTY = B("vol", "/data (empty)", "no devices.json yet → built-in 3 devices");
+const SAVED = (c) => B("vol " + c, "/data/devices.json", "csr1, n9k1 (device 3 deleted)");
+const frames = [
+  { active:"ct", cmd:"docker run -d --name t27-vol -v t27-data:/data t27-mock-api:1.0",
+    ct:B("run new", "t27-vol · Up", "inventory: csr1, n9k1, edge2"), vol:EMPTY, img:IMG,
+    txt:"<b>Run</b> with a named volume. The app finds no file in <code>/data</code>, so it starts with its 3 built-in devices." },
+  { active:"vol", cmd:"curl --request DELETE …/api/v1/devices/3   → 204",
+    ct:B("run", "t27-vol · Up", "inventory: csr1, n9k1"), vol:SAVED("new"), img:IMG,
+    txt:"<b>Change data.</b> The API saves the inventory to <code>/data/devices.json</code>, which lives <b>in the volume</b>, not the container." },
+  { active:"ct", cmd:"docker stop t27-vol",
+    ct:B("stop", "t27-vol · Exited (0)", "still listed by docker ps -a · writable layer kept"), vol:SAVED(""), img:IMG,
+    txt:"<b>Stop</b> keeps the container. <code>docker start t27-vol</code> would bring back the same one." },
+  { active:"ct", cmd:"docker rm t27-vol",
+    ct:B("gone", "t27-vol", "removed · writable layer deleted"), vol:SAVED(""), img:IMG,
+    txt:"<b>rm</b> deletes the container and its writable layer. The <b>named volume is untouched</b>." },
+  { active:"ct", cmd:"docker run -d --name t27-vol2 -v t27-data:/data t27-mock-api:1.0",
+    ct:B("gone", "t27-vol", "removed") + B("run new", "t27-vol2 · Up", "logs: loaded 2 devices from /data/devices.json"), vol:SAVED(""), img:IMG,
+    txt:"<b>New container, same volume:</b> the data is back. The image never changed; the change lived in the volume." },
+  { active:"vol", cmd:"docker rm --force t27-vol2 && docker volume rm t27-data",
+    ct:B("gone", "t27-vol2", "removed"), vol:B("gone", "t27-data", "volume removed · data gone"), img:IMG,
+    txt:"Only <code>docker volume rm</code> deletes the data. <code>--rm</code> / <code>rm -v</code> remove <b>anonymous</b> volumes, never named ones." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["ct","vol","img"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  document.getElementById("cmd").textContent = f.cmd;
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

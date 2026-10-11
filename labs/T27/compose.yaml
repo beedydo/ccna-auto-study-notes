@@ -1,0 +1,20 @@
+# T27 local dev stack: the mock API plus a one-shot client container on the same network.
+# Run from the repo root:  docker compose --file labs/T27/compose.yaml up --build --detach
+name: t27
+services:
+  api:
+    build: .
+    image: t27-mock-api:1.0
+    ports:
+      - "8127:8080"
+    environment:
+      DEVICES_FILE: /data/devices.json
+    volumes:
+      - t27-data:/data
+  client:
+    image: curlimages/curl:8.10.1
+    depends_on:
+      - api
+    command: ["--silent", "--retry", "5", "--retry-connrefused", "--header", "Authorization: Bearer tok-viewer-91c2", "http://api:8080/api/v1/devices"]
+volumes:
+  t27-data:

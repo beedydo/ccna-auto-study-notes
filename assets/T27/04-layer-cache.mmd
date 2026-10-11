@@ -1,0 +1,26 @@
+flowchart LR
+    subgraph BAD["Bad order: code copied first"]
+        direction TB
+        B1["FROM python:3.12-slim ✔ cached"]
+        B2["COPY mock_api.py . ✖ changed"]
+        B3["RUN apt-get install curl ✖ re-runs"]
+        B1 --> B2 --> B3
+    end
+    subgraph GOOD["Good order: least to most often changed"]
+        direction TB
+        G1["FROM python:3.12-slim ✔ cached"]
+        G2["RUN apt-get install curl ✔ cached"]
+        G3["COPY mock_api.py . ✖ changed (only this rebuilds)"]
+        G1 --> G2 --> G3
+    end
+    EDIT["You edit mock_api.py<br/>and rebuild"] --> BAD
+    EDIT --> GOOD
+    style B1 fill:#d4edda,stroke:#28a745
+    style B2 fill:#f8d7da,stroke:#dc3545
+    style B3 fill:#f8d7da,stroke:#dc3545
+    style G1 fill:#d4edda,stroke:#28a745
+    style G2 fill:#d4edda,stroke:#28a745
+    style G3 fill:#fff3cd,stroke:#e0a800
+    style GOOD fill:#ffffff,stroke:#17a2b8,stroke-width:3px
+    style BAD fill:#ffffff,stroke:#dc3545
+    style EDIT fill:#f8f9fa,stroke:#6c757d

@@ -1,0 +1,23 @@
+flowchart TB
+    W1["Container t27-api<br/>own thin writable layer"]
+    W2["Container t27-env<br/>own thin writable layer"]
+    subgraph I["Image t27-mock-api:1.0 = read-only layers, shared"]
+        direction TB
+        L4["COPY mock_api.py ."]
+        L3["RUN apt-get ... curl, useradd"]
+        L2["WORKDIR /app"]
+        L1["FROM python:3.12-slim (base layers)"]
+        L4 --- L3 --- L2 --- L1
+    end
+    W1 -- "sits on top of" --> I
+    W2 -- "sits on top of" --> I
+    M["ENV · EXPOSE · USER · LABEL · CMD · ENTRYPOINT<br/>= image config (metadata), no files added"]
+    I ~~~ M
+    style W1 fill:#d4edda,stroke:#28a745
+    style W2 fill:#d4edda,stroke:#28a745
+    style L1 fill:#d1ecf1,stroke:#17a2b8
+    style L2 fill:#d1ecf1,stroke:#17a2b8
+    style L3 fill:#d1ecf1,stroke:#17a2b8
+    style L4 fill:#d1ecf1,stroke:#17a2b8
+    style M fill:#f8f9fa,stroke:#6c757d,stroke-dasharray: 4 3
+    style I fill:#ffffff,stroke:#17a2b8

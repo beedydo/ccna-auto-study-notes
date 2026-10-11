@@ -1,0 +1,4 @@
+[
+  {"id": 1, "hostname": "lab-csr1", "mgmt_ip": "10.10.20.48", "role": "edge", "os": "iosxe"},
+  {"id": 2, "hostname": "lab-n9k1", "mgmt_ip": "10.10.20.58", "role": "core", "os": "nxos"}
+]

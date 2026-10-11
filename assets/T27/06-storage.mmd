@@ -1,0 +1,20 @@
+flowchart TB
+    subgraph CT["Container filesystem: where does each write go?"]
+        direction LR
+        D2["/data<br/>named volume (t27-vol)"]
+        WL["/app, /tmp ...<br/>writable layer"]
+        D1["/data<br/>bind mount (t27-bind)"]
+    end
+    VOL["Docker-managed volume t27-data<br/>-v t27-data:/data<br/>survives docker rm · docker volume rm"]
+    GONE["Deleted with docker rm"]
+    HOSTDIR["Host folder you choose<br/>-v $(pwd)/labs/T27/seed:/data:ro<br/>edit on host = seen in container"]
+    D2 <--> VOL
+    WL --> GONE
+    D1 <--> HOSTDIR
+    style CT fill:#ffffff,stroke:#6c757d
+    style WL fill:#f8d7da,stroke:#dc3545
+    style GONE fill:#f8d7da,stroke:#dc3545
+    style D1 fill:#fff3cd,stroke:#e0a800
+    style HOSTDIR fill:#fff3cd,stroke:#e0a800
+    style D2 fill:#d4edda,stroke:#28a745
+    style VOL fill:#d4edda,stroke:#28a745

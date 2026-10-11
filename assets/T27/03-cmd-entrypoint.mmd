@@ -1,0 +1,18 @@
+flowchart LR
+    START["docker run t27-mock-api:1.0 [ARGS]"]
+    Q1{"--entrypoint<br/>given?"}
+    Q2{"ARGS after<br/>the image?"}
+    E1["--entrypoint replaces ENTRYPOINT<br/>(and the image CMD is dropped)"]
+    R1["Runs ENTRYPOINT + CMD<br/>python3 mock_api.py --host 0.0.0.0"]
+    R2["ARGS replace CMD, appended to ENTRYPOINT<br/>python3 mock_api.py --help"]
+    START --> Q1
+    Q1 -- yes --> E1
+    Q1 -- no --> Q2
+    Q2 -- no --> R1
+    Q2 -- yes --> R2
+    NOTE["No ENTRYPOINT in the image?<br/>ARGS replace CMD completely:<br/>docker run python:3.12-slim python3 --version"]
+    style START fill:#f8f9fa,stroke:#6c757d
+    style R1 fill:#d4edda,stroke:#28a745
+    style R2 fill:#d1ecf1,stroke:#17a2b8
+    style E1 fill:#fff3cd,stroke:#e0a800
+    style NOTE fill:#ffffff,stroke:#6c757d,stroke-dasharray: 4 3

@@ -1,0 +1,19 @@
+flowchart LR
+    IMG["Image<br/>t27-mock-api:1.0"]
+    CR["Created"]
+    RUN["Running<br/>docker ps"]
+    EX["Exited<br/>docker ps -a only<br/>writable layer kept"]
+    RM["Removed<br/>writable layer gone"]
+    IMG -- "docker create" --> CR
+    IMG == "docker run = create + start" ==> RUN
+    CR -- "docker start" --> RUN
+    RUN -- "docker stop<br/>(SIGTERM, then SIGKILL)" --> EX
+    EX -- "docker start" --> RUN
+    EX -- "docker rm" --> RM
+    RUN -. "docker rm --force" .-> RM
+    RUN -. "exit with --rm" .-> RM
+    style IMG fill:#d1ecf1,stroke:#17a2b8
+    style RUN fill:#d4edda,stroke:#28a745
+    style EX fill:#fff3cd,stroke:#e0a800
+    style RM fill:#f8d7da,stroke:#dc3545
+    style CR fill:#f8f9fa,stroke:#6c757d
