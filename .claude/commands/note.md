@@ -166,6 +166,10 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
 - `## TL;DR (teach-back card)`: 3 key points + 1 trap, written last.
 - `## Sources`: the URLs actually used. If diagrams exist, add a line pointing at `assets/$ARGUMENTS/*.mmd`. `## To verify`: every `⚠ verify` item.
 - Cross-link related notes with relative links instead of repeating their content, e.g. `[T04.07](T04-git-version-control.md#t0407--commands-inspect)`.
+- **Contents block (last step of writing):** run `python3 scripts/toc.py <note_path>`. It writes a `**Contents**` list between `<!-- toc:start -->` and `<!-- toc:end -->`, directly under the overview image and its caption:
+  - one link per `##` section, in order
+  - under `## Concepts`, one line with a link to every `### TXX.NN` concept
+  - Never hand-edit the block. If you add, rename or reorder a heading, re-run the script, which rebuilds the block in place. Anchors follow GitHub's rules, so the links work on GitHub and in VS Code preview.
 
 ## 4. Verify before reporting
 
@@ -174,6 +178,7 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
 - After pasting code into the note, extract it back out and `diff` it against the `labs/` file, so the two never drift apart.
 - Check that every file path the note references (`labs/...`, `assets/...`) exists.
 - Check the overview sheet against the Concepts: every concept ID is on it, and every code chip matches the note or `labs/` exactly.
+- Check the contents block is current: `python3 scripts/toc.py --check <note_path>` must exit 0.
 - Third-party Python packages: install them into a throwaway venv under `$TMPDIR`, never into the system Python or the repo.
 - Throwaway git repos: set `git config commit.gpgsign false` locally. Global signing fails inside the sandbox.
 
