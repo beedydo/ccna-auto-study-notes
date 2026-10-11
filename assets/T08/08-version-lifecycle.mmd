@@ -1,0 +1,8 @@
+flowchart LR
+    V0["/api/v0 active"] --> D["/api/v0 deprecated<br/>still works, but responses carry<br/>Deprecation · Sunset · Link successor-version"]
+    D --> X["After Sunset date<br/>/api/v0 removed → 404 / 410"]
+    D -. "migrate: new path + renamed fields<br/>name → hostname" .-> V1["/api/v1 current"]
+    style V0 fill:#d4edda,stroke:#28a745
+    style D fill:#fff3cd,stroke:#e0a800
+    style X fill:#f8d7da,stroke:#dc3545
+    style V1 fill:#d1ecf1,stroke:#17a2b8

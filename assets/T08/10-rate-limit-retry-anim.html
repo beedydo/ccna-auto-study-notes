@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T08 rate limit retry animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .lanes { display:grid; grid-template-columns: 1.2fr 1.2fr 0.9fr; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:280px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.wd { border-color:#e0a800; } .lane.lr { border-color:#17a2b8; } .lane.rr { border-color:#7b4bc4; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .req, .res { font-family:Menlo,monospace; font-size:12.5px; line-height:1.55; border:2px solid; border-radius:7px; padding:7px 9px; }
+  .req { background:#fff3cd; border-color:#e0a800; }
+  .req.wait { background:#f0f0f0; border-color:#999; border-style:dashed; color:#555; }
+  .res.ok { background:#d4edda; border-color:#28a745; } .res.err { background:#fde8e8; border-color:#dc3545; }
+  .res b, .req b { font-size:14px; }
+  .bucket { display:flex; gap:10px; margin:6px 0 12px; }
+  .tok { width:46px; height:46px; border-radius:10px; border:2.5px solid #7b4bc4; background:#e8dcf7; display:flex; align-items:center; justify-content:center; font-weight:800; }
+  .tok.used { background:#fff; border-style:dashed; opacity:.35; }
+  .clock { font-family:Menlo,monospace; font-size:13px; background:var(--code); border-radius:6px; padding:4px 8px; display:inline-block; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T08 · <span class="pill">429 → Retry-After → retry</span> one rate-limit window</h1>
+  <div class="sub">Same calls as section 2 of <code>labs/T08/consume_api.py</code>. Limit: 3 requests per 2-second window, per token.</div>
+  <div class="lanes">
+    <div class="lane wd" id="wd"><h3>📤 Client sends</h3><div class="where">consume_api.py · Client.call()</div><div id="wd-f"></div></div>
+    <div class="lane lr" id="lr"><h3>📥 Server replies</h3><div class="where">status line · rate-limit headers</div><div id="lr-f"></div></div>
+    <div class="lane rr" id="rr"><h3>🪣 Quota left</h3><div class="where">this window, this token</div><div id="rr-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const bucket = (left, clock) => `<div class="bucket">${[0,1,2].map(i => `<div class="tok ${i < left ? "" : "used"}">${i < left ? "✓" : ""}</div>`).join("")}</div>
+  <div style="font-size:13px;margin-bottom:6px"><b>${left}</b> of 3 left</div><span class="clock">${clock}</span>`;
+const req = (l, c="") => `<div class="req ${c}">${l.join("<br>")}</div>`;
+const res = (c, l) => `<div class="res ${c}">${l.join("<br>")}</div>`;
+const frames = [
+  { active:"rr", wd:req(["<b>GET</b> /devices/Q2SW-0001/status", "Authorization: Bearer at-0001"]),
+    lr:res("ok", ["<b>200 OK</b>", "X-RateLimit-Limit: 3", "X-RateLimit-Remaining: 2", "X-RateLimit-Reset: 2"]),
+    rr:bucket(2, "t = 0.0 s · window opens"), cmd:{at:0, t:"GET #1"},
+    txt:"Call 1 succeeds. The server says how much quota is left in <code>X-RateLimit-Remaining</code>." },
+  { active:"rr", wd:req(["<b>GET</b> /devices/Q2SW-0002/status", "<b>GET</b> /devices/Q2SW-0003/status"]),
+    lr:res("ok", ["<b>200 OK</b> · Remaining: 1", "<b>200 OK</b> · Remaining: <b>0</b>"]),
+    rr:bucket(0, "t ≈ 0.01 s"), cmd:{at:0, t:"GET #2, #3"},
+    txt:"Calls 2 and 3 use up the window. <code>Remaining: 0</code> is the warning: the <b>next</b> call will be refused." },
+  { active:"lr", wd:req(["<b>GET</b> /devices/Q2SW-0004/status"]),
+    lr:res("err", ["<b>429 Too Many Requests</b>", "Retry-After: 2", "X-RateLimit-Remaining: 0", "", '{"error": "rate limit: 3 requests per 2 s"}']),
+    rr:bucket(0, "t ≈ 0.01 s"), cmd:{at:1, t:"429", back:true},
+    txt:"Call 4 → <code>429</code>. Nothing is broken: the request was fine, just <b>too soon</b>. <code>Retry-After: 2</code> says when to come back." },
+  { active:"wd", wd:req(["time.sleep(2)", "", "(no requests sent)", "retrying now would just get", "another 429 and waste quota"], "wait"),
+    lr:"", rr:bucket(0, "t = 0.0 → 2.0 s"), cmd:{at:0, t:"sleep Retry-After"},
+    txt:"The client <b>waits exactly Retry-After seconds</b>. It doesn't hammer the API, and it doesn't give up." },
+  { active:"rr", wd:req(["<b>GET</b> /devices/Q2SW-0004/status", "(the same call, unchanged)"]),
+    lr:res("ok", ["<b>200 OK</b>", "X-RateLimit-Remaining: 2"]),
+    rr:bucket(2, "t ≈ 2.0 s · new window"), cmd:{at:0, t:"retry GET #4"},
+    txt:"New window, fresh quota. The <b>same request</b> now returns <code>200</code>, so device 4 isn't lost." },
+  { active:"rr", wd:req(["<b>GET</b> /devices/Q2SW-0005/status", "<b>GET</b> /devices/Q2SW-0006/status"]),
+    lr:res("ok", ["<b>200 OK</b> · Remaining: 1", "<b>200 OK</b> · Remaining: 0"]),
+    rr:bucket(0, "t ≈ 2.0 s"), cmd:{at:0, t:"GET #5, #6"},
+    txt:"All 6 devices read, one 2-second pause. A 429 is a <b>pause signal</b>, not a failure: wait, retry, carry on." },
+];
+const pos = [255, 600];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["wd","lr","rr"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

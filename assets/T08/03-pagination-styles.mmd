@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph CUR["Cursor + Link header (Meraki)"]
+        direction TB
+        L1["GET /clients?perPage=10"] --> L2["GET …&startingAfter=c010"] --> L3["GET …&startingAfter=c020"]
+        L3 --> L4["stop: no rel=next in Link"]
+    end
+    subgraph PG["Page number"]
+        direction TB
+        P1["GET /events?page=1&per_page=4"] --> P2["GET /events?page=2&per_page=4"] --> P3["GET /events?page=3&per_page=4"]
+        P3 --> P4["stop: page ≥ total_pages (3)"]
+    end
+    subgraph OFF["Offset / limit"]
+        direction TB
+        O1["GET /devices?offset=0&limit=5"] --> O2["GET /devices?offset=5&limit=5"] --> O3["GET /devices?offset=10&limit=5"]
+        O3 --> O4["stop: offset ≥ total (12)"]
+    end
+    style O4 fill:#d4edda,stroke:#28a745
+    style P4 fill:#d4edda,stroke:#28a745
+    style L4 fill:#d1ecf1,stroke:#17a2b8

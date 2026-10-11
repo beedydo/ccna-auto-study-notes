@@ -1,0 +1,20 @@
+sequenceDiagram
+    participant C as consume_api.py
+    participant S as mock_api.py<br/>limit 3 req / 2 s
+    Note over C,S: window opens
+    C->>S: GET /devices/Q2SW-0001/status
+    S-->>C: 200 OK · X-RateLimit-Remaining: 2
+    C->>S: GET /devices/Q2SW-0002/status
+    S-->>C: 200 OK · X-RateLimit-Remaining: 1
+    C->>S: GET /devices/Q2SW-0003/status
+    S-->>C: 200 OK · X-RateLimit-Remaining: 0
+    C->>S: GET /devices/Q2SW-0004/status
+    rect rgb(253, 232, 232)
+    S-->>C: 429 Too Many Requests · Retry-After: 2
+    end
+    Note over C,S: client runs time.sleep(2), exactly what Retry-After said
+    Note over C,S: new window
+    rect rgb(212, 237, 218)
+    C->>S: GET /devices/Q2SW-0004/status (same call again)
+    S-->>C: 200 OK · X-RateLimit-Remaining: 2
+    end

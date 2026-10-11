@@ -1,0 +1,22 @@
+sequenceDiagram
+    participant C as Client (requests)
+    participant G as Gateway / proxy
+    participant S as Backend
+    Note over C,S: A. Client timeout: the client gives up
+    C->>G: GET /reports/slow (timeout=(3.05, 1))
+    G->>S: forward
+    Note over C,G: 1 s, no bytes → ReadTimeout<br/>(an exception, not a status code)
+    Note over C,S: B. Gateway timeout: the gateway gives up
+    C->>G: GET /reports/gateway
+    G->>S: forward
+    Note over G,S: upstream silent for 30 s
+    G-->>C: 504 Gateway Timeout
+    Note over C,S: C. Long job done asynchronously: nobody waits
+    C->>S: POST /reports
+    S-->>C: 202 Accepted · Location: /api/v1/jobs/1
+    loop poll until complete
+        C->>S: GET /jobs/1
+        S-->>C: 200 {"status": "running"} · Retry-After: 1
+    end
+    C->>S: GET /jobs/1
+    S-->>C: 200 {"status": "complete"}

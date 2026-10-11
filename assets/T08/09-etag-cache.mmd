@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant C as Client<br/>(keeps a cache)
+    participant S as API
+    C->>S: GET /devices/Q2SW-0001
+    S-->>C: 200 OK · ETag: "Q2SW-0001-r1" · body (store it)
+    Note over C,S: later: same resource again
+    C->>S: GET /devices/Q2SW-0001 · If-None-Match: "Q2SW-0001-r1"
+    alt unchanged
+        S-->>C: 304 Not Modified · no body → reuse cached copy
+    else changed
+        S-->>C: 200 OK · new ETag · new body
+    end

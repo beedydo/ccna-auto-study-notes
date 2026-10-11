@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant C as Client
+    participant A as /auth/token
+    participant S as /devices
+    C->>A: POST (Basic admin:…) 
+    A-->>C: 200 access_token at-0002 · expires_in 1 · refresh_token
+    Note over C,A: … 1.5 s later, mid-script …
+    C->>S: GET /devices · Bearer at-0002
+    rect rgb(253, 232, 232)
+    S-->>C: 401 · WWW-Authenticate: Bearer error="invalid_token", "The access token expired"
+    end
+    C->>A: POST grant_type=refresh_token&refresh_token=…
+    A-->>C: 200 access_token at-0003 · expires_in 300
+    rect rgb(212, 237, 218)
+    C->>S: GET /devices · Bearer at-0003 (retry once)
+    S-->>C: 200 OK
+    end

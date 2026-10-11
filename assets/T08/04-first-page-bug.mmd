@@ -1,0 +1,13 @@
+flowchart TB
+    subgraph FIX["✅ all_by_offset() / all_by_link_header()"]
+        direction TB
+        F1["loop: GET page"] --> F2{"more pages?<br/>total / total_pages / rel=next"}
+        F2 -- "yes" --> F1
+        F2 -- "no" --> F3["12 of 12 devices"]
+    end
+    subgraph BUG["❌ first_page_only()"]
+        direction TB
+        B1["one GET /devices"] --> B2["5 of 12 devices"] --> B3["report says 7 devices 'missing'"]
+    end
+    style B3 fill:#f8d7da,stroke:#dc3545
+    style F3 fill:#d4edda,stroke:#28a745

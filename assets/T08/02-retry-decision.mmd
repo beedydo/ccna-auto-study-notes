@@ -1,0 +1,19 @@
+flowchart TD
+    R["Response code"] --> Q{"Which code?"}
+    Q -- "2xx / 3xx" --> OK["✅ Use it"]
+    Q -- "429" --> RA{"Retry-After<br/>header?"}
+    RA -- "yes" --> W1["Sleep exactly Retry-After s<br/>then retry the same call"]
+    RA -- "no" --> BO["Exponential backoff<br/>1 s → 2 s → 4 s → 8 s (cap)"]
+    Q -- "502 / 503 / 504" --> RA
+    Q -- "401 expired" --> RF["Refresh / re-login once<br/>then retry"]
+    Q -- "other 4xx<br/>400 403 404 413" --> FIX["❌ Don't retry:<br/>fix the request"]
+    W1 --> MAX{"Retries left?"}
+    BO --> MAX
+    MAX -- "yes" --> R
+    MAX -- "no" --> GIVE["Give up, raise / log"]
+    style OK fill:#d4edda,stroke:#28a745
+    style W1 fill:#d1ecf1,stroke:#17a2b8
+    style BO fill:#d1ecf1,stroke:#17a2b8
+    style RF fill:#fff3cd,stroke:#e0a800
+    style FIX fill:#f8d7da,stroke:#dc3545
+    style GIVE fill:#f8d7da,stroke:#dc3545

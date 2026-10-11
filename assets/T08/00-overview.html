@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T08 overview: API consumption constraints</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  th { background: var(--ink); color: #fff; font-size: 13.5px; text-align: left; padding: 8px 12px; letter-spacing: .3px; }
+  td { border: 1.5px solid var(--line); vertical-align: top; padding: 10px 12px; font-size: 13.4px; line-height: 1.42; }
+  td.label { text-align: center; padding: 12px 6px; }
+  td.label .icon { font-size: 34px; line-height: 1; display: block; margin-bottom: 6px; }
+  td.label .name { font-weight: 800; font-size: 15px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .c { display: block; margin-top: 4px; }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+  .sig { display: inline-block; font-family: Menlo, Consolas, monospace; font-weight: 700; font-size: 13px; padding: 3px 8px; border-radius: 6px; border: 2px solid; margin: 0 4px 4px 0; }
+  .s4 { background: #fff6dc; border-color: #e0a800; } .s5 { background: #fde8e8; border-color: #dc3545; }
+  .s3 { background: #e3f1f8; border-color: #17a2b8; } .s2 { background: #e3f6ee; border-color: #28a745; }
+  td.fix { background: #f3f9ff; }
+  td.trap { background: var(--trap); }
+  td.trap b { color: var(--trap-ink); }
+  .mini { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; margin-top: 6px; font-size: 11.5px; }
+  .mini span { border: 1.5px solid var(--line); border-radius: 5px; padding: 1px 5px; background: #fff; font-family: Menlo, monospace; }
+  .mini span.r { background: #fde8e8; border-color: #dc3545; } .mini span.g { background: #e3f6ee; border-color: #28a745; }
+  .mini span.b { background: #e3f1f8; border-color: #17a2b8; }
+  .strip { margin-top: 12px; border: 2.5px solid var(--line); border-radius: 10px; background: #fff; display: grid; grid-template-columns: 140px minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); }
+  .strip > div { padding: 10px 12px; font-size: 13.2px; line-height: 1.42; border-left: 1.5px solid var(--line); }
+  .strip > div:first-child { border-left: none; text-align: center; font-weight: 800; }
+  .strip .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: #f3f9ff; border: 1px solid #17a2b8; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T08 · <span class="pill">API Consumption Limits</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.3</b><br>Every T08 concept on one page<br>Code from <code>labs/T08/</code></div>
+  </header>
+
+  <table>
+    <colgroup><col style="width:112px"><col style="width:300px"><col style="width:330px"><col></colgroup>
+    <tr><th>LIMIT</th><th>WHAT THE SERVER SENDS (the signal)</th><th>WHAT THE CLIENT DOES (the fix)</th><th>EXAM TRAP</th></tr>
+
+    <tr>
+      <td class="label"><span class="icon">🚦</span><div class="name">RATE<br>LIMIT</div><div class="ids">T08.01 · T08.02</div></td>
+      <td><span class="sig s4">429 Too Many Requests</span><br>
+        <span class="n">1</span>wait time <code>Retry-After: 2</code> (seconds or an HTTP date)
+        <span class="c"><span class="n">2</span><code>X-RateLimit-Limit</code> <code>-Remaining</code> <code>-Reset</code></span>
+        <div class="mini"><span class="g">200</span><span class="g">200</span><span class="g">200</span><span class="r">429</span>→<span>sleep 2</span>→<span class="g">200</span></div></td>
+      <td class="fix"><span class="n">3</span>sleep <b>Retry-After</b>, then retry the same call<span class="c"><code>time.sleep(wait)</code></span>
+        <span class="c"><span class="n">4</span>no header → exponential backoff, capped<span class="c"><code>min(2 ** attempt, BACKOFF_CAP)</code></span></span>
+        <span class="c"><span class="n">5</span>make fewer calls: cache · batch · webhooks not polling · spread over time</span></td>
+      <td class="trap"><b>Trap:</b> 429 ≠ broken request. Don't fix the URL or re-auth: <b>wait and retry</b>. Retrying instantly in a tight loop makes it worse.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📄</span><div class="name">PAGI-<br>NATION</div><div class="ids">T08.03</div></td>
+      <td><span class="sig s2">200 OK</span> but only <b>one page</b><br>
+        <span class="n">1</span>body: <code>"total": 12</code> or <code>"total_pages": 3</code>
+        <span class="c"><span class="n">2</span>header: <code>Link: &lt;…&amp;startingAfter=c010&gt;;</code><span class="c"><code>rel="next"</code></span></span></td>
+      <td class="fix"><span class="n">3</span>offset/limit<span class="c"><code>?offset=5&amp;limit=5</code></span>
+        <span class="c"><span class="n">4</span>page number <code>?page=2&amp;per_page=4</code></span>
+        <span class="c"><span class="n">5</span>cursor: follow <code>rel="next"</code> until it's gone<span class="c"><code>r.links.get("next", {})</code><code>.get("url")</code></span></span></td>
+      <td class="trap"><b>Trap:</b> "records missing", no error → script read <b>only page 1</b> (5 of 12). The fix is a loop, not a bigger timeout.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📦</span><div class="name">PAYLOAD</div><div class="ids">T08.04</div></td>
+      <td><span class="sig s4">413 Content Too Large</span> body over the byte cap<br>
+        <span class="n">1</span>or <span class="sig s4">400</span> too many items in one call<span class="c"><code>"15 serials; max 10 per request"</code></span></td>
+      <td class="fix"><span class="n">2</span>split into smaller requests<span class="c"><code>for batch in chunks(serials, 10):</code></span>
+        <div class="mini"><span class="r">40 → 413</span>→<span class="b">chunks</span>→<span class="g">10</span><span class="g">10</span><span class="g">10</span><span class="g">10</span></div></td>
+      <td class="trap"><b>Trap:</b> 413 = <b>request</b> body too big (you fix it). Not 414 (URI too long) and not a server fault.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">⏱️</span><div class="name">TIME-<br>OUTS</div><div class="ids">T08.05</div></td>
+      <td><span class="n">1</span>client gave up → <b>exception</b>, no status code<span class="c"><code>requests.exceptions.ReadTimeout</code></span>
+        <span class="c"><span class="n">2</span><span class="sig s5">504 Gateway Timeout</span> a proxy gave up on upstream</span>
+        <span class="c"><span class="n">3</span><span class="sig s2">202 Accepted</span> + <code>Location: /api/v1/jobs/1</code></span></td>
+      <td class="fix"><span class="n">4</span>always set a timeout<span class="c"><code>timeout=(3.05, 5)</code> = (connect, read)</span>
+        <span class="c"><span class="n">5</span>long job → poll the <code>Location</code> URI until <code>"complete"</code></span></td>
+      <td class="trap"><b>Trap:</b> <code>requests</code> has <b>no default timeout</b>: without <code>timeout=</code> it can hang forever. 202 = queued, not done.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔑</span><div class="name">AUTH<br>LIMITS</div><div class="ids">T08.06</div></td>
+      <td><span class="n">1</span>token has a lifetime<span class="c"><code>"expires_in": 300</code></span>
+        <span class="c"><span class="n">2</span><span class="sig s4">401</span> mid-script, after earlier calls worked</span>
+        <span class="c"><code>error_description=</code><span class="c"><code>"The access token expired"</code></span></span></td>
+      <td class="fix"><span class="n">3</span>refresh (or log in again) <b>once</b>, then retry<span class="c"><code>grant_type=refresh_token</code></span>
+        <div class="mini"><span class="g">200</span>…<span class="r">401 expired</span>→<span class="b">refresh</span>→<span class="g">200</span></div></td>
+      <td class="trap"><b>Trap:</b> 401 after it <b>was</b> working = expired token, not a wrong password. 403 = role problem, a new token won't help.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🏷️</span><div class="name">VERSION-<br>ING</div><div class="ids">T08.07</div></td>
+      <td><span class="n">1</span>version in the URL <code>/api/v1/</code> or in a header
+        <span class="c"><span class="n">2</span>old version still answers, with warnings</span>
+        <span class="c"><code>Deprecation: @1767225599</code></span>
+        <span class="c"><code>Sunset: Thu, 31 Dec 2026 23:59:59 GMT</code></span></td>
+      <td class="fix"><span class="n">3</span>move to the successor before the Sunset date<span class="c"><code>Link: &lt;/api/v1/devices&gt;;</code><span class="c"><code>rel="successor-version"</code></span></span>
+        <span class="c"><span class="n">4</span>update field names too: v0 <code>name</code> → v1 <code>hostname</code></span></td>
+      <td class="trap"><b>Trap:</b> deprecated ≠ removed. Deprecated still works; after Sunset → <code>404</code> / <code>410</code>. Script broke after an upgrade → check version + fields.</td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">💾</span><div class="name">CACHING</div><div class="ids">T08.08</div></td>
+      <td><span class="n">1</span>first GET returns a version tag<span class="c"><code>ETag: "Q2SW-0001-r1"</code></span>
+        <span class="c"><span class="n">2</span><span class="sig s3">304 Not Modified</span> empty body</span></td>
+      <td class="fix"><span class="n">3</span>send the tag back on the next GET<span class="c"><code>If-None-Match: "Q2SW-0001-r1"</code></span>
+        <span class="c"><span class="n">4</span>304 → reuse your cached copy; saves bandwidth (and on some APIs quota)</span></td>
+      <td class="trap"><b>Trap:</b> <code>ETag</code> comes <b>from</b> the server; <code>If-None-Match</code> goes <b>to</b> it. 304 only if you asked conditionally.</td>
+    </tr>
+  </table>
+
+  <div class="strip">
+    <div>🎯 EXAM<br>ANGLE<div class="ids">T08.09</div></div>
+    <div><b>"Script gets 429"</b> → cause: too many calls per window. Fix: honour <code>Retry-After</code>, back off, cache, batch.</div>
+    <div><b>"Results incomplete, no error"</b> → cause: only page 1 read. Fix: loop on <code>total</code> / <code>rel="next"</code>.</div>
+    <div><b>Headers to know:</b> <code>Retry-After</code> (wait) · <code>Link</code> (next page) · <code>ETag</code> (version tag)</div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = signal / fix, from the mock API session</span>
+    <span class="k k4">blue column = what your code does</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T08/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

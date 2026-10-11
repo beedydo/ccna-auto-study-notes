@@ -1,0 +1,16 @@
+flowchart TD
+    A["40 serials in one POST /devices/claim<br/>(533-byte body)"] --> E1["413 Content Too Large<br/>limit 512 bytes"]
+    A2["15 serials (fits in 512 bytes)"] --> E2["400 Bad Request<br/>max 10 per request"]
+    E1 --> S["chunks(serials, 10)"]
+    E2 --> S
+    S --> B1["POST 10 → 200"]
+    S --> B2["POST 10 → 200"]
+    S --> B3["POST 10 → 200"]
+    S --> B4["POST 10 → 200"]
+    style E1 fill:#f8d7da,stroke:#dc3545
+    style E2 fill:#f8d7da,stroke:#dc3545
+    style S fill:#d1ecf1,stroke:#17a2b8
+    style B1 fill:#d4edda,stroke:#28a745
+    style B2 fill:#d4edda,stroke:#28a745
+    style B3 fill:#d4edda,stroke:#28a745
+    style B4 fill:#d4edda,stroke:#28a745
