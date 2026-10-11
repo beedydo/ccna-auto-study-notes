@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T36 packet walk animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; --blue:#2563eb; --blue-s:#dbeafe;
+          --green:#2fb380; --green-s:#e3f6ee; --red:#b42318; --red-s:#fde8e8; --yel:#e0a800; --yel-s:#fff3cd; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:495px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:var(--green); color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:150px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-family:Menlo,monospace; font-size:11.5px; color:var(--muted); line-height:1.45; }
+  .lane.active { border-color:var(--blue); box-shadow:0 0 0 5px rgba(37,99,235,.28); }
+  .note { margin-top:8px; font-size:12.5px; background:var(--yel-s); border:1.5px solid var(--yel); border-radius:6px; padding:4px 6px; min-height:22px; }
+  .note:empty { visibility:hidden; }
+  .arrowrow { height:52px; position:relative; margin-top:8px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; } .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .hdr { display:grid; grid-template-columns:150px repeat(2, minmax(0,1fr)) 90px; border:2.5px solid var(--line); border-radius:10px; background:#fff; overflow:hidden; }
+  .hdr div { padding:7px 10px; font-family:Menlo,monospace; font-size:13.5px; border-left:1.5px solid #ddd; }
+  .hdr div:first-child { border-left:none; font-family:-apple-system,Arial,sans-serif; font-weight:800; }
+  .hdr .h { background:#f0f0f0; font-family:-apple-system,Arial,sans-serif; font-size:12px; color:var(--muted); font-weight:700; }
+  .hdr .chg { background:var(--yel-s); } .hdr .keep { background:var(--green-s); } .hdr .off { color:#bbb; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; } .dots i.on { background:var(--green); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T36 · <span class="pill">One packet, three hops</span> pc1 → server</h1>
+  <div class="sub">Lanes stay fixed; watch the header table. Yellow = rewritten at this hop, green = unchanged end to end.</div>
+  <div class="lanes">
+    <div class="lane" id="L0"><h3>💻 pc1</h3><div class="where">10.1.10.50/24<br>gw 10.1.10.1<br>MAC aaaa.aaaa.0050</div><div class="note" id="N0"></div></div>
+    <div class="lane" id="L1"><h3>🔀 R1</h3><div class="where">Gi0/1 10.1.10.1 bbbb.bbbb.0001<br>Gi0/2 10.1.20.1 bbbb.bbbb.0002</div><div class="note" id="N1"></div></div>
+    <div class="lane" id="L2"><h3>🔀 R2</h3><div class="where">Gi0/0 10.1.20.3 cccc.cccc.0003<br>Gi0/1 10.20.30.1 cccc.cccc.0001</div><div class="note" id="N2"></div></div>
+    <div class="lane" id="L3"><h3>🖥️ server</h3><div class="where">10.20.30.40/24<br>gw 10.20.30.1<br>MAC dddd.dddd.0040</div><div class="note" id="N3"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="hdr" id="hdr"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const H = (label, a, b, cls) => `<div class="${cls||""}">${label}</div><div class="${cls||""}">${a}</div><div class="${cls||""}">${b}</div>`;
+function table(r) {
+  return `<div class="h">field</div><div class="h">source</div><div class="h">destination</div><div class="h">TTL</div>` +
+    `<div>Ethernet MAC</div><div class="${r.m}">${r.sm}</div><div class="${r.m}">${r.dm}</div><div class="${r.t}" rowspan="2">${r.ttl}</div>` +
+    `<div>IP address</div><div class="${r.i}">${r.si}</div><div class="${r.i}">${r.di}</div><div class="${r.t}"></div>`;
+}
+const blank = {m:"off", sm:"-", dm:"-", i:"off", si:"-", di:"-", t:"off", ttl:"-"};
+const frames = [
+  { active:0, notes:["10.20.30.40 AND 255.255.255.0 = 10.20.30.0 ≠ 10.1.10.0 → off-subnet","","",""], row:{...blank, i:"keep", si:"10.1.10.50", di:"10.20.30.40"},
+    cmd:null, txt:"pc1 ANDs the destination with <b>its own</b> mask. Result ≠ its network, so the packet goes to the <b>default gateway</b>." },
+  { active:1, notes:["ARP cache: 10.1.10.1 = bbbb.bbbb.0001","replies: 10.1.10.1 is at bbbb.bbbb.0001","",""], row:{...blank, i:"keep", si:"10.1.10.50", di:"10.20.30.40"},
+    cmd:{x:150, t:"ARP who-has 10.1.10.1 (ffff.ffff.ffff)"}, txt:"pc1 ARPs for the <b>gateway</b> 10.1.10.1, <b>not</b> for 10.20.30.40. Remote IPs are never ARPed." },
+  { active:1, notes:["","","",""], row:{m:"chg", sm:"aaaa.aaaa.0050", dm:"bbbb.bbbb.0001", i:"keep", si:"10.1.10.50", di:"10.20.30.40", t:"chg", ttl:"64"},
+    cmd:{x:190, t:"frame → R1 MAC"}, txt:"Hop 1: dst <b>MAC</b> = R1, dst <b>IP</b> = server. The gateway's IP is <b>not</b> written into the packet." },
+  { active:2, notes:["","LPM: /0 /16 /24 match → 10.20.30.0/24 via 10.1.20.3","",""], row:{m:"chg", sm:"bbbb.bbbb.0002", dm:"cccc.cccc.0003", i:"keep", si:"10.1.10.50", di:"10.20.30.40", t:"chg", ttl:"63"},
+    cmd:{x:440, t:"R1 Gi0/2 → R2"}, txt:"Hop 2: R1 does a <b>longest prefix match</b>, picks the /24, builds a <b>new frame</b> and decrements TTL." },
+  { active:3, notes:["","","C 10.20.30.0/24 is connected → ARP for 10.20.30.40",""], row:{m:"chg", sm:"cccc.cccc.0001", dm:"dddd.dddd.0040", i:"keep", si:"10.1.10.50", di:"10.20.30.40", t:"chg", ttl:"62"},
+    cmd:{x:700, t:"R2 Gi0/1 → server"}, txt:"Hop 3: the destination is on R2's <b>connected</b> subnet, so R2 ARPs for the server itself and delivers." },
+  { active:3, notes:["","","","reply: dst 10.1.10.50 is off-subnet → my gw 10.20.30.1"], row:{m:"chg", sm:"changed every hop", dm:"changed every hop", i:"keep", si:"10.1.10.50", di:"10.20.30.40", t:"chg", ttl:"64 → 62"},
+    cmd:null, txt:"Summary: <b>MACs change at every hop</b>, <b>IPs stay end to end</b> (no NAT). The reply uses the server's own gateway." },
+];
+function show(i) {
+  const f = frames[i];
+  for (let k = 0; k < 4; k++) {
+    document.getElementById("L"+k).classList.toggle("active", f.active === k);
+    document.getElementById("N"+k).textContent = f.notes[k];
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) { const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t; d.style.left = f.cmd.x + "px"; a.appendChild(d); }
+  document.getElementById("hdr").innerHTML = table(f.row);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

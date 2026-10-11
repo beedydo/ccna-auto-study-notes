@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph CF["config true (default) · tree shows rw"]
+        direction TB
+        C1["leaf description<br/>leaf enabled<br/>list address"]
+    end
+    subgraph SF["config false · tree shows ro"]
+        direction TB
+        S1["leaf oper-status<br/>container statistics<br/>in-octets, in-errors"]
+    end
+    C1 -->|"edit-config / PUT / PATCH"| RUN[("running config<br/>writable")]
+    S1 -->|"the device produces it"| OPR[("operational state<br/>read-only")]
+    RUN -->|"get-config / GET ?content=config"| R1["read back"]
+    OPR -->|"get / GET ?content=nonconfig"| R2["read only"]
+    W["PATCH oper-status = up"] -->|"error: not writable"| OPR
+    classDef rw fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef ro fill:#fef9c3,stroke:#a16207,color:#111
+    classDef bad fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#111
+    class C1,RUN rw
+    class S1,OPR ro
+    class W bad

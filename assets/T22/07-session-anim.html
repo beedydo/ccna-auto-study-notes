@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T22 SD-WAN Manager session animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --ok:#d4edda; --ok-b:#28a745; --bad:#fde8e8; --bad-b:#dc3545; --blue:#cfe2ff; --blue-b:#0d6efd;
+          --warn:#fff3cd; --warn-b:#e0a800; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns: 300px 1fr 300px; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:290px; padding:10px 12px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,Consolas,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.45; word-break:break-word; }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ok { background:var(--ok); border-color:var(--ok-b); } .bad { background:var(--bad); border-color:var(--bad-b); }
+  .blue { background:var(--blue); border-color:var(--blue-b); } .warn { background:var(--warn); border-color:var(--warn-b); }
+  .ghost { opacity:.3; border-style:dashed; background:#fff; border-color:#999; }
+  .wire { display:flex; flex-direction:column; justify-content:center; gap:14px; height:290px; }
+  .cmd { font-family:Menlo,Consolas,monospace; font-size:13.5px; font-weight:700; background:var(--ink); color:#fff;
+         padding:8px 12px; border-radius:8px; line-height:1.5; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .resp { font-family:Menlo,Consolas,monospace; font-size:13.5px; font-weight:700; border:2px solid; border-radius:8px;
+          padding:8px 12px; line-height:1.5; text-align:right; }
+  .resp::before { content:"⬅ "; color:#b8860b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T22 · <span class="pill">SD-WAN Manager session</span> login to logout</h1>
+  <div class="sub">One <code>requests.Session()</code> against the DevNet sandbox, as in <code>labs/T22/sdwan_inventory.py</code>. Each frame = one HTTP call.</div>
+  <div class="lanes">
+    <div class="lane" id="jar"><h3>🍪 requests.Session()</h3><div class="where">what the script sends on every call</div><div id="jar-f"></div></div>
+    <div class="wire" id="wire"></div>
+    <div class="lane" id="mgr"><h3>🖥️ SD-WAN Manager</h3><div class="where">sandbox-sdwan-2.cisco.com:443</div><div id="mgr-f"></div></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (t, s, cls) => `<div class="box ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const noCookie = B("Cookie: (none)", "", "ghost"), noTok = B("X-XSRF-TOKEN: (none)", "", "ghost");
+const cookie = B("Cookie: JSESSIONID=K4cf…", "set by login", "ok"), tok = B("X-XSRF-TOKEN: 1430…(100 chars)", "from /client/token", "ok");
+const deadCookie = B("Cookie: JSESSIONID=K4cf…", "server has invalidated it", "bad");
+const sess = B("session K4cf… ACTIVE", "24 h max · 30 min idle", "blue");
+const frames = [
+  { active:"mgr", jar:noCookie + noTok, mgr:sess,
+    cmd:"POST /j_security_check<br>j_username=devnetuser&amp;j_password=…", resp:"200 · body EMPTY<br>Set-Cookie: JSESSIONID", rc:"ok",
+    txt:"Form POST to <code>/j_security_check</code> (not under /dataservice). Success = <b>empty body + cookie</b>. No token yet." },
+  { active:"jar", jar:cookie + noTok, mgr:sess,
+    cmd:"GET /dataservice/client/token", resp:"200 · body = the token<br>(plain text, not JSON)", rc:"ok",
+    txt:"Second call: the token comes from <code>/dataservice/client/token</code>, <b>not from the login reply</b>." },
+  { active:"jar", jar:cookie + tok, mgr:sess,
+    cmd:"GET /dataservice/device", resp:"200 · JSON<br>{\"header\":…, \"data\": [7 devices]}", rc:"ok",
+    txt:"<code>session.headers[\"X-XSRF-TOKEN\"] = token</code>. GETs work with the cookie; read <code>resp.json()[\"data\"]</code>." },
+  { active:"mgr", jar:cookie + B("X-XSRF-TOKEN: None", "dropped for this call", "bad"), mgr:sess,
+    cmd:"POST /dataservice/alarms<br>(no X-XSRF-TOKEN)", resp:"403 Forbidden<br>SessionTokenFilter: Token … does not match", rc:"bad",
+    txt:"Cookie alone is <b>not enough for POST/PUT/DELETE</b>: the XSRF filter rejects it with <code>403</code>." },
+  { active:"mgr", jar:cookie + tok, mgr:sess,
+    cmd:"POST /dataservice/alarms<br>(cookie + X-XSRF-TOKEN)", resp:"200 · JSON<br>0 alarms in last 24 h", rc:"ok",
+    txt:"Same POST with the token header → <code>200</code>. Cookie = <b>who you are</b>, token = <b>this request is really from you</b>." },
+  { active:"mgr", jar:deadCookie + tok, mgr:B("session K4cf… INVALID", "freed 1 of 100 sessions", "bad"),
+    cmd:"POST /logout?nocache=1", resp:"302 Found<br>Location: /welcome.html", rc:"warn",
+    txt:"<code>POST /logout</code> ends the session on the server and frees a session slot. The script still holds the old cookie." },
+  { active:"jar", jar:deadCookie + tok, mgr:B("no session", "", "ghost"),
+    cmd:"GET /dataservice/device", resp:"200 · text/html<br>login page, NOT data", rc:"bad",
+    txt:"Dead session → <b>HTTP 200 with an HTML login page</b>, not 401. Check <code>Content-Type</code>, not just the code." },
+];
+function show(i) {
+  const f = frames[i];
+  document.getElementById("jar-f").innerHTML = f.jar;
+  document.getElementById("mgr-f").innerHTML = f.mgr;
+  for (const k of ["jar","mgr"]) document.getElementById(k).classList.toggle("active", f.active === k);
+  document.getElementById("wire").innerHTML = `<div class="cmd">${f.cmd}</div><div class="resp ${f.rc}">${f.resp}</div>`;
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

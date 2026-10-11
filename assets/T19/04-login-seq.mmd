@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant S as Script (requests.Session)
+    participant A as APIC
+    S->>A: POST /api/aaaLogin.json<br/>{"aaaUser": {"attributes": {"name": "admin", "pwd": "..."}}}
+    A-->>S: 200 · body: imdata[0].aaaLogin.attributes.token<br/>header: Set-Cookie: APIC-cookie=<token>
+    Note over S: Session stores APIC-cookie<br/>and sends it on every call
+    S->>A: GET /api/class/fabricNode.json<br/>Cookie: APIC-cookie=<token>
+    A-->>S: 200 · {"totalCount": "4", "imdata": [...]}
+    S->>A: GET /api/aaaRefresh.json (before refreshTimeoutSeconds = 600 s idle)
+    A-->>S: 200 · new token + new cookie
+    S->>A: POST /api/aaaLogout.json
+    A-->>S: 200 · session closed
+    Note over S,A: No cookie (or expired) → 403 "Need a valid webtoken cookie"<br/>Wrong password → 401 · bad JSON root → 400

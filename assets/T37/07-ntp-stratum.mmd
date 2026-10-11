@@ -1,0 +1,16 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart TB
+    s0["Stratum 0 · reference clock<br/>GPS / atomic (not on the network)"]
+    s1["Stratum 1 · primary server<br/>wired to the clock · refid GPS / PPS"]
+    s2["Stratum 2 · syncs from stratum 1 over UDP 123<br/>e.g. pool.ntp.org server · refid = upstream IP"]
+    s3["Stratum 3 · core router · ntp server 10.10.20.1"]
+    s4["Stratum 4 · access switches, servers"]
+    s16["Stratum 16 = unsynchronised<br/>(lower number = closer to the source = better)"]
+    s0 --> s1 --> s2 --> s3 --> s4
+    s4 -.->|"lost all upstreams"| s16
+    style s0 fill:#d6e4ff,stroke:#1f5bd6,stroke-width:2px
+    style s1 fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+    style s2 fill:#e3f6ee,stroke:#28a745
+    style s3 fill:#e3f6ee,stroke:#28a745
+    style s4 fill:#e3f6ee,stroke:#28a745
+    style s16 fill:#fde8e8,stroke:#dc3545,stroke-width:2px

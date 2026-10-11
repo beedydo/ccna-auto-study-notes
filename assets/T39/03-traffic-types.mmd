@@ -1,0 +1,19 @@
+flowchart TD
+  P["📥 Packet arrives on a port"] --> Q1{"Destined to the<br/>device's own IP?"}
+  Q1 -->|"No: transit"| Q2{"FIB hit and<br/>adjacency resolved?"}
+  Q2 -->|Yes| HW["DATA plane<br/>forwarded in hardware<br/>CPU never sees it"]
+  Q2 -->|"No: glean / ARP needed,<br/>TTL expiring, IP options"| PUNT["Punted to CPU<br/>exception path (slow)"]
+  Q1 -->|"Yes: receive"| Q3{"What is it?"}
+  Q3 -->|"OSPF hello, BGP, BPDU"| CPU1["CONTROL plane"]
+  Q3 -->|"SSH, SNMP, RESTCONF"| CPU2["MANAGEMENT plane"]
+  CPU1 -.-> COPP["CoPP rate-limits everything<br/>headed to the CPU"]
+  CPU2 -.-> COPP
+  PUNT -.-> COPP
+  classDef d fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+  classDef c fill:#fff6dc,stroke:#e0a800,stroke-width:2px
+  classDef m fill:#e3f1f8,stroke:#17a2b8,stroke-width:2px
+  classDef r fill:#fde8e8,stroke:#dc3545,stroke-width:2px
+  class HW d
+  class CPU1 c
+  class CPU2 m
+  class PUNT,COPP r

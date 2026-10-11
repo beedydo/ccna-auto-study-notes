@@ -1,0 +1,26 @@
+flowchart LR
+    IN["main()<br/>commands:<br/>set Gi1/0/2 down<br/>show table"] --> C["Controller<br/>handle(command)"]
+    C -- "set → set_status()" --> M[("InterfaceModel<br/>Model + Subject")]
+    C -- "show table → render()" --> V1["TableView"]
+    C -- "show json → render()" --> V2["JsonView"]
+    M -- "interfaces() copy" --> C
+    M == "notify(event) → update(event)" ==> O1["SyslogObserver<br/>syslog line"]
+    M == "notify(event) → update(event)" ==> O2["AlertObserver<br/>down only → webhook"]
+    subgraph MVC ["MVC split"]
+        C
+        M
+        V1
+        V2
+    end
+    subgraph OBS ["Observers (attach / detach at run time)"]
+        O1
+        O2
+    end
+    classDef ctl fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111
+    classDef mdl fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    classDef viw fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#111
+    classDef obs fill:#ede9fe,stroke:#6d28d9,stroke-width:2px,color:#111
+    class C ctl
+    class M mdl
+    class V1,V2 viw
+    class O1,O2 obs

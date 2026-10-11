@@ -1,0 +1,12 @@
+flowchart TD
+    Q{"What do you know<br/>about the client?"}
+    Q -->|"MAC only"| A["GET /organizations/{organizationId}/clients/search?mac=..."]
+    A --> A2["records[].network → which network<br/>+ ip, vlan, switchport / ssid"]
+    Q -->|"IP (or MAC) and the network"| B["GET /networks/{networkId}/clients?ip=10.10.10.21"]
+    B --> B2["recentDeviceSerial, recentDeviceName<br/>switchport or ssid, vlan"]
+    B2 --> E["GET /devices/{serial} → switch / AP name + model"]
+    Q -->|"the switch or AP"| F["GET /devices/{serial}/clients<br/>who is on this device"]
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    class A,B,F blue
+    class A2,B2,E green

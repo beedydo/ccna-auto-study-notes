@@ -1,0 +1,25 @@
+%%{init: {"flowchart": {"wrappingWidth": 300}}}%%
+flowchart LR
+  subgraph ACT["Change something"]
+    direction TB
+    C["<b>xCommand</b><br/>an ACTION, right now<br/>Dial  ·  Audio Volume Set<br/>Standby Deactivate"]
+    F["<b>xConfiguration</b><br/>a SETTING, persists<br/>across reboots<br/>Audio DefaultVolume: 50"]
+    C ~~~ F
+  end
+  subgraph READ["Learn something"]
+    direction TB
+    ST["<b>xStatus</b><br/>current STATE, read-only<br/>Audio Volume  ·  Standby State"]
+    E["<b>xEvent</b><br/>something HAPPENED<br/>CallDisconnect<br/>UserInterface Extensions ..."]
+    ST ~~~ E
+  end
+  FB["<b>xFeedback register</b><br/>/Status/... or /Event/...<br/>= subscribe to changes<br/>(per SSH session)<br/>macro: xapi.Status...on()<br/>xapi.Event...on()"]
+  ACT ~~~ READ
+  READ --> FB
+  classDef red fill:#fde8e8,stroke:#dc3545,color:#000
+  classDef yellow fill:#fff3cd,stroke:#e0a800,color:#000
+  classDef green fill:#d4edda,stroke:#28a745,color:#000
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,color:#000
+  class C red
+  class F yellow
+  class ST green
+  class E,FB blue

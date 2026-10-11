@@ -1,0 +1,19 @@
+sequenceDiagram
+    autonumber
+    participant S as restconf_client.py
+    participant R as IOS XE (HTTPS 443)
+    S->>R: GET /.well-known/host-meta
+    R-->>S: 200 · Link rel='restconf' href='/restconf'
+    S->>R: GET …/data/ietf-interfaces:interfaces (no auth)
+    R-->>S: 401 · access-denied · WWW-Authenticate: Basic
+    S->>R: GET …/interface=GigabitEthernet1 + Basic auth
+    R-->>S: 200 · {"ietf-interfaces:interface": {…}}
+    S->>R: POST …/interfaces  {Loopback100}
+    R-->>S: 201 Created · Location: …/interface=Loopback100
+    S->>R: PATCH …/interface=Loopback100  {description}
+    R-->>S: 204 No Content (merged, live in running-config)
+    S->>R: DELETE …/interface=Loopback101
+    R-->>S: 204 No Content
+    S->>R: POST /restconf/operations/cisco-ia:save-config
+    R-->>S: 200 · {"cisco-ia:output": {"result": …}}
+    Note over S,R: Stateless: auth on every call. No lock, no commit.

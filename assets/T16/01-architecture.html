@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T16 architecture: RESTCONF on IOS XE</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row { gap: 250px; }
+  .row > .client { flex: 0 0 250px; }
+  .row > .client > .zb { flex-direction: column; align-items: center; gap: 14px; padding: 30px 10px; }
+  .dev > .zb { justify-content: space-between; align-items: flex-start; padding: 30px 26px; flex-wrap: nowrap; gap: 90px; }
+  .dev .node { width: 170px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T16 · <span class="pill">RESTCONF</span> on IOS XE</h1>
+    <div class="meta"><b>200-901 blueprint 3.8, 5.10, 2.9 · RFC 8040</b><br>YANG data over HTTPS, JSON or XML<br>Lab mock: <code>labs/T16/mock_restconf.py</code> on <code>https://127.0.0.1:9443</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="zone client">
+        <div class="zh">Client</div>
+        <div class="zb">
+          <div class="node w" id="client" data-icon="script"><div class="nm">restconf_client.py</div><div class="sub">curl · <code>requests</code> · Postman</div><span class="tag">BASE = https://{HOST}/restconf</span></div>
+        </div>
+      </div>
+
+      <div class="zone ext dev">
+        <div class="zh">IOS XE device · Catalyst 8000V <small>enable: <code style="color:#1d1d1f">restconf</code> + <code style="color:#1d1d1f">ip http secure-server</code></small></div>
+        <div class="zb">
+          <div class="node hl" id="web" data-icon="server"><div class="nm">Web server (nginx)</div><div class="sub">HTTPS · TCP 443<br>Basic auth on every request<br>root <code>/restconf</code></div></div>
+          <div class="node" id="yang" data-icon="controller"><div class="nm">YANG layer</div><div class="sub">(confd / DMI)<br>maps the URI to a YANG node<br>validates the body</div></div>
+          <div class="node" id="ds" data-icon="db"><div class="nm">running-config</div><div class="sub">unified datastore<br>no candidate, no commit</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Find the root first:</b> <code>GET /.well-known/host-meta</code> → <code>&lt;Link rel='restconf' href='/restconf'/&gt;</code>. Data under <code>/restconf/data/</code>, RPCs under <code>/restconf/operations/</code>.</div>
+      <div class="note trap"><b>Trap:</b> RESTCONF has <b>no commit and no lock</b>. Each edit is live in running-config when the reply returns. The candidate → commit transaction is NETCONF.</div>
+      <div class="note"><b>Stateless:</b> no session to open or close. Every request carries its own credentials, method, URI and <code>Accept</code> / <code>Content-Type</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (HTTPS request and reply)</span>
+    <span><i class="sw mgmt"></i>on-box config path (YANG → running-config)</span>
+    <span style="margin-left:auto">Blue glow = the one box your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "client", b: "web", k: "api", s: "r-l", ao: -12, bo: -12, label: "① HTTPS request<br>method + URI + headers", ly: -34 },
+  { a: "web", b: "client", k: "api", s: "l-r", ao: 12, bo: 12, label: "② status code +<br>yang-data JSON / XML", ly: 34 },
+  { a: "web", b: "yang", k: "mgmt", s: "r-l", dir: "both" },
+  { a: "yang", b: "ds", k: "mgmt", s: "r-l", dir: "both" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

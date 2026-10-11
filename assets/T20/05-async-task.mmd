@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant C as Catalyst Center
+    participant D as sw1
+    S->>C: POST .../network-device-poller/cli/read-request<br/>{"commands": [...], "deviceUuids": [...]}
+    C-->>S: 202 {"response": {"taskId": "a6fb...", "url": "/api/v1/task/a6fb..."}}
+    C->>D: run "show version | include uptime" (SSH)
+    S->>C: GET /dna/intent/api/v1/task/a6fb...
+    C-->>S: 200 isError false, progress "CLI Runner request creation", no endTime
+    Note over S,C: no endTime yet = not finished: sleep, poll again
+    D-->>C: CLI output
+    S->>C: GET /dna/intent/api/v1/task/a6fb...
+    C-->>S: 200 isError false, endTime set, progress = fileId (JSON string)
+    S->>C: GET /dna/intent/api/v1/file/589c...
+    C-->>S: 200 [{"commandResponses": {"SUCCESS": {...}, ...}}]

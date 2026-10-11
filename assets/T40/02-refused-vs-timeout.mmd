@@ -1,0 +1,18 @@
+sequenceDiagram
+    participant A as App (nc / curl / requests)
+    participant F as Firewall / ACL
+    participant H as Host 10.1.1.10
+    Note over A,H: Case 1: host up, nothing listening on the port
+    A->>H: SYN to :8443
+    H-->>A: RST (port closed)
+    Note left of A: instant "Connection refused"<br/>curl (7) · ConnectionRefusedError
+    Note over A,H: Case 2: firewall silently drops
+    A->>F: SYN to :830
+    F--xA: dropped (no reply)
+    A->>F: SYN retransmit
+    F--xA: dropped
+    Note left of A: waits, then "timed out"<br/>curl (28) · ConnectTimeout
+    Note over A,H: Case 3: firewall rejects (sends RST / ICMP unreachable)
+    A->>F: SYN to :22
+    F-->>A: RST or ICMP admin-prohibited
+    Note left of A: fast failure, looks like case 1

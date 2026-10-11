@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T39 architecture: traditional vs SDN</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 70px; row-gap: 80px; margin-top: 72px; }
+  .outer { grid-row: 1 / 4; align-self: stretch; margin: -52px -16px -16px; }
+  .outer > .zh { background: transparent !important; color: var(--ink) !important; font-size: 16px; }
+  .cell { position: relative; }
+  .cell > .zb { justify-content: space-around; }
+  .empty { display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; }
+  .empty .note { max-width: 225px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 34px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T39 · <span class="pill">Traditional vs SDN</span> where the planes live</h1>
+    <div class="meta"><b>200-901 blueprint 6.5</b><br>SDN moves the control plane, not the data plane</div>
+  </header>
+
+  <div class="canvas">
+    <div class="grid">
+      <div class="zone dashed outer" style="grid-column:1"><div class="zh">Traditional · every box has all 3 planes</div></div>
+      <div class="zone dashed outer" style="grid-column:2"><div class="zh">SDN · control plane centralised in a controller</div></div>
+
+      <!-- row 1 -->
+      <div class="zone client cell" style="grid-column:1; grid-row:1">
+        <div class="zh">Admin</div>
+        <div class="zb"><div class="node w" id="admin" data-icon="laptop"><div class="nm">Engineer / script</div><div class="sub">configures each box one by one</div></div></div>
+      </div>
+      <div class="zone client cell" style="grid-column:2; grid-row:1">
+        <div class="zh">Apps / scripts</div>
+        <div class="zb"><div class="node w" id="app" data-icon="script"><div class="nm">Your app</div><div class="sub">talks to the controller only</div></div></div>
+      </div>
+
+      <!-- row 2 -->
+      <div class="empty" style="grid-column:1; grid-row:2">
+        <div class="note">No controller. Each router runs its <b>own</b> control plane (OSPF) and decides paths for itself.</div>
+      </div>
+      <div class="zone ctrl cell" id="ctlz" style="grid-column:2; grid-row:2">
+        <div class="zh">Controller <small>central control + management</small></div>
+        <div class="zb"><div class="node xw hl" id="ctl" data-icon="controller"><div class="nm">SDN controller</div><div class="sub">Catalyst Center (DNA Center) · APIC<br>SD-WAN Controller (vSmart)</div></div></div>
+      </div>
+
+      <!-- row 3 -->
+      <div class="zone fabric cell" id="rz" style="grid-column:1; grid-row:3">
+        <div class="zh">Routers <small>mgmt + control + data in every box</small></div>
+        <div class="zb">
+          <div class="node n" id="r1" data-icon="router"><div class="nm">R1</div><div class="sub">mgmt + control<br>+ data</div></div>
+          <div class="node n" id="r2" data-icon="router"><div class="nm">R2</div><div class="sub">mgmt + control<br>+ data</div></div>
+          <div class="node n" id="r3" data-icon="router"><div class="nm">R3</div><div class="sub">mgmt + control<br>+ data</div></div>
+        </div>
+      </div>
+      <div class="zone fabric cell" id="sz" style="grid-column:2; grid-row:3">
+        <div class="zh">Switches <small>keep the data plane · user packets go switch to switch</small></div>
+        <div class="zb">
+          <div class="node n" id="s1" data-icon="switch"><div class="nm">Switch 1</div><div class="sub">data plane</div></div>
+          <div class="node n" id="s2" data-icon="switch"><div class="nm">Switch 2</div><div class="sub">data plane</div></div>
+          <div class="node n" id="s3" data-icon="switch"><div class="nm">Switch 3</div><div class="sub">data plane</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note trap"><b>Trap:</b> user packets <b>never</b> flow through Catalyst Center, APIC or the SD-WAN Controller. SDN moves the control plane; devices keep the data plane.</div>
+      <div class="note"><b>Northbound vs southbound:</b> north = apps → controller (REST). South = controller → devices (OpenFlow, NETCONF, OpFlex, OMP). Don't swap them.</div>
+      <div class="note"><b>Not all "controllers" are equal:</b> ACI fabric switches still run IS-IS / COOP / MP-BGP locally; Catalyst Center devices keep both control and data planes.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>northbound API (app → controller)</span>
+    <span><i class="sw mgmt"></i>management: per-box CLI / SSH</span>
+    <span><i class="sw control"></i>control plane: OSPF, southbound programming</span>
+    <span><i class="sw data"></i>data plane: user packets</span>
+    <span style="margin-left:auto">Blue glow = where the decisions are made in SDN</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "admin", b: "rz", k: "mgmt", s: "b-t", label: "SSH / CLI to each box", t: 0.2 },
+  { a: "r1", b: "r2", k: "control", s: "r-l", ao: -8, bo: -8, dir: "both", label: "OSPF", t: 0.5, ly: -16 },
+  { a: "r2", b: "r3", k: "control", s: "r-l", ao: -8, bo: -8, dir: "both", label: "OSPF", t: 0.5, ly: -16 },
+  { a: "r1", b: "r2", k: "data", s: "r-l", ao: 10, bo: 10 },
+  { a: "r2", b: "r3", k: "data", s: "r-l", ao: 10, bo: 10 },
+  { a: "app", b: "ctl", k: "api", s: "b-t", dir: "both", label: "Northbound API · REST", t: 0.5 },
+  { a: "ctl", b: "sz", k: "control", s: "b-t", label: "Southbound: OpenFlow · NETCONF<br>OpFlex · OMP", t: 0.55 },
+  { a: "s1", b: "s2", k: "data", s: "r-l" },
+  { a: "s2", b: "s3", k: "data", s: "r-l" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

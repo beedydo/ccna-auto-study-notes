@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph PHY["PHYSICAL view: boxes, cables, ports"]
+        direction TB
+        p1["pc1"] -- "eth0 ↔ Gi1/0/5" --- a1["acc1"]
+        pr["printer1"] -- "eth0 ↔ Gi1/0/9" --- a1
+        a1 -- "Gi1/0/48 ↔ Gi1/0/1<br/>(trunk: VLAN 10,20,30)" --- d1["dist1"]
+        d1 -- "Gi1/0/48 ↔ Gi0/0/1" --- c1["core1"]
+    end
+    subgraph LOG["LOGICAL view: subnets, VLANs, gateways"]
+        direction TB
+        v10["VLAN 10 · 10.10.10.0/24<br/>pc1 .21 · pc2 .22"]
+        v20["VLAN 20 · 10.10.20.0/24<br/>printer1 .30"]
+        gw["dist1 SVIs = gateways<br/>Vlan10 10.10.10.1<br/>Vlan20 10.10.20.1"]
+        t1["transit 10.0.1.0/30<br/>dist1 .2 ↔ core1 .1"]
+        v10 --- gw
+        v20 --- gw
+        gw --- t1
+    end
+    PHY ~~~ LOG
+    style PHY fill:#f7f7f5,stroke:#555
+    style LOG fill:#f7f7f5,stroke:#555
+    style gw fill:#cfe2ff,stroke:#0d6efd,stroke-width:3px
+    style v10 fill:#e3f6ee,stroke:#2fb380
+    style v20 fill:#fff3cd,stroke:#e0a800
+    style a1 fill:#e3f1f8,stroke:#17a2b8

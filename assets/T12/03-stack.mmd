@@ -1,0 +1,20 @@
+flowchart TB
+    Y["DATA MODEL · YANG (RFC 7950)<br/>IETF · OpenConfig · Cisco native"]
+    Y --> NE["ENCODING<br/>XML"]
+    Y --> RE["ENCODING<br/>XML or JSON"]
+    Y --> GE["ENCODING<br/>protobuf or JSON"]
+    NE --> NP["PROTOCOL<br/>NETCONF (RFC 6241)"]
+    RE --> RP["PROTOCOL<br/>RESTCONF (RFC 8040)"]
+    GE --> GP["PROTOCOL<br/>gNMI (gRPC)"]
+    NP --> NT["TRANSPORT<br/>SSH, TCP 830"]
+    RP --> RT["TRANSPORT<br/>HTTPS, TCP 443"]
+    GP --> GT["TRANSPORT<br/>HTTP/2 + TLS"]
+    NT --> DEV["Device datastores<br/>config + operational state"]
+    RT --> DEV
+    GT --> DEV
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class Y blue
+    class NE,RE,GE,NP,RP,GP,NT,RT,GT grey
+    class DEV green

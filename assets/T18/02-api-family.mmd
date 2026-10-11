@@ -1,0 +1,31 @@
+flowchart TB
+    subgraph R1["Dashboard API: you pull (REST)"]
+        direction LR
+        S1["Your script"] -- "GET/POST/PUT/DELETE /api/v1/...<br/>+ API key" --> M1["Meraki cloud"]
+    end
+    subgraph R2["Scanning (Location) API: Meraki pushes"]
+        direction LR
+        M2["Meraki cloud"] -- "HTTP POST WiFi/BLE location JSON<br/>about every minute" --> S2["Your receiver"]
+    end
+    subgraph R3["Webhooks: Meraki pushes on an alert"]
+        direction LR
+        M3["Meraki cloud"] -- "HTTP POST alert JSON + shared secret" --> S3["Your HTTPS server"]
+    end
+    subgraph R4["MV Sense: camera analytics"]
+        direction LR
+        C4["MV camera"] -- "MQTT publish (real-time)" --> B4["Your MQTT broker"]
+        S4["Your script"] -- "REST analytics endpoints<br/>(Dashboard API)" --> M4["Meraki cloud"]
+    end
+    subgraph R5["Captive portal API (awareness)"]
+        direction LR
+        U5["Guest's browser"] -- "redirected by the MR to" --> P5["Your splash page"]
+    end
+    R1 ~~~ R2 ~~~ R3 ~~~ R4 ~~~ R5
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef yellow fill:#fff3cd,stroke:#e0a800,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class S1,S4 blue
+    class S2,S3 green
+    class B4 yellow
+    class M1,M2,M3,M4,C4,U5,P5 grey

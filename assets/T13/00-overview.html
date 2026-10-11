@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T13 overview: DevNet resources</title>
+<style>
+  :root {
+    --blue: #2f5bd3; --blue-soft: #e6edff;
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --yellow: #d4a106; --yellow-soft: #fff6d6;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--blue); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--blue); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card .top { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 2px solid var(--line); }
+  .card .icon { font-size: 30px; line-height: 1; }
+  .card .name { font-weight: 800; font-size: 18px; }
+  .card .ids { font-size: 11px; color: var(--muted); }
+  .card .verb { margin-left: auto; font-weight: 800; font-size: 13px; color: #fff; padding: 4px 12px; border-radius: 20px; letter-spacing: 0.5px; }
+  .c1 .top { background: #e6edff; } .c1 .verb { background: #2f5bd3; }
+  .c2 .top { background: #e3f6ee; } .c2 .verb { background: #1f8f63; }
+  .c3 .top { background: #f3e8ff; } .c3 .verb { background: #7a3fc4; }
+  .c4 .top { background: #fff1e0; } .c4 .verb { background: #c8650a; }
+  .c5 .top { background: #e2f5f8; } .c5 .verb { background: #127a8a; }
+  .c6 .top { background: #fde8ef; } .c6 .verb { background: #b2245a; }
+  .card .body { padding: 9px 12px 10px; font-size: 13px; line-height: 1.4; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .row { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 6px; }
+  .row .k { font-size: 10.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; padding-top: 2px; }
+  .mini { display: flex; align-items: center; gap: 4px; font-size: 11.5px; flex-wrap: wrap; }
+  .mini .b { border: 1.5px solid var(--line); border-radius: 5px; padding: 2px 6px; background: #fafafa; white-space: nowrap; }
+  .mini .b.g { background: var(--green-soft); border-color: var(--green); }
+  .mini .b.r { background: var(--trap); border-color: var(--trap-ink); }
+  .mini .b.bl { background: var(--blue-soft); border-color: var(--blue); }
+  .mini .b.y { background: var(--yellow-soft); border-color: var(--yellow); }
+  .mini .a { color: var(--muted); font-weight: 700; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.5px; margin-top: auto; }
+  .trap b { color: var(--trap-ink); }
+
+  .wide { margin-top: 14px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; display: grid; grid-template-columns: 300px minmax(0, 1fr); overflow: hidden; }
+  .wide .left { padding: 12px 14px; border-right: 2px solid var(--line); background: var(--yellow-soft); font-size: 13px; line-height: 1.4; }
+  .wide .left h3, .wide .right h3 { margin: 0 0 6px; font-size: 16px; }
+  .wide .left .ids, .wide .right .ids { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+  .wide .right { padding: 12px 14px; }
+  .scen { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 18px; font-size: 13px; }
+  .scen .s { display: flex; align-items: center; gap: 6px; }
+  .n { display: inline-flex; flex: none; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; }
+  .scen .ans { margin-left: auto; font-weight: 800; white-space: nowrap; color: var(--blue); }
+  .banner { margin-top: 14px; border: 2px dashed var(--yellow); background: var(--yellow-soft); border-radius: 10px; padding: 8px 12px; font-size: 13px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+  footer .k5::before { background: var(--green-soft); border: 1px solid var(--green); } footer .k6::before { background: var(--yellow-soft); border: 1px solid var(--yellow); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T13 · <span class="pill">DevNet Resources</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.7</b><br>Every T13 concept on one page<br>Drill in <code>labs/T13/devnet_finder.py</code></div>
+  </header>
+
+  <div class="cards">
+    <!-- SANDBOX -->
+    <div class="card c1">
+      <div class="top"><span class="icon">🧪</span><div><div class="name">DevNet Sandbox</div><div class="ids">T13.01</div></div><span class="verb">TRY</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Free hosted labs: real Cisco platforms, virtual or hardware</span></div>
+        <div class="row"><span class="k">Where</span><span><code>developer.cisco.com/site/sandbox/</code></span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b g">Always-On</span><span class="a">shared · instant · non-admin</span></span></div>
+        <div class="row"><span class="k"></span><span class="mini"><span class="b bl">Reservation</span><span class="a">private · ≤7 days · VPN · full admin</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"test my script, no hardware"</span></div>
+        <div class="trap"><b>Trap:</b> need admin / write / own topology → <b>Reservation</b>, not Always-On</div>
+      </div>
+    </div>
+    <!-- LEARNING LABS -->
+    <div class="card c2">
+      <div class="top"><span class="icon">🎓</span><div><div class="name">Learning Labs</div><div class="ids">T13.02</div></div><span class="verb">LEARN</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Guided, numbered-step tutorials, often with an in-browser lab</span></div>
+        <div class="row"><span class="k">Where</span><span><code>developer.cisco.com/learning/</code></span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b">Track</span><span class="a">→</span><span class="b">Module</span><span class="a">→</span><span class="b bl">Lab</span><span class="a">→</span><span class="b g">steps</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"new to NETCONF, walk me through it"</span></div>
+        <div class="trap"><b>Trap:</b> Learning Labs <b>teach</b>; Sandbox only <b>hosts</b> the gear, with no lesson</div>
+      </div>
+    </div>
+    <!-- CODE EXCHANGE -->
+    <div class="card c3">
+      <div class="top"><span class="icon">📦</span><div><div class="name">Code Exchange</div><div class="ids">T13.03 · T13.06</div></div><span class="verb">REUSE</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Cisco-curated catalogue of <b>GitHub</b> repos (Cisco + community)</span></div>
+        <div class="row"><span class="k">Where</span><span><code>developer.cisco.com/codeexchange/</code></span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b">search</span><span class="a">→</span><span class="b bl">repo card</span><span class="a">→</span><span class="b g">clone from GitHub</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"find an existing script to start from"</span></div>
+        <div class="trap"><b>Trap:</b> code lives on <b>GitHub</b>, not on Cisco · Automation Exchange is now merged into it</div>
+      </div>
+    </div>
+    <!-- DOCS -->
+    <div class="card c4">
+      <div class="top"><span class="icon">📘</span><div><div class="name">API documentation</div><div class="ids">T13.04</div></div><span class="verb">LOOK UP</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Per-platform guides + API reference: method, path, params, schema</span></div>
+        <div class="row"><span class="k">Where</span><span><code>developer.cisco.com/docs/</code></span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b bl">reference</span><span class="a">→</span><span class="b g">Try it / Run</span><span class="a">or</span><span class="b g">OpenAPI download</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"exact endpoint / payload for Catalyst Center"</span></div>
+        <div class="trap"><b>Trap:</b> "what fields does this call need?" → <b>docs</b>, not Code Exchange</div>
+      </div>
+    </div>
+    <!-- COMMUNITY -->
+    <div class="card c5">
+      <div class="top"><span class="icon">💬</span><div><div class="name">Community forums</div><div class="ids">T13.05</div></div><span class="verb">ASK</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Peer Q&amp;A boards per product, free; Cisco staff join in</span></div>
+        <div class="row"><span class="k">Where</span><span><code>community.cisco.com</code> (developer hub)</span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b g">log in</span><span class="a">→</span><span class="b">board</span><span class="a">→</span><span class="b bl">post</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"has anyone else hit this?" · sandbox down</span></div>
+        <div class="trap"><b>Trap:</b> forum = <b>peers</b>, best effort; no guaranteed engineer</div>
+      </div>
+    </div>
+    <!-- SUPPORT -->
+    <div class="card c6">
+      <div class="top"><span class="icon">🎫</span><div><div class="name">Developer support</div><div class="ids">T13.05</div></div><span class="verb">ESCALATE</span></div>
+      <div class="body">
+        <div class="row"><span class="k">What</span><span>Case with a Cisco developer engineer: 1 ticket = 1 case</span></div>
+        <div class="row"><span class="k">Where</span><span><code>developer.cisco.com/docs/</code><br><code>devnet-support/support-faq/</code></span></div>
+        <div class="row"><span class="k">How</span><span class="mini"><span class="b g">KB</span><span class="a">→</span><span class="b g">forum</span><span class="a">→</span><span class="b bl">case</span></span></div>
+        <div class="row"><span class="k">Use when</span><span>"API question the forum can't solve"</span></div>
+        <div class="trap"><b>Trap:</b> DevNet support ≠ <b>TAC</b> (product faults) · no new tickets sold since 30 Apr 2022</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wide">
+    <div class="left">
+      <h3>🔭 Awareness only <span class="ids">T13.06</span></h3>
+      <div><b>Ecosystem Exchange</b>: catalogue of <b>partner-built solutions</b> for Cisco platforms (buy, not code). Old <code>/ecosystem/</code> URL now 404.</div>
+      <div style="margin-top:5px"><b>Automation Exchange</b>: automation use cases, walk → run → fly, Day 0/1/2/N. Now <b>consolidated into Code Exchange</b>.</div>
+    </div>
+    <div class="right">
+      <h3>🎯 Scenario → resource <span class="ids">T13.07 · 1-7 = the <code>--drill</code> scenarios</span></h3>
+      <div class="scen">
+        <div class="s"><span class="n">1</span>test RESTCONF, no hardware<span class="ans">Sandbox</span></div>
+        <div class="s"><span class="n">5</span>exact endpoint + schema<span class="ans">Docs</span></div>
+        <div class="s"><span class="n">2</span>full admin on a private ACI fabric<span class="ans">Sandbox (Reservation)</span></div>
+        <div class="s"><span class="n">6</span>ask peers about a quirk<span class="ans">Community</span></div>
+        <div class="s"><span class="n">3</span>existing script on GitHub<span class="ans">Code Exchange</span></div>
+        <div class="s"><span class="n">7</span>forum failed, need an engineer<span class="ans">Support case</span></div>
+        <div class="s"><span class="n">4</span>guided step-by-step tutorial<span class="ans">Learning Labs</span></div>
+        <div class="s"><span class="n">!</span>buy a partner app<span class="ans">Ecosystem Exchange</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="banner">⚠ <b>2026 status:</b> Cisco announced a full Sandbox rebuild (1 Jun 2026; new platform from Q1 2027), then switched to rolling maintenance windows (5 Aug 2026). Certification renamed DevNet Associate → <b>CCNA Automation</b> (3 Feb 2026); the developer site is still branded <b>Cisco DevNet</b>.</div>
+
+  <footer>
+    <span class="k1">numbered = drill scenario</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey chip = exact URL</span>
+    <span class="k4">blue = the answer / main object</span>
+    <span class="k5">green = free / follow-on</span>
+    <span class="k6">yellow = legacy / awareness</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,17 @@
+%%{init: {"flowchart": {"wrappingWidth": 400}}}%%
+flowchart TD
+    L["POST /j_security_check"] --> B1{"body empty?"}
+    B1 -->|"yes + JSESSIONID"| OK1["✅ logged in"]
+    B1 -->|"no: JSON error or HTML<br/>(still HTTP 200!)"| BAD1["❌ wrong user/password<br/>or wrong field names"]
+    G["GET /dataservice/..."] --> CT{"Content-Type JSON?"}
+    CT -->|yes| OK2["✅ read resp.json()['data']"]
+    CT -->|"no: text/html, HTTP 200"| BAD2["❌ no / expired session<br/>→ log in again"]
+    P["POST / PUT / DELETE"] --> T{"X-XSRF-TOKEN sent?"}
+    T -->|yes| OK3["✅ 200"]
+    T -->|no| BAD3["❌ 403 SessionTokenFilter<br/>→ GET /dataservice/client/token"]
+    style OK1 fill:#d4edda,stroke:#28a745
+    style OK2 fill:#d4edda,stroke:#28a745
+    style OK3 fill:#d4edda,stroke:#28a745
+    style BAD1 fill:#fde8e8,stroke:#dc3545
+    style BAD2 fill:#fde8e8,stroke:#dc3545
+    style BAD3 fill:#fde8e8,stroke:#dc3545

@@ -1,0 +1,14 @@
+flowchart LR
+    A["1 Requirements<br/>signed-off spec"] -->|gate| B["2 Design<br/>architecture docs"]
+    B -->|gate| C["3 Implementation<br/>code"]
+    C -->|gate| D["4 Testing<br/>verification"]
+    D -->|gate| E["5 Deployment<br/>one big release"]
+    E --> F["6 Maintenance<br/>fixes, patches"]
+    D -. "bug in the design found here<br/>= rework 2 phases back (costly)" .-> B
+    style A fill:#d1ecf1,stroke:#17a2b8
+    style B fill:#d1ecf1,stroke:#17a2b8
+    style C fill:#d1ecf1,stroke:#17a2b8
+    style D fill:#fff3cd,stroke:#e0a800
+    style E fill:#d4edda,stroke:#28a745
+    style F fill:#f8f9fa,stroke:#6c757d
+    linkStyle 5 stroke:#dc3545,stroke-width:2px,color:#dc3545

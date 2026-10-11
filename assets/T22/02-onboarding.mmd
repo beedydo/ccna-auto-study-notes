@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    participant E as WAN Edge (Edge1)
+    participant V as SD-WAN Validator (vBond)
+    participant C as SD-WAN Controller (vSmart)
+    participant M as SD-WAN Manager (vManage)
+    participant E2 as WAN Edge (Edge2)
+    E->>V: DTLS: "here is my certificate / serial"
+    V-->>E: authenticated, here are the Controller + Manager IPs
+    Note over E,V: Edge to Validator link is transient (Edge1 shows no Validator connection later)
+    E->>C: DTLS control connection (one per transport colour)
+    E->>M: DTLS control connection
+    M->>E: NETCONF: push config from the attached device template
+    C->>E: OMP: routes, TLOCs, policy, IPsec keys
+    E->>E2: IPsec tunnel + BFD probes (data plane)

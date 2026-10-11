@@ -1,0 +1,21 @@
+flowchart LR
+    subgraph BEFORE["Before: Loopback100 (after the POST)"]
+        B1["description: Created by RESTCONF<br/>type: softwareLoopback<br/>enabled: true<br/>ipv4: 10.255.100.1/32"]
+    end
+    subgraph PATCHR["PATCH body: {name, description}"]
+        P1["description: Merged by PATCH ✏️<br/>type: softwareLoopback<br/>enabled: true<br/>ipv4: 10.255.100.1/32"]
+    end
+    subgraph PUTR["PUT body: {name, type, enabled: false}"]
+        U1["type: softwareLoopback<br/>enabled: false ✏️<br/>description ❌ removed<br/>ipv4 ❌ removed"]
+    end
+    BEFORE -- "PATCH = merge · 204" --> PATCHR
+    BEFORE -- "PUT = replace · 204" --> PUTR
+    classDef g fill:#e3f6ee,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef r fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+    classDef n fill:#ffffff,stroke:#2b2b2b,stroke-width:2px,color:#1d1d1f
+    class B1 n
+    class P1 g
+    class U1 r
+    style BEFORE fill:#f7f7f5,stroke:#2b2b2b
+    style PATCHR fill:#f4fbf7,stroke:#28a745
+    style PUTR fill:#fdf3f3,stroke:#dc3545

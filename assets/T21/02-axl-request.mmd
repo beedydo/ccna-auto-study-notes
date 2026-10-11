@@ -1,0 +1,17 @@
+sequenceDiagram
+  autonumber
+  participant S as Python script
+  participant P as CUCM Publisher :8443
+  participant DB as Config database
+  S->>P: POST /axl/  (trailing slash)<br/>Authorization: Basic app-user<br/>Content-Type: text/xml<br/>SOAPAction: "CUCM:DB ver=14.0 addPhone"
+  Note over S,P: Body = SOAP Envelope > Body > ns:addPhone<br/>xmlns:ns="http://www.cisco.com/AXL/API/14.0"
+  alt bad password
+    P-->>S: 401 Unauthorized (no SOAP body)
+  else user lacks "Standard AXL API Access"
+    P-->>S: 403 Forbidden
+  else request OK
+    P->>DB: insert phone row
+    P-->>S: 200 OK  addPhoneResponse<br/>#lt;return#gt;{uuid}#lt;/return#gt;
+  else data error (duplicate, missing tag, not found)
+    P-->>S: 500 + soapenv:Fault<br/>faultstring + axlcode
+  end

@@ -1,0 +1,18 @@
+flowchart TB
+    ROOT["topRoot<br/><b>root</b>"] --> UNI["polUni<br/>rn: <b>uni</b>"]
+    ROOT --> TOPO["topSystem tree<br/>rn: <b>topology</b><br/>→ pod-1 → node-101<br/>(fabricNode lives here)"]
+    UNI --> TN["fvTenant<br/>rn: <b>tn-T19-Prod</b>"]
+    TN --> CTX["fvCtx (VRF)<br/>rn: ctx-Prod_VRF"]
+    TN --> BD["fvBD<br/>rn: BD-Web_BD"]
+    BD --> SUB["fvSubnet<br/>rn: subnet-[10.19.1.1/24]"]
+    TN --> AP["fvAp<br/>rn: <b>ap-Web</b>"]
+    AP --> EPG["fvAEPg<br/>rn: <b>epg-Frontend</b>"]
+    TN --> BRC["vzBrCP (contract)<br/>rn: brc-web-to-app"]
+    TN --> FLT["vzFilter<br/>rn: flt-https"]
+    EPG -.-> DN["DN = RNs joined by /<br/><b>uni/tn-T19-Prod/<br/>ap-Web/epg-Frontend</b>"]
+    style UNI fill:#d1ecf1,stroke:#17a2b8
+    style TN fill:#d1ecf1,stroke:#17a2b8
+    style AP fill:#d1ecf1,stroke:#17a2b8
+    style EPG fill:#d1ecf1,stroke:#17a2b8
+    style DN fill:#cfe2ff,stroke:#0d6efd
+    style TOPO fill:#f1f1f1,stroke:#888

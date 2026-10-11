@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 request journey animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --ok:#e3f6ee; --ok-b:#28a745; --bad:#fde8e8; --bad-b:#dc3545; --rec:#e3f1f8; --rec-b:#1f6feb; --part:#fff6dc; --part-b:#e0a800; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1320px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:14px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:250px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:15px; } .lane .where { font-size:11.5px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.4); }
+  .card { font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 7px; margin-bottom:7px; line-height:1.35; }
+  .card code { font-family:Menlo,monospace; font-size:11.5px; background:rgba(255,255,255,.7); padding:0 3px; border-radius:3px; }
+  .ok { background:var(--ok); border-color:var(--ok-b); } .bad { background:var(--bad); border-color:var(--bad-b); }
+  .rec { background:var(--rec); border-color:var(--rec-b); } .part { background:var(--part); border-color:var(--part-b); }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { position:relative; height:60px; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T41 · <span class="pill">Request journey</span> which box does what</h1>
+  <div class="sub">One request to <code>https://app.t41.lab/api/hello</code>, box by box (lab values from <code>labs/T41/</code>; port 18041 stands in for 443).</div>
+  <div class="lanes">
+    <div class="lane" id="c"><h3>💻 Client</h3><div class="where">127.0.0.10</div><div id="c-f"></div></div>
+    <div class="lane" id="d"><h3>🌐 DNS</h3><div class="where">udp/53 · authoritative + GSLB</div><div id="d-f"></div></div>
+    <div class="lane" id="f"><h3>🧱 Firewall</h3><div class="where">L3/L4 · stateful</div><div id="f-f"></div></div>
+    <div class="lane" id="w"><h3>🔍 WAF</h3><div class="where">L7 · HTTP request</div><div id="w-f"></div></div>
+    <div class="lane" id="l"><h3>⚖️ LB / reverse proxy</h3><div class="where">VIP 127.0.41.1</div><div id="l-f"></div></div>
+    <div class="lane" id="a"><h3>🖥️ App → 🗄️ DB</h3><div class="where">pool api · DB tier</div><div id="a-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (t, cls="") => `<div class="card ${cls}">${t}</div>`;
+const idle = { c:"", d:"", f:"", w:"", l:C("app1 ✅ app2 ❌ app3 ✅","ghost"), a:"" };
+const frames = [
+  { active:"d", ...idle, c:C("needs <code>app.t41.lab</code>","rec"),
+    d:C("A <code>127.0.41.1</code><br>A <code>127.0.41.2</code><br>TTL <code>3</code>","ok"),
+    cmd:{at:0, t:"A app.t41.lab?"}, txt:"DNS answers the <b>VIP</b>, not a server, and the client caches it for the TTL. DNS is now <b>out of the path</b>." },
+  { active:"f", ...idle, c:C("cached VIP <code>127.0.41.1</code>","ghost"),
+    f:C("tcp → <code>127.0.41.1:443</code><br>rule 2 <b>PERMIT</b>","ok")+C("state table:<br>flow added","rec"),
+    cmd:{at:1, t:"TCP SYN :443"}, txt:"The firewall matches IP + protocol + port only, first match wins, and <b>records the flow</b> so the reply needs no rule." },
+  { active:"w", ...idle, c:C("cached VIP","ghost"), f:C("flow permitted","ghost"),
+    w:C("<code>GET /api/hello</code><br>clean ✅","ok")+C("<code>?q=' OR 1=1--</code><br>→ <code>403</code> SQLi","bad"),
+    cmd:{at:2, t:"GET /api/hello"}, txt:"The WAF reads the <b>HTTP request</b>. The SQLi variant would be blocked with <code>403</code>; the port firewall saw nothing wrong with it." },
+  { active:"l", ...idle, c:C("cached VIP","ghost"), f:C("flow permitted","ghost"), w:C("clean","ghost"),
+    l:C("TLS terminated here","rec")+C("<code>/api/*</code> → pool api","rec")+C("app1 ✅ <b>app2 ❌</b> app3 ✅<br>round robin → <b>app3</b>","ok"),
+    cmd:{at:3, t:"pick a healthy server"}, txt:"The L7 LB / reverse proxy decrypts, routes by <b>path</b>, skips app2 (failed <b>health check</b>) and picks app3." },
+  { active:"a", ...idle, c:C("waiting","ghost"), f:C("flow permitted","ghost"), w:C("clean","ghost"),
+    l:C("adds <code>X-Forwarded-For: 127.0.0.10</code>","part"),
+    a:C("app3 gets plain HTTP<br>peer = proxy <code>127.0.0.1</code>","ok")+C("app → DB <code>5432</code><br>internal FW rule 4 ✅","ok"),
+    cmd:{at:4, t:"GET /api/hello"}, txt:"app3 sees the <b>proxy's IP</b>; the real client is in <code>X-Forwarded-For</code>. Only the app tier may reach the DB." },
+  { active:"c", ...idle, c:C("<code>200 OK</code><br><code>Server: t41-proxy</code><br><code>Set-Cookie: T41_STICKY=app3</code>","ok"),
+    f:C("reply matches state table ✅","ok"), w:"", l:C("hides <code>Server: app3-httpd/1.0</code>","part"), a:C("served the request","ghost"),
+    cmd:{at:4, t:"200 OK", back:true}, txt:"The reply returns via the <b>state table</b> (no rule), with the backend hidden behind <code>Server: t41-proxy</code>." },
+];
+const lanes = ["c","d","f","w","l","a"];
+const W = (1320 - 56 - 5*14) / 6;
+const pos = [0,1,2,3,4].map(i => i * (W + 14) + W - 40);
+function show(i) {
+  const f = frames[i];
+  for (const k of lanes) {
+    document.getElementById(k+"-f").innerHTML = f[k] || "";
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t;
+  d.style.left = (f.cmd.back ? 40 : pos[f.cmd.at] - 40) + "px";
+  a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

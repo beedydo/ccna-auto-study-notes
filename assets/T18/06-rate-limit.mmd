@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant M as Meraki API
+    S->>M: calls 1 to 10 within one second
+    M-->>S: 200 OK each
+    S->>M: call 11 (same second, same org 549236)
+    M-->>S: 429 Too Many Requests<br/>Retry-After: 1
+    Note over S: sleep Retry-After seconds<br/>(SDK does this for you)
+    S->>M: call 11 again
+    M-->>S: 200 OK

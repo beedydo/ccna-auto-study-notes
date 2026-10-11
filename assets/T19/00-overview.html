@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T19 overview: ACI</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd; --teal: #d1ecf1; --teal-b: #17a2b8;
+    --ok: #d4edda; --ok-b: #28a745; --warn: #fff3cd; --warn-b: #e0a800;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: minmax(0, 0.75fr) 46px minmax(0, 1.6fr) 46px minmax(0, 1fr); align-items: stretch; margin-bottom: 16px; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .zone h3 { margin: 0; padding: 7px 12px; font-size: 15px; color: #fff; }
+  .zone .body { padding: 10px 12px; font-size: 13.5px; line-height: 1.45; }
+  .z-client h3 { background: var(--blue-b); } .z-apic h3 { background: var(--teal-b); } .z-fab h3 { background: var(--ok-b); }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .zone h3 .ids { color: #e8f0ff; margin-left: 6px; }
+  .link { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: var(--muted); text-align: center; }
+  .link b { font-size: 26px; color: var(--ink); line-height: 1; }
+  .tree { white-space: nowrap; font-family: Menlo, Consolas, monospace; font-size: 11.3px; line-height: 1.55; background: #fafafa; border: 1.5px solid #bbb; border-radius: 8px; padding: 6px 10px; }
+  .tree .hl { background: var(--teal); border-radius: 3px; padding: 0 3px; }
+  .tree .c { color: var(--muted); }
+  .dn { margin-top: 6px; background: var(--blue); border: 2px solid var(--blue-b); border-radius: 8px; padding: 5px 8px; font-family: Menlo, Consolas, monospace; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .twocol { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .fab { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; text-align: center; font-size: 12px; font-weight: 700; }
+  .fab div { border: 2px solid var(--ok-b); background: var(--ok); border-radius: 6px; padding: 4px 2px; }
+  .fab .sp { grid-column: span 3; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; border: 0; background: none; padding: 0; }
+  .fab .sp div { background: #fff; }
+  .mesh { font-size: 11px; color: var(--muted); text-align: center; margin: 3px 0; }
+
+  /* panels */
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 14px 6px; }
+  td.label .icon { font-size: 36px; line-height: 1; display: block; margin-bottom: 6px; }
+  td.label .name { font-weight: 800; font-size: 16px; letter-spacing: 0.3px; }
+  td.what { width: 360px; padding: 12px 14px; font-size: 14px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 8px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 11px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 18px; }
+  .item { font-size: 13.3px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  .span2 { grid-column: span 2; }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; font-size: 12.5px; }
+  .chain span { border: 2px solid var(--line); border-radius: 6px; padding: 3px 7px; background: #fff; }
+  .chain .ep { background: var(--ok); border-color: var(--ok-b); }
+  .chain .ct { background: var(--blue); border-color: var(--blue-b); font-weight: 700; }
+  .chain i { font-style: normal; font-weight: 800; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T19 · <span class="pill">ACI</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9.a</b><br>Every T19 concept on one page<br>Code from <code>labs/T19/</code> (live DevNet APIC)</div>
+  </header>
+
+  <!-- SYSTEM MAP -->
+  <div class="map">
+    <div class="zone z-client"><h3>🐍 Client <span class="ids">T19.04 · T19.06</span></h3><div class="body">
+      <b>requests.Session()</b> keeps the cookie<br>
+      curl <code>--cookie-jar</code> / <code>--cookie</code><br>
+      Ansible <code>cisco.aci</code><br>
+      Terraform <code>CiscoDevNet/aci</code><br>
+      Cobra SDK <code>acicobra</code> + <code>acimodel</code><br>
+      <span class="ids">ACI Toolkit = lower priority</span>
+    </div></div>
+    <div class="link"><b>⇄</b>HTTPS<br>REST<br>JSON / XML</div>
+    <div class="zone z-apic"><h3>🧠 APIC cluster: the controller <span class="ids">T19.01 · T19.02</span></h3><div class="body">
+      <div class="twocol">
+        <div>
+          Holds the <b>MIT</b>: every setting is a <b>managed object (MO)</b> with a <b>class</b> and a <b>DN</b>.<br>
+          You declare <b>intent</b> (policy); APIC programs the switches. 3+ APICs for HA. <b>Not in the data path.</b>
+          <div class="dn">uni/tn-T19-Prod/ap-Web/epg-Frontend</div>
+          <span class="ids">DN = each parent's RN joined by <code>/</code></span>
+        </div>
+        <div class="tree">
+          uni <span class="c">polUni</span><br>
+          └ <span class="hl">tn-T19-Prod</span> <span class="c">fvTenant</span><br>
+          &nbsp;&nbsp;├ ctx-Prod_VRF <span class="c">fvCtx</span><br>
+          &nbsp;&nbsp;├ BD-Web_BD <span class="c">fvBD</span><br>
+          &nbsp;&nbsp;│ └ subnet-[10.19.1.1/24]<br>
+          &nbsp;&nbsp;├ <span class="hl">ap-Web</span> <span class="c">fvAp</span><br>
+          &nbsp;&nbsp;│ └ <span class="hl">epg-Frontend</span> <span class="c">fvAEPg</span><br>
+          &nbsp;&nbsp;├ brc-web-to-app <span class="c">vzBrCP</span><br>
+          &nbsp;&nbsp;└ flt-https <span class="c">vzFilter</span><br>
+          topology/pod-1/node-101 <span class="c">fabricNode</span>
+        </div>
+      </div>
+    </div></div>
+    <div class="link"><b>➜</b>pushes<br>policy</div>
+    <div class="zone z-fab"><h3>🧱 Fabric: Nexus 9000 <span class="ids">T19.01</span></h3><div class="body">
+      <div class="fab">
+        <div class="sp"><div>Spine 201</div><div>Spine 202</div></div>
+      </div>
+      <div class="mesh">every leaf ↔ every spine · never leaf ↔ leaf</div>
+      <div class="fab"><div>Leaf 101</div><div>Leaf 102</div><div>Leaf 103</div></div>
+      <div style="margin-top:8px">Endpoints (servers, VMs) and APICs plug into <b>leaves</b>. Spine-leaf = any leaf is 2 hops from any other.</div>
+    </div></div>
+  </div>
+
+  <table>
+    <!-- LOGICAL -->
+    <tr>
+      <td class="label"><span class="icon">🏢</span><div class="name">LOGICAL<br>MODEL</div><div class="ids">T19.03</div></td>
+      <td class="what"><span class="sig">Tenant → VRF → BD → subnet</span><br>
+        Networking side: VRF = L3 table, <b>bridge domain</b> = L2 domain, subnet = its gateway. App side: <b>application profile</b> holds <b>EPGs</b>. <b>Contracts</b> (subject → filter) allow EPG ↔ EPG.</td>
+      <td class="items">
+        <div class="chain">
+          <span class="ep">EPG Frontend</span><i>— consumes →</i><span class="ct">contract web-to-app</span><i>← provides —</i><span class="ep">EPG Backend</span>
+          <span style="margin-left:6px">subject <code>https</code> → filter <code>tcp-443</code></span>
+        </div>
+        <div class="grid" style="margin-top:9px">
+          <div class="item"><span class="n">1</span>same EPG → allowed by default</div>
+          <div class="item"><span class="n">2</span>EPG → BD link<span class="c"><code>fvRsBd</code> · BD → VRF <code>fvRsCtx</code></span></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> different EPGs with <b>no contract = dropped</b> (allow-list). VRF is called <b>context</b> (<code>fvCtx</code>, rn <code>ctx-</code>); BD is L2, not L3</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- LOGIN -->
+    <tr>
+      <td class="label"><span class="icon">🔐</span><div class="name">LOGIN</div><div class="ids">T19.04</div></td>
+      <td class="what"><span class="sig">POST https://&lt;apic&gt;/api/aaaLogin.json</span><br>
+        Body names the user. Reply carries the <b>token</b> in the body <b>and</b> as cookie <code>APIC-cookie</code>. Send the cookie on every call; refresh before <code>600</code> s idle.</td>
+      <td class="items"><div class="grid">
+        <div class="item span2"><span class="n">1</span>body<span class="c"><code>{"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}</code></span></div>
+        <div class="item"><span class="n">2</span>token path<span class="c"><code>["imdata"][0]["aaaLogin"]["attributes"]["token"]</code></span></div>
+        <div class="item"><span class="n">3</span>keep session · logout<span class="c"><code>aaaRefresh.json</code> · <code>aaaLogout.json</code></span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> not <code>Authorization: Bearer</code> and not <code>X-Auth-Token</code>: it's a <b>cookie</b>. No cookie → <code>403</code>; wrong password → <code>401</code>; root key typo → <code>400</code></div>
+      </div></td>
+    </tr>
+
+    <!-- QUERIES -->
+    <tr>
+      <td class="label"><span class="icon">🔎</span><div class="name">QUERIES</div><div class="ids">T19.05</div></td>
+      <td class="what"><span class="sig">/api/mo/&lt;dn&gt;.json</span> <span class="sig">/api/class/&lt;class&gt;.json</span><br>
+        Know the <b>DN</b> → <code>mo</code> (one object). Know only the <b>type</b> → <code>class</code> (all of them). Every reply: <code>{"totalCount": "n", "imdata": [...]}</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>all switches + APICs<span class="c"><code>GET /api/class/fabricNode.json</code></span></div>
+        <div class="item"><span class="n">4</span>attribute filter<span class="c"><code>query-target-filter=eq(fabricNode.role,"spine")</code></span></div>
+        <div class="item"><span class="n">2</span>one tenant<span class="c"><code>GET /api/mo/uni/tn-T19-Prod.json</code></span></div>
+        <div class="item"><span class="n">5</span>nest children in each result<span class="c"><code>rsp-subtree=children</code> · <code>full</code></span></div>
+        <div class="item"><span class="n">3</span>which objects: <code>self</code> · <code>children</code> · <code>subtree</code><span class="c"><code>query-target=subtree</code> + <code>target-subtree-class=fvAEPg</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> missing DN → <code>200</code> + <code>totalCount 0</code>, <b>not 404</b>. Class typo → <code>400</code></div>
+      </div></td>
+    </tr>
+
+    <!-- WRITE -->
+    <tr>
+      <td class="label"><span class="icon">✍️</span><div class="name">WRITE</div><div class="ids">T19.03 · T19.07</div></td>
+      <td class="what"><span class="sig">POST /api/mo/uni.json</span><br>
+        Create = POST the nested JSON tree to the <b>parent</b> DN. Each MO = <code>{class: {"attributes": {...},</code> <code>"children": [...]}}</code>. Same POST again = update (idempotent).</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>success reply<span class="c"><code>200</code> · <code>{"totalCount":"0","imdata":[]}</code></span></div>
+        <div class="item"><span class="n">2</span>delete<span class="c"><code>DELETE /api/mo/uni/tn-T19-Prod.json</code> or <code>"status": "deleted"</code></span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> a typo in a relation name (<code>tnFvCtxName</code>) still returns <code>200</code>; the relation shows <code>state=missing-target</code>. A wrong attribute name → <code>400</code></div>
+      </div></td>
+    </tr>
+
+    <!-- TOOLS -->
+    <tr>
+      <td class="label"><span class="icon">🧰</span><div class="name">TOOLS</div><div class="ids">T19.06</div></td>
+      <td class="what"><span class="sig">GUI → API Inspector → copy the call</span><br>
+        <b>API Inspector</b> logs the REST call behind each GUI click. <b>Visore</b> (<code>/visore.html</code>) = read-only MO browser. Then automate with an SDK or IaC tool.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>Cobra SDK: 1:1 with the MIT<span class="c"><code>acicobra</code> (SDK) + <code>acimodel</code> (classes)</span></div>
+        <div class="item"><span class="n">2</span>Ansible: module or raw REST<span class="c"><code>cisco.aci.aci_tenant</code> · <code>aci_rest</code></span></div>
+        <div class="item"><span class="n">3</span>Terraform provider<span class="c"><code>CiscoDevNet/aci</code> · <code>aci_tenant</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> Visore can't configure; API Inspector shows calls, it doesn't make them</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k k1">numbered = example from <code>aci_tenant_builder.py</code></span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the DN to remember</span>
+    <span style="margin-left:auto">Run it: <code>python3 labs/T19/aci_tenant_builder.py</code></span>
+  </footer>
+</div>
+</body>
+</html>

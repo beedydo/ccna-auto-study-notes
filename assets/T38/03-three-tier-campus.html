@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 three-tier campus</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .main { flex: 0 0 820px !important; }
+  .side { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+  .zone > .zb.tier { display: grid; grid-template-columns: 240px 1fr 1fr; justify-items: center; align-items: start; padding: 18px 0; row-gap: 54px; gap: 54px 0; }
+  .job { justify-self: start; padding-left: 16px; font-size: 13px; line-height: 1.45; color: var(--ink); }
+  .job b { display: block; font-size: 14px; margin-bottom: 2px; }
+  .collapsed > .zb { flex-direction: column; align-items: center; gap: 60px; padding: 20px 10px 24px; }
+  .side .note { max-width: none; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">Three-tier campus</span> core · distribution · access</h1>
+    <div class="meta"><b>200-901 blueprint 6.3</b><br>Hierarchical campus design<br>In <code>labs/T38</code>: <code>core1</code> · <code>dist1</code> · <code>acc1</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="main">
+        <div class="zone ctrl">
+          <div class="zh">Core</div>
+          <div class="zb tier">
+            <div class="job"><b>Fast L3 backbone</b>between distribution blocks, DC, WAN and Internet edge<br>no heavy policy · redundant pair</div>
+            <div class="node" id="c1" data-icon="router"><div class="nm">core1</div><div class="sub">L3 only</div></div>
+            <div class="node" id="c2" data-icon="router"><div class="nm">core2</div><div class="sub">L3 only</div></div>
+          </div>
+        </div>
+        <div class="gap l"></div>
+        <div class="zone cloud">
+          <div class="zh">Distribution</div>
+          <div class="zb tier">
+            <div class="job"><b>L2/L3 boundary</b>SVIs = default gateways<br>inter-VLAN routing · ACL / QoS<br>route summarisation</div>
+            <div class="node w hl" id="d1" data-icon="l3switch"><div class="nm">dist1</div><div class="sub">L3 switch · <code>interface Vlan10</code></div></div>
+            <div class="node w hl" id="d2" data-icon="l3switch"><div class="nm">dist2</div><div class="sub">L3 switch · <code>interface Vlan10</code></div></div>
+          </div>
+        </div>
+        <div class="gap l"></div>
+        <div class="zone client">
+          <div class="zh">Access</div>
+          <div class="zb tier">
+            <div class="job"><b>End devices plug in</b>access ports · VLANs<br>PoE (phones, APs)<br>port security</div>
+            <div class="node w" id="a1" data-icon="switch"><div class="nm">acc1</div><div class="sub">L2 · VLAN 10, 20</div></div>
+            <div class="node w" id="a2" data-icon="switch"><div class="nm">acc2</div><div class="sub">L2 · VLAN 30 · PoE</div></div>
+            <div></div>
+            <div class="node w" id="pc" data-icon="laptop"><div class="nm">PCs, printers</div><div class="sub">access ports</div></div>
+            <div class="node w" id="ap" data-icon="ap"><div class="nm">APs, IP phones</div><div class="sub">powered by PoE</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="side">
+        <div class="zone dashed collapsed">
+          <div class="zh" style="background:#475569">Two-tier = collapsed core <small>small site / one building</small></div>
+          <div class="zb">
+            <div class="node w hl" id="cc" data-icon="l3switch"><div class="nm">core/dist pair</div><div class="sub">core + distribution merged<br>into one pair of L3 switches</div></div>
+            <div class="node" id="ca" data-icon="switch"><div class="nm">access</div><div class="sub">same job as above</div></div>
+          </div>
+        </div>
+        <div class="note"><b>Why hierarchy:</b> fault isolation, predictable paths; add a new access block without touching the core.</div>
+        <div class="note"><b>Redundancy:</b> each access switch dual-homes to <b>both</b> distribution switches; each distribution switch connects to <b>both</b> cores.</div>
+        <div class="note trap"><b>Trap:</b> the gateway here is an <b>SVI on the distribution (L3) switch</b>, not a router icon. Collapsed core = <b>two-tier</b>, not "no core needed".</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>cable (uplink)</span>
+    <span>Core-distribution = L3 routed links · access uplinks = L2 trunks</span>
+    <span style="margin-left:auto">Blue glow = where the default gateways live</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "c1", b: "d1", k: "phys", s: "b-t", label: "L3 routed", t: 0.3, lx: -46 },
+  { a: "c2", b: "d2", k: "phys", s: "b-t" },
+  { a: "c1", b: "d2", k: "phys", s: "b-t", r: "straight", ao: 14, bo: -14 },
+  { a: "c2", b: "d1", k: "phys", s: "b-t", r: "straight", ao: -14, bo: 14 },
+  { a: "d1", b: "a1", k: "phys", s: "b-t", label: "802.1Q trunk", t: 0.3, lx: -56 },
+  { a: "d2", b: "a2", k: "phys", s: "b-t" },
+  { a: "d1", b: "a2", k: "phys", s: "b-t", r: "straight", ao: 14, bo: -14 },
+  { a: "d2", b: "a1", k: "phys", s: "b-t", r: "straight", ao: -14, bo: 14 },
+  { a: "a1", b: "pc", k: "phys", s: "b-t" },
+  { a: "a2", b: "ap", k: "phys", s: "b-t" },
+  { a: "cc", b: "ca", k: "phys", s: "b-t", ao: -14, bo: -14 },
+  { a: "cc", b: "ca", k: "phys", s: "b-t", ao: 14, bo: 14, label: "dual uplinks" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

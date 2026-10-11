@@ -1,0 +1,20 @@
+flowchart LR
+  subgraph CFG["Configuration (what SHOULD exist)"]
+    direction TB
+    W["AXL addPhone<br/>SEP001122334455"] --> DB[("Publisher DB<br/>phone row exists")]
+    G["AXL getPhone / listPhone<br/>executeSQLQuery"] --> DB
+  end
+  subgraph LIVE["Live state (what IS happening)"]
+    direction TB
+    PH["Phone powers on,<br/>gets config, registers"] --> SUB["Subscriber<br/>CallManager service"]
+    R["RisPort70 selectCmDevice"] --> SUB
+  end
+  DB -. "config replicated" .-> SUB
+  Q1{{"Is SEP001122334455 configured?"}} --> G
+  Q2{{"Is SEP001122334455 registered,<br/>and on which IP?"}} --> R
+  classDef cfg fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px;
+  classDef live fill:#e3f6ee,stroke:#28a745,stroke-width:2px;
+  classDef q fill:#fff6dc,stroke:#e0a800;
+  class W,G,DB cfg
+  class PH,SUB,R live
+  class Q1,Q2 q

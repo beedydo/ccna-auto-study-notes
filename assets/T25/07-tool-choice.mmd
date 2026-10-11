@@ -1,0 +1,12 @@
+flowchart TB
+  q{"What does the job need?"}
+  q -->|"multivendor network services,<br/>atomic across many devices,<br/>dry-run + clean removal,<br/>live view of device config"| nso["NSO<br/>model-driven, transactional,<br/>stateful (CDB), NEDs"]
+  q -->|"run tasks over SSH / APIs,<br/>agentless, playbooks in YAML,<br/>servers + network"| ans["Ansible<br/>procedural, no central state,<br/>idempotent modules"]
+  q -->|"build infrastructure from code,<br/>cloud resources, plan → apply"| tf["Terraform<br/>declarative, state file,<br/>providers"]
+  q -->|"try a change on virtual<br/>Cisco devices first"| cml["CML<br/>simulation, not a<br/>config tool"]
+  classDef rec fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+  classDef safe fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef part fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  class nso rec
+  class ans,tf safe
+  class cml part

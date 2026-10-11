@@ -1,0 +1,19 @@
+%%{init: {"flowchart": {"wrappingWidth": 420}}}%%
+flowchart TB
+  subgraph ACC["Access port: one VLAN, frames untagged (switchport mode access)"]
+    direction LR
+    a1["Dst MAC<br/>6 B"] --- a2["Src MAC<br/>6 B"] --- a3["EtherType<br/>2 B"] --- a4["Payload<br/>46–1500 B"] --- a5["FCS<br/>4 B"]
+  end
+  subgraph TRK["Trunk port: many VLANs, 802.1Q tag inserted (switchport mode trunk)"]
+    direction LR
+    t1["Dst MAC<br/>6 B"] --- t2["Src MAC<br/>6 B"] --- t3["<b>802.1Q tag 4 B</b><br/>TPID 0x8100 · PCP 3b<br/>DEI 1b · <b>VID 12b</b>"] --- t4["EtherType<br/>2 B"] --- t5["Payload<br/>46–1500 B"] --- t6["FCS<br/>4 B<br/>recomputed"]
+  end
+  ACC ~~~ TRK
+  NOTE["VID 12 bits → 4096 values; usable <b>1–4094</b> (0 and 4095 reserved)<br/>Native VLAN (default 1) crosses the trunk <b>untagged</b>"]
+  TRK ~~~ NOTE
+  classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+  classDef yellow fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+  class t3 blue
+  class t6 yellow
+  class NOTE yellow

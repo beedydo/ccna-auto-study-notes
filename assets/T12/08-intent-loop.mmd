@@ -1,0 +1,11 @@
+flowchart LR
+    I["1 · Intent (WHAT)<br/>disable-unused-ports<br/>site SG-HQ"] --> T["2 · Translate (HOW)<br/>controller finds 5 DOWN ports<br/>on sw1, sw2, sw3"]
+    T --> P["3 · Provision<br/>southbound RESTCONF PATCH<br/>per port, per device"]
+    P --> V["4 · Verify / assure<br/>task SUCCESS,<br/>portsAdminDown 2 / 1 / 2"]
+    V -.->|"drift? re-apply"| T
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class I blue
+    class T,P grey
+    class V green

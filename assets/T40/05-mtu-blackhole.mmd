@@ -1,0 +1,14 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart TD
+    A["App sends 1500-byte packet, DF bit set (normal for TCP)"] --> B["VPN adds IPsec/GRE header<br/>(tens of bytes)"]
+    B --> C{"Fits tunnel path MTU?"}
+    C -- "yes (small packets:<br/>ping, SSH login, TLS hello)" --> OK["✅ Delivered"]
+    C -- "no" --> D["Router drops it, sends<br/>ICMP 'fragmentation needed'"]
+    D --> E{"ICMP reaches the sender?"}
+    E -- "yes" --> F["PMTUD: sender lowers size ✅"]
+    E -- "no (ICMP filtered)" --> G["❌ Black hole:<br/>connects, then big transfers hang"]
+    G --> H["Fix: lower tunnel MTU /<br/>clamp TCP MSS (e.g. ip tcp adjust-mss 1360)<br/>Test: ping -M do -s 1472 host"]
+    style OK fill:#d4edda,stroke:#28a745
+    style F fill:#d4edda,stroke:#28a745
+    style G fill:#f8d7da,stroke:#dc3545
+    style H fill:#d1ecf1,stroke:#17a2b8

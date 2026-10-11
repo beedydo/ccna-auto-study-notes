@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T12 controller intent animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --blue:#dbeafe; --blue-b:#1d4ed8; --ok:#dcfce7; --ok-b:#15803d; --dark:#1e293b; --part:#fef9c3; --part-b:#a16207; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:540px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:1.15fr 1.35fr 1fr 1fr 1fr; gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:262px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:15.5px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .lane.s { border-color:var(--blue-b); } .lane.c { border-color:var(--dark); } .lane.d { border-color:var(--ok-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.38); }
+  .chip { font-family:Menlo,monospace; font-size:12px; border:2px solid; border-radius:7px; padding:5px 7px; margin-bottom:6px; overflow-wrap:anywhere; }
+  .s .chip { background:var(--blue); border-color:var(--blue-b); } .c .chip { background:#f1f5f9; border-color:var(--dark); }
+  .chip.up { background:#fff; border-color:#999; } .chip.down { background:var(--part); border-color:var(--part-b); }
+  .chip.off { background:var(--ok); border-color:var(--ok-b); }
+  .chip small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.3; border-style:dashed !important; }
+  .arrowrow { height:62px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T12 · <span class="pill">Controller-level</span> one intent, many devices</h1>
+  <div class="sub">Section 6 of <code>labs/T12/automation_levels.py</code>. Each frame = one call or event. Yellow port = DOWN and still enabled; green = shut + labelled UNUSED.</div>
+  <div class="lanes">
+    <div class="lane s" id="s"><h3>🐍 Your script</h3><div class="where">northbound client</div><div id="s-f"></div></div>
+    <div class="lane c" id="c"><h3>🧠 Controller</h3><div class="where">intent · inventory · tasks</div><div id="c-f"></div></div>
+    <div class="lane d" id="d1"><h3>🔌 sw1</h3><div class="where">C9300 · IOS XE</div><div id="d1-f"></div></div>
+    <div class="lane d" id="d2"><h3>🔌 sw2</h3><div class="where">C9300 · IOS XE</div><div id="d2-f"></div></div>
+    <div class="lane d" id="d3"><h3>🔌 sw3</h3><div class="where">N9K · NX-OS</div><div id="d3-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (t, s="", cls="") => `<div class="chip ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const P = (name, st) => C(name, st === "off" ? "UNUSED (ctrl intent) · disabled" : (st === "down" ? "DOWN · enabled" : "UP"), st);
+const sw = (st) => ({
+  d1: P("Gi1/0/1","up") + P("Gi1/0/2","up") + P("Gi1/0/3",st) + P("Gi1/0/4",st),
+  d2: P("Gi1/0/1","up") + P("Gi1/0/2",st) + P("Gi1/0/3","up"),
+  d3: P("Eth1/1","up") + P("Eth1/2",st) + P("Eth1/3",st),
+});
+const frames = [
+  { active:["s"], s:C('{"intent": "disable-unused-ports",<br>&nbsp;"site": "SG-HQ"}'), c:C("waiting","","ghost"), ...sw("down"),
+    cmd:{at:0, t:"POST /ctrl/api/v1/intents"}, txt:"The script sends <b>what</b> it wants (the intent) to the controller's <b>northbound</b> REST API. It never names a switch or a port." },
+  { active:["s","c"], s:C("202 Accepted","taskId 14ad84aa..."), c:C("task queued","intent accepted, not done yet"), ...sw("down"),
+    cmd:{at:0, t:"202 + taskId", back:true}, txt:"<code>202 Accepted</code> = the controller took the job. <b>No switch has changed yet</b>: 202 is not \"done\"." },
+  { active:["c"], s:C("taskId 14ad84aa..."), c:C("translate (HOW)","site SG-HQ = sw1, sw2, sw3") + C("5 ports DOWN + enabled","its own inventory / models"), ...sw("down"),
+    cmd:null, txt:"The controller <b>translates</b> intent into config: it looks up site SG-HQ in its inventory and finds 5 unused ports on 3 devices." },
+  { active:["c","d1","d2","d3"], s:C("taskId 14ad84aa..."), c:C("southbound RESTCONF","5 x PATCH .../config"), ...sw("off"),
+    cmd:{at:1, t:'PATCH {"enabled": false} x5'}, txt:"The controller programs each switch over the <b>southbound</b> interface (RESTCONF here; NETCONF, CLI, OpFlex on real controllers). Each returns <code>204</code>." },
+  { active:["s","c"], s:C('"status": "SUCCESS"',"5 ports changed on 3 devices"), c:C("task SUCCESS","southbound results 204 x5"), ...sw("off"),
+    cmd:{at:0, t:"GET /ctrl/api/v1/tasks/{taskId}"}, txt:"The script polls the task to learn the outcome. Only now is the intent <b>known to be applied</b>." },
+  { active:["s","c"], s:C("sw1 portsAdminDown=2") + C("sw2 portsAdminDown=1") + C("sw3 portsAdminDown=2"), c:C("network-wide view","one inventory, every device"), ...sw("off"),
+    cmd:{at:0, t:"GET /ctrl/api/v1/devices"}, txt:"One call returns the <b>network-wide view</b>. Script total: <b>2 calls</b> for the job (device-level took 8)." },
+];
+const pos = [20, 260];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["s","c","d1","d2","d3"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active.includes(k));
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+    d.textContent = f.cmd.t; d.style.left = (pos[f.cmd.at] + (f.cmd.at === 1 ? 140 : 80)) + "px";
+    a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

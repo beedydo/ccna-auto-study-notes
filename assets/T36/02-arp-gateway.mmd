@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant PC as pc1 10.1.10.50<br/>MAC aaaa.aaaa.0050
+    participant SW as Access switch
+    participant R1 as R1 Gi0/1 10.1.10.1<br/>MAC bbbb.bbbb.0001
+    PC->>SW: ARP request (broadcast ffff.ffff.ffff)<br/>"Who has 10.1.10.1?"
+    SW->>R1: flooded to every port in the VLAN
+    R1-->>PC: ARP reply (unicast)<br/>"10.1.10.1 is at bbbb.bbbb.0001"
+    Note over PC: ARP cache: 10.1.10.1 = bbbb.bbbb.0001
+    PC->>R1: Frame dst MAC bbbb.bbbb.0001<br/>IP src 10.1.10.50, dst 10.20.30.40
+    Note over R1: Strip frame, longest prefix match on 10.20.30.40,<br/>new frame out Gi0/2, TTL - 1

@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant DNS as DNS
+    participant FW as Firewall + WAF
+    participant LB as LB / reverse proxy
+    participant APP as app2
+    participant DB as Database
+    C->>DNS: A app.t41.lab?
+    DNS-->>C: 127.0.41.1 (VIP), TTL 3
+    C->>FW: TCP SYN → 127.0.41.1:443 (lab: 18041)
+    Note over FW: L3/L4 rule permits, flow added to state table
+    C->>FW: GET /api/hello (WAF inspects: clean)
+    FW->>LB: forwarded to the VIP
+    Note over LB: TLS ends here, path /api/* → pool api,<br/>round robin + health → app2, adds X-Forwarded-For
+    LB->>APP: GET /api/hello
+    APP->>DB: SELECT … (internal firewall rule: app → DB 5432)
+    DB-->>APP: rows
+    APP-->>LB: 200 + Server: app2-httpd
+    LB-->>C: 200, Server: t41-proxy, Via, Set-Cookie (reply allowed by state)

@@ -1,0 +1,14 @@
+flowchart TD
+    A["pc1 10.1.10.50/24 wants to send to dst IP"] --> B["dst AND my mask (/24)<br/>= my network 10.1.10.0?"]
+    B -->|"yes: 10.1.10.77"| C["ARP for 10.1.10.77<br/>(the destination itself)"]
+    C --> D["Frame dst MAC = server MAC<br/>packet dst IP = 10.1.10.77"]
+    B -->|"no: 10.20.30.40"| E{"Default gateway<br/>configured and on my subnet?"}
+    E -->|"yes: 10.1.10.1"| F["ARP for 10.1.10.1<br/>(the gateway, NOT the server)"]
+    F --> G["Frame dst MAC = R1 MAC<br/>packet dst IP still 10.20.30.40"]
+    E -->|"no / wrong subnet"| H["Off-subnet traffic fails<br/>local subnet still works"]
+    classDef ok fill:#e3f6ee,stroke:#2fb380,stroke-width:2px,color:#1d1d1f
+    classDef rec fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    class C,D ok
+    class F,G rec
+    class H bad

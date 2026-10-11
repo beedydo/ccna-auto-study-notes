@@ -1,0 +1,13 @@
+flowchart TB
+    Q{"What do you know?"}
+    Q -- "the exact object<br/>(its DN)" --> MO["GET /api/<b>mo</b>/uni/tn-T19-Prod.json<br/>→ that one object"]
+    Q -- "only the type<br/>(class name)" --> CL["GET /api/<b>class</b>/fabricNode.json<br/>→ every fabricNode in the fabric"]
+    MO --> QT["<b>query-target</b> = WHICH objects match<br/>self (default) · children · subtree"]
+    QT --> TSC["target-subtree-class=fvAEPg,fvSubnet<br/>keep only these classes"]
+    CL --> QTF["<b>query-target-filter</b>=eq(fabricNode.role,&quot;spine&quot;)<br/>keep only matching attributes"]
+    MO --> RS["<b>rsp-subtree</b> = what to NEST under each result<br/>no (default) · children · full"]
+    CL --> RS
+    style MO fill:#d1ecf1,stroke:#17a2b8
+    style CL fill:#d4edda,stroke:#28a745
+    style QT fill:#fff3cd,stroke:#e0a800
+    style RS fill:#cfe2ff,stroke:#0d6efd

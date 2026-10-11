@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T45 device_audit.py workflow animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --blue:#dbeafe; --blue-b:#1d4ed8; --green:#e3f6ee; --green-b:#2fb380;
+          --yel:#fff4d6; --yel-b:#c99a06; --red:#f7b2b2; --red-b:#b42318; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:540px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:282px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-family:Menlo,monospace; font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.38); }
+  .item { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:4px 7px; margin-bottom:5px;
+          white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .item small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ok { background:var(--green); border-color:var(--green-b); }
+  .bad { background:var(--red); border-color:var(--red-b); }
+  .wait { background:var(--yel); border-color:var(--yel-b); }
+  .key { background:var(--blue); border-color:var(--blue-b); }
+  .new { box-shadow:0 0 0 3px rgba(29,78,216,.35); }
+  .empty { color:#aaa; font-size:13px; font-style:italic; }
+  .arrowrow { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; height:56px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .cmd.local::before { content:"⚙ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T45 · <span class="pill">Reading the workflow</span> device_audit.py, call by call</h1>
+  <div class="sub">Each lane is one variable in <code>labs/T45/device_audit.py</code>. Each frame = one HTTP call (or one local step) and what it changed.</div>
+  <div class="lanes">
+    <div class="lane" id="L0"><h3>🔐 [1] Auth</h3><div class="where">token</div><div id="C0"></div></div>
+    <div class="lane" id="L1"><h3>📥 [2] Request</h3><div class="where">devices</div><div id="C1"></div></div>
+    <div class="lane" id="L2"><h3>🔍 [3] Parse</h3><div class="where">unreachable</div><div id="C2"></div></div>
+    <div class="lane" id="L3"><h3>⚙️ [4] Act · [5] Confirm</h3><div class="where">task_id / task</div><div id="C3"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (t, s, cls) => `<div class="item ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const E = '<div class="empty">(empty)</div>';
+const TOK = I('"eyJhbGciOiJSUzI1NiJ9…"', 'resp.json()["Token"]', "key");
+const P1 = ["cat9k-core-1", "cat9k-acc-1", "cat9k-acc-2"];
+const P2 = ["isr4k-edge-1", "cat9k-acc-3", "c9800-wlc-1"];
+const P3 = ["cat9k-acc-4"];
+const BAD = new Set(["isr4k-edge-1", "cat9k-acc-4"]);
+const list = (names, fresh=[]) => names.map(h => I(h, "", (BAD.has(h) ? "bad" : "ok") + (fresh.includes(h) ? " new" : ""))).join("");
+const UNR = I("isr4k-edge-1", "Unreachable", "bad") + I("cat9k-acc-4", "Unreachable", "bad");
+const frames = [
+  { active:0, c:[TOK, E, E, E], cmd:{at:0, t:"POST /dna/system/api/v1/auth/token"},
+    txt:"<b>Auth comes first.</b> Basic <code>user:pass</code> in, token out of the JSON body. Every later call sends it as <code>X-Auth-Token</code>." },
+  { active:1, c:[TOK, list(P1, P1), E, E], cmd:{at:1, t:"GET network-device?offset=1&limit=3"},
+    txt:"Page 1 → <b>3 devices</b>. A full page means there may be more, so the <code>while</code> loop asks again." },
+  { active:1, c:[TOK, list([...P1, ...P2], P2), E, E], cmd:{at:1, t:"GET network-device?offset=4&limit=3"},
+    txt:"<code>offset += PAGE_SIZE</code> → 4. Page 2 → <b>6 devices</b> so far. <b>One GET is not the whole inventory.</b>" },
+  { active:1, c:[TOK, list([...P1, ...P2, ...P3], P3), E, E], cmd:{at:1, t:"GET network-device?offset=7&limit=3"},
+    txt:"Page 3 holds only 1 device: <b>short page = last page</b>, loop returns. <code>Found 7 devices</code>." },
+  { active:2, c:[TOK, list([...P1, ...P2, ...P3]), UNR, E], cmd:{at:2, t:"for device in devices:", local:true},
+    txt:"No network call here. The <code>for</code> loop keeps <code>reachabilityStatus != \"Reachable\"</code> → <b>2 devices</b>." },
+  { active:3, c:[TOK, list([...P1, ...P2, ...P3]), UNR, I('taskId "0f3525ca-…"', "202 Accepted · queued", "wait")],
+    cmd:{at:3, t:"PUT network-device/sync [id, id]"},
+    txt:"<b>Act:</b> PUT the two ids. <code>202</code> returns a <code>taskId</code>: <b>accepted, NOT finished yet.</b>" },
+  { active:3, c:[TOK, list([...P1, ...P2, ...P3]), UNR, I('taskId "0f3525ca-…"', "", "wait") + I('"Synchronizing devices"', "no endTime yet", "wait")],
+    cmd:{at:3, t:"GET /dna/intent/api/v1/task/0f3525ca-…"},
+    txt:"<b>Confirm:</b> poll the task. No <code>endTime</code> yet, so sleep 1 s and poll again." },
+  { active:3, c:[TOK, list([...P1, ...P2, ...P3]), UNR, I('taskId "0f3525ca-…"', "", "ok") + I('"Device resync completed"', "endTime set · isError false", "ok")],
+    cmd:{at:3, t:"GET /dna/intent/api/v1/task/0f3525ca-…"},
+    txt:"<code>endTime</code> present and <code>isError</code> false → prints <code>Resync finished OK</code>. <b>Only now is the change done.</b>" },
+];
+function show(i) {
+  const f = frames[i];
+  for (let k = 0; k < 4; k++) {
+    document.getElementById("C" + k).innerHTML = f.c[k];
+    document.getElementById("L" + k).classList.toggle("active", f.active === k);
+  }
+  const lanes = document.querySelectorAll(".lane");
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div");
+    d.className = "cmd" + (f.cmd.local ? " local" : ""); d.textContent = f.cmd.t;
+    a.appendChild(d);
+    const sheetLeft = document.querySelector(".sheet").getBoundingClientRect().left;
+    const lane = lanes[f.cmd.at].getBoundingClientRect();
+    if (f.cmd.at === 3) d.style.right = "0px";          // last lane: right-align so long paths fit
+    else d.style.left = (lane.left - sheetLeft - 28) + "px";
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, k) => `<i class="${k <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+flowchart LR
+    KB["1 Knowledge base<br/>docs, FAQs<br/>free"]
+    FO["2 Community forums<br/>Cisco Community, Developer hub<br/>free, log in to post"]
+    CH["Chat room<br/>free, community-answered"]
+    CA["3 Developer support CASE<br/>1 ticket = 1 case<br/>Cisco developer engineer"]
+    SBX["Sandbox broken / reset?<br/>DevNet Sandbox<br/>community board"]
+    KB --> FO --> CA
+    FO --- CH
+    FO -.-> SBX
+    NOTE["no new tickets sold since<br/>30 Apr 2022; existing ones<br/>honoured until they expire"]
+    CA -.- NOTE
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef yellow fill:#fff3cd,stroke:#d4a106,color:#111
+    class KB,FO,CH,SBX green
+    class CA blue
+    class NOTE yellow

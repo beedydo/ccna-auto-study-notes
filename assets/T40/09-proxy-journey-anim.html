@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T40 HTTPS through a corporate proxy animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --app:#eeeeee; --app-b:#555; --px:#fff3cd; --px-b:#e0a800; --sv:#d4edda; --sv-b:#28a745;
+          --bad:#f8d7da; --bad-b:#dc3545; --ok:#d1ecf1; --ok-b:#17a2b8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:270px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.app { border-color:var(--app-b); } .lane.px { border-color:var(--px-b); } .lane.sv { border-color:var(--sv-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .card { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.4; }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11.5px; }
+  .card.n { background:#fafafa; border-color:#999; } .card.bad { background:var(--bad); border-color:var(--bad-b); }
+  .card.ok { background:var(--ok); border-color:var(--ok-b); } .card.good { background:var(--sv); border-color:var(--sv-b); }
+  .card.warn { background:var(--px); border-color:var(--px-b); }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .num { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T40 · <span class="pill">HTTPS via a corp proxy</span> who answers each step?</h1>
+  <div class="sub">The <code>labs/T40/conn_doctor.py</code> section 5 calls, one per frame. Watch which box the error comes from.</div>
+  <div class="lanes">
+    <div class="lane app" id="app"><h3>💻 App (requests)</h3><div class="where">trust store: certifi</div><div id="app-f"></div></div>
+    <div class="lane px" id="px"><h3>🧭 Corp proxy</h3><div class="where">127.0.0.1:18143</div><div id="px-f"></div></div>
+    <div class="lane sv" id="sv"><h3>🖥️ API server</h3><div class="where">127.0.0.1:18144</div><div id="sv-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="num" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (cls, t, s="") => `<div class="card ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const idle = C("n ghost", "not contacted", "nothing reached the server");
+const frames = [
+  { active:"px", cmd:{at:0, t:"CONNECT 127.0.0.1:18144"},
+    app:C("n", "proxies=http://127.0.0.1:18143", "no credentials"),
+    px:C("bad", "407 Proxy Authentication Required", 'Proxy-Authenticate: Basic realm="corp-proxy"'),
+    sv:idle,
+    txt:"No credentials: the <b>proxy</b> answers <code>407</code>. The server never sees the request." },
+  { active:"app", cmd:{at:0, t:"407", back:true},
+    app:C("bad", "ProxyError", "Tunnel connection failed: 407 Proxy Authentication Required"),
+    px:C("bad", "407 Proxy Authentication Required"),
+    sv:idle,
+    txt:"For HTTPS, <code>requests</code> raises <code>ProxyError</code> (no response object). For plain HTTP you get <code>r.status_code == 407</code>." },
+  { active:"px", cmd:{at:0, t:"CONNECT + Proxy-Authorization: Basic …"},
+    app:C("n", "http://labuser:labpass@127.0.0.1:18143", "credentials in the proxy URL"),
+    px:C("good", "200 Connection established", "opens TCP to :18144 and relays bytes"),
+    sv:C("n", "TCP connection from the proxy"),
+    txt:"With credentials the proxy builds a <b>CONNECT tunnel</b>. Everything after this is TLS, end to end through the tunnel." },
+  { active:"app", cmd:{at:1, t:"cert: issued by Corp TLS Inspection CA", back:true},
+    app:C("bad", "SSLError", "CERTIFICATE_VERIFY_FAILED: unable to get local issuer certificate"),
+    px:C("good", "tunnel open"),
+    sv:C("warn", "cert CN=localhost", "issuer: O=Corp, CN=Corp TLS Inspection CA"),
+    txt:"The cert is signed by a <b>private corporate CA</b> that the app doesn't trust. The server is fine; the <b>client trust store</b> is the problem." },
+  { active:"app", cmd:{at:0, t:"verify=CORP_CA (corp-ca.pem)"},
+    app:C("ok", "trust: corp-ca.pem", "or REQUESTS_CA_BUNDLE / curl --cacert"),
+    px:C("good", "tunnel open"),
+    sv:C("warn", "cert CN=localhost", "issuer: Corp TLS Inspection CA ✔ trusted"),
+    txt:"Trust the corporate CA: <code>verify=CORP_CA</code>. Not <code>verify=False</code>, which turns off checking for every server." },
+  { active:"sv", cmd:{at:1, t:"GET /health", back:false},
+    app:C("good", "200 OK", '{"status": "ok"}'),
+    px:C("good", "tunnel open", "relays encrypted bytes"),
+    sv:C("good", "200 OK", '{"status": "ok"}'),
+    txt:"Proxy auth ✔, TLS ✔, so the request finally reaches the API: <code>200 OK</code>." },
+];
+const pos = [0, 1].map(i => 18 + i * (1044/3 + 7) + 200);
+function show(i) {
+  const f = frames[i];
+  for (const k of ["app","px","sv"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) {
+    const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+    d.textContent = f.cmd.t; d.style.left = (pos[f.cmd.at] - 130) + "px";
+    a.appendChild(d);
+  }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+flowchart TD
+    SYS["sys<br/><i>topSystem</i>"] --> INTF["sys/intf<br/><i>interfaceEntity</i>"]
+    SYS --> BD["sys/bd<br/><i>bdEntity</i>"]
+    INTF --> E1["sys/intf/phys-[eth1/1]<br/><i>l1PhysIf</i>"]
+    INTF --> E5["sys/intf/phys-[eth1/5]<br/><i>l1PhysIf</i>"]
+    BD --> V10["sys/bd/bd-[vlan-10]<br/><i>l2BD</i>"]
+    BD --> V30["sys/bd/bd-[vlan-30]<br/><i>l2BD</i>"]
+    E1 -.-> Q2["GET /api/class/l1PhysIf.json<br/>→ EVERY object of a class"]
+    E5 -.-> Q2
+    E5 -.-> Q1["GET /api/mo/sys/intf/phys-[eth1/5].json<br/>→ ONE object by its DN"]
+    V10 -.-> Q3["GET /api/mo/sys/bd.json?query-target=children<br/>→ the children of one DN"]
+    V30 -.-> Q3
+    style Q1 fill:#d4edda,stroke:#28a745
+    style Q2 fill:#d1ecf1,stroke:#17a2b8
+    style Q3 fill:#fff3cd,stroke:#e0a800

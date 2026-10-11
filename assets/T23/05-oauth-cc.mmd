@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant A as Token endpoint
+    participant R as Product API
+    Note over S: API client created in the product UI:<br/>client ID + secret (Umbrella: key + secret)
+    S->>A: POST /iroh/oauth2/token (XDR)<br/>POST /auth/v2/token (Umbrella / Secure Connect)<br/>Basic id:secret · body grant_type=client_credentials (form)
+    A-->>S: 200 {"access_token": "eyJ...", "token_type": "bearer",<br/>"expires_in": 600 (XDR) or 3600 (Umbrella)}
+    S->>R: Authorization: Bearer eyJ...
+    R-->>S: 200 data
+    Note over S,A: token expired → 401 → ask for a new one (no refresh token in this flow)

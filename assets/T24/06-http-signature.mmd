@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant C as Client: keyId + PRIVATE key
+    participant I as Intersight: PUBLIC key per keyId
+    Note over C: 1. Digest = SHA-256=base64(sha256(body))<br/>2. Date = now (GMT)
+    Note over C: 3. string to sign =<br/>(request-target): get /api/v1/compute/PhysicalSummaries?...<br/>host: intersight.com<br/>date: Sat, 10 Oct 2026 12:24:01 GMT<br/>digest: SHA-256=47DEQ...
+    Note over C: 4. signature = sign(string, private key)
+    C->>I: GET /api/v1/compute/PhysicalSummaries?$select=...<br/>Date · Digest · Authorization: Signature keyId="...",<br/>algorithm="hs2019",headers="(request-target) host date digest",signature="..."
+    Note over I: look up public key by keyId,<br/>rebuild the same string, verify signature,<br/>check Digest vs body and Date is fresh
+    alt signature valid
+        I-->>C: 200 · {"ObjectType": "compute.PhysicalSummary.List", "Results": [...]}
+    else missing / wrong / stale
+        I-->>C: 401 · {"code": "AuthenticationFailure", ...}
+    end
+    Note over C,I: No login call, no token, no cookie: EVERY request is signed.<br/>The private key never leaves the client.

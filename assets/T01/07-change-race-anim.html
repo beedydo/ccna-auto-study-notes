@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T01 waterfall vs agile: a late change</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --bl:#d1ecf1; --bl-b:#17a2b8; --gr:#d4edda; --gr-b:#28a745;
+          --ye:#fff3cd; --ye-b:#e0a800; --rd:#dc3545; --rd-b:#a71d2a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:570px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:12px; }
+  .months { display:grid; grid-template-columns:150px repeat(6, minmax(0,1fr)) 120px; gap:8px; font-size:12px; color:var(--muted); font-weight:700; margin-bottom:4px; }
+  .months div { text-align:center; } .months .now { color:#fff; background:var(--ink); border-radius:6px; }
+  .lane { display:grid; grid-template-columns:150px repeat(6, minmax(0,1fr)) 120px; gap:8px; align-items:stretch;
+          border:2.5px solid var(--line); border-radius:12px; background:#fff; padding:10px; margin-bottom:10px; height:132px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .lane h3 { margin:0; font-size:17px; } .lane .where { font-size:12px; color:var(--muted); margin-top:3px; }
+  .cell { border:2px solid; border-radius:8px; padding:6px; font-size:12.5px; line-height:1.3; text-align:center;
+          display:flex; flex-direction:column; justify-content:center; }
+  .cell small { display:block; color:var(--muted); font-size:11px; margin-top:2px; }
+  .b { background:var(--bl); border-color:var(--bl-b); } .g { background:var(--gr); border-color:var(--gr-b); }
+  .y { background:var(--ye); border-color:var(--ye-b); } .r { background:var(--rd); border-color:var(--rd-b); }
+  .r, .r small { color:#fff; }
+  .ghost { opacity:.25; border-style:dashed; background:#fff; border-color:#999; }
+  .score { border-left:2px dashed #bbb; padding-left:8px; font-size:12px; display:flex; flex-direction:column; justify-content:center; }
+  .score b { font-size:24px; display:block; }
+  .cmdrow { height:44px; position:relative; }
+  .cmd { position:absolute; top:4px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .legend { display:flex; gap:10px; margin-top:4px; font-size:12.5px; }
+  .legend span { border:2px solid; border-radius:6px; padding:3px 10px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T01 · <span class="pill">Waterfall vs Agile</span> same project, same late change</h1>
+  <div class="sub">One network-automation tool, six months. Each frame = one month. Watch when the customer first sees working software, and what a month-4 change costs.</div>
+  <div class="months" id="months"></div>
+  <div class="lane" id="wf"></div>
+  <div class="lane" id="ag"></div>
+  <div class="legend"><span class="b">planned phase</span><span class="g">working increment shipped</span><span class="r">rework caused by the change</span><span class="y">first release</span></div>
+  <div class="cmdrow" id="cmd"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (t, s, k) => `<div class="cell ${k}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const G = C("", "", "ghost");
+const WF = [C("Requirements","spec signed off","b"), C("Design","docs approved","b"), C("Build","code","b"),
+            C("Test","change arrives","r"), C("Back to Design","rework + re-test","r"), C("Release v1.0","late, first demo","y")];
+const AG = [C("Sprint 1","increment 1","g"), C("Sprint 2","increment 2","g"), C("Sprint 3","increment 3","g"),
+            C("Sprint 4","IPv6 on top of backlog","g"), C("Sprint 5","IPv6 shipped","g"), C("Sprint 6","increment 6","g")];
+const frames = [
+  { wf:1, ag:1, wfs:0, ags:1, active:"ag", cmd:null,
+    txt:"Month 1. Waterfall writes and signs off the full spec. Agile already demos <b>working increment 1</b> at the sprint review." },
+  { wf:2, ag:2, wfs:0, ags:2, active:"wf", cmd:null,
+    txt:"Month 2. Waterfall designs. Agile reorders the backlog from review feedback. Waterfall customer has still seen <b>no software</b>." },
+  { wf:3, ag:3, wfs:0, ags:3, active:"wf", cmd:null,
+    txt:"Month 3. Waterfall builds the whole thing in one go. Agile ships increment 3." },
+  { wf:4, ag:4, wfs:0, ags:4, active:"wf", cmd:{t:"change request: add IPv6 support", at:520},
+    txt:"Month 4. The customer asks for IPv6. Waterfall is in Test, so the change goes <b>back through design and build</b>. Agile just puts it at the top of the product backlog." },
+  { wf:5, ag:5, wfs:0, ags:5, active:"wf", cmd:null,
+    txt:"Month 5. Waterfall is redoing design, code and tests. Agile already <b>shipped IPv6</b> in one sprint." },
+  { wf:6, ag:6, wfs:1, ags:6, active:"wf", cmd:null,
+    txt:"Month 6. Waterfall releases once: <b>first feedback after 6 months</b>. Agile had 6 feedback points. Late change = expensive in waterfall, routine in agile." },
+];
+function lane(name, where, cells, n, score, label) {
+  return `<div><h3>${name}</h3><div class="where">${where}</div></div>` +
+    cells.map((c, j) => j < n ? c : G).join("") +
+    `<div class="score"><b>${score}</b>${label}</div>`;
+}
+function show(i) {
+  const f = frames[i];
+  document.getElementById("months").innerHTML = "<div></div>" +
+    [1,2,3,4,5,6].map(m => `<div class="${m === i + 1 ? "now" : ""}">Month ${m}</div>`).join("") + "<div>customer saw</div>";
+  document.getElementById("wf").innerHTML = lane("🌊 Waterfall", "phase-gated, one release", WF, f.wf, f.wfs, "working releases");
+  document.getElementById("ag").innerHTML = lane("🔁 Agile (Scrum)", "1-month sprints", AG, f.ag, f.ags, "working increments");
+  document.getElementById("wf").classList.toggle("active", f.active === "wf");
+  document.getElementById("ag").classList.toggle("active", f.active === "ag");
+  const c = document.getElementById("cmd"); c.innerHTML = "";
+  if (f.cmd) { const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t; d.style.left = f.cmd.at + "px"; c.appendChild(d); }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

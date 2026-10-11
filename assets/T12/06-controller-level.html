@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T12 controller-level management</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client { width: 520px; margin: 0 auto; }
+  .ctrl > .zb { justify-content: space-around; flex-wrap: nowrap; gap: 8px; padding: 16px 6px; }
+  .ctrl .node, .row .node { width: 200px; }
+  .row { gap: 16px; }
+  .row > .zone > .zb { padding: 16px 6px 18px; gap: 6px; flex-wrap: nowrap; justify-content: space-around; }
+  .row .node.n { width: 88px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T12 · <span class="pill">Controller-level</span> management</h1>
+    <div class="meta"><b>200-901 blueprint 5.2</b><br>Northbound up to apps, southbound down to devices<br>Section 6 of <code>labs/T12/automation_levels.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Your app / script <small>Python, Ansible, curl</small></div>
+      <div class="zb">
+        <div class="node w" id="app" data-icon="script"><div class="nm">1 northbound call per intent</div><div class="sub">never names a switch or a port</div></div>
+      </div>
+    </div>
+
+    <div class="gap l" style="height: 120px"></div>
+
+    <div class="zone ctrl">
+      <div class="zh">Controllers</div>
+      <div class="zb">
+        <div class="node hl" id="cc" data-icon="gui"><div class="nm">Catalyst Center</div><div class="sub">(DNA Center)<br>campus / branch</div></div>
+        <div class="node hl" id="apic" data-icon="controller"><div class="nm">APIC</div><div class="sub">ACI data centre</div></div>
+        <div class="node hl" id="sdw" data-icon="gui"><div class="nm">SD-WAN Manager</div><div class="sub">(vManage)<br>WAN</div></div>
+        <div class="node hl" id="mer" data-icon="cloud"><div class="nm">Meraki dashboard</div><div class="sub">cloud-managed</div></div>
+      </div>
+    </div>
+
+    <div class="gap l" style="height: 110px"></div>
+
+    <div class="row">
+      <div class="zone site" id="zcampus">
+        <div class="zh">Campus / branch</div>
+        <div class="zb">
+          <div class="node n" data-icon="switch"><div class="nm">Catalyst switch</div></div>
+          <div class="node n" data-icon="router"><div class="nm">router</div></div>
+          <div class="node n" data-icon="wlc"><div class="nm">WLC</div></div>
+        </div>
+      </div>
+      <div class="zone fabric" id="zaci">
+        <div class="zh">ACI fabric</div>
+        <div class="zb">
+          <div class="node n" data-icon="l3switch"><div class="nm">spine</div><div class="sub">Nexus 9000</div></div>
+          <div class="node n" data-icon="switch"><div class="nm">leaf</div><div class="sub">Nexus 9000</div></div>
+        </div>
+      </div>
+      <div class="zone site" id="zwan">
+        <div class="zh">WAN branches</div>
+        <div class="zb">
+          <div class="node n" data-icon="router"><div class="nm">WAN Edge</div></div>
+          <div class="node n" data-icon="router"><div class="nm">WAN Edge</div></div>
+        </div>
+      </div>
+      <div class="zone ext" id="zmer">
+        <div class="zh">Meraki devices</div>
+        <div class="zb">
+          <div class="node n" data-icon="firewall"><div class="nm">MX</div></div>
+          <div class="node n" data-icon="switch"><div class="nm">MS</div></div>
+          <div class="node n" data-icon="ap"><div class="nm">MR</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Lab:</b> <code>POST /ctrl/api/v1/intents</code> → <code>202 Accepted</code> + taskId, then <code>GET</code> the task → <code>SUCCESS</code>. <b>2 calls</b> (vs 8 at device level); the controller did 5 southbound PATCHes.</div>
+      <div class="note trap"><b>Trap:</b> an app calling Catalyst Center's REST API uses the <b>northbound</b> API. Southbound = controller → device (NETCONF, OpenFlow, OpFlex, CLI, SNMP).</div>
+      <div class="note"><b>Each controller</b> holds inventory, topology, policy and intent for its domain. <b><code>202</code> ≠ done:</b> writes run as tasks; poll the task ID. <b>Cost:</b> you depend on the controller and on what its API exposes.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>northbound API (REST/JSON over HTTPS)</span>
+    <span><i class="sw mgmt"></i>southbound management / config</span>
+    <span><i class="sw control"></i>southbound policy / control (OpFlex)</span>
+    <span style="margin-left:auto">Blue glow = the one box your code talks to per domain</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "app", b: "cc", k: "api", s: "b-t", ao: -36, mid: 0.3, label: "<code>X-Auth-Token</code>", t: 0.9 },
+  { a: "app", b: "apic", k: "api", s: "b-t", ao: -12, mid: 0.6, label: "<code>aaaLogin</code> cookie", t: 0.8 },
+  { a: "app", b: "sdw", k: "api", s: "b-t", ao: 12, mid: 0.6, label: "session cookie + XSRF", t: 0.8 },
+  { a: "app", b: "mer", k: "api", s: "b-t", ao: 36, mid: 0.3, label: "API key", t: 0.9 },
+  { a: "cc", b: "zcampus", k: "mgmt", s: "b-t", label: "SSH/CLI, SNMP,<br>NETCONF" },
+  { a: "apic", b: "zaci", k: "control", s: "b-t", label: "OpFlex (policy)" },
+  { a: "sdw", b: "zwan", k: "mgmt", s: "b-t", label: "NETCONF over<br>DTLS/TLS" },
+  { a: "mer", b: "zmer", k: "mgmt", s: "b-t", dir: "back", label: "device-initiated<br>cloud tunnel" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

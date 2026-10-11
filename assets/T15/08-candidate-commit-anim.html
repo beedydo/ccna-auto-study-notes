@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T15 NETCONF candidate commit animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --cl:#e8dcf7; --cl-b:#7b4bc4; --ss:#d1ecf1; --ss-b:#17a2b8;
+          --ca:#fff3cd; --ca-b:#e0a800; --ru:#d4edda; --ru-b:#28a745; --red:#b42318; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, 1fr); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:262px; padding:10px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.cl { border-color:var(--cl-b); } .lane.ss { border-color:var(--ss-b); }
+  .lane.ca { border-color:var(--ca-b); } .lane.ru { border-color:var(--ru-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; line-height:1.4; }
+  .cl .box { background:var(--cl); border-color:var(--cl-b); } .ss .box { background:var(--ss); border-color:var(--ss-b); }
+  .ca .box { background:var(--ca); border-color:var(--ca-b); } .ru .box { background:var(--ru); border-color:var(--ru-b); }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .box.changed { outline:3px solid #2fb380; outline-offset:1px; }
+  .ghost { opacity:.28; border-style:dashed !important; }
+  .badge { display:inline-block; font-family:-apple-system,Arial,sans-serif; font-size:12px; font-weight:700; padding:3px 8px; border-radius:6px; margin-bottom:6px; }
+  .badge.lock { background:var(--ink); color:#fff; } .badge.live { background:#28a745; color:#fff; }
+  .badge.notlive { background:#fde8e8; color:var(--red); border:1px solid var(--red); }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T15 · <span class="pill">NETCONF</span> a safe change, start to finish</h1>
+  <div class="sub">Watch the Gi2 <code>description</code> move from the script to candidate to running. Each frame = one RPC from <code>labs/T15/netconf_walkthrough.py</code>.</div>
+  <div class="lanes">
+    <div class="lane cl" id="cl"><h3>🐍 Script</h3><div class="where">ncclient manager</div><div id="cl-f"></div></div>
+    <div class="lane ss" id="ss"><h3>🔐 Session</h3><div class="where">SSH, TCP 830</div><div id="ss-f"></div></div>
+    <div class="lane ca" id="ca"><h3>📝 candidate</h3><div class="where">staging datastore</div><div id="ca-f"></div></div>
+    <div class="lane ru" id="ru"><h3>⚙️ running</h3><div class="where">active config</div><div id="ru-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (t, s, cls="") => `<div class="box ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const G = (d, cls="") => B(`Gi2 description<br>"${d}"`, "", cls);
+const OLD = "Network Interface", NEW = "uplink to core";
+const lock = '<span class="badge lock">🔒 locked by 21</span>';
+const live = '<span class="badge live">LIVE on the router</span>';
+const notlive = '<span class="badge notlive">not live yet</span>';
+const frames = [
+  { active:"ss", cl:B("manager.connect(<br>host=HOST, port=PORT)", "PORT: 8830 mock · 830 real"), ss:B("TCP 830 open", "subsystem: netconf"),
+    ca:G(OLD), ru:live + G(OLD),
+    cmd:{at:0, t:"ssh -p 830 -s netconf"},
+    txt:"Open SSH to <b>TCP 830</b> and ask for the <code>netconf</code> subsystem. No config has moved yet." },
+  { active:"ss", cl:B(":candidate True", ":writable-running False"), ss:B("&lt;hello&gt; ⇄ &lt;hello&gt;", "session-id 21 · base:1.1 → chunked"),
+    ca:G(OLD), ru:live + G(OLD),
+    cmd:{at:1, t:"<hello> capabilities", back:true},
+    txt:"Both sides send <code>&lt;hello&gt;</code>. The server lists <b>capabilities</b>, so the script learns edits must go to <b>candidate</b>." },
+  { active:"ca", cl:B("m.lock(<br>target=\"candidate\")", "&lt;ok/&gt;"), ss:B("session-id 21"),
+    ca:lock + G(OLD), ru:live + G(OLD),
+    cmd:{at:1, t:"<lock> candidate"},
+    txt:"<code>&lt;lock&gt;</code> candidate. Session 22 now gets <code>lock-denied</code> with <code>session-id 21</code> in error-info." },
+  { active:"ca", cl:B("m.edit_config(<br>target=\"candidate\")", "&lt;ok/&gt;"), ss:B("session-id 21"),
+    ca:lock + notlive + G(NEW, "changed"), ru:live + G(OLD),
+    cmd:{at:1, t:"<edit-config> merge"},
+    txt:"<code>&lt;edit-config&gt;</code> returns <code>&lt;ok/&gt;</code>, but only candidate changed. <b>Running still says \"Network Interface\".</b>" },
+  { active:"ru", cl:B("m.commit()", "&lt;ok/&gt;"), ss:B("session-id 21"),
+    ca:lock + G(NEW), ru:live + G(NEW, "changed"),
+    cmd:{at:2, t:"<commit>"},
+    txt:"<code>&lt;commit&gt;</code> copies candidate into running. <b>Now the change is live.</b>" },
+  { active:"ca", cl:B("m.unlock(<br>target=\"candidate\")", "&lt;ok/&gt;"), ss:B("session-id 21"),
+    ca:G(NEW), ru:live + G(NEW),
+    cmd:{at:1, t:"<unlock> candidate"},
+    txt:"<code>&lt;unlock&gt;</code> <b>after</b> commit. Unlocking before commit would have <b>discarded</b> the candidate edit." },
+];
+const lane = 1044 / 4;
+function show(i) {
+  const f = frames[i];
+  for (const k of ["cl","ss","ca","ru"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t;
+  a.appendChild(d);
+  const center = (f.cmd.at + 1) * (lane + 4.5) - 4.5;        // boundary between lane at and at+1
+  d.style.left = Math.max(0, center - d.offsetWidth / 2) + "px";
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+sequenceDiagram
+  autonumber
+  participant B as Bot (your server)
+  participant W as Webex cloud
+  participant U as Bob (Webex app)
+  B->>W: POST /webhooks {resource: messages, event: created,<br/>targetUrl, filter: roomId=..., secret}
+  W-->>B: 200 webhook (status "active")
+  U->>W: "@NOC Alerts status" in the space
+  W->>B: POST targetUrl {resource, event, data: {id, roomId, personEmail}}<br/>X-Spark-Signature: HMAC-SHA1(secret, body)
+  Note over B: verify signature<br/>data has IDs only, NO text
+  B->>W: GET /messages/{data.id} (Bearer bot token)
+  W-->>B: 200 {"text": "NOC Alerts status", ...}
+  B->>W: POST /messages {roomId, parentId, markdown}
+  W-->>U: threaded reply "**3 alerts open**"

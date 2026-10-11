@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T25 overview: NSO + Cisco Modeling Labs</title>
+<style>
+  :root {
+    --blue: #17a2b8; --blue-soft: #d1ecf1; --green: #28a745; --green-soft: #d4edda;
+    --yellow: #e0a800; --yellow-soft: #fff3cd; --red: #dc3545; --red-soft: #f8d7da;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--blue); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--blue); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  .panel { background: #fff; border: 2.5px solid var(--line); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+  .panel.span2 { grid-column: span 2; }
+  .panel.span3 { grid-column: span 3; }
+  .ph { display: flex; align-items: baseline; gap: 8px; }
+  .ph .icon { font-size: 24px; }
+  .ph h2 { margin: 0; font-size: 19px; font-weight: 800; }
+  .ph .ids { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .lead { font-size: 13.5px; line-height: 1.45; }
+  .item { font-size: 13px; line-height: 1.4; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 6px 8px; font-size: 13px; line-height: 1.4; margin-top: auto; }
+  .trap .n { background: var(--trap-ink); }
+  .trap b { color: var(--trap-ink); }
+
+  /* system map */
+  .map { display: grid; grid-template-columns: minmax(0, 0.9fr) 28px minmax(0, 1.5fr) 28px minmax(0, 1.1fr) 28px minmax(0, 0.7fr); align-items: stretch; }
+  .zone { border: 2px solid; border-radius: 9px; padding: 6px 8px; font-size: 12.3px; line-height: 1.45; }
+  .zone h4 { margin: -6px -8px 6px; padding: 4px 8px; font-size: 12.5px; color: #fff; border-radius: 6px 6px 0 0; }
+  .z-nb { border-color: #7b4bc4; background: #f3ecfb; } .z-nb h4 { background: #7b4bc4; }
+  .z-core { border-color: var(--blue); background: var(--blue-soft); } .z-core h4 { background: var(--blue); }
+  .z-ned { border-color: var(--yellow); background: var(--yellow-soft); } .z-ned h4 { background: var(--yellow); }
+  .z-dev { border-color: var(--line); background: #fff; } .z-dev h4 { background: var(--line); }
+  .box { background: #fff; border: 1.5px solid var(--line); border-radius: 6px; padding: 3px 6px; margin-bottom: 5px; }
+  .box.cdb { background: var(--green-soft); border-color: var(--green); }
+  .arr { display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 800; }
+
+  /* mini flows */
+  .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12.3px; }
+  .chip { border: 2px solid; border-radius: 7px; padding: 3px 7px; background: #fff; }
+  .chip.ok { border-color: var(--green); background: var(--green-soft); }
+  .chip.part { border-color: var(--yellow); background: var(--yellow-soft); }
+  .chip.bad { border-color: var(--red); background: var(--red-soft); }
+  .chip.rec { border-color: var(--blue); background: var(--blue-soft); }
+  .sync { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) minmax(0, 1fr); gap: 6px; align-items: center; font-size: 12.3px; text-align: center; }
+  .sync .mid div { margin: 3px 0; }
+
+  table.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.3px; }
+  table.cmp th, table.cmp td { border: 1.5px solid var(--line); padding: 4px 6px; text-align: left; vertical-align: top; }
+  table.cmp th { background: #eee; }
+  table.cmp td.best { background: var(--blue-soft); font-weight: 700; }
+
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+  footer .k5::before { background: var(--green-soft); border: 1px solid var(--green); } footer .k6::before { background: var(--yellow-soft); border: 1px solid var(--yellow); }
+  footer .k7::before { background: var(--red-soft); border: 1px solid var(--red); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T25 · <span class="pill">NSO + Cisco Modeling Labs</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.2, 5.3, 5.6</b><br>Every T25 concept on one page<br>Code from <code>labs/T25/</code></div>
+  </header>
+
+  <div class="grid">
+    <!-- 1. WHAT + ARCHITECTURE -->
+    <div class="panel span3">
+      <div class="ph"><span class="icon">🧠</span><h2>NSO = one brain for a multivendor network</h2><span class="ids">T25.01 · T25.02</span></div>
+      <div class="lead"><b>Network Services Orchestrator</b>: model-driven (YANG everywhere), transactional orchestration. You describe a <b>service</b> (intent); NSO maps it to <b>device config</b> for every vendor and pushes it through <b>NEDs</b>.</div>
+      <div class="map">
+        <div class="zone z-nb"><h4>① Northbound (you)</h4>
+          <div class="box">NSO CLI · Web UI</div>
+          <div class="box">RESTCONF <code>:8080/restconf</code></div>
+          <div class="box">NETCONF <code>:2022</code></div>
+          <div class="box">JSON-RPC · Python/Java APIs</div></div>
+        <div class="arr">➜</div>
+        <div class="zone z-core"><h4>② NSO core: one transaction engine</h4>
+          <div class="box"><b>Service Manager</b>: service <b>YANG</b> model + <b>template</b> / Python = mapping · FASTMAP</div>
+          <div class="box"><b>Device Manager</b>: sync, NED dispatch, per-device diffs</div>
+          <div class="box cdb">🗄️ <b>CDB</b>: services + every device's config, as YANG <code>tailf-ncs:devices/device=ios0/config</code></div></div>
+        <div class="arr">➜</div>
+        <div class="zone z-ned"><h4>③ NEDs (one per device type)</h4>
+          <div class="box"><code>cisco-ios-cli</code> → CLI/SSH</div>
+          <div class="box"><code>cisco-iosxr-cli</code> → CLI/SSH</div>
+          <div class="box"><code>juniper-junos-nc</code> → NETCONF</div>
+          <div class="box">SNMP NED · generic NED (REST…)</div></div>
+        <div class="arr">➜</div>
+        <div class="zone z-dev"><h4>④ Devices</h4>
+          <div class="box">ios0</div><div class="box">xr0</div><div class="box">junos0</div><div class="box">any vendor</div></div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> NEDs speak the device's <b>native</b> interface (CLI, NETCONF, SNMP), so the device needs <b>no</b> agent and <b>no</b> YANG support. YANG lives in NSO. "Multivendor + one model" = NSO.</div>
+    </div>
+
+    <!-- 2. TRANSACTIONS -->
+    <div class="panel">
+      <div class="ph"><span class="icon">⚛️</span><h2>Transactions</h2><span class="ids">T25.03</span></div>
+      <div class="lead">One commit spans <b>many devices</b>: all succeed or <b>none</b> change (rollback).</div>
+      <div class="row"><span class="chip rec">POST service</span>➜<span class="chip part">3 diffs</span>➜<span class="chip bad">xr0 fails</span>➜<span class="chip ok">all reverted</span></div>
+      <div class="item"><span class="n">1</span>preview, commit nothing<br><code>?dry-run=native</code> · CLI <code>commit dry-run outformat native</code></div>
+      <div class="item"><span class="n">2</span>undo file per commit<br><code>?rollback-id=true</code> → <code>{"rollback": {"id": 10002}}</code></div>
+      <div class="item"><span class="n">3</span><b>FASTMAP</b>: service remembers what it created → change = re-run + diff, delete = reverse diff<br><code>no interface Loopback100</code> only on ios0 + xr0</div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> dry-run changes <b>nothing</b> (not CDB, not devices). FASTMAP = clean update/remove, not "fast".</div>
+    </div>
+
+    <!-- 3. SYNC -->
+    <div class="panel">
+      <div class="ph"><span class="icon">🔄</span><h2>Sync</h2><span class="ids">T25.04</span></div>
+      <div class="lead">CDB is NSO's copy of each device. Someone edits a box by CLI → <b>out-of-sync</b> → NSO refuses commits to it.</div>
+      <div class="sync">
+        <span class="chip ok">🗄️ CDB</span>
+        <div class="mid">
+          <div>⬅ <b>sync-from</b> (device wins)</div>
+          <div><b>sync-to</b> (NSO wins) ➜</div>
+          <div>⇄ <b>check-sync</b> / compare-config</div>
+        </div>
+        <span class="chip part">🔧 ios0</span>
+      </div>
+      <div class="item"><span class="n">1</span><code>devices sync-from</code> · <code>devices device ios0 sync-to</code></div>
+      <div class="item"><span class="n">2</span>RESTCONF action = POST<br><code>.../tailf-ncs:devices/check-sync</code></div>
+      <div class="item"><span class="n">3</span>result <code>"in-sync"</code> / <code>"out-of-sync"</code></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> sync-<b>from</b> = pull <b>from</b> the device into NSO. sync-<b>to</b> = push NSO's copy <b>to</b> the device (overwrites the CLI change).</div>
+    </div>
+
+    <!-- 4. CML -->
+    <div class="panel">
+      <div class="ph"><span class="icon">🧪</span><h2>Cisco Modeling Labs</h2><span class="ids">T25.05</span></div>
+      <div class="lead"><b>Simulation</b>: real Cisco images as VMs. IOSv, IOSvL2, Catalyst 8000v, NX-OSv 9000, IOS XRv 9000, plus Linux/third-party.</div>
+      <div class="row"><span class="chip part">import YAML</span>➜<span class="chip part">start</span>➜<span class="chip part">converged?</span>➜<span class="chip ok">pyATS tests</span>➜<span class="chip">stop · wipe · delete</span></div>
+      <div class="item"><span class="n">1</span>topology = YAML (<code>lab:</code> <code>nodes:</code> <code>links:</code>)<br><code>node_definition: iosxrv9000</code></div>
+      <div class="item"><span class="n">2</span>REST <code>POST /api/v0/import</code> · Bearer JWT<br>Python <code>pip install virl2_client</code></div>
+      <div class="item"><span class="n">3</span>CI: test the change on a twin <b>before</b> prod</div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> CML <b>simulates</b>; it doesn't configure production. Delete a lab only after <b>stop + wipe</b>.</div>
+    </div>
+
+    <!-- 5. TOOL CHOICE -->
+    <div class="panel span2">
+      <div class="ph"><span class="icon">🧭</span><h2>Tool choice: which one fits?</h2><span class="ids">T25.06 · T25.08 (with Beedy's T33)</span></div>
+      <table class="cmp">
+        <tr><th style="width:17%"></th><th>NSO</th><th>Ansible</th><th>Terraform</th><th>CML</th></tr>
+        <tr><td><b>Style</b></td><td class="best">model-driven, transactional</td><td>procedural tasks, playbooks (YAML)</td><td>declarative, plan → apply</td><td>simulation</td></tr>
+        <tr><td><b>State</b></td><td class="best">CDB holds live device config</td><td>none (agentless, push)</td><td>state file</td><td>lab topology</td></tr>
+        <tr><td><b>Multi-device atomic?</b></td><td class="best">yes, all-or-nothing</td><td>no, host by host</td><td>per resource</td><td>n/a</td></tr>
+        <tr><td><b>Pick it for</b></td><td class="best">multivendor network <b>services</b> at scale</td><td>config tasks, servers + network</td><td>cloud / infra provisioning</td><td>test before prod, learning</td></tr>
+      </table>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> "transactional + multivendor services + dry-run + clean removal" → <b>NSO</b>. "Test the change on virtual devices first" → <b>CML</b> (+ pyATS, T44).</div>
+    </div>
+
+    <!-- 6. EXAM ANGLE -->
+    <div class="panel">
+      <div class="ph"><span class="icon">🎯</span><h2>Exam angle</h2><span class="ids">T25.07 · T25.08</span></div>
+      <div class="item"><span class="n">1</span>NSO capabilities: services, NEDs, CDB, transactions, sync, dry-run, rollback</div>
+      <div class="item"><span class="n">2</span>CML capabilities: virtual Cisco nodes, YAML topology, REST + <code>virl2_client</code>, CI testing</div>
+      <div class="item"><span class="n">3</span>Not tested: the <b>Terraform</b> part of the CBT CML video</div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> NSO northbound includes NETCONF/RESTCONF; NSO southbound uses NEDs. Don't mix up the two sides.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = example / step</span>
+    <span class="k3">grey chip = exact syntax</span>
+    <span class="k2">red box = exam trap</span>
+    <span class="k4">blue = NSO core / best answer</span>
+    <span class="k5">green = in sync / committed</span>
+    <span class="k6">yellow = NED / pending</span>
+    <span class="k7">red = failed</span>
+  </footer>
+</div>
+</body>
+</html>

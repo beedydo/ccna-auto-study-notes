@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T36 overview: Layer 3 IP, masks, routes, gateways</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee; --blue: #2563eb; --blue-soft: #dbeafe;
+    --yel: #e0a800; --yel-soft: #fff3cd; --purple: #7b4bc4; --purple-soft: #efe6fb;
+    --teal: #0f9fb0; --teal-soft: #dff4f6; --orange: #e36b1c; --orange-soft: #fdeadc;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1280px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .card { border: 2.5px solid var(--line); border-radius: 14px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card .hd { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 2px solid var(--line); }
+  .card .hd .icon { font-size: 28px; }
+  .card .hd .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  .card .hd .ids { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .c1 .hd { background: var(--green-soft); } .c2 .hd { background: var(--teal-soft); } .c3 .hd { background: var(--purple-soft); }
+  .c4 .hd { background: var(--blue-soft); } .c5 .hd { background: var(--yel-soft); } .c6 .hd { background: var(--orange-soft); }
+  .body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .sig { align-self: flex-start; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace; font-size: 12.5px; padding: 5px 10px; border-radius: 8px; }
+  .what { font-size: 13.5px; line-height: 1.4; }
+
+  /* shared mini-diagram frame */
+  .mini { border: 1.5px dashed #999; border-radius: 8px; padding: 8px; background: #fafafa; font-size: 12px; }
+  .bits { display: flex; height: 30px; border: 2px solid var(--line); border-radius: 6px; overflow: hidden; font-family: Menlo, monospace; font-size: 11.5px; }
+  .bits div { display: flex; align-items: center; justify-content: center; }
+  .bits .n { background: var(--blue-soft); border-right: 2px solid var(--line); }
+  .bits .h { background: var(--yel-soft); }
+  .bits-lbl { display: flex; justify-content: space-between; margin-top: 4px; color: var(--muted); font-size: 11px; }
+  .blocks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .blocks div { border: 2px solid var(--green); background: var(--green-soft); border-radius: 6px; text-align: center; padding: 5px 2px; font-family: Menlo, monospace; font-size: 11.5px; }
+  .blocks div small { display: block; font-family: Arial, sans-serif; color: var(--muted); font-size: 10.5px; }
+  .flow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; text-align: center; }
+  .flow .q { grid-column: span 2; border: 2px solid var(--line); border-radius: 6px; padding: 4px; background: #fff; }
+  .flow .ok { border: 2px solid var(--green); background: var(--green-soft); border-radius: 6px; padding: 4px; }
+  .flow .rec { border: 2px solid var(--blue); background: var(--blue-soft); border-radius: 6px; padding: 4px; }
+  .ladder { display: flex; gap: 4px; }
+  .ladder div { flex: 1; text-align: center; border: 2px solid var(--line); border-radius: 6px; padding: 3px 0; font-weight: 700; font-size: 12px; background: #fff; }
+  .ladder div small { display: block; font-weight: 400; color: var(--muted); font-size: 10px; }
+  .ladder .win { border-color: var(--blue); background: var(--blue-soft); }
+  .lpm div { display: flex; align-items: center; gap: 6px; margin: 3px 0; font-family: Menlo, monospace; font-size: 11.5px; }
+  .lpm span.b { display: inline-block; height: 14px; border-radius: 3px; background: #cfcfcf; }
+  .lpm .best span.b { background: var(--blue); }
+  .lpm .best { font-weight: 700; color: var(--blue); }
+
+  .items { display: flex; flex-direction: column; gap: 7px; }
+  .item { font-size: 13px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .trap { margin-top: auto; background: var(--trap); border: 1.5px solid var(--trap-ink); border-radius: 7px; padding: 6px 8px; font-size: 12.8px; line-height: 1.4; }
+  .trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; box-sizing: border-box; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+  footer .k5::before { background: var(--green-soft); border: 1px solid var(--green); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T36 · <span class="pill">IP, Masks, Routes, Gateways</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.2</b><br>Every T36 concept on one page<br>Code from <code>labs/T36/l3_check.py</code></div>
+  </header>
+
+  <div class="grid">
+    <!-- 1 IPv4 subnet -->
+    <div class="card c1">
+      <div class="hd"><span class="icon">🧮</span><span class="name">IPv4 SUBNET</span><span class="ids">T36.01 · T36.05</span></div>
+      <div class="body">
+        <span class="sig">network = IP AND mask</span>
+        <div class="what">32 bits. <b>/n</b> = network bits, <b>h = 32 − n</b> host bits. Broadcast = all host bits 1. Usable = <b>2^h − 2</b>. Block = 256 − mask octet.</div>
+        <div class="mini">
+          <div class="bits"><div class="n" style="width:81%">192.168.5 + bits 10 → 26 network bits</div><div class="h" style="width:19%">000010</div></div>
+          <div class="bits-lbl"><span>192.168.5.130/26 · mask 255.255.255.192</span><span>6 host bits</span></div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>network + mask<span class="c"><code>pc3  192.168.5.128/26  255.255.255.192</code></span></div>
+          <div class="item"><span class="n">2</span>broadcast · usable range<span class="c"><code>192.168.5.191</code> · <code>usable 192.168.5.129 - 192.168.5.190</code></span></div>
+          <div class="item"><span class="n">3</span>host count<span class="c"><code>2 ** host_bits - 2</code> → 62 · wildcard <code>0.0.0.63</code></span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> /31 → <b>2</b> usable (<code>hosts()</code>, RFC 3021), /32 → 1. <code>ip_network("10.1.10.50/24")</code> → <code>has host bits set</code></div>
+      </div>
+    </div>
+
+    <!-- 2 Private ranges -->
+    <div class="card c2">
+      <div class="hd"><span class="icon">🏠</span><span class="name">PRIVATE RANGES</span><span class="ids">T36.01</span></div>
+      <div class="body">
+        <span class="sig">RFC 1918</span>
+        <div class="what">Three blocks, not routed on the internet. Everything else in unicast space is public, unless special-purpose (loopback, link-local, documentation).</div>
+        <div class="mini">
+          <div class="blocks">
+            <div>10.0.0.0/8<small>10.x.x.x</small></div>
+            <div>172.16.0.0/12<small>172.16 – 172.31</small></div>
+            <div>192.168.0.0/16<small>192.168.x.x</small></div>
+          </div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>explicit RFC 1918 check<span class="c"><code>any(iface.ip in block for block in RFC1918)</code></span></div>
+          <div class="item"><span class="n">2</span>outside the /12<span class="c"><code>dmz  172.32.0.0/16</code> → rfc1918 <code>False</code></span></div>
+          <div class="item"><span class="n">3</span>Python's flag is wider<span class="c"><code>127.0.0.1 rfc1918? False | is_private? True</code></span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> <code>172.16.0.0/12</code> ends at <code>172.31.255.255</code>; <b>172.32.x.x is public</b>. <code>is_private</code> ≠ RFC 1918</div>
+      </div>
+    </div>
+
+    <!-- 3 IPv6 -->
+    <div class="card c3">
+      <div class="hd"><span class="icon">🌐</span><span class="name">IPv6 (AWARENESS)</span><span class="ids">T36.02</span></div>
+      <div class="body">
+        <span class="sig">128 bits · /64 per LAN</span>
+        <div class="what">8 groups of 4 hex digits. Drop leading zeros; <code>::</code> replaces <b>one</b> run of zero groups. Link-local <code>fe80::/10</code> on every interface.</div>
+        <div class="mini">
+          <div class="bits"><div class="n" style="width:50%">2001:db8:acad:10</div><div class="h" style="width:50%">::50</div></div>
+          <div class="bits-lbl"><span>64-bit prefix (/64)</span><span>64-bit interface ID</span></div>
+          <div class="bits-lbl"><span>global 2000::/3 · ULA fc00::/7</span><span>multicast ff00::/8</span></div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>compressed vs exploded<span class="c"><code>2001:db8:acad:10::50</code><br><code>2001:0db8:acad:0010:0000:0000:0000:0050</code></span></div>
+          <div class="item"><span class="n">2</span>link-local<span class="c"><code>fe80::1/64</code> → <code>'link_local': True</code></span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> IPv6 has <b>no broadcast</b> (multicast) and uses <b>NDP, not ARP</b>. <code>::</code> only once per address</div>
+      </div>
+    </div>
+
+    <!-- 4 Gateway & ARP -->
+    <div class="card c4">
+      <div class="hd"><span class="icon">🚪</span><span class="name">GATEWAY &amp; ARP</span><span class="ids">T36.03</span></div>
+      <div class="body">
+        <span class="sig">dst AND my mask = my network?</span>
+        <div class="what">Same network → ARP for the destination. Different → ARP for the <b>default gateway</b>. ARP = broadcast request, unicast reply, local subnet only.</div>
+        <div class="mini">
+          <div class="flow">
+            <div class="q">pc1 10.1.10.50/24 · gw 10.1.10.1</div>
+            <div class="ok">10.1.10.77 → ARP dst</div>
+            <div class="rec">10.20.30.40 → ARP gw</div>
+          </div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>off-subnet<span class="c"><code>off-subnet -> ARP for gateway 10.1.10.1</code></span></div>
+          <div class="item"><span class="n">2</span>gateway on wrong subnet<span class="c"><code>FAIL 10.1.11.1 is not in 10.1.10.0/24</code></span></div>
+          <div class="item"><span class="n">3</span>per hop<span class="c">MACs rewritten · IPs kept · TTL 64 → 63 → 62</span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> the host <b>never ARPs a remote IP</b>; dst MAC = gateway, dst IP = server. Bad gw → local OK, remote fails</div>
+      </div>
+    </div>
+
+    <!-- 5 Route sources & AD -->
+    <div class="card c5">
+      <div class="hd"><span class="icon">🗂️</span><span class="name">ROUTE SOURCES &amp; AD</span><span class="ids">T36.04</span></div>
+      <div class="body">
+        <span class="sig">same prefix → lowest AD, then metric</span>
+        <div class="what">Connected (<code>C</code>/<code>L</code>), static (<code>S</code>, <code>S*</code>), dynamic (<code>O</code>, <code>D</code>, <code>B</code>). Only identical prefix + length compete for the RIB.</div>
+        <div class="mini">
+          <div class="ladder">
+            <div>C<small>0</small></div><div>S<small>1</small></div><div>eBGP<small>20</small></div>
+            <div class="win">EIGRP<small>90</small></div><div>OSPF<small>110</small></div><div>iBGP<small>200</small></div>
+          </div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>installed (AD 90 &lt; 110)<span class="c"><code>D    10.20.30.0/24   [90/3072] via 10.1.20.3</code></span></div>
+          <div class="item"><span class="n">2</span>loser, despite metric 20<span class="c"><code>not installed: O 10.20.30.0/24 [110/20]</code></span></div>
+          <div class="item"><span class="n">3</span>floating static (backup)<span class="c"><code>("S", "10.20.0.0/16", 250, 0, "10.1.10.253")</code></span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> metrics from different protocols are <b>never compared</b>; AD decides first. <code>[90/3072]</code> = [AD/metric]</div>
+      </div>
+    </div>
+
+    <!-- 6 Longest prefix match -->
+    <div class="card c6">
+      <div class="hd"><span class="icon">🎯</span><span class="name">LONGEST MATCH</span><span class="ids">T36.04 · T36.05</span></div>
+      <div class="body">
+        <span class="sig">most specific installed route wins</span>
+        <div class="what">Forwarding checks every installed route containing the dst; the <b>longest prefix</b> wins. <code>0.0.0.0/0</code> = last resort. No match → drop.</div>
+        <div class="mini lpm">
+          <div><span class="b" style="width:8px"></span>/0  S* via 203.0.113.1</div>
+          <div><span class="b" style="width:60px"></span>/16 S via 10.1.10.254</div>
+          <div class="best"><span class="b" style="width:90px"></span>/24 D via 10.1.20.3 ✔</div>
+        </div>
+        <div class="items">
+          <div class="item"><span class="n">1</span>/24 beats AD 1 static /16<span class="c"><code>10.20.30.40 -> 10.20.30.0/24 via 10.1.20.3 (D)</code></span></div>
+          <div class="item"><span class="n">2</span>only the default matches<span class="c"><code>8.8.8.8     -> 0.0.0.0/0 via 203.0.113.1 (S*)</code></span></div>
+          <div class="item"><span class="n">3</span>same subnet or not (sender's mask)<span class="c"><code>192.168.1.10/25 and 192.168.1.200</code><br><code>same subnet? False</code></span></div>
+        </div>
+        <div class="trap"><b>Trap:</b> AD <b>never overrides</b> longest match. Order: longest prefix → (same prefix) AD → metric</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i style="display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:#1d1d1f"></i>numbered = line from the program output</span>
+    <span><i style="display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:#fde8e8;border:1px solid #b42318"></i>red = exam trap</span>
+    <span><i style="display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:#ececec;border:1px solid #999"></i>grey = exact syntax</span>
+    <span><i style="display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:#dbeafe;border:1px solid #2563eb"></i>blue = the answer / winner</span>
+    <span><i style="display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:#e3f6ee;border:1px solid #2fb380"></i>green = local / kept</span>
+    <span style="margin-left:auto">Program + output: <code>labs/T36/</code></span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T14 overview: YANG data models</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #dbeafe; --blue-b: #1d4ed8; --yel: #fef9c3; --yel-b: #a16207;
+    --pur: #f3e8ff; --pur-b: #7e22ce; --grn: #dcfce7; --grn-b: #15803d;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1240px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  .strip { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 17px; font-weight: 800; display: flex; align-items: baseline; gap: 8px; }
+  .panel h2 .icon { font-size: 20px; }
+  .panel p { margin: 0 0 8px; font-size: 13.5px; line-height: 1.45; }
+
+  .stack { display: grid; grid-template-columns: minmax(0, 1.1fr) 22px minmax(0, 1fr) 22px minmax(0, 1fr); align-items: center; margin-bottom: 8px; }
+  .box { border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12.5px; line-height: 1.4; text-align: center; }
+  .box b { display: block; font-size: 13px; }
+  .box.y { background: var(--blue); border-color: var(--blue-b); }
+  .arr { text-align: center; font-weight: 800; font-size: 18px; }
+
+  .fam { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .fam div { border: 2px solid; border-radius: 8px; padding: 5px 7px; font-size: 12px; line-height: 1.4; }
+  .fam b { font-size: 13px; }
+  .fam .i { background: var(--grn); border-color: var(--grn-b); }
+  .fam .o { background: var(--yel); border-color: var(--yel-b); }
+  .fam .n { background: var(--blue); border-color: var(--blue-b); }
+  .hdr { font-family: Menlo, Consolas, monospace; font-size: 11.6px; line-height: 1.45; background: var(--code); border-radius: 6px; padding: 5px 8px; white-space: pre; margin-bottom: 8px; }
+  .hdr i { font-style: normal; color: var(--muted); }
+
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.5px; line-height: 1.4; }
+  .trap b { color: var(--trap-ink); }
+
+  .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card .top { padding: 7px 10px; font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 7px; border-bottom: 2px solid var(--line); }
+  .card .top .n { display: inline-flex; width: 21px; height: 21px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12px; align-items: center; justify-content: center; flex: none; }
+  .card .top .ids { margin-left: auto; }
+  .card .body { padding: 8px 10px; font-size: 12.5px; line-height: 1.4; display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .card .row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 4px; align-items: baseline; }
+  .card .row span { font-size: 10.5px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+  .card .trap { margin-top: auto; }
+  .c-cont .top { background: #e5e7eb; } .c-list .top { background: var(--grn); }
+  .c-leaf .top { background: var(--blue); } .c-ll .top { background: #cffafe; }
+  .c-grp .top { background: #ffedd5; } .c-aug .top { background: var(--pur); }
+  .c-type .top { background: #fce7f3; } .c-state .top { background: var(--yel); }
+
+  .bottom { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 14px; }
+  .sym { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 14px; font-size: 12.5px; margin-bottom: 8px; }
+  .sym div code { display: inline-block; min-width: 54px; text-align: center; margin-right: 6px; }
+  .line { font-family: Menlo, Consolas, monospace; font-size: 13px; background: var(--ink); color: #fff; padding: 5px 10px; border-radius: 8px; display: inline-block; margin-bottom: 8px; }
+  .url { font-family: Menlo, Consolas, monospace; font-size: 12.3px; line-height: 2.1; margin-bottom: 6px; }
+  .url .s { display: inline-block; white-space: nowrap; margin-bottom: 2px; padding: 0 4px; border-radius: 4px; border: 1.5px solid; }
+  .url .b { background: #f3f4f6; border-color: #6b7280; }
+  .url .m { background: var(--blue); border-color: var(--blue-b); }
+  .url .k { background: var(--grn); border-color: var(--grn-b); }
+  .url .a { background: var(--pur); border-color: var(--pur-b); border-style: dashed; }
+  .steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 14px; font-size: 12.5px; line-height: 1.4; margin-bottom: 8px; }
+  .steps .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+
+  footer { display: flex; gap: 20px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  footer .k5::before { background: var(--yel); border: 1px solid var(--yel-b); }
+  footer .k6::before { background: var(--grn); border: 1px solid var(--grn-b); }
+  footer .k7::before { background: var(--pur); border: 1px dashed var(--pur-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T14 · <span class="pill">YANG Data Models</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.8, 5.11</b><br>Every T14 concept on one page<br>Code from <code>labs/T14/</code></div>
+  </header>
+
+  <!-- TOP STRIP -->
+  <div class="strip">
+    <div class="panel">
+      <h2><span class="icon">🧱</span>What YANG is <span class="ids">T14.01</span></h2>
+      <div class="stack">
+        <div class="box y"><b>YANG module</b>schema: shape, types, rules<br>RFC 6020 / <b style="display:inline">7950</b></div>
+        <div class="arr">→</div>
+        <div class="box"><b>Protocol</b>NETCONF :830<br>RESTCONF :443 · gNMI</div>
+        <div class="arr">→</div>
+        <div class="box"><b>Encoding</b>XML · JSON<br>Protobuf</div>
+      </div>
+      <p>Describes config + state data; <b>contains no data</b>. Data lives in device datastores and payloads. Tools: <code>pyang</code>, YANG Suite.</p>
+      <p style="margin-bottom:4px"><b>Same leaf, two encodings:</b></p>
+      <div class="hdr">XML  <i>(NETCONF: module = namespace URI)</i>
+<b>&lt;interface xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces"&gt;</b>
+  &lt;name&gt;GigabitEthernet1&lt;/name&gt;&lt;enabled&gt;true&lt;/enabled&gt;
+JSON <i>(RESTCONF, RFC 7951: module = name prefix, list = array)</i>
+<b>{"ietf-interfaces:interface": [{"name": "GigabitEthernet1", "enabled": true}]}</b></div>
+      <div class="trap"><b>Trap:</b> YANG ≠ protocol ≠ encoding. "Runs over SSH :830" = NETCONF, not YANG.</div>
+    </div>
+    <div class="panel">
+      <h2><span class="icon">📦</span>Model sources &amp; module header <span class="ids">T14.02 · T14.03</span></h2>
+      <div class="fam">
+        <div class="i"><b>IETF</b> · RFC standard<br><code>ietf-interfaces</code></div>
+        <div class="o"><b>OpenConfig</b> · operators, vendor-neutral<br><code>openconfig-interfaces</code></div>
+        <div class="n"><b>Native</b> · vendor, every knob<br><code>Cisco-IOS-XE-native</code></div>
+      </div>
+      <div class="hdr">module campus-vlans {            <i>// name: used in URLs + JSON</i>
+  namespace "urn:ccna-auto:yang:campus-vlans";  <i>// unique URI: XML</i>
+  prefix cv;                        <i>// local alias: YANG + XPath</i>
+  import ietf-interfaces { prefix if; }
+  revision 2026-10-10 { ... }</div>
+      <p style="margin-bottom:6px">Find models: <code>github.com/YangModels/yang</code> (<code>vendor/cisco/xe/17151/</code>) · <code>yangcatalog.org</code></p>
+      <div class="trap"><b>Trap:</b> prefix <code>if:</code> is local; URLs and JSON use the module <b>name</b> <code>ietf-interfaces:</code></div>
+    </div>
+  </div>
+
+  <!-- CARDS -->
+  <div class="cards">
+    <div class="card c-cont"><div class="top"><span class="n">1</span>container<span class="ids">T14.04</span></div><div class="body">
+      <div class="row"><span>is</span><div>groups nodes, <b>no value</b></div></div>
+      <div class="row"><span>tree</span><div><code>+--rw vlans</code></div></div>
+      <div class="row"><span>yang</span><div><code>container vlans { … }</code></div></div>
+      <div class="row"><span>json</span><div>object <code>{ … }</code></div></div>
+      <div class="trap"><b>Trap:</b> <code>ipv4!</code> = presence container: existing = a setting</div></div></div>
+
+    <div class="card c-list"><div class="top"><span class="n">2</span>list<span class="ids">T14.04</span></div><div class="body">
+      <div class="row"><span>is</span><div>many entries, each named by a <b>key</b></div></div>
+      <div class="row"><span>tree</span><div><code>+--rw vlan* [id]</code></div></div>
+      <div class="row"><span>yang</span><div><code>list vlan { key "id"; … }</code></div></div>
+      <div class="row"><span>json</span><div><b>array</b> <code>[{"id": 10, …}]</code></div></div>
+      <div class="trap"><b>Trap:</b> config list <b>must</b> have a key → pyang <code>error: the list needs</code> <code>at least one key</code></div></div></div>
+
+    <div class="card c-leaf"><div class="top"><span class="n">3</span>leaf<span class="ids">T14.04</span></div><div class="body">
+      <div class="row"><span>is</span><div><b>one</b> typed value</div></div>
+      <div class="row"><span>tree</span><div><code>+--rw role?   identityref</code></div></div>
+      <div class="row"><span>yang</span><div><code>leaf name { type string; }</code></div></div>
+      <div class="row"><span>json</span><div><code>"name": "USERS"</code></div></div>
+      <div class="trap"><b>Trap:</b> <code>?</code> = optional. No <code>?</code> = key or <code>mandatory true</code></div></div></div>
+
+    <div class="card c-ll"><div class="top"><span class="n">4</span>leaf-list<span class="ids">T14.04</span></div><div class="body">
+      <div class="row"><span>is</span><div><b>many values</b> of one type, no key</div></div>
+      <div class="row"><span>tree</span><div><code>+--rw dhcp-helper*</code><br><code>inet:ipv4-address</code></div></div>
+      <div class="row"><span>yang</span><div><code>leaf-list dhcp-helper</code></div></div>
+      <div class="row"><span>json</span><div>array of scalars <code>["10.1.1.5"]</code></div></div>
+      <div class="trap"><b>Trap:</b> <code>*</code> = list <b>or</b> leaf-list: <code>[key]</code> = list, type = leaf-list</div></div></div>
+
+    <div class="card c-grp"><div class="top"><span class="n">5</span>grouping + uses<span class="ids">T14.05</span></div><div class="body">
+      <div class="row"><span>is</span><div>reusable <b>block of nodes</b>, pasted by <code>uses</code></div></div>
+      <div class="row"><span>yang</span><div><code>grouping packet-counters</code><br><code>uses packet-counters;</code></div></div>
+      <div class="row"><span>tree</span><div>shows the copied leaves, not the grouping</div></div>
+      <div class="trap"><b>Trap:</b> a grouping alone creates <b>no data</b></div></div></div>
+
+    <div class="card c-aug"><div class="top"><span class="n">6</span>augment<span class="ids">T14.05</span></div><div class="body">
+      <div class="row"><span>is</span><div>adds nodes <b>into another module's</b> tree</div></div>
+      <div class="row"><span>yang</span><div><code>augment</code><br><code>"/if:interfaces/if:interface"</code></div></div>
+      <div class="row"><span>tree</span><div><code>+--rw ip:ipv4!</code> (other prefix)</div></div>
+      <div class="trap"><b>Trap:</b> module changes → URL adds <code>/ietf-ip:ipv4</code></div></div></div>
+
+    <div class="card c-type"><div class="top"><span class="n">7</span>typedef + types<span class="ids">T14.05</span></div><div class="body">
+      <div class="row"><span>yang</span><div><code>typedef vlan-id</code> → <code>uint16 range 1..4094</code></div></div>
+      <div class="row"><span>built-in</span><div><code>string</code> <code>uint8..64</code> <code>boolean</code> <code>enumeration</code> <code>union</code> <code>leafref</code> <code>identityref</code></div></div>
+      <div class="trap"><b>Trap:</b> enumeration = fixed list; identityref = extensible (<code>iana-if-type:ethernetCsmacd</code>)</div></div></div>
+
+    <div class="card c-state"><div class="top"><span class="n">8</span>config false<span class="ids">T14.06</span></div><div class="body">
+      <div class="row"><span>is</span><div><b>state</b>: counters, oper-status. Read-only</div></div>
+      <div class="row"><span>tree</span><div><code>+--ro statistics</code></div></div>
+      <div class="row"><span>yang</span><div><code>config false;</code> (inherited)</div></div>
+      <div class="row"><span>read</span><div>NETCONF <code>&lt;get&gt;</code> · RESTCONF <code>GET</code></div></div>
+      <div class="trap"><b>Trap:</b> <code>rw</code>/<code>ro</code> = config vs state, <b>not</b> user rights</div></div></div>
+  </div>
+
+  <!-- BOTTOM STRIP -->
+  <div class="bottom">
+    <div class="panel">
+      <h2><span class="icon">🌳</span>Read a pyang tree <span class="ids">T14.07</span></h2>
+      <div class="line">pyang -f tree ietf-interfaces@2018-02-20.yang</div>
+      <div class="sym">
+        <div><code>rw</code> config</div>
+        <div><code>ro</code> state</div>
+        <div><code>?</code> optional</div>
+        <div><code>*</code> list / leaf-list</div>
+        <div><code>[name]</code> list key</div>
+        <div><code>!</code> presence</div>
+        <div><code>(c) :(k)</code> choice / case</div>
+        <div><code>-&gt; path</code> leafref</div>
+        <div><code>x--</code> deprecated</div>
+        <div><code>{if-mib}?</code> feature</div>
+      </div>
+      <div class="trap"><b>Trap:</b> <code>interfaces-state</code> is <code>x--ro</code> (deprecated, RFC 8343). State now sits as <code>ro</code> leaves inside <code>interface</code></div>
+    </div>
+    <div class="panel">
+      <h2><span class="icon">🔗</span>Tree → RESTCONF path <span class="ids">T14.08 · T14.09</span></h2>
+      <div class="url"><span class="s b">/restconf/data</span><span class="s m">/ietf-interfaces:interfaces</span><span class="s k">/interface=GigabitEthernet1</span><span class="s a">/ietf-ip:ipv4</span><span class="s k">/address=10.10.20.48</span><span class="s b">/netmask</span></div>
+      <div class="steps">
+        <div><span class="n">1</span><b>module:</b> on the first node</div>
+        <div><span class="n">2</span><b>list=key</b>; 2 keys <code>=k1,k2</code></div>
+        <div><span class="n">3</span><b>module:</b> again after an augment</div>
+        <div><span class="n">4</span>skip choice / case</div>
+        <div><span class="n">5</span>encode keys: <code>GigabitEthernet1%2F0%2F1</code></div>
+        <div><span class="n">6</span>native: <code>…/native/interface/GigabitEthernet=1</code></div>
+      </div>
+      <div class="trap"><b>Trap:</b> <code>interface=GigabitEthernet1</code>, never <code>interface/GigabitEthernet1</code>. JSON: list = array, 64-bit counters = strings (<code>"in-octets": "48213377"</code>)</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = card index</span>
+    <span class="k3">grey chip = exact syntax</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k4">module-qualified node / config</span>
+    <span class="k5">state (ro)</span>
+    <span class="k6">list key</span>
+    <span class="k7">augmented in</span>
+  </footer>
+</div>
+</body>
+</html>

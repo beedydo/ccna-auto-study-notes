@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T12 device-level management</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client > .zb { display: grid; grid-template-columns: 1fr 1fr 1fr; justify-items: center; align-items: center; }
+  .work { max-width: 330px; }
+  .site > .zb { justify-content: space-around; padding: 20px 14px 22px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T12 · <span class="pill">Device-level</span> management</h1>
+    <div class="meta"><b>200-901 blueprint 5.2</b><br>Your script talks to every box itself<br>Section 5 of <code>labs/T12/automation_levels.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Automation client <small>holds the inventory, the loop and the state</small></div>
+      <div class="zb">
+        <div class="note work"><b>The script's own inventory:</b><br><code>SWITCHES = {"sw1": {"os": "iosxe"}, …}</code><br>names, OS and the CLI command per OS.<br><b>Loop, order, retries, partial failure = your job.</b></div>
+        <div class="node w" id="script" data-icon="script"><div class="nm">automation_levels.py</div><div class="sub">plain <code>requests</code><br>knows every switch, OS,<br>credential and path itself</div></div>
+      </div>
+    </div>
+
+    <div class="gap l" style="height: 130px"></div>
+
+    <div class="zone site">
+      <div class="zh">Site SG-HQ</div>
+      <div class="zb">
+        <div class="node w hl" id="sw1" data-icon="switch"><div class="nm">sw1</div><div class="sub">Catalyst 9300 · IOS XE 17.9.4</div><div class="sub"><code>/sw1/restconf/data/…</code></div><span class="tag">C9300-48P · 2 ports shut</span></div>
+        <div class="node w hl" id="sw2" data-icon="switch"><div class="nm">sw2</div><div class="sub">Catalyst 9300 · IOS XE 17.9.4</div><div class="sub"><code>/sw2/restconf/data/…</code></div><span class="tag">C9300-24T · 1 port shut</span></div>
+        <div class="node w hl" id="sw3" data-icon="l3switch"><div class="nm">sw3</div><div class="sub">Nexus 9300 · NX-OS 10.3(4a)</div><div class="sub"><code>/sw3/restconf/data/…</code></div><span class="tag">N9K-C93180YC-FX3 · 2 ports shut</span></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>8 HTTP calls</b> for one job: 3 × <code>GET</code> (read each switch's ports) + 5 × <code>PATCH</code> (shut each DOWN port), vs 2 at controller level.</div>
+      <div class="note trap"><b>Trap:</b> using RESTCONF or NETCONF <b>yourself</b> is device level, even though a controller may use the same protocols southbound.</div>
+      <div class="note"><b>Pros:</b> granular, no controller dependency. <b>Cons:</b> if sw3 fails after sw1 and sw2 succeeded, cleaning up is your job.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (your script → device, RESTCONF)</span>
+    <span><i class="sw mgmt"></i>other device-level options (NETCONF, NX-API, SSH CLI)</span>
+    <span style="margin-left:auto">Blue glow = the boxes your code talks to (all of them)</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "sw1", k: "api", s: "b-t", ao: -24, mid: 0.35, label: "RESTCONF<br>1 GET + 2 PATCH", t: 0.88 },
+  { a: "script", b: "sw2", k: "api", s: "b-t", ao: 0, label: "RESTCONF<br>1 GET + 1 PATCH", t: 0.62 },
+  { a: "script", b: "sw3", k: "api", s: "b-t", ao: 24, bo: -24, mid: 0.35, label: "RESTCONF<br>1 GET + 2 PATCH", t: 0.88, lx: -34 },
+  { a: "script", b: "sw3", k: "mgmt", s: "r-t", bo: 24, label: "or: NETCONF :830,<br>NX-API, SSH CLI", t: 0.25 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

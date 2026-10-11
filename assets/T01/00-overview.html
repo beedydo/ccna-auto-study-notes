@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T01 overview: software development methods</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 330px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code, .mx code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  .span2 { grid-column: span 2; }
+  /* mini diagrams */
+  .chain { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; flex-wrap: nowrap; }
+  .box { border: 2px solid; border-radius: 6px; padding: 4px 6px; font-size: 11.8px; font-weight: 700; text-align: center; white-space: nowrap; }
+  .bl { background: #d1ecf1; border-color: #17a2b8; } .gr { background: #d4edda; border-color: #28a745; }
+  .ye { background: #fff3cd; border-color: #e0a800; } .rd { background: #f8d7da; border-color: #dc3545; }
+  .gy { background: #f1f1f1; border-color: #888; }
+  .ar { font-weight: 800; font-size: 14px; color: #444; }
+  .ar.back { color: #dc3545; }
+  .board { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; margin-bottom: 10px; }
+  .col { border: 2px solid; border-radius: 6px; padding: 4px; font-size: 11.5px; }
+  .col h5 { margin: 0 0 3px; font-size: 11.5px; text-align: center; }
+  .card { background: #fff; border: 1px solid #999; border-radius: 3px; padding: 1px 4px; margin-bottom: 3px; font-size: 11px; }
+  .mx { width: 100%; border-collapse: collapse; font-size: 12.8px; table-layout: fixed; }
+  .mx th, .mx td { border: 1px solid #999; padding: 4px 6px; text-align: left; vertical-align: top; }
+  .mx th { background: #f1f1f1; font-size: 12.5px; }
+  .mx td.k { font-weight: 700; background: #fafafa; width: 92px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: #d1ecf1; border: 1px solid #17a2b8; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T01 · <span class="pill">Waterfall · Agile · Lean</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 1.4</b><br>Every T01 concept on one page<br>Diagrams in <code>assets/T01/</code></div>
+  </header>
+
+  <table>
+    <!-- WATERFALL -->
+    <tr>
+      <td class="label"><span class="icon">🌊</span><div class="name">WATER-<br>FALL</div><div class="ids">T01.01</div></td>
+      <td class="what"><span class="sig">plan-driven · sequential · phase-gated</span><br>
+        Each phase <b>finishes and is signed off</b> before the next starts. Heavy upfront docs. Customer sees software only at the end.</td>
+      <td class="items">
+        <div class="chain">
+          <div class="box bl">Requirements</div><span class="ar">→</span><div class="box bl">Design</div><span class="ar">→</span>
+          <div class="box bl">Implementation</div><span class="ar">→</span><div class="box ye">Testing</div><span class="ar">→</span>
+          <div class="box gr">Deployment</div><span class="ar">→</span><div class="box gy">Maintenance</div>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span><b>Pros:</b> predictable cost + schedule, clear milestones, full docs</div>
+          <div class="item"><span class="n">2</span><b>Cons:</b> late feedback, bugs found late, change is expensive</div>
+          <div class="item"><span class="n">3</span><b>Fits:</b> fixed, well-understood scope; contracts; regulated or hardware-tied work</div>
+          <div class="item trap"><span class="n">!</span><b>Trap:</b> "testing only after all code is written" = waterfall, not agile</div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- AGILE -->
+    <tr>
+      <td class="label"><span class="icon">🔁</span><div class="name">AGILE</div><div class="ids">T01.02</div></td>
+      <td class="what"><span class="sig">adaptive · iterative · incremental</span><br>
+        Short iterations (<b>sprints, 1–4 weeks</b>), each ends with <b>working software</b>. Feedback every iteration; requirements can change between them.</td>
+      <td class="items">
+        <div class="chain">
+          <div class="box gr">Sprint 1 → increment</div><span class="ar">→</span><div class="box gr">Sprint 2 → increment</div><span class="ar">→</span>
+          <div class="box gr">Sprint 3 → increment</div><span class="ar">↺ feedback</span>
+        </div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span><b>Manifesto</b> (left valued more): individuals &amp; interactions <b>over</b> processes &amp; tools</div>
+          <div class="item"><span class="n">3</span>customer collaboration <b>over</b> contract negotiation</div>
+          <div class="item"><span class="n">2</span>working software <b>over</b> comprehensive documentation</div>
+          <div class="item"><span class="n">4</span>responding to change <b>over</b> following a plan</div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> "over" ≠ "instead of". Agile still plans and documents; it just values the left side <b>more</b></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- FRAMEWORKS -->
+    <tr>
+      <td class="label"><span class="icon">🧩</span><div class="name">SCRUM &amp;<br>KANBAN</div><div class="ids">T01.03</div></td>
+      <td class="what"><span class="sig">Scrum = timeboxes · Kanban = flow</span><br>
+        Two ways to <b>run</b> agile. Scrum: fixed sprints, 3 accountabilities, 5 events, 3 artifacts. Kanban: a board, <b>WIP limits</b>, pull, no sprints.</td>
+      <td class="items">
+        <div class="grid">
+          <div class="item"><span class="n">1</span><b>Roles:</b> Product Owner (orders backlog) · Scrum Master (coach) · Developers</div>
+          <div class="item"><span class="n">2</span><b>Artifacts:</b> product backlog · sprint backlog · increment</div>
+          <div class="item span2"><span class="n">3</span><b>Events:</b> sprint planning → Daily Scrum (stand-up, 15 min) → sprint review (demo to stakeholders) → retrospective (improve the process)</div>
+          <div class="item"><span class="n">4</span><b>Kanban:</b>
+            <div class="board" style="margin-top:4px">
+              <div class="col gy"><h5>To do</h5><div class="card">task C</div><div class="card">task D</div></div>
+              <div class="col ye"><h5>Doing (WIP 2)</h5><div class="card">task A</div><div class="card">task B</div></div>
+              <div class="col gr"><h5>Done</h5><div class="card">task Z</div></div>
+            </div></div>
+          <div class="item trap"><span class="n">!</span><b>Trap:</b> review = inspect the <b>product</b>; retrospective = inspect the <b>team's process</b>. Kanban has <b>no sprints and no fixed roles</b></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- LEAN -->
+    <tr>
+      <td class="label"><span class="icon">🏭</span><div class="name">LEAN</div><div class="ids">T01.04</div></td>
+      <td class="what"><span class="sig">maximise value · minimise waste</span><br>
+        From the <b>Toyota Production System</b>. Adapted to software by Mary &amp; Tom Poppendieck (7 principles). A philosophy, often run with Kanban.</td>
+      <td class="items">
+        <div class="grid">
+          <div class="item"><span class="n">1</span><b>Principles:</b> eliminate waste · amplify learning · decide as late as possible · deliver fast</div>
+          <div class="item"><span class="n">2</span>empower the team · build integrity (quality) in · see the whole</div>
+          <div class="item"><span class="n">3</span><b>7 wastes:</b> partially done work · extra features · relearning · hand-offs · task switching · delays · defects</div>
+          <div class="item"><span class="n">4</span><b>Tools:</b> MVP (smallest thing that tests value) · value-stream mapping · small batches · limit WIP</div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> "decide as late as possible" = keep options open until you have facts, not procrastinate. "Gold-plating" / unused features = <b>waste</b></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- COMPARE -->
+    <tr>
+      <td class="label"><span class="icon">⚖️</span><div class="name">COMPARE<br>&amp; PICK</div><div class="ids">T01.05 · T01.06</div></td>
+      <td class="what"><span class="sig">scenario keyword → method</span><br>
+        Exam asks "which method fits?" or "characteristic of X". Match the keyword, then check the trap.</td>
+      <td class="items">
+        <table class="mx">
+          <tr><th></th><th>Waterfall</th><th>Agile</th><th>Lean</th></tr>
+          <tr><td class="k">Driven by</td><td>the plan</td><td>feedback</td><td>flow / value</td></tr>
+          <tr><td class="k">Change</td><td>expensive late</td><td>welcome</td><td>welcome if it adds value</td></tr>
+          <tr><td class="k">Feedback</td><td>at the end</td><td>every iteration</td><td>continuous</td></tr>
+          <tr><td class="k">Delivery</td><td>one big release</td><td>frequent increments</td><td>small fast batches</td></tr>
+          <tr><td class="k">Pick when</td><td class="bl">fixed scope, contract, regulated</td><td class="bl">evolving requirements</td><td class="bl">cut waste, cycle time</td></tr>
+        </table>
+        <div class="grid" style="margin-top:9px">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> lean and agile are <b>not</b> rivals (often combined). "Toyota / waste / value stream" → lean; "sprint / backlog / stand-up" → agile (Scrum)</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = key point</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact term</span>
+    <span class="k4">blue = the answer to pick</span>
+    <span style="margin-left:auto">Details in each T01.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 packet path animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; --chg:#fff3cd; --chg-b:#e0a800; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:540px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:12px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:96px; padding:8px; background:#fff; text-align:center; }
+  .lane .ic { font-size:24px; line-height:1; }
+  .lane h3 { margin:4px 0 0; font-size:15px; } .lane .r { font-size:11.5px; color:var(--muted); }
+  .lane.l2 { border-color:#17a2b8; } .lane.l3 { border-color:#0d6efd; } .lane.fw { border-color:#dc3545; }
+  .lane.lb { border-color:#e0a800; } .lane.host { border-color:#2fb380; }
+  .lane.active { box-shadow:0 0 0 6px rgba(47,179,128,.40); }
+  .lane.done { opacity:.45; }
+  .cmdrow { position:relative; height:46px; margin-top:8px; }
+  .cmd { position:absolute; top:4px; font-family:Menlo,monospace; font-size:13px; font-weight:700; background:var(--ink); color:#fff;
+         padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .pkt { display:grid; grid-template-columns:150px minmax(0,1fr) minmax(0,1fr); border:2.5px solid var(--line); border-radius:10px; background:#fff; overflow:hidden; }
+  .pkt div { padding:7px 12px; border-bottom:1.5px solid #ddd; font-size:14px; }
+  .pkt .h { font-weight:800; background:#f0f0f0; }
+  .pkt .k { font-weight:700; }
+  .pkt .v { font-family:Menlo,monospace; font-size:14px; }
+  .pkt .v.chg { background:var(--chg); box-shadow:inset 0 0 0 2px var(--chg-b); }
+  .side { margin-top:10px; font-size:13.5px; color:var(--muted); min-height:20px; }
+  .side b { color:var(--ink); }
+  .side .ok { color:#1e7e34; font-weight:700; } .side .st { background:#d4edda; border:1px solid #28a745; border-radius:5px; padding:1px 6px; font-family:Menlo,monospace; font-size:12px; color:var(--ink); }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T38 · <span class="pill">Packet path</span> pc1 → web VIP, hop by hop</h1>
+  <div class="sub">Flow C from <code>labs/T38/trace_path.py</code>: <code>pc1 -> 172.16.50.10 tcp/443</code>. The card shows the frame <b>as it leaves</b> the glowing box. Yellow = field that just changed. MACs are illustrative.</div>
+  <div class="lanes">
+    <div class="lane host" id="d0"><div class="ic">💻</div><h3>pc1</h3><div class="r">host 10.10.10.21</div></div>
+    <div class="lane l2" id="d1"><div class="ic">🔀</div><h3>acc1</h3><div class="r">L2 switch</div></div>
+    <div class="lane l3" id="d2"><div class="ic">🧭</div><h3>dist1</h3><div class="r">L3 switch · gateway</div></div>
+    <div class="lane l3" id="d3"><div class="ic">🧭</div><h3>core1</h3><div class="r">router</div></div>
+    <div class="lane fw" id="d4"><div class="ic">🛡️</div><h3>fw1</h3><div class="r">firewall inside→dmz</div></div>
+    <div class="lane lb" id="d5"><div class="ic">⚖️</div><h3>lb1</h3><div class="r">VIP 172.16.50.10</div></div>
+    <div class="lane host" id="d6"><div class="ic">🖥️</div><h3>web1</h3><div class="r">172.16.50.11</div></div>
+  </div>
+  <div class="cmdrow" id="cmdrow"></div>
+  <div class="pkt" id="pkt"></div>
+  <div class="side" id="side"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const M = { pc1:"0050.56a1.0021", d10:"00a3.d1f0.0a01", d48:"00a3.d1f0.0b30", c1:"7c0e.ce11.0101", c2:"7c0e.ce11.0102",
+            fwi:"00f2.8b44.0010", fwd:"00f2.8b44.0050", lb:"0050.56b2.0005", w1:"0050.56b2.0011" };
+const frames = [
+  { at:0, cmd:"off-subnet → gw 10.10.10.1", smac:M.pc1, dmac:M.d10, sip:"10.10.10.21", dip:"172.16.50.10", chg:[],
+    side:"ARP: <b>who has 10.10.10.1?</b> → dist1 Vlan10 answers. pc1 never ARPs for 172.16.50.10.",
+    txt:"172.16.50.10 is outside <code>10.10.10.0/24</code>, so pc1 sends to its <b>default gateway's MAC</b>, with the final IP in the header." },
+  { at:1, cmd:"MAC table → Gi1/0/48", smac:M.pc1, dmac:M.d10, sip:"10.10.10.21", dip:"172.16.50.10", chg:[],
+    side:"Trunk to dist1 carries the frame with an 802.1Q tag for VLAN 10.",
+    txt:"acc1 looks up the <b>destination MAC</b> only. <b>Nothing in the frame changes</b>: a switch is not a hop at L3." },
+  { at:2, cmd:"0.0.0.0/0 via 10.0.1.1", smac:M.d48, dmac:M.c1, sip:"10.10.10.21", dip:"172.16.50.10", chg:["smac","dmac"],
+    side:"Inter-VLAN routing would stop here (flow B). This flow is off-campus, so dist1 uses its default route.",
+    txt:"dist1 <b>routes</b>: new L2 header (its MAC → core1's MAC). <b>Source and destination IP stay the same.</b>" },
+  { at:3, cmd:"0.0.0.0/0 via 10.0.2.2", smac:M.c2, dmac:M.fwi, sip:"10.10.10.21", dip:"172.16.50.10", chg:["smac","dmac"],
+    side:"core1 also has 10.10.0.0/16 and 10.20.0.0/16; longest match for 172.16.50.10 is the default.",
+    txt:"core1 routes the same way: <b>MACs rewritten per link</b>, IPs untouched, TTL − 1." },
+  { at:4, cmd:"inside→dmz tcp/443: rule 2", smac:M.fwd, dmac:M.lb, sip:"10.10.10.21", dip:"172.16.50.10", chg:["smac","dmac"],
+    side:"State entry: <span class=\"st\">10.10.10.21:51514 ⇄ 172.16.50.10:443 ESTABLISHED</span>",
+    txt:"fw1 checks <b>zone pair + port</b> → PERMIT and records the session, so the <b>reply needs no rule</b>." },
+  { at:5, cmd:"VIP → web1 (web2 down)", smac:M.lb, dmac:M.w1, sip:"10.10.10.21", dip:"172.16.50.11", chg:["smac","dmac","dip"],
+    side:"web2 failed its health check, so it gets no traffic. (Many one-arm LBs also SNAT the source; this one doesn't.)",
+    txt:"lb1 owns the VIP. It picks a <b>healthy</b> server and <b>rewrites the destination IP</b>: the only IP change on the path." },
+  { at:6, cmd:"delivered", smac:M.lb, dmac:M.w1, sip:"10.10.10.21", dip:"172.16.50.11", chg:[],
+    side:"<span class=\"ok\">Reply path:</span> web1 → lb1 (un-NAT to the VIP) → fw1 matches the state entry → core1 → dist1 → acc1 → pc1.",
+    txt:"web1 gets the request. Answers: gateway = <b>dist1 10.10.10.1</b>, filter = <b>fw1</b>, path = 3 L3 hops + LB." },
+];
+const pos = i => 28 + i * ((1124 - 72) / 7 + 12);
+function show(i) {
+  const f = frames[i];
+  for (let d = 0; d < 7; d++) {
+    const el = document.getElementById("d" + d);
+    el.classList.toggle("active", d === f.at);
+    el.classList.toggle("done", d < f.at);
+  }
+  const row = document.getElementById("cmdrow"); row.innerHTML = "";
+  const c = document.createElement("div"); c.className = "cmd"; c.textContent = f.cmd;
+  row.appendChild(c);
+  const w = c.offsetWidth, center = pos(f.at) - 28 + (1124 - 72) / 14;
+  c.style.left = Math.max(0, Math.min(1124 - w, center - w / 2)) + "px";
+  const v = (k, t) => `<div class="v ${f.chg.includes(k) ? "chg" : ""}">${t}</div>`;
+  document.getElementById("pkt").innerHTML =
+    `<div class="h">Header</div><div class="h">Source</div><div class="h">Destination</div>` +
+    `<div class="k">L2 Ethernet</div>${v("smac", f.smac)}${v("dmac", f.dmac)}` +
+    `<div class="k">L3 IPv4</div>${v("sip", f.sip)}${v("dip", f.dip)}` +
+    `<div class="k">L4 TCP</div><div class="v">51514</div><div class="v">443</div>`;
+  document.getElementById("side").innerHTML = f.side;
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

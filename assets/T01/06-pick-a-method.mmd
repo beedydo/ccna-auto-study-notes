@@ -1,0 +1,12 @@
+flowchart LR
+    S["Scenario<br/>keywords"] --> Q1{"Fixed scope?"}
+    Q1 -- "Yes: contract, regulated,<br/>sign-off per phase" --> W["Waterfall"]
+    Q1 -- No --> Q2{"Goal?"}
+    Q2 -- "cut waste, cycle time,<br/>hand-offs, waiting" --> L["Lean<br/>(often via Kanban)"]
+    Q2 -- "adapt to change,<br/>frequent working software" --> Q3{"Cadence?"}
+    Q3 -- "fixed timeboxes,<br/>defined roles" --> SC["Agile: Scrum"]
+    Q3 -- "continuous stream<br/>(ops tickets)" --> KB["Agile: Kanban"]
+    style W fill:#d1ecf1,stroke:#17a2b8
+    style L fill:#d1ecf1,stroke:#17a2b8
+    style SC fill:#d1ecf1,stroke:#17a2b8
+    style KB fill:#d1ecf1,stroke:#17a2b8

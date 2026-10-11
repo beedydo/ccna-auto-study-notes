@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T40 architecture: inbound static NAT / port forward</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row.main { gap: 150px; }
+  .row.main > .zone > .zb { flex-direction: column; align-items: center; gap: 40px; padding: 26px 10px 30px; }
+  #c1, #edge { height: 190px; } #lan { margin-top: 30px; }
+  .row.main > .zone.ext { flex: 0.9; } .row.main > .zone.dmz { flex: 1; } .row.main > .zone.site { flex: 0.9; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T40 · <span class="pill">Inbound NAT</span> port forward</h1>
+    <div class="meta"><b>200-901 blueprint 6.8</b><br>Private address, public rule, translated logs<br>Log demo: <code>labs/T40/conn_doctor.py</code> §4</div>
+  </header>
+
+  <div class="canvas">
+    <div class="row main">
+      <div class="zone ext">
+        <div class="zh">Outside · internet</div>
+        <div class="zb">
+          <div class="node" id="c1" data-icon="laptop"><div class="nm">Outside client</div><div class="sub">src <code>198.51.100.7</code></div></div>
+          <div class="node" id="c2" data-icon="laptop"><div class="nm">Outside client</div><div class="sub">port with <b>no rule</b></div></div>
+        </div>
+      </div>
+
+      <div class="zone dmz">
+        <div class="zh">Edge router / firewall <small>NAT</small></div>
+        <div class="zb">
+          <div class="node xw" id="edge" data-icon="firewall"><div class="nm">Static NAT / port forward</div><div class="sub">public <code>203.0.113.10:443</code><br>→ private <code>10.1.1.10:443</code><br>holds the translation state:<br>replies must return <b>through here</b></div><span class="tag">rule for :443 only</span></div>
+          <div class="node w" id="drop" data-icon="firewall"><div class="nm">No matching rule</div><div class="sub">SYN silently dropped</div></div>
+        </div>
+      </div>
+
+      <div class="zone site">
+        <div class="zh">Inside LAN <small>RFC 1918 · private</small></div>
+        <div class="zb">
+          <div class="node w" id="srv" data-icon="server"><div class="nm">App server</div><div class="sub"><code>10.1.1.10:443</code><br>log src = <code>198.51.100.7</code>, or the<br>router's IP if source NAT / PAT</div></div>
+          <div class="node" id="lan" data-icon="laptop"><div class="nm">Inside client</div><div class="sub">same LAN · no NAT needed</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Works inside, fails outside</b> = classic missing inbound NAT / port-forward rule (also bites cloud webhook senders, T43).</div>
+      <div class="note trap"><b>Trap:</b> no inbound rule = the SYN is <b>dropped</b>, so the client sees a <b>timeout</b>, not "connection refused".</div>
+      <div class="note"><b>Lab proof of source rewrite:</b> <code>/whoami</code> direct shows <code>127.0.0.1</code>; via the proxy <code>:18143</code> it shows <code>127.0.0.2</code> + <code>x_forwarded_for</code>. Plain NAT adds no header.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>data (user traffic)</span>
+    <span><i class="sw error"></i>blocked / failing</span>
+    <span><i class="sw phys"></i>LAN link</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "c1", b: "edge", k: "data", dir: "both", label: "dst <code>203.0.113.10:443</code><br>(public IP)" },
+  { a: "edge", b: "srv", k: "data", dir: "both", label: "dst rewritten to<br><code>10.1.1.10:443</code>" },
+  { a: "c2", b: "drop", k: "error", label: "dst <code>203.0.113.10</code><br>→ client <b>times out</b>" },
+  { a: "lan", b: "srv", k: "phys", s: "t-b" , label: "direct · works", t: 0.45 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

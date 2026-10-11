@@ -1,0 +1,13 @@
+flowchart LR
+  in["Service instance (intent)<br/>name: T25-LO100<br/>device: ios0, xr0, junos0<br/>id: 100 · ipv4: 10.100.0.1"]
+  yang["Service model<br/>loopback.yang<br/>(what inputs are valid)"]
+  map["Mapping logic<br/>loopback-template.xml<br/>and/or Python create()"]
+  in -->|validated by| yang
+  yang --> map
+  map -->|urn:ios block| o1["ios0 (IOS CLI)<br/>interface Loopback100<br/> ip address 10.100.0.1 255.255.255.255"]
+  map -->|cisco-ios-xr block| o2["xr0 (XR CLI)<br/>interface Loopback100<br/> ipv4 address 10.100.0.1 255.255.255.255"]
+  map -->|junos block| o3["junos0 (NETCONF)<br/>edit-config: lo0 unit 100<br/>10.100.0.1/32"]
+  classDef rec fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px
+  classDef safe fill:#d4edda,stroke:#28a745,stroke-width:2px
+  class in,yang,map rec
+  class o1,o2,o3 safe

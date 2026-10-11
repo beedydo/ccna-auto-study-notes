@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T03 overview: design patterns, MVC and Observer</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #dcfce7; --blue: #1d4ed8; --blue-soft: #dbeafe;
+    --yellow: #a16207; --yellow-soft: #fef9c3; --purple: #6d28d9; --purple-soft: #ede9fe;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1320px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  header .meta code { font-family: Menlo, Consolas, monospace; font-size: 12.5px; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 118px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 38px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 16px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 320px; padding: 14px 16px; font-size: 14px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  td.dia { width: 290px; padding: 12px; background: #fafafa; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 16px; }
+  .item { font-size: 13.3px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  .span2 { grid-column: span 2; }
+
+  /* mini diagrams */
+  .box { border: 2px solid var(--line); border-radius: 8px; padding: 5px 6px; font-size: 12px; text-align: center; font-weight: 700; background: #fff; }
+  .box small { display: block; font-weight: 400; color: var(--muted); font-size: 11px; }
+  .b-blue { background: var(--blue-soft); border-color: var(--blue); }
+  .b-green { background: var(--green-soft); border-color: #15803d; }
+  .b-yellow { background: var(--yellow-soft); border-color: var(--yellow); }
+  .b-purple { background: var(--purple-soft); border-color: var(--purple); }
+  .b-grey { background: #f3f4f6; }
+  .arr { text-align: center; font-size: 11.5px; color: var(--muted); line-height: 1.2; padding: 2px 0; }
+  .row3 { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items: center; }
+  .row3 .arr { font-size: 16px; color: var(--ink); }
+  .fan { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 6px; }
+  .tree4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 4px; }
+  .tree4 .box { font-size: 9.5px; padding: 4px 1px; letter-spacing: -0.2px; }
+
+  /* comparison strip */
+  table.cmp { border: none; }
+  table.cmp td, table.cmp th { border: 1px solid #bbb; font-size: 13px; padding: 5px 8px; text-align: left; }
+  table.cmp th { background: #f3f4f6; font-size: 12.5px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--blue-soft); border: 2px solid var(--blue); }
+  footer .k5::before { background: var(--green-soft); border: 2px solid #15803d; }
+  footer .k6::before { background: var(--yellow-soft); border: 2px solid var(--yellow); }
+  footer .k7::before { background: var(--purple-soft); border: 2px solid var(--purple); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T03 · <span class="pill">Design Patterns: MVC + Observer</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 1.6</b><br>Every T03 concept on one page<br>Code from <code>labs/T03/link_monitor.py</code></div>
+  </header>
+
+  <table>
+    <!-- PATTERNS -->
+    <tr>
+      <td class="label"><span class="icon">🧩</span><div class="name">DESIGN<br>PATTERNS</div><div class="ids">T03.01</div></td>
+      <td class="what"><span class="sig">template, not code</span><br>
+        A <b>reusable, proven solution</b> to a recurring design problem. Gives a shared vocabulary ("make it an Observer"). Gang of Four (GoF, 1994): <b>23</b> patterns in <b>3</b> groups.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><b>Creational</b>: how objects are made<span class="c">Singleton, Factory Method</span></div>
+        <div class="item"><span class="n">3</span><b>Behavioural</b>: how objects talk<span class="c"><b>Observer</b>, Strategy</span></div>
+        <div class="item"><span class="n">2</span><b>Structural</b>: how objects fit together<span class="c">Adapter, Decorator</span></div>
+        <div class="item"><span class="n">4</span><b>Architectural</b>: whole-app layout<span class="c"><b>MVC</b> (built from Observer + others)</span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> a pattern is a <b>design idea</b>, not a library you <code>pip install</code> · MVC is not one of the GoF 23</div>
+      </div></td>
+      <td class="dia">
+        <div class="box b-grey">Design pattern</div>
+        <div class="arr">↙ ↓ ↓ ↘</div>
+        <div class="tree4">
+          <div class="box b-grey">Creational<small>Singleton</small></div>
+          <div class="box b-grey">Structural<small>Adapter</small></div>
+          <div class="box b-blue">Behavioural<small>Observer</small></div>
+          <div class="box b-blue">Architect.<small>MVC</small></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- MVC -->
+    <tr>
+      <td class="label"><span class="icon">🏛️</span><div class="name">MVC</div><div class="ids">T03.02 · T03.03</div></td>
+      <td class="what"><span class="sig">user → C → M → V → user</span><br>
+        <b>Model</b> = data + business rules. <b>View</b> = presentation. <b>Controller</b> = takes input, updates the model, <b>picks</b> the view. Model knows nothing about UI.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>Model holds data + rules<span class="c"><code>if status not in self.VALID:</code></span></div>
+        <div class="item"><span class="n">4</span>Separation of concerns: new UI, same model</div>
+        <div class="item"><span class="n">2</span>View only renders<span class="c"><code>TableView</code> · <code>JsonView</code></span></div>
+        <div class="item"><span class="n">5</span>Many views over one model<span class="c"><code>show table</code> · <code>show json</code></span></div>
+        <div class="item"><span class="n">3</span>Controller routes input<span class="c"><code>ctl.handle(cmd)</code> · <code>"set Gi1/0/2 down"</code></span></div>
+        <div class="item"><span class="n">6</span>Parallel dev (UI vs back end) · easier tests + reuse</div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> input handling = <b>Controller</b>, not View · storing/validating data = <b>Model</b>, not Controller</div>
+      </div></td>
+      <td class="dia">
+        <div class="box">👤 User</div>
+        <div class="arr">↓ 1 input</div>
+        <div class="row3">
+          <div class="box b-blue">Controller</div><div class="arr">⇄</div><div class="box b-green">Model</div><div class="arr"></div><div></div>
+        </div>
+        <div class="arr">↓ 4 pick view + data</div>
+        <div class="box b-yellow">View<small>TableView / JsonView</small></div>
+        <div class="arr">↓ 5 output to user</div>
+      </td>
+    </tr>
+
+    <!-- OBSERVER -->
+    <tr>
+      <td class="label"><span class="icon">📡</span><div class="name">OBSERVER</div><div class="ids">T03.04 · T03.05</div></td>
+      <td class="what"><span class="sig">attach() · detach() · notify()</span><br>
+        <b>One-to-many</b>: the <b>subject</b> keeps a list of <b>observers</b>. On a state change it calls <code>update()</code> on each one <b>automatically</b> (push). Subscribe/unsubscribe at run time.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>subscribe<span class="c"><code>model.attach(syslog)</code></span></div>
+        <div class="item"><span class="n">4</span>Loose coupling: subject only knows <code>update()</code></div>
+        <div class="item"><span class="n">2</span>broadcast on change<span class="c"><code>observer.update(event)</code></span></div>
+        <div class="item"><span class="n">5</span>One change → many listeners, no polling</div>
+        <div class="item"><span class="n">3</span>unsubscribe at run time<span class="c"><code>model.detach(alerts)</code></span></div>
+        <div class="item"><span class="n">6</span>Seen in: GUI events, model → views, webhooks, streaming telemetry</div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> observers do <b>not</b> poll · a detached observer gets nothing · same value again → no change → no notify</div>
+      </div></td>
+      <td class="dia">
+        <div class="box b-green">Subject<small>InterfaceModel</small></div>
+        <div class="arr">notify(event) ↙ ↓ ↘</div>
+        <div class="fan">
+          <div class="box b-purple">Syslog<small>update()</small></div>
+          <div class="box b-purple">Alert<small>update()</small></div>
+          <div class="box b-purple" style="border-style:dashed">+ new<small>no subject change</small></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- COMPARE -->
+    <tr>
+      <td class="label"><span class="icon">⚖️</span><div class="name">MVC vs<br>OBSERVER</div><div class="ids">T03.02 · T03.04</div></td>
+      <td class="items" colspan="3">
+        <table class="cmp">
+          <tr><th style="width:150px"></th><th>MVC</th><th>Observer</th></tr>
+          <tr><td><b>Kind</b></td><td>Architectural pattern (whole app)</td><td>Behavioural design pattern (GoF)</td></tr>
+          <tr><td><b>Solves</b></td><td>Separate data / display / input logic</td><td>Tell dependents automatically when state changes</td></tr>
+          <tr><td><b>Shape</b></td><td>3 roles: Model, View, Controller</td><td>1 subject → N observers</td></tr>
+          <tr><td><b>Key advantage</b></td><td>Separation of concerns → change UI without touching data logic</td><td>Loose coupling → add listeners without editing the subject</td></tr>
+          <tr><td><b>Link</b></td><td colspan="2">MVC often <b>uses</b> Observer: the Model notifies its Views when it changes</td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <!-- SINGLETON + EXAM -->
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T03.06 · T03.07</div></td>
+      <td class="what"><span class="sig">match description → pattern</span><br>
+        Exam asks you to <b>name the pattern</b> from a description or diagram and state <b>one advantage</b>. Singleton is awareness only: not named in 1.6.</td>
+      <td class="items" colspan="2"><div class="grid">
+        <div class="item"><span class="n">1</span>"separates data, presentation and input handling" → <b>MVC</b></div>
+        <div class="item"><span class="n">3</span>"only one instance, global access point" → <b>Singleton</b><span class="c"><code>a is b</code> → <code>True</code></span></div>
+        <div class="item"><span class="n">2</span>"dependents notified automatically on change" → <b>Observer</b></div>
+        <div class="item"><span class="n">4</span>"UI team and back-end team work in parallel" → <b>MVC</b> advantage</div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> "faster code" is never the advantage · Singleton is a distractor for "advantage of MVC/Observer" questions</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = index / order</span>
+    <span class="k3">grey chip = exact code from labs/T03</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k4">blue = Controller / exam answer</span>
+    <span class="k5">green = Model / Subject</span>
+    <span class="k6">yellow = View</span>
+    <span class="k7">purple = Observer</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+flowchart TD
+  IN["Frame arrives on port P"] --> V["0. Which VLAN?<br/>access port = its VLAN<br/>trunk = tag, or native if untagged"]
+  V -- "VLAN not allowed" --> DROP["DROP"]
+  V -- "VLAN v" --> L["1. LEARN<br/><b>source</b> MAC → port P in VLAN v<br/>(reset aging timer, 300 s)"]
+  L --> D{"2. Destination MAC?"}
+  D -- "broadcast / multicast" --> FL["FLOOD<br/>all ports in VLAN v except P"]
+  D -- "unicast, not in table for v" --> FL2["FLOOD (unknown unicast)<br/>all ports in VLAN v except P"]
+  D -- "unicast, in table" --> S{"Learned port = P?"}
+  S -- "yes" --> FI["FILTER<br/>drop, never send back out P"]
+  S -- "no" --> FW["FORWARD<br/>out that one port only"]
+  classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+  classDef yellow fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+  classDef red fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+  class L blue
+  class FW green
+  class FL,FL2 yellow
+  class FI,DROP red

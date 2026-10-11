@@ -1,0 +1,17 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart TD
+    D["1 · Name resolves?<br/>nslookup api.example.com · dig +short api.example.com"]
+    P["2 · Host reachable?<br/>ping -c 3 10.1.1.10"]
+    T["3 · Where does the path stop?<br/>traceroute 10.1.1.10 (Windows: tracert)"]
+    N["4 · Is the TCP port open?<br/>nc -zv 10.1.1.10 443 · telnet 10.1.1.10 443"]
+    C["5 · Does the app answer?<br/>curl -v https://api.example.com/health"]
+    S["6 · On the server: listening, on which IP?<br/>ss -tlnp · netstat -an"]
+    D -- yes --> P -- "yes (or ICMP blocked: skip)" --> T --> N -- open --> C -- "HTTP error" --> S
+    D -- "no → DNS / VPN split-DNS" --> X1["fix resolver"]
+    N -- "refused → service down / wrong port" --> S
+    N -- "timeout → firewall / route / NAT" --> X2["check ACL, NAT, VPN routes"]
+    style D fill:#d1ecf1,stroke:#17a2b8
+    style N fill:#d1ecf1,stroke:#17a2b8
+    style C fill:#d1ecf1,stroke:#17a2b8
+    style X1 fill:#fff3cd,stroke:#ffc107
+    style X2 fill:#f8d7da,stroke:#dc3545

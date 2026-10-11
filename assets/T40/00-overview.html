@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T40 overview: App connectivity + network constraints</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #17a2b8; --blue-soft: #e3f1f8; --yellow: #e0a800; --yellow-soft: #fff6dc;
+    --red: #dc3545; --red-soft: #fde8e8; --gsoft: #e3f6ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1440px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; flex: none;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.8px; line-height: 1.4; margin-top: 7px; }
+  .trap b { color: var(--trap-ink); }
+  .trap .n { background: var(--trap-ink); }
+
+  /* path map */
+  .panel { border: 2.5px solid var(--line); background: #fff; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; }
+  .panel h2 { margin: 0 0 10px; font-size: 18px; font-weight: 800; }
+  .path { display: grid; grid-template-columns: minmax(0,0.8fr) 26px minmax(0,1.15fr) 26px minmax(0,1.25fr) 26px minmax(0,1.15fr) 26px minmax(0,1.15fr) 26px minmax(0,0.8fr); align-items: stretch; }
+  .arrow { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; }
+  .zone { border: 2px solid var(--line); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; }
+  .zone .hd { padding: 6px 8px; font-weight: 800; font-size: 14.5px; border-bottom: 2px solid var(--line); }
+  .zone .bd { padding: 8px 9px; font-size: 12.8px; line-height: 1.45; flex: 1; }
+  .zone .bd p { margin: 0 0 5px; }
+  .z-end .hd { background: #eee; } .z-vpn .hd { background: var(--blue-soft); } .z-proxy .hd { background: var(--yellow-soft); }
+  .z-fw .hd { background: var(--red-soft); } .z-nat .hd { background: #efe6fb; } .z-srv .hd { background: var(--gsoft); }
+  .ok { color: #1e7e34; font-weight: 700; } .bad { color: var(--trap-ink); font-weight: 700; }
+
+  /* ladder */
+  .ladder { display: grid; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 8px; }
+  .step { border: 2px solid var(--line); border-radius: 8px; padding: 7px 8px; font-size: 12.8px; line-height: 1.5; background: #fff; }
+  .step b { font-size: 13.5px; }
+  .step.hl { background: var(--blue-soft); border-color: var(--blue); }
+
+  /* bottom two */
+  .two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.05fr); gap: 14px; }
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.8px; line-height: 1.4; }
+  th, td { border: 1.5px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; }
+  th { background: #f0f0f0; font-size: 13px; }
+  .lab { font-size: 12.5px; margin-top: 7px; line-height: 1.5; }
+  footer { display: flex; gap: 22px; margin-top: 4px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T40 · <span class="pill">App Connectivity &amp; Constraints</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 6.8, 6.9</b><br>Every T40 concept on one page<br>Code from <code>labs/T40/</code></div>
+  </header>
+
+  <!-- PATH MAP -->
+  <div class="panel">
+    <h2>🌐 Where a request breaks on the way out <span class="ids">T40.01 – T40.04 · left to right = the path a call takes</span></h2>
+    <div class="path">
+      <div class="zone z-end"><div class="hd">💻 App</div><div class="bd">
+        <p>script / curl / <code>requests</code></p>
+        <p>reads <code>HTTPS_PROXY</code> <code>NO_PROXY</code> from env</p>
+        <p>timeout = <code>(connect, read)</code></p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>requests</code> has <b>no</b> default timeout → a dropped SYN can hang the script</div>
+      </div></div>
+      <div class="arrow">→</div>
+
+      <div class="zone z-vpn"><div class="hd">🔐 VPN tunnel <span class="ids">T40.04</span></div><div class="bd">
+        <p><b>Split</b>: only corp prefixes in tunnel · <b>Full</b>: <code>0.0.0.0/0</code> in tunnel</p>
+        <p>Internal name fails → <b>split DNS</b> not pushed</p>
+        <p>Big transfers hang → <b>MTU</b>: <code>ip tcp adjust-mss 1360</code></p>
+        <p>Home LAN = corp subnet → <b>overlap</b></p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> small pings work, large packets don't = MTU, not "VPN down"</div>
+      </div></div>
+      <div class="arrow">→</div>
+
+      <div class="zone z-proxy"><div class="hd">🧭 Corp proxy <span class="ids">T40.03</span></div><div class="bd">
+        <p><span class="n">1</span><code>407</code> + <code>Proxy-Authenticate</code></p>
+        <p><span class="n">2</span>fix: <code>--proxy-user labuser:labpass</code> or <code>http://user:pass@proxy:port</code></p>
+        <p><span class="n">3</span>HTTPS = <code>CONNECT host:443</code> tunnel</p>
+        <p><span class="n">4</span>TLS inspection → <code>CERTIFICATE_VERIFY_FAILED</code> → <code>verify=CORP_CA</code> / <code>REQUESTS_CA_BUNDLE</code></p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>407</code> is the <b>proxy</b>, <code>401</code> is the <b>server</b></div>
+      </div></div>
+      <div class="arrow">→</div>
+
+      <div class="zone z-fw"><div class="hd">🧱 Firewall / ACL <span class="ids">T40.02</span></div><div class="bd">
+        <p><span class="bad">drop</span> → no reply → <b>timeout</b> <code>curl: (28)</code> <code>ConnectTimeout</code></p>
+        <p><span class="bad">reject</span> → RST / ICMP → fast fail</p>
+        <p>test: <code>nc -zv -w 2 host port</code> · <code>telnet host port</code> · <code>curl -v</code></p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> ping OK ≠ port open (ICMP ≠ TCP/443)</div>
+      </div></div>
+      <div class="arrow">→</div>
+
+      <div class="zone z-nat"><div class="hd">🔁 NAT edge <span class="ids">T40.01</span></div><div class="bd">
+        <p>private RFC 1918 host is <b>not reachable</b> from outside without <b>static NAT / port forward</b></p>
+        <p>PAT / proxy rewrites source → server log sees <code>127.0.0.2</code>, not the client</p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> works on LAN, fails from internet = missing inbound NAT rule</div>
+      </div></div>
+      <div class="arrow">→</div>
+
+      <div class="zone z-srv"><div class="hd">🖥️ Server</div><div class="bd">
+        <p>not listening → <span class="bad">RST</span> → <b>refused</b> <code>curl: (7)</code></p>
+        <p>check: <code>ss -ltn</code></p>
+        <p>bound to <code>127.0.0.1</code> only = local-only</p>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> refused = host <b>reachable</b>; the network path is fine</div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- LADDER -->
+  <div class="panel">
+    <h2>🩺 Diagnostic ladder: bottom-up, stop at the first failure <span class="ids">T40.05</span></h2>
+    <div class="ladder">
+      <div class="step"><span class="n">1</span><b>Name?</b><br><code>nslookup api.corp.invalid</code><br><code>dig +short localhost</code><br>NXDOMAIN = DNS, not path</div>
+      <div class="step"><span class="n">2</span><b>Reachable?</b><br><code>ping -c 3 10.1.1.10</code><br>MTU: <code>ping -M do -s 1472</code><br>ICMP may be blocked</div>
+      <div class="step"><span class="n">3</span><b>Which hop?</b><br><code>traceroute 10.1.1.10</code><br>Windows <code>tracert</code><br>stars = filtered / lost</div>
+      <div class="step hl"><span class="n">4</span><b>Port open?</b><br><code>nc -zv -w 2 host port</code><br><code>succeeded!</code> · <code>refused</code> · <code>timed out</code></div>
+      <div class="step hl"><span class="n">5</span><b>App answers?</b><br><code>curl -sSv URL</code><br><code>*</code> info · <code>&gt;</code> sent · <code>&lt;</code> got<br><code>-x proxy</code> · <code>--cacert</code></div>
+      <div class="step"><span class="n">6</span><b>Listening?</b> (on server)<br><code>ss -ltn</code> / <code>ss -tlnp</code><br><code>netstat -an</code><br>which IP:port</div>
+    </div>
+    <div class="trap"><span class="n">!</span><b>Trap:</b> <code>nc -zv</code> / <code>telnet</code> test only the TCP handshake (L4); a <code>200</code> needs <code>curl</code> (L7). <code>traceroute</code> shows the path, not whether the port is open.</div>
+  </div>
+
+  <div class="two">
+    <!-- CONSTRAINTS -->
+    <div class="panel">
+      <h2>📉 Network constraints → app symptom → fix <span class="ids">T40.06 · 6.9</span></h2>
+      <table>
+        <colgroup><col style="width:19%"><col style="width:42%"><col style="width:39%"></colgroup>
+        <tr><th>Constraint</th><th>What the app sees</th><th>Mitigation</th></tr>
+        <tr><td><b>Bandwidth</b></td><td>big payloads / backups slow, saturation → queueing</td><td>compress (<code>gzip</code>), paginate, filter fields, schedule bulk jobs</td></tr>
+        <tr><td><b>Latency</b></td><td>each round trip costs RTT → <b>chatty APIs</b> crawl; timeouts</td><td>batch calls, cache, fewer round trips, keep-alive session</td></tr>
+        <tr><td><b>Jitter</b></td><td>variable delay → choppy voice / video</td><td><b>QoS</b> (priority queue for voice), jitter buffer</td></tr>
+        <tr><td><b>Loss</b></td><td>TCP retransmits → slow; UDP media gaps; flaky timeouts</td><td>fix the link, QoS, retry with backoff</td></tr>
+      </table>
+      <div class="lab"><span class="n">1</span>lab, 40 ms per call: <code>20 x GET /devices/{id}: 0.92s</code> vs <code>1 x GET /devices: 0.05s</code><br>
+        <span class="n">2</span>same body: <code>identity 2349 B</code> vs <code>gzip 337 B</code></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> more bandwidth does <b>not</b> fix a latency-bound chatty script; fewer round trips does</div>
+    </div>
+
+    <!-- EXAM ANGLE -->
+    <div class="panel">
+      <h2>🎯 Exam angle: symptom → cause → fix <span class="ids">T40.07</span></h2>
+      <table>
+        <colgroup><col style="width:42%"><col style="width:26%"><col style="width:32%"></colgroup>
+        <tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr>
+        <tr><td>instant <code>Connection refused</code></td><td>service down / wrong port</td><td>start it, fix port, <code>ss -ltn</code></td></tr>
+        <tr><td>hangs → <code>timed out</code></td><td>firewall drop / no route</td><td>open ACL, fix route</td></tr>
+        <tr><td><code>407 Proxy Authentication Required</code></td><td>proxy wants creds</td><td><code>user:pass@proxy</code></td></tr>
+        <tr><td><code>CERTIFICATE_VERIFY_FAILED</code> on corp LAN only</td><td>TLS inspection</td><td>trust corp CA, not <code>verify=False</code></td></tr>
+        <tr><td>works on LAN, not from internet</td><td>no inbound NAT</td><td>static NAT / port forward</td></tr>
+        <tr><td>internal name fails on VPN</td><td>split DNS</td><td>use the VPN's DNS</td></tr>
+        <tr><td>login OK, big transfer hangs on VPN</td><td>MTU / PMTUD black hole</td><td>lower MTU, clamp MSS</td></tr>
+      </table>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>verify=False</code> "works" but is never the right exam answer for TLS inspection</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = order / example from the lab</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the test that splits L4 from L7</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T40/run_lab.sh</code> · details in each T40.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

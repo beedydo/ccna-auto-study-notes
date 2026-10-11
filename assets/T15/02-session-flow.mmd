@@ -1,0 +1,13 @@
+sequenceDiagram
+    participant Cl as Client (ncclient)
+    participant Sv as Server (IOS XE, NETCONF agent)
+    Cl->>Sv: SSH to TCP 830, request subsystem "netconf"
+    Sv-->>Cl: <hello> capabilities + <session-id>21</session-id>  ]]>]]>
+    Cl->>Sv: <hello> client capabilities (no session-id)  ]]>]]>
+    Note over Cl,Sv: both sent base:1.1 → chunked framing (#35;size … #35;#35;) from here.<br/>Only base:1.0 on one side → keep ]]>]]>
+    Cl->>Sv: <rpc message-id="101"><get-config>…
+    Sv-->>Cl: <rpc-reply message-id="101"><data>…</data>
+    Cl->>Sv: <rpc message-id="102"><edit-config>…
+    Sv-->>Cl: <rpc-reply message-id="102"><ok/>
+    Cl->>Sv: <rpc message-id="103"><close-session/>
+    Sv-->>Cl: <rpc-reply message-id="103"><ok/> then SSH closes

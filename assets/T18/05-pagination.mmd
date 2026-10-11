@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant M as Dashboard API
+    S->>M: GET /networks/{networkId}/clients?perPage=3
+    M-->>S: 200 [3 clients]<br/>Link: #lt;...startingAfter=k3c4d5e#gt;#59; rel=next
+    S->>M: GET rel=next URL  ...?perPage=3&startingAfter=k3c4d5e
+    M-->>S: 200 [3 clients]<br/>Link: #lt;...startingAfter=k6f7a8b#gt;#59; rel=next
+    S->>M: GET rel=next URL  ...?perPage=3&startingAfter=k6f7a8b
+    M-->>S: 200 [1 client]<br/>Link: rel=first, rel=prev (no rel=next)
+    Note over S,M: no rel=next → stop. 7 clients in 3 pages

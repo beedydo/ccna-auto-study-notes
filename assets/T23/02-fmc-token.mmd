@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant F as FMC
+    participant T as FTD firewalls
+    S->>F: POST /api/fmc_platform/v1/auth/generatetoken<br/>Authorization: Basic (user:pass)
+    F-->>S: 204 No Content (empty body)<br/>headers: X-auth-access-token,<br/>X-auth-refresh-token, DOMAIN_UUID
+    S->>F: GET /api/fmc_config/v1/domain/{DOMAIN_UUID}/object/networks<br/>X-auth-access-token: <token>
+    F-->>S: 200 {"items": [...], "paging": {...}}
+    S->>F: POST .../object/hosts · POST .../policy/accesspolicies/{id}/accessrules
+    F-->>S: 201 Created (saved on FMC only)
+    Note over F,T: nothing on the firewalls has changed yet
+    S->>F: POST .../deployment/deploymentrequests
+    F-->>S: 202 Accepted (task id)
+    F->>T: push policy
+    Note over S,F: token lives 30 min<br/>POST /api/fmc_platform/v1/auth/refreshtoken with BOTH tokens<br/>max 3 refreshes, then generatetoken again

@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant M as NMS / manager<br/>(listens UDP 162)
+    participant A as Router / agent<br/>(listens UDP 161) + MIB
+    M->>A: GetRequest  OID 1.3.6.1.2.1.1.5.0 (sysName)  → :161
+    A-->>M: Response  sysName = "csr1"
+    M->>A: SetRequest  (write a MIB object)  → :161
+    A-->>M: Response
+    rect rgb(253, 232, 232)
+    A-)M: Trap  linkDown  → :162   (unconfirmed, no reply)
+    end
+    rect rgb(227, 246, 238)
+    A->>M: InformRequest  → :162   (confirmed)
+    M-->>A: Response (ack, else agent resends)
+    end
+    Note over M,A: Polling = manager asks the agent on UDP 161.<br/>Notifications = agent pushes to the manager on UDP 162.<br/>v1 / v2c = community string in cleartext.<br/>v3 = users + noAuthNoPriv / authNoPriv / authPriv.

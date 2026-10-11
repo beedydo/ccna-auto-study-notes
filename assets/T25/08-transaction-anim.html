@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T25 NSO transaction animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --ok:#d4edda; --ok-b:#28a745; --part:#fff3cd; --part-b:#e0a800;
+          --bad:#f8d7da; --bad-b:#dc3545; --rec:#d1ecf1; --rec-b:#17a2b8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:490px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#17a2b8; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:170px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(23,162,184,.35); }
+  .item { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; }
+  .item small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ok { background:var(--ok); border-color:var(--ok-b); } .part { background:var(--part); border-color:var(--part-b); }
+  .bad { background:var(--bad); border-color:var(--bad-b); } .rec { background:var(--rec); border-color:var(--rec-b); }
+  .ghost { opacity:.3; border-style:dashed; background:#fff; border-color:#999; }
+  .cmdrow { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:14px; height:70px; margin-top:10px; }
+  .slot { display:flex; justify-content:center; align-items:flex-start; }
+  .cmd { font-family:Menlo,monospace; font-size:12.5px; font-weight:700; background:var(--ink); color:#fff;
+         padding:6px 10px; border-radius:8px; text-align:center; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .cmd.err::before { content:"✖ "; color:#ff8a8a; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#17a2b8; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T25 · <span class="pill">NSO transaction</span> all devices or none</h1>
+  <div class="sub">One service, three devices, one commit. Watch what happens when one device fails, then the retry.</div>
+  <div class="lanes">
+    <div class="lane" id="c"><h3>🧑‍💻 Client</h3><div class="where">pipeline.py · RESTCONF</div><div id="c-f"></div></div>
+    <div class="lane" id="n"><h3>🧠 NSO</h3><div class="where">FASTMAP + CDB</div><div id="n-f"></div></div>
+    <div class="lane" id="a"><h3>🔧 ios0</h3><div class="where">cisco-ios-cli NED</div><div id="a-f"></div></div>
+    <div class="lane" id="b"><h3>🔧 xr0</h3><div class="where">cisco-iosxr-cli NED</div><div id="b-f"></div></div>
+    <div class="lane" id="j"><h3>🔧 junos0</h3><div class="where">juniper-junos-nc NED</div><div id="j-f"></div></div>
+  </div>
+  <div class="cmdrow" id="cmds"></div>
+  <div class="step"><div class="n" id="num">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (t, s, cls) => `<div class="item ${cls}">${t}<small>${s}</small></div>`;
+const none = I("no Loopback100", "running config", "ghost");
+const svcNo = I("T25-LO100: absent", "CDB", "ghost");
+const frames = [
+  { active:["c","n"], c:I("POST /restconf/data","service T25-LO100","rec"), n:svcNo, a:none, b:none, j:none,
+    cmds:{1:["POST service", ""]},
+    txt:"Client sends <b>one</b> request: service <code>T25-LO100</code> on ios0, xr0 and junos0." },
+  { active:["n"], c:I("waiting…","","ghost"), n:svcNo + I("3 device diffs", "mapping ran (FASTMAP)", "part"), a:none, b:none, j:none,
+    cmds:{1:["template → diffs", ""]},
+    txt:"NSO runs the template and works out a diff <b>per device, per NED</b>. Nothing sent yet." },
+  { active:["a","b","j"], c:I("waiting…","","ghost"), n:svcNo + I("3 device diffs","sending","part"),
+    a:I("Loopback100","pending (prepare)","part"), b:I("connection refused","xr0 unreachable","bad"), j:I("lo0 unit 100","candidate only","part"),
+    cmds:{2:["interface Loopback100",""],3:["SSH :22",""," err"],4:["edit-config",""]},
+    txt:"NSO pushes to all three. ios0 and junos0 accept, but <b>xr0 fails</b>." },
+  { active:["a","j","c"], c:I("error","no partial result","bad"), n:svcNo, a:none, b:none, j:none,
+    cmds:{0:["error", " back"],2:["no interface Loopback100"," back"],4:["discard-changes"," back"]},
+    txt:"NSO <b>aborts the whole transaction</b>: it reverts ios0, discards the junos0 candidate, and writes nothing to CDB." },
+  { active:["n","a","b","j"], c:I("POST /restconf/data","retry, xr0 back up","rec"), n:I("T25-LO100: present","CDB + rollback 10002","ok"),
+    a:I("Loopback100","10.100.0.1/32","ok"), b:I("Loopback100","10.100.0.1/32","ok"), j:I("lo0 unit 100","committed","ok"),
+    cmds:{2:["commit",""],3:["commit",""],4:["commit",""]},
+    txt:"Retry with xr0 reachable: every device accepts, so NSO commits to <b>all three and CDB together</b>." },
+  { active:["c"], c:I("201 Created","Location: …/loopback=T25-LO100","ok"), n:I("T25-LO100: present","owns 3 Loopback100s","ok"),
+    a:I("Loopback100","10.100.0.1/32","ok"), b:I("Loopback100","10.100.0.1/32","ok"), j:I("lo0 unit 100","committed","ok"),
+    cmds:{0:["201 + rollback id"," back"]},
+    txt:"Client gets <code>201 Created</code>. The service remembers what it created, so a later DELETE removes exactly that." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["c","n","a","b","j"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active.includes(k));
+  }
+  document.getElementById("cmds").innerHTML = [0,1,2,3,4].map(s => {
+    const c = f.cmds[s]; return `<div class="slot">${c ? `<div class="cmd${c[1]}${c[2]||""}">${c[0]}</div>` : ""}</div>`;
+  }).join("");
+  document.getElementById("num").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

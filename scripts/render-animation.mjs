@@ -1,6 +1,7 @@
 // Render an assets/TXX/*-anim.html step animation to a GIF.
 // The page must define window.FRAME_COUNT and window.show(i), and wrap everything in .sheet.
 // Usage: node scripts/render-animation.mjs assets/T04/10-workflow-anim.html [seconds-per-frame]
+// Env overrides: CHROME_PATH (e.g. /usr/bin/google-chrome on Linux), FFMPEG (path to ffmpeg).
 // Needs puppeteer-core (npm install --no-save puppeteer-core), Google Chrome and ffmpeg.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -14,7 +15,8 @@ const output = input.replace(/-anim\.html$/, ".gif").replace(/\.html$/, ".gif");
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "anim-"));
 
 const browser = await puppeteer.launch({
-  executablePath: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  executablePath: process.env.CHROME_PATH || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  args: process.env.CHROME_PATH ? ["--no-sandbox"] : [],
   headless: "new",
 });
 const page = await browser.newPage();
@@ -32,9 +34,9 @@ await browser.close();
 fs.copyFileSync(path.join(tmp, `f${String(count - 1).padStart(2, "0")}.png`), path.join(tmp, `f${String(count).padStart(2, "0")}.png`));
 const pattern = path.join(tmp, "f%02d.png");
 const rate = `1/${secs}`;
-execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", rate, "-i", pattern,
+execFileSync(process.env.FFMPEG || "ffmpeg", ["-y", "-loglevel", "error", "-framerate", rate, "-i", pattern,
   "-vf", "palettegen=stats_mode=diff", path.join(tmp, "palette.png")]);
-execFileSync("ffmpeg", ["-y", "-loglevel", "error", "-framerate", rate, "-i", pattern, "-i", path.join(tmp, "palette.png"),
+execFileSync(process.env.FFMPEG || "ffmpeg", ["-y", "-loglevel", "error", "-framerate", rate, "-i", pattern, "-i", path.join(tmp, "palette.png"),
   "-lavfi", "paletteuse=dither=none", "-loop", "0", output]);
 fs.rmSync(tmp, { recursive: true });
 console.log(`wrote ${output} (${count} frames, ${secs}s each)`);

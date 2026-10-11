@@ -1,0 +1,15 @@
+sequenceDiagram
+  autonumber
+  participant J as Jabber / web app
+  participant N as Any CUCM node :8443
+  J->>N: GET /cucm-uds/version  (no auth)
+  N-->>J: 200 application/xml  #lt;versionInformation#gt;
+  J->>N: GET /cucm-uds/users?last=Kam  (directory search)
+  N-->>J: 200 #lt;users#gt; ... #lt;userName#gt;jkam#lt;/userName#gt;
+  J->>N: GET /cucm-uds/user/jkam/devices  (no auth)
+  N-->>J: 401 Unauthorized
+  J->>N: GET /cucm-uds/user/jkam/devices<br/>Authorization: Basic jkam (end user)
+  N-->>J: 200 #lt;devices#gt; SEP001122334455
+  J->>N: POST /cucm-uds/users
+  N-->>J: 405 Method Not Allowed  (Allow: GET)
+  Note over J,N: XML only (no JSON) · plural = list, singular = one item

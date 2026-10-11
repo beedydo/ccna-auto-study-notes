@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T22 overview: Catalyst SD-WAN</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd; --yel: #fff3cd; --yel-b: #e0a800;
+    --pur: #e8dcf7; --pur-b: #7b4bc4; --ok: #d4edda; --ok-b: #28a745;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1320px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  table.main { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  table.main > tbody > tr > td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 330px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .trapbox { background: var(--trap); border-radius: 6px; padding: 6px 8px; font-size: 13.5px; line-height: 1.4; margin-top: 10px; }
+  .trapbox b.t { color: var(--trap-ink); }
+  .trapbox .n { background: var(--trap-ink); }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .span2 { grid-column: span 2; }
+
+  /* fabric map */
+  .fabric { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 12px; }
+  .comp { border: 2.5px solid; border-radius: 10px; padding: 8px 10px; font-size: 12.8px; line-height: 1.4; }
+  .comp h4 { margin: 0; font-size: 14.5px; } .comp .old { color: var(--muted); font-size: 12px; }
+  .comp .plane { display: inline-block; font-size: 10.5px; font-weight: 800; letter-spacing: .5px; padding: 1px 6px; border-radius: 4px; background: #fff; border: 1px solid; margin: 3px 0; }
+  .mgr { background: var(--blue); border-color: var(--blue-b); } .val { background: var(--yel); border-color: var(--yel-b); }
+  .ctl { background: var(--pur); border-color: var(--pur-b); }
+  .links { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 12px; text-align: center;
+           font-size: 12px; color: var(--muted); margin: 5px 0; font-weight: 600; }
+  .edges { display: flex; align-items: center; gap: 10px; border: 2.5px solid var(--ok-b); background: #f3fbf5; border-radius: 10px; padding: 7px 10px; font-size: 12.8px; }
+  .edge { background: var(--ok); border: 2px solid var(--ok-b); border-radius: 7px; padding: 4px 10px; font-weight: 700; }
+  .script { border: 2px dashed var(--blue-b); border-radius: 8px; padding: 4px 8px; font-size: 12.5px; margin-bottom: 6px; background: #eef5ff; }
+
+  /* url */
+  .url { display: flex; flex-wrap: wrap; gap: 0; font-family: Menlo, Consolas, monospace; font-size: 14px; font-weight: 700; margin: 2px 0 8px; }
+  .url span { padding: 6px 8px; border: 2px solid var(--line); margin-right: -2px; }
+  .url .u1 { background: #fff; } .url .u2 { background: var(--blue); border-color: var(--blue-b); } .url .u3 { background: var(--yel); border-color: var(--yel-b); }
+  .url .u4 { background: var(--ok); border-color: var(--ok-b); }
+  .ulab { display: flex; font-size: 11px; color: var(--muted); gap: 18px; margin-bottom: 6px; }
+
+  /* login flow */
+  .steps { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+  .st { border: 2px solid var(--line); border-radius: 8px; padding: 7px 8px; font-size: 12.8px; line-height: 1.45; background: #fff; position: relative; }
+  .st h5 { margin: 0 0 3px; font-size: 13px; display: flex; align-items: center; }
+  .st code { white-space: nowrap; }
+  .st .got { display: block; margin-top: 4px; padding-top: 4px; border-top: 1px dashed #aaa; }
+  .st.s1 { border-color: var(--ok-b); } .st.s2 { border-color: var(--blue-b); } .st.s3 { border-color: var(--pur-b); } .st.s4 { border-color: #999; }
+
+  /* endpoints */
+  .eps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; }
+  .ep { border: 2px solid; border-radius: 8px; padding: 6px 8px; font-size: 12.6px; line-height: 1.45; }
+  .ep h5 { margin: 0 0 3px; font-size: 13px; }
+  .ep.d { background: var(--ok); border-color: var(--ok-b); } .ep.s { background: var(--yel); border-color: var(--yel-b); }
+  .ep.t { background: var(--pur); border-color: var(--pur-b); }
+
+  /* names strip */
+  table.names { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  table.names td, table.names th { border: 1.5px solid var(--line); padding: 5px 7px; text-align: left; vertical-align: top; }
+  table.names th { background: #f0f0ee; font-size: 12.5px; }
+
+  footer { display: flex; gap: 18px; white-space: nowrap; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  footer .k0::before { display: none; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T22 · <span class="pill">Catalyst SD-WAN</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.2, 3.9.a</b><br>Every T22 concept on one page<br>Code from <code>labs/T22/</code></div>
+  </header>
+
+  <table class="main">
+    <!-- COMPONENTS -->
+    <tr>
+      <td class="label"><span class="icon">🧱</span><div class="name">FABRIC</div><div class="ids">T22.01</div></td>
+      <td class="what"><span class="sig">4 components = 4 planes</span><br>
+        An <b>overlay</b> WAN: IPsec tunnels between edge routers over any transport. Central boxes handle management, control and onboarding. The API keeps the <b>old names</b> in <code>device-type</code>.
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> Controller (vSmart) = <b>OMP + policy</b>. Validator (vBond) = <b>authenticate + orchestrate + NAT</b>, public IP. Don't swap them.</div></td>
+      <td class="items">
+        <div class="script">🧑‍💻 your script → HTTPS → <b>SD-WAN Manager only</b> (<code>/dataservice/...</code>)</div>
+        <div class="fabric">
+          <div class="comp val"><h4>SD-WAN Validator</h4><div class="old">(vBond) · <code>vbond</code></div><span class="plane">ORCHESTRATION</span><br>authenticates new devices, hands out Controller + Manager IPs, NAT traversal</div>
+          <div class="comp mgr"><h4>SD-WAN Manager</h4><div class="old">(vManage) · <code>vmanage</code></div><span class="plane">MANAGEMENT</span><br>GUI · NMS · templates · <b>the REST API</b></div>
+          <div class="comp ctl"><h4>SD-WAN Controller</h4><div class="old">(vSmart) · <code>vsmart</code></div><span class="plane">CONTROL</span><br><b>OMP</b>: routes, TLOCs, IPsec keys, <b>policy</b></div>
+        </div>
+        <div class="links"><div>⬇ DTLS · onboarding only</div><div>⬇ NETCONF config over DTLS/TLS</div><div>⬍ OMP over DTLS</div></div>
+        <div class="edges"><span class="plane" style="font-size:10.5px;font-weight:800;border:1px solid var(--ok-b);padding:1px 6px;border-radius:4px;background:#fff">DATA</span>
+          <span class="edge">WAN Edge Edge1</span> ⇄ <b>IPsec + BFD</b> ⇄ <span class="edge">WAN Edge Edge2</span>
+          <span style="color:var(--muted)">(vEdge / cEdge, e.g. C8000V · <code>vedge</code>)</span></div>
+      </td>
+    </tr>
+
+    <!-- API BASE -->
+    <tr>
+      <td class="label"><span class="icon">🌐</span><div class="name">API BASE</div><div class="ids">T22.02</div></td>
+      <td class="what"><span class="sig">https://&lt;manager&gt;:8443/dataservice/</span><br>
+        One API for the whole fabric, on the Manager. JSON in, JSON out. Swagger docs on the box at <code>/apidocs</code>.
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> login <code>/j_security_check</code> and <code>/logout</code> are at the <b>root</b>, not under <code>/dataservice</code>.</div></td>
+      <td class="items">
+        <div class="url"><span class="u1">https://manager:8443</span><span class="u2">/dataservice</span><span class="u3">/device/control/connections</span><span class="u4">?deviceId=10.0.0.1</span></div>
+        <div class="grid">
+          <div class="item"><span class="n">1</span>port: on-prem <code>8443</code> · sandbox / cloud <code>443</code></div>
+          <div class="item"><span class="n">3</span><code>deviceId</code> = the device's <b>system-ip</b></div>
+          <div class="item"><span class="n">2</span>blue = API prefix · yellow = resource · green = query</div>
+          <div class="item"><span class="n">4</span>reply envelope<span class="c"><code>{"header": {...}, "data": [...]}</code> → use <code>["data"]</code></span></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- AUTH -->
+    <tr>
+      <td class="label"><span class="icon">🔐</span><div class="name">SESSION<br>LOGIN</div><div class="ids">T22.03 · T22.05</div></td>
+      <td class="what"><span class="sig">cookie + X-XSRF-TOKEN</span><br>
+        Session-based: login gives a <b>cookie</b>, a 2nd call gives the <b>token</b>. <code>requests.Session()</code> keeps the cookie and the header for every call.
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> <b>200 ≠ success.</b> Bad password → 200 + error body. Dead session → 200 + HTML login page. Check body / <code>Content-Type</code>.</div></td>
+      <td class="items">
+        <div class="steps">
+          <div class="st s1"><h5><span class="n">1</span>Log in</h5><code>POST /j_security_check</code><br>form: <code>j_username</code> <code>j_password</code><br>requests <code>data=</code>, not <code>json=</code>
+            <span class="got">→ 200, <b>empty body</b><br><code>Set-Cookie: JSESSIONID</code></span></div>
+          <div class="st s2"><h5><span class="n">2</span>Get token</h5><code>GET /dataservice/client/token</code><br>with the cookie
+            <span class="got">→ body <b>is</b> the token (plain text)<br><code>session.headers["X-XSRF-TOKEN"]</code></span></div>
+          <div class="st s3"><h5><span class="n">3</span>Call the API</h5>GET: cookie is enough<br>POST / PUT / DELETE: cookie <b>+</b> <code>X-XSRF-TOKEN</code>
+            <span class="got">no token on POST → <b>403</b><br>SessionTokenFilter</span></div>
+          <div class="st s4"><h5><span class="n">4</span>Log out</h5><code>POST /logout?nocache=1</code>
+            <span class="got">→ 302 /welcome.html<br>frees 1 of 100 sessions (24 h max, 30 min idle)</span></div>
+        </div>
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> header is <code>X-XSRF-TOKEN</code>, not <code>X-Auth-Token</code> (Catalyst Center, T20). Newer <code>/jwt/login</code> (20.18.1+) uses <code>username</code>/<code>password</code> JSON → Bearer.</div>
+      </td>
+    </tr>
+
+    <!-- ENDPOINTS -->
+    <tr>
+      <td class="label"><span class="icon">🗂️</span><div class="name">END-<br>POINTS</div><div class="ids">T22.04</div></td>
+      <td class="what"><span class="sig">/dataservice/&lt;resource&gt;</span><br>
+        Inventory and real-time views are GETs. Statistics and alarm <b>queries</b> are POSTs with a filter body, so they need the token too.
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> <code>/template/device</code> lists <b>templates</b>, not devices. Devices = <code>/device</code>.</div></td>
+      <td class="items">
+        <div class="eps">
+          <div class="ep d"><h5>📋 Inventory · health</h5><code>GET /device</code> host-name, device-type, system-ip, site-id, reachability<br><code>GET /device/monitor</code> status<br><code>GET /device/counters</code> control / OMP / BFD</div>
+          <div class="ep s"><h5>📈 Stats · alarms</h5><code>POST /statistics/interface</code><br>body <code>{"query": {...}, "size": 3}</code><br><code>POST /alarms</code> · <code>GET /alarms/count</code><br>real time: <code>/device/bfd/sessions?deviceId=</code></div>
+          <div class="ep t"><h5>🧩 Templates</h5><code>GET /template/device</code> whole-device config<br><code>GET /template/feature</code> building blocks<br>attach: <code>POST /template/device/config/</code><br><code>attachfeature</code> → poll <code>/device/action/status/{id}</code></div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- EXAM ANGLE -->
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T22.05</div></td>
+      <td class="what"><span class="sig">order · credentials · names</span><br>
+        Order the 4 steps, say where each credential comes from, map old ↔ new names by <b>job</b>.
+        <div class="trapbox"><span class="n">!</span><b class="t">Trap:</b> the token comes from <code>/dataservice/client/token</code>, <b>never</b> from the login reply.</div></td>
+      <td class="items">
+        <table class="names">
+          <tr><th style="width:21%">Old name</th><th style="width:25%">Current name</th><th>Job (match the question to this)</th><th style="width:26%">Credential</th></tr>
+          <tr><td>vManage</td><td><b>SD-WAN Manager</b></td><td>GUI, API, templates, monitoring</td><td><code>JSESSIONID</code> ← <code>Set-Cookie</code></td></tr>
+          <tr><td>vSmart</td><td><b>SD-WAN Controller</b></td><td>OMP routes + policy</td><td>token ← body of <code>/client/token</code></td></tr>
+          <tr><td>vBond</td><td><b>SD-WAN Validator</b></td><td>authenticate, orchestrate, NAT</td><td>sent as <code>X-XSRF-TOKEN</code></td></tr>
+          <tr><td>vEdge / cEdge</td><td><b>WAN Edge</b></td><td>forward traffic: IPsec + BFD</td><td>creds: form <code>j_username</code> <code>j_password</code></td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = step order / index</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span class="k4">blue = SD-WAN Manager / the API</span>
+    <span class="k0" style="margin-left:auto">Run it: <code>python3 labs/T22/sdwan_inventory.py</code></span>
+  </footer>
+</div>
+</body>
+</html>

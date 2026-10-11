@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T20 architecture: Catalyst Center API families</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client.north { width: 520px; margin: 0 auto; }
+  .mid { align-items: center; gap: 0; }
+  .mid > .zone { flex: 0 0 250px; }
+  .mid > .zone.ctrl { flex: 0 0 250px; }
+  .mid .spacer { flex: 1 1 0; }
+  .mid .zone > .zb { flex-direction: column; align-items: center; gap: 26px; }
+  .dir { display: inline-block; background: #fff; color: var(--ink); border-radius: 5px; padding: 0 6px; margin-right: 6px; font-size: 12px; letter-spacing: 0.5px; }
+  .south { gap: 26px; }
+  .south > .zone > .zb { justify-content: space-around; }
+  .south > .cisco { flex: 3 1 0; } .south > .third { flex: 1 1 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T20 · <span class="pill">Catalyst Center</span> API families</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9</b><br>Four directions around the controller<br>North = what <code>labs/T20/catc_inventory.py</code> calls</div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client north">
+      <div class="zh"><span class="dir">N</span>Your code</div>
+      <div class="zb">
+        <div class="node xw" id="app" data-icon="script"><div class="nm">Your script / app</div><div class="sub">Python · Ansible · curl<br>header <code>X-Auth-Token</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row mid">
+      <div class="zone ext west" id="west">
+        <div class="zh"><span class="dir">W</span>IT systems</div>
+        <div class="zb">
+          <div class="node w" id="itsm" data-icon="server"><div class="nm">ServiceNow (ITSM)</div><div class="sub">events → incidents · change approvals</div></div>
+          <div class="node w" id="ipam" data-icon="db"><div class="nm">IPAM</div><div class="sub">Infoblox · BlueCat · IP pool sync</div></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="zone ctrl">
+        <div class="zh">Controller</div>
+        <div class="zb" style="padding: 26px 14px">
+          <div class="node w hl" id="catc" data-icon="controller"><div class="nm">Catalyst Center</div><div class="sub">(DNA Center)<br>campus/branch controller<br>Design · Policy ·<br>Provision · Assurance</div><span class="tag">sandboxdnac2.cisco.com</span></div>
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <div class="zone client east" id="east">
+        <div class="zh"><span class="dir">E</span>Your receivers</div>
+        <div class="zb">
+          <div class="node w" id="hook" data-icon="server"><div class="nm">Webhook receiver</div><div class="sub">your HTTPS URL · JSON event</div></div>
+          <div class="node w" id="mail" data-icon="db"><div class="nm">Email · syslog</div><div class="sub">same events, other channels</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row south">
+      <div class="zone site cisco" id="cisco">
+        <div class="zh"><span class="dir" style="color:var(--ink)">S</span>Cisco devices <small>native support</small></div>
+        <div class="zb">
+          <div class="node" id="sw" data-icon="switch"><div class="nm">Switches</div><div class="sub">Catalyst 9000 · IOS XE</div><span class="tag">sw1 · C9KV-UADP-8P</span></div>
+          <div class="node" id="rtr" data-icon="router"><div class="nm">Routers</div><div class="sub">IOS XE</div></div>
+          <div class="node" id="wlc" data-icon="wlc"><div class="nm">WLC / APs</div><div class="sub">wireless</div></div>
+        </div>
+      </div>
+      <div class="zone site third">
+        <div class="zh"><span class="dir" style="color:var(--ink)">S</span>3rd-party</div>
+        <div class="zb">
+          <div class="node" id="mv" data-icon="router"><div class="nm">Non-Cisco vendors</div><div class="sub">need a <b>device package</b></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>North is the one you code against.</b> Token from <code>POST /dna/system/api/v1/auth/token</code>, then every call is <code>/dna/intent/api/v1/…</code>.</div>
+      <div class="note trap"><b>Trap:</b> Events and Notifications is <b>push</b> (eastbound): Catalyst Center POSTs to your URL. You don't poll it, and it's not the Intent API.</div>
+      <div class="note"><b>South to Cisco gear</b> is plain SSH/CLI, SNMP and NETCONF. The <b>Multivendor SDK</b> only matters for 3rd-party devices.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (REST / HTTPS, arrow = who calls)</span>
+    <span><i class="sw mgmt"></i>device management (southbound)</span>
+    <span style="margin-left:auto">Blue glow = the one box your code talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "app", b: "catc", k: "api", label: "<b>NORTH · Intent API</b><br>REST + JSON <code>/dna/intent/api/v1/…</code>" },
+  { a: "catc", b: "west", k: "api", dir: "both", s: "l-r", label: "<b>WEST · Integration API</b><br>tickets · approvals<br>IP sync", t: 0.62 },
+  { a: "catc", b: "east", k: "api", s: "r-l", label: "<b>EAST · Events and<br>Notifications</b><br>Catalyst Center POSTs<br>to you (push)", t: 0.62 },
+  { a: "catc", b: "cisco", k: "mgmt", s: "b-t", ao: -40, label: "<b>SOUTH</b> · SSH · SNMP · NETCONF", t: 0.5, lx: -120 },
+  { a: "catc", b: "mv", k: "mgmt", s: "b-t", ao: 40, mid: 0.5, label: "<b>SOUTH · Multivendor SDK</b><br>device packages", t: 0.6 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

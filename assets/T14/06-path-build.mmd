@@ -1,0 +1,14 @@
+flowchart LR
+    A["/restconf/data"] --> B["ietf-interfaces:interfaces<br/><i>module:container</i><br/>first node: prefix with MODULE name"]
+    B --> C["/interface=GigabitEthernet1<br/><i>list=key</i><br/>same module: no prefix"]
+    C --> D["/ietf-ip:ipv4<br/><i>augmented container</i><br/>module changed: prefix again"]
+    D --> E["/address=10.10.20.48<br/><i>list=key</i>"]
+    E --> F["/netmask<br/><i>leaf</i><br/>choice subnet / case netmask: skipped"]
+    classDef base fill:#f3f4f6,stroke:#374151,color:#111
+    classDef seg fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef aug fill:#f3e8ff,stroke:#7e22ce,stroke-dasharray:5 3,color:#111
+    classDef leaf fill:#dcfce7,stroke:#15803d,color:#111
+    class A base
+    class B,C,E seg
+    class D aug
+    class F leaf

@@ -1,0 +1,16 @@
+flowchart LR
+    P["Product page<br/>developer.cisco.com/meraki<br/>/docs/... per platform"]
+    G["Guides<br/>getting started, auth,<br/>rate limits, versions"]
+    R["API reference<br/>method + path + params<br/>request / response schema"]
+    T["Try it / Run<br/>console in the browser<br/>(Meraki: demo API key)"]
+    O["Download OpenAPI<br/>document"]
+    X["Postman collection,<br/>generated SDK, or<br/>your own requests code"]
+    P --> G --> R
+    R --> T
+    R --> O --> X
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class P,G grey
+    class R blue
+    class T,O,X green

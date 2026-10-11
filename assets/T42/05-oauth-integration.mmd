@@ -1,0 +1,14 @@
+sequenceDiagram
+  autonumber
+  participant U as User's browser
+  participant A as Your app (integration)
+  participant W as webexapis.com/v1
+  U->>A: "Connect to Webex"
+  A-->>U: redirect to /v1/authorize?client_id&response_type=code<br/>&redirect_uri&scope=spark:messages_write ...&state
+  U->>W: sign in + approve scopes
+  W-->>U: redirect to redirect_uri?code=...&state=...
+  U->>A: GET redirect_uri?code=...
+  A->>W: POST /v1/access_token grant_type=authorization_code<br/>client_id, client_secret, code, redirect_uri
+  W-->>A: access_token (~14 d), refresh_token (~90 d)
+  A->>W: GET /v1/people/me  Authorization: Bearer access_token
+  A->>W: later: POST /v1/access_token grant_type=refresh_token

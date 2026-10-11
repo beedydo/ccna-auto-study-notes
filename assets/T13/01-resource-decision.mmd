@@ -1,0 +1,15 @@
+flowchart LR
+    N{"What does the<br/>scenario need?"}
+    N -- "run code against a real<br/>or virtual device, no hardware" --> SB["TRY<br/>DevNet Sandbox"]
+    N -- "guided, step-by-step<br/>tutorial" --> LL["LEARN<br/>Learning Labs"]
+    N -- "working sample code<br/>to start from" --> CE["REUSE<br/>Code Exchange"]
+    N -- "exact endpoint, params,<br/>schema, SDK reference" --> DOC["LOOK UP<br/>API documentation"]
+    N -- "peer help, has anyone<br/>else seen this?" --> FOR["ASK<br/>Community forums"]
+    N -- "1:1 help from a Cisco<br/>developer engineer" --> SUP["ESCALATE<br/>Developer support case"]
+    N -. "buy a partner-built<br/>solution (awareness)" .-> ECO["Ecosystem Exchange"]
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef yellow fill:#fff3cd,stroke:#d4a106,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class SB,LL,CE,DOC,FOR,SUP blue
+    class ECO yellow
+    class N grey

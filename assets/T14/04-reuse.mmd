@@ -1,0 +1,21 @@
+flowchart LR
+    subgraph T["typedef: name a type once"]
+        direction TB
+        TD["typedef vlan-id<br/>type uint16 range 1..4094"] --> TU["leaf id { type vlan-id; }"]
+    end
+    subgraph G["grouping + uses: copy a block of nodes"]
+        direction TB
+        GD["grouping packet-counters<br/>leaf in-packets · leaf out-packets"] --> GU["container statistics {<br/>uses packet-counters; }"]
+    end
+    subgraph A["augment: add nodes INTO another module's tree"]
+        direction TB
+        AT["ietf-interfaces<br/>/interfaces/interface"] --> AA["+ leaf campus-vlans:access-vlan<br/>(leafref to /vlans/vlan/id)"]
+        AT --> AB["+ container ietf-ip:ipv4"]
+    end
+    T ~~~ G ~~~ A
+    classDef def fill:#f3f4f6,stroke:#374151,color:#111
+    classDef use fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef aug fill:#f3e8ff,stroke:#7e22ce,stroke-dasharray:5 3,color:#111
+    class TD,GD,AT def
+    class TU,GU use
+    class AA,AB aug

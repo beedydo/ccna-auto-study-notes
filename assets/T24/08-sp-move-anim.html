@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T24 service profile move animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --pool:#fff3cd; --pool-b:#e0a800; --sp:#cfe2ff; --sp-b:#0d6efd;
+          --ok:#d4edda; --ok-b:#28a745; --bad:#fde8e8; --bad-b:#b42318; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:520px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:285px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.pool { border-color:var(--pool-b); } .lane.sp { border-color:var(--sp-b); } .lane.bl { border-color:var(--ok-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .lane.dead { border-color:var(--bad-b); background:var(--bad); }
+  .id { font-family:Menlo,monospace; font-size:12px; border:2px solid; border-radius:7px; padding:5px 7px; margin-bottom:7px; }
+  .id small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .pool .id { background:var(--pool); border-color:var(--pool-b); }
+  .sp .id, .bl .id { background:var(--sp); border-color:var(--sp-b); }
+  .state { font-size:12.5px; border:2px solid var(--ok-b); background:var(--ok); border-radius:7px; padding:5px 7px; margin-bottom:7px; }
+  .state.bad { border-color:var(--bad-b); background:#fff; color:var(--bad-b); font-weight:700; }
+  .ghost { opacity:.45; border-style:dashed; }
+  .empty { color:var(--muted); font-size:13px; font-style:italic; }
+  .cmdrow { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:16px; height:58px; margin-top:10px; }
+  .cmd { justify-self:center; align-self:start; font-family:Menlo,monospace; font-size:13px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 11px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T24 · <span class="pill">Service profile</span> the identity moves, not the hardware</h1>
+  <div class="sub">Stateless computing in UCS Manager: one service profile, two blades. Each frame = one action.</div>
+  <div class="lanes">
+    <div class="lane pool" id="pool"><h3>🎱 Pools</h3><div class="where">org-root</div><div id="pool-f"></div></div>
+    <div class="lane sp" id="sp"><h3>📄 Service profile</h3><div class="where">org-root/ls-ESX-01</div><div id="sp-f"></div></div>
+    <div class="lane bl" id="b1"><h3>🖥️ blade-1</h3><div class="where">sys/chassis-1/blade-1</div><div id="b1-f"></div></div>
+    <div class="lane bl" id="b3"><h3>🖥️ blade-3</h3><div class="where">sys/chassis-1/blade-3</div><div id="b3-f"></div></div>
+  </div>
+  <div class="cmdrow" id="cmds"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const ID = (v, s, cls="") => `<div class="id ${cls}">${v}<small>${s}</small></div>`;
+const ST = (t, bad=false) => `<div class="state ${bad ? "bad" : ""}">${t}</div>`;
+const NONE = t => `<div class="empty">${t}</div>`;
+const UUID = "1b4e28ba-2fa1-11d2-<br>0001-0025b5000001", MAC = "00:25:B5:A0:00:01", WWPN = "20:00:00:25:B5:A0:00:01";
+const POOL_FREE = ID(UUID, "UUID-POOL · free") + ID(MAC, "MAC-POOL-A · free") + ID(WWPN, "WWPN-POOL-A · free");
+const POOL_USED = ID(UUID, "assigned to ls-ESX-01", "ghost") + ID(MAC, "assigned to ls-ESX-01", "ghost") + ID(WWPN, "assigned to ls-ESX-01", "ghost");
+const SP_IDS = ID(UUID, "uuid") + ID(MAC, "eth0 MAC") + ID(WWPN, "vhba0 WWPN");
+const frames = [
+  { active:"pool", pool:POOL_FREE, sp:NONE("not created yet"), b1:ST("hardware only<br>operPower=off"), b3:ST("hardware only<br>availability=available"),
+    cmd:null, txt:"The pools hold <b>free</b> identities. The blades are just hardware: no UUID, MAC or WWPN of their own is used." },
+  { active:"sp", pool:POOL_USED, sp:SP_IDS + ST("boot=BOOT-SAN · fw=FW-4.2<br>assocState=unassociated"), b1:ST("hardware only<br>operPower=off"), b3:ST("hardware only<br>availability=available"),
+    cmd:{at:1, t:"handle.commit()"}, txt:"Create the service profile from the template. It <b>draws its identity from the pools</b> and gets the boot + firmware policies." },
+  { active:"b1", pool:POOL_USED, sp:SP_IDS + ST("assocState=associated<br>pnDn=sys/chassis-1/blade-1"), b1:SP_IDS + ST("boots from the SAN LUN<br>zoned to that WWPN"), b3:ST("hardware only<br>availability=available"),
+    cmd:{at:2, t:"associate → blade-1"}, txt:"Associate it with <code>blade-1</code>. The blade <b>takes on</b> the profile's UUID, MAC and WWPN, and boots." },
+  { active:"b1", pool:POOL_USED, sp:SP_IDS + ST("identity still here<br>pnDn=sys/chassis-1/blade-1"), b1:ST("operState=inoperable<br>hardware failure", true), b3:ST("hardware only<br>availability=available"),
+    cmd:null, txt:"<code>blade-1</code> fails. The identity was never <b>in</b> the blade, so nothing is lost: it lives in the service profile." },
+  { active:"b3", pool:POOL_USED, sp:SP_IDS + ST("assocState=associated<br>pnDn=sys/chassis-1/blade-3"), b1:ST("operState=inoperable<br>replace at leisure", true), b3:SP_IDS + ST("same identity → same<br>SAN LUN, DHCP, licences"),
+    cmd:{at:3, t:"re-associate → blade-3"}, txt:"Move the profile to <code>blade-3</code>: <b>same UUID, MAC, WWPN</b>. SAN zoning and DHCP don't change. That is <b>stateless computing</b>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["pool","sp","b1","b3"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  document.getElementById("b1").classList.toggle("dead", i >= 3);
+  const c = document.getElementById("cmds");
+  c.innerHTML = [0,1,2,3].map(j => `<div>${f.cmd && f.cmd.at === j ? `<div class="cmd">${f.cmd.t}</div>` : ""}</div>`).join("");
+  [...c.children].forEach(d => { d.style.display = "grid"; });
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

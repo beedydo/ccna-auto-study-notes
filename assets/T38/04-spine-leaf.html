@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 spine-leaf fabric</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .zone > .zb.g6 { display: grid; grid-template-columns: repeat(6, 1fr); justify-items: center; align-items: start; padding: 18px 0; gap: 0; }
+  .zone > .zb.g3 { display: grid; grid-template-columns: repeat(3, 1fr); justify-items: center; align-items: start; padding: 18px 0; gap: 56px 0; }
+  .c23 { grid-column: 2 / 4; } .c45 { grid-column: 4 / 6; }
+  .gap.xl { height: 150px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 400px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">Spine-leaf</span> data centre fabric (Clos)</h1>
+    <div class="meta"><b>200-901 blueprint 6.3</b><br>Every leaf ↔ every spine, nothing else<br>Cisco ACI runs on this (see T19)</div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone ctrl">
+      <div class="zh">Spine layer <small>connects only leaves</small></div>
+      <div class="zb g6">
+        <div class="node w c23" id="s1" data-icon="l3switch"><div class="nm">spine1</div><div class="sub">no servers · no spine ↔ spine</div></div>
+        <div class="node w c45" id="s2" data-icon="l3switch"><div class="nm">spine2</div><div class="sub">no servers · no spine ↔ spine</div></div>
+      </div>
+    </div>
+
+    <div class="gap xl"></div>
+
+    <div class="zone fabric">
+      <div class="zh">Leaf layer</div>
+      <div class="zb g3">
+        <div class="node w" id="l1" data-icon="l3switch"><div class="nm">leaf1</div><div class="sub">no leaf ↔ leaf link</div></div>
+        <div class="node w" id="l2" data-icon="l3switch"><div class="nm">leaf2</div><div class="sub">no leaf ↔ leaf link</div></div>
+        <div class="node w" id="l3" data-icon="l3switch"><div class="nm">border leaf</div><div class="sub">fabric ↔ outside world</div></div>
+        <div class="node w" id="sa" data-icon="server"><div class="nm">server A</div><div class="sub">servers, firewalls, LBs,<br>storage attach to leaves</div></div>
+        <div class="node w" id="sb" data-icon="server"><div class="nm">server B</div><div class="sub">on a different leaf</div></div>
+        <div class="node w" id="wan" data-icon="cloud"><div class="nm">WAN / Internet</div><div class="sub">via routers on the border leaf</div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Same hop count every time:</b> server A → server B = <b>leaf → spine → leaf</b>. <b>ECMP</b> spreads flows over every spine.</div>
+      <div class="note trap"><b>Trap:</b> leaf ↔ spine only. <b>No</b> leaf-leaf and <b>no</b> spine-spine links; servers on leaves only. Three-tier = north-south, spine-leaf = <b>east-west</b>.</div>
+      <div class="note"><b>Scale out:</b> more server ports → add a leaf; more bandwidth → add a spine. A spine failure removes only <b>1/N</b> of the capacity.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>fabric cable (full mesh between the two layers)</span>
+    <span><i class="sw data"></i>one east-west flow: server A → leaf1 → spine1 → leaf2 → server B</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "s1", b: "l1", k: "data", s: "b-t", r: "straight", ao: -20, bo: -10 },
+  { a: "s1", b: "l2", k: "data", s: "b-t", r: "straight", ao: 0, bo: -10 },
+  { a: "s1", b: "l3", k: "phys", s: "b-t", r: "straight", ao: 20, bo: -10 },
+  { a: "s2", b: "l1", k: "phys", s: "b-t", r: "straight", ao: -20, bo: 10 },
+  { a: "s2", b: "l2", k: "phys", s: "b-t", r: "straight", ao: 0, bo: 10 },
+  { a: "s2", b: "l3", k: "phys", s: "b-t", r: "straight", ao: 20, bo: 10 },
+  { a: "l1", b: "sa", k: "data", s: "b-t" },
+  { a: "l2", b: "sb", k: "data", s: "b-t" },
+  { a: "l3", b: "wan", k: "phys", s: "b-t" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

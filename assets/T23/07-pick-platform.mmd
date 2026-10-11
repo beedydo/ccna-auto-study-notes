@@ -1,0 +1,11 @@
+flowchart TD
+    Q{"What does the scenario need?"}
+    Q -->|"detonate a suspicious file/URL,<br/>get a threat score"| A["Secure Malware Analytics<br/>(Threat Grid)"]
+    Q -->|"isolate a laptop, list computers,<br/>endpoint malware events"| B["Secure Endpoint<br/>(AMP for Endpoints)"]
+    Q -->|"who is on the network, 802.1X,<br/>quarantine a MAC, guest, posture"| C["ISE"]
+    Q -->|"firewall rules on MANY firewalls,<br/>access control policy"| D["FMC"]
+    Q -->|"configure ONE firewall<br/>with no central manager"| E["FDM"]
+    Q -->|"correlate alerts across products,<br/>enrich observables, one response"| F["XDR"]
+    Q -->|"cloud SASE: remote access,<br/>DNS-layer / web security"| G["Secure Connect<br/>(Umbrella + Meraki)"]
+    classDef rec fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px
+    class A,B,C,D,E,F,G rec

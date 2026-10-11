@@ -1,0 +1,15 @@
+flowchart LR
+    M["Client MAC<br/>(from ARP, DHCP, a ticket)"] --> Q["GET client-detail<br/>param macAddress=MAC"]
+    Q --> R{"status code"}
+    R -- "404 Entity not found" --> X["MAC not seen by<br/>Catalyst Center"]
+    R -- "200" --> T{"detail.hostType"}
+    T -- "WIRED" --> W["connectedDevice: SWITCH sw1<br/>port GigabitEthernet1/0/5<br/>vlanId 30"]
+    T -- "WIRELESS" --> L["connectedDevice: AP AP-F2-01<br/>ssid CORP-WIFI<br/>vlanId 40"]
+    W --> H["healthScore[] OVERALL 1-10<br/>(0 = idle)"]
+    L --> H
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111
+    classDef ok fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    classDef bad fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#111
+    class Q rec
+    class W,L,H ok
+    class X bad

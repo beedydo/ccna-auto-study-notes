@@ -1,0 +1,21 @@
+flowchart LR
+    subgraph TODO["To do (backlog)"]
+        direction TB
+        T1["Add NTP template"]
+        T2["Fix VLAN script"]
+        T3["Upgrade NX-OS lab"]
+    end
+    subgraph DOING["Doing · WIP limit 2 (full)"]
+        direction TB
+        D1["Backup configs job"]
+        D2["Meraki client report"]
+    end
+    subgraph DONE["Done"]
+        direction TB
+        X1["SNMP audit"]
+    end
+    TODO -- "pull only when Doing has a free slot" --> DOING
+    DOING -- "finish, then pull next" --> DONE
+    style TODO fill:#f8f9fa,stroke:#6c757d
+    style DOING fill:#fff3cd,stroke:#e0a800
+    style DONE fill:#d4edda,stroke:#28a745

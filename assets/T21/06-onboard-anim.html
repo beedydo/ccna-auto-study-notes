@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T21 onboarding animation: AXL -> RisPort70 -> UDS</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --axl:#dbeafe; --axl-b:#1d4ed8; --ris:#f3f4f6; --ris-b:#6b7280;
+          --uds:#e3f6ee; --uds-b:#28a745; --sc:#fff3cd; --sc-b:#e0a800; --bad:#fde8e8; --bad-b:#dc3545; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1160px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:262px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.sc { border-color:var(--sc-b); } .lane.axl { border-color:var(--axl-b); }
+  .lane.ris { border-color:var(--ris-b); } .lane.uds { border-color:var(--uds-b); }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .card { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:8px; overflow-wrap:anywhere; }
+  .sc .card { background:var(--sc); border-color:var(--sc-b); } .axl .card { background:var(--axl); border-color:var(--axl-b); }
+  .ris .card { background:var(--ris); border-color:var(--ris-b); } .uds .card { background:var(--uds); border-color:var(--uds-b); }
+  .card.bad { background:var(--bad) !important; border-color:var(--bad-b) !important; }
+  .card small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { position:relative; height:58px; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T21 · <span class="pill">Onboard a new hire</span> AXL → RisPort70 → UDS</h1>
+  <div class="sub">One run of <code>labs/T21/cucm_lab.py</code>. Each frame = one API call; watch which lane changes.</div>
+  <div class="lanes">
+    <div class="lane sc" id="sc"><h3>🧑‍💻 Your script</h3><div class="where">app user axladmin</div><div id="sc-f"></div></div>
+    <div class="lane axl" id="axl"><h3>🗄️ AXL · config DB</h3><div class="where">POST /axl/ (Publisher)</div><div id="axl-f"></div></div>
+    <div class="lane ris" id="ris"><h3>📡 RisPort70 · live</h3><div class="where">RISService70</div><div id="ris-f"></div></div>
+    <div class="lane uds" id="uds"><h3>👤 UDS · end user</h3><div class="where">GET /cucm-uds/...</div><div id="uds-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const C = (t, s, cls="") => `<div class="card ${cls}">${t}<small>${s}</small></div>`;
+const OLD = C("SEP0CD0F894A1B2", "Wendy Tan desk");
+const NEWROW = C("SEP001122334455", "{483CBC89-AC32-5034-B8E1-61A94A107673}");
+const LINE = C("DN 2001", "{12D098BA-C3A3-55FF-8050-18BD467E1D89}");
+const RIS_OLD = C("SEP0CD0F894A1B2", "Registered 10.10.20.102");
+const frames = [
+  { active:"axl", sc:C("getCCMVersion", "200 OK"), axl:C("CUCM 14.0.1.13900(155)", "componentVersion")+OLD, ris:RIS_OLD, uds:C("jkam", "no phone yet", "ghost"),
+    cmd:{at:1, t:'SOAPAction: "CUCM:DB ver=14.0 getCCMVersion"'}, txt:"AXL check: <b>app user + AXL role</b>, SOAPAction version must match the namespace (<code>14.0</code>)." },
+  { active:"axl", sc:C("addLine + addPhone", "200 OK, uuid returned"), axl:NEWROW+LINE+OLD, ris:RIS_OLD, uds:C("jkam", "no phone yet", "ghost"),
+    cmd:{at:1, t:"addLine 2001 · addPhone SEP001122334455"}, txt:"<code>addPhone</code> writes a <b>row in the config database</b> and returns its uuid. Nothing is plugged in yet." },
+  { active:"axl", sc:C("updateUser jkam", "associatedDevices"), axl:NEWROW+C("user jkam", "owns SEP001122334455")+OLD, ris:RIS_OLD, uds:C("jkam", "no phone yet", "ghost"),
+    cmd:{at:1, t:"updateUser <associatedDevices>"}, txt:"<code>updateUser</code> links the phone to <code>jkam</code>, so UDS can show it to him later." },
+  { active:"ris", sc:C("selectCmDevice SEP*", "TotalDevicesFound=1"), axl:NEWROW+OLD, ris:RIS_OLD+C("SEP001122334455", "not found: not registered", "bad"), uds:C("jkam", "phone not checked yet", "ghost"),
+    cmd:{at:2, t:"selectCmDevice SEP*"}, txt:"RisPort70 finds only <b>1</b> phone. The new one is <b>configured but not registered</b>: AXL success ≠ phone online." },
+  { active:"ris", sc:C("selectCmDevice SEP*", "TotalDevicesFound=2"), axl:NEWROW+OLD, ris:C("SEP001122334455", "Registered 10.10.20.101")+RIS_OLD, uds:C("jkam", "phone not checked yet", "ghost"),
+    cmd:{at:2, t:"phone boots · selectCmDevice SEP*"}, txt:"The phone boots and registers to a subscriber. Now RisPort70 shows <code>Registered 10.10.20.101</code>." },
+  { active:"uds", sc:C("GET /user/jkam/devices", "200 OK, XML"), axl:NEWROW+OLD, ris:C("SEP001122334455", "Registered 10.10.20.101")+RIS_OLD, uds:C("SEP001122334455", "Cisco 8845 · SIP")+C("auth: end user jkam", "no auth / admin → 401"),
+    cmd:{at:3, t:"GET /cucm-uds/user/jkam/devices"}, txt:"jkam's Jabber asks <b>UDS</b> with <b>his own</b> credentials (REST, XML). No auth → <code>401</code>." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["sc","axl","ris","uds"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const lane = document.getElementById(["sc","axl","ris","uds"][f.cmd.at]);
+  const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t; a.appendChild(d);
+  const sheetW = 1104, w = d.offsetWidth, center = lane.offsetLeft - 28 + lane.offsetWidth / 2;
+  d.style.left = Math.max(0, Math.min(sheetW - w, center - w / 2)) + "px";
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

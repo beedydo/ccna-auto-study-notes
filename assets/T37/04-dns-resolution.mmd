@@ -1,0 +1,15 @@
+sequenceDiagram
+    participant C as Client stub
+    participant L as Recursive resolver<br/>(e.g. 10.10.30.53)
+    participant Root as Root "."
+    participant T as TLD ".com"
+    participant A as Authoritative<br/>example.com
+    C->>L: 1 A? www.example.com  (UDP 53, recursion desired)
+    L->>Root: 2 A? www.example.com
+    Root-->>L: referral → .com servers
+    L->>T: 3 A? www.example.com
+    T-->>L: referral → example.com servers
+    L->>A: 4 A? www.example.com
+    A-->>L: A 192.0.2.80, TTL 3600
+    L-->>C: 5 answer (resolver caches it for TTL)
+    Note over C,A: Client → resolver = RECURSIVE query ("give me the final answer").<br/>Resolver → root / TLD / authoritative = ITERATIVE queries (each replies with a referral or the answer).<br/>The next client asking the same name gets the cached answer until the TTL expires.

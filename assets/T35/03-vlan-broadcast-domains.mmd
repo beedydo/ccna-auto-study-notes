@@ -1,0 +1,19 @@
+flowchart LR
+  subgraph V10["VLAN 10 = broadcast domain 1 (10.10.10.0/24)"]
+    A["PC-A<br/>Gi1/0/1"]
+    B["PC-B<br/>Gi1/0/2"]
+  end
+  subgraph V20["VLAN 20 = broadcast domain 2 (10.10.20.0/24)"]
+    C["PC-C<br/>Gi1/0/3"]
+  end
+  SW["SW1"]
+  A -- "ARP broadcast<br/>FF:FF:FF:FF:FF:FF" --> SW
+  SW -- "flooded" --> B
+  SW -- "flooded, tag 10" --> R["Router / SVI<br/>Gi1/0/24 trunk"]
+  SW -. "never sent" .-x C
+  classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+  classDef red fill:#fde8e8,stroke:#dc3545,stroke-width:2px,color:#1d1d1f
+  classDef blue fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#1d1d1f
+  class A,B green
+  class C red
+  class R blue

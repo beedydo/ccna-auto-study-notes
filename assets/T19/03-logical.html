@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T19 architecture: ACI logical model</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .tenant > .zb { flex-wrap: nowrap; align-items: stretch; gap: 26px; padding: 20px 18px; }
+  .netchain { flex: 0 0 360px; }
+  .appchain { flex: 1 1 0; display: flex; flex-direction: column; gap: 70px; }
+  .vrf > .zb, .bd > .zb { flex-direction: column; align-items: stretch; }
+  .bd > .zb { align-items: center; padding: 22px 14px 26px; }
+  .ap > .zb { justify-content: space-between; padding: 22px 26px; }
+  .other { width: 440px; }
+  .other > .zh { text-align: right; }
+  .other > .zb { justify-content: flex-start; padding: 10px 26px 16px; }
+  .chain { font-size: 12px; color: var(--muted); font-weight: 700; margin: 0 0 6px 4px; letter-spacing: 0.3px; text-transform: uppercase; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T19 · <span class="pill">ACI</span> logical model</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9.a</b><br>What <code>tenant_payload()</code> builds<br>Names as in <code>labs/T19/aci_tenant_builder.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone ext tenant">
+      <div class="zh">Tenant T19-Prod <small><code style="color:#1d1d1f">fvTenant</code> · <code style="color:#1d1d1f">tn-T19-Prod</code> · administrative / isolation unit</small></div>
+      <div class="zb">
+        <div class="netchain">
+          <div class="chain">Network chain</div>
+          <div class="zone ctrl vrf">
+            <div class="zh">VRF Prod_VRF <small>fvCtx (context) · L3 routing table</small></div>
+            <div class="zb">
+              <div class="zone fabric bd">
+                <div class="zh">Bridge domain Web_BD <small>fvBD · L2 flood domain</small></div>
+                <div class="zb">
+                  <div class="node w" id="gw" data-icon="l3switch"><div class="nm">Subnet 10.19.1.1/24</div><div class="sub">fvSubnet · the <b>gateway</b><br>anycast SVI on every leaf</div><span class="tag">BD → VRF: fvRsCtx</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="appchain">
+          <div>
+            <div class="chain">App chain</div>
+            <div class="zone client ap">
+              <div class="zh">Application profile Web <small>fvAp · container for the EPGs of one app</small></div>
+              <div class="zb">
+                <div class="node" id="fe" data-icon="server"><div class="nm">EPG Frontend</div><div class="sub">fvAEPg · <b>consumer</b><br>(client side)</div><span class="tag">fvRsBd → Web_BD</span></div>
+                <div class="node w hl" id="ct" data-icon="firewall"><div class="nm">Contract web-to-app</div><div class="sub">vzBrCP → subject <code>https</code><br>→ filter <code>https</code> · entry <code>tcp-443</code></div><span class="tag">TCP dst 443</span></div>
+                <div class="node" id="be" data-icon="server"><div class="nm">EPG Backend</div><div class="sub">fvAEPg · <b>provider</b><br>(server side)</div><span class="tag">fvRsBd → Web_BD</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="zone dashed other">
+            <div class="zh" style="color:var(--muted); background:transparent">Any other EPG <small>e.g. another app</small></div>
+            <div class="zb">
+              <div class="node" id="ot" data-icon="server"><div class="nm">EPG Other</div><div class="sub">no contract with Frontend</div><span class="tag">fvAEPg</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Two chains, joined by the EPG.</b> Network: tenant → VRF → BD → subnet. App: tenant → app profile → EPG. Each EPG points at one BD (<code>fvRsBd</code>).</div>
+      <div class="note trap"><b>Trap:</b> allow-list model. Endpoints <b>in one EPG</b> talk freely; <b>different EPGs</b> can't talk at all until a contract allows it. No contract = drop.</div>
+      <div class="note"><b>VRF = context</b> (<code>fvCtx</code>, RN <code>ctx-</code>). The <b>subnet under the BD</b> is the default gateway, not a VLAN interface you configure per switch.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>permitted EPG → EPG traffic (via the contract)</span>
+    <span><i class="sw error"></i>dropped (no contract)</span>
+    <span>Nested box = logical scope; the real object tree is <code>02-mit</code></span>
+    <span style="margin-left:auto">Blue glow = the policy object that permits traffic</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "fe", b: "ct", k: "data", dir: "fwd", s: "r-l", label: "consumes<br><code>fvRsCons</code>", t: 0.5 },
+  { a: "ct", b: "be", k: "data", dir: "fwd", s: "r-l", label: "provided by<br><code>fvRsProv</code>", t: 0.5 },
+  { a: "fe", b: "ot", k: "error", s: "b-t", label: "no contract = DROP", t: 0.5 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

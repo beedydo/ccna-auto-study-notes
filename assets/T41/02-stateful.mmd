@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant A as App 10.41.2.20
+    participant F as Stateful firewall
+    participant D as DB 10.41.3.30
+    A->>F: SYN 10.41.2.20:40001 → 10.41.3.30:5432
+    Note over F: rule 4 permits<br/>add flow to state table
+    F->>D: forwarded
+    D->>F: SYN-ACK 5432 → 40001 (reply)
+    Note over F: matches state table<br/>no rule needed ✅
+    F->>A: forwarded
+    D-xF: NEW conn 10.41.3.30:41000 → app:8443
+    Note over F: not in state table, no rule<br/>implicit deny ❌ (dropped)

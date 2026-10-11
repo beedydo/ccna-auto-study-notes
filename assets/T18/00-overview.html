@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T18 overview: Meraki</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #d6e4ff; --blue-b: #2f5bd3; --gr: #d4edda; --gr-b: #28a745;
+    --yel: #fff3cd; --yel-b: #e0a800; --pur: #e8dcf7; --pur-b: #7b4bc4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; min-width: 0; }
+  .zone > h2 { margin: 0; padding: 8px 14px; font-size: 17px; font-weight: 800; color: #fff; display: flex; align-items: baseline; gap: 10px; }
+  .zone > h2 .ids { font-size: 11px; font-weight: 600; opacity: .85; margin-left: auto; }
+  .zone .body { padding: 12px 14px; font-size: 13.5px; line-height: 1.45; }
+  .z-you > h2 { background: var(--blue-b); } .z-cloud > h2 { background: #138a63; } .z-site > h2 { background: #b07d00; }
+  .z-tree > h2 { background: var(--ink); } .z-lim > h2 { background: #9a3412; } .z-sdk > h2 { background: #2f5bd3; } .z-cli > h2 { background: var(--pur-b); }
+  .map { display: grid; grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1.15fr) 46px minmax(0, 1fr); align-items: stretch; margin-bottom: 14px; }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; }
+  .arrow small { font-size: 10.5px; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.2; }
+  .row { margin: 6px 0; }
+  .row .c { display: block; margin: 3px 0 0 0; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; margin-top: 8px; font-size: 13px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+  .apis { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.5px; margin-top: 6px; }
+  .apis td { border: 1.5px solid #bbb; padding: 4px 6px; vertical-align: top; }
+  .apis td:first-child { width: 34%; font-weight: 700; }
+  .apis tr.pull td:first-child { background: var(--blue); } .apis tr.push td:first-child { background: var(--gr); }
+  .apis tr.mq td:first-child { background: var(--yel); }
+  .devs { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; margin: 6px 0; }
+  .dev { border: 2px solid var(--gr-b); background: var(--gr); border-radius: 8px; padding: 6px 8px; font-size: 12.5px; }
+  .dev b { font-size: 15px; } .dev small { display: block; color: var(--muted); }
+  .chain { display: flex; gap: 6px; align-items: center; font-size: 12px; margin-top: 6px; flex-wrap: wrap; }
+  .chain span.box { border: 2px solid var(--line); border-radius: 6px; padding: 2px 6px; background: #fff; }
+  .tree { display: grid; grid-template-columns: minmax(0,1fr) 30px minmax(0,1fr) 30px minmax(0,1fr) 30px minmax(0,1fr); align-items: stretch; }
+  .hop { border: 2.5px solid; border-radius: 10px; padding: 8px 10px; font-size: 12.5px; line-height: 1.45; }
+  .hop h4 { margin: 0 0 4px; font-size: 15px; display: flex; align-items: center; }
+  .hop.o { background: var(--blue); border-color: var(--blue-b); } .hop.nw { background: var(--gr); border-color: var(--gr-b); }
+  .hop.d { background: var(--yel); border-color: var(--yel-b); } .hop.cl { background: var(--pur); border-color: var(--pur-b); }
+  .hop .carry { display: block; margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+  .hop code { background: rgba(255,255,255,.75); }
+  .tarrow { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; }
+  .bottom { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 14px; margin-top: 14px; }
+  .mini { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; margin-top: 4px; }
+  .mini td { border: 1.5px solid #bbb; padding: 4px 6px; vertical-align: top; }
+  .mini td:first-child { width: 30%; font-weight: 700; background: #f2f2f2; }
+  .mini code { white-space: nowrap; display: inline-block; margin: 1px 0; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50% !important; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  footer .k5::before { background: var(--gr); border: 1px solid var(--gr-b); } footer .k6::before { background: var(--yel); border: 1px solid var(--yel-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T18 · <span class="pill">Meraki</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9</b><br>Every T18 concept on one page<br>Code from <code>labs/T18/</code></div>
+  </header>
+
+  <!-- SYSTEM MAP -->
+  <div class="map">
+    <div class="zone z-you"><h2>🔐 Your code <span class="ids">T18.03 · T18.06</span></h2><div class="body">
+      <div class="row"><span class="n">1</span>API key from your <b>dashboard admin profile</b>, same rights as you; never expires, revoke it</div>
+      <div class="row"><span class="n">2</span>send it on <b>every</b> call (no login call)
+        <span class="c"><code>Authorization: Bearer &lt;key&gt;</code></span>
+        <span class="c"><code>X-Cisco-Meraki-API-Key: &lt;key&gt;</code> (legacy)</span></div>
+      <div class="row"><span class="n">3</span>or the SDK
+        <span class="c"><code>pip install meraki</code></span>
+        <span class="c"><code>dashboard = meraki.DashboardAPI(api_key)</code></span></div>
+      <div class="row"><span class="n">4</span>env var <code>MERAKI_DASHBOARD_API_KEY</code></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>Authorization: &lt;key&gt;</code> without <code>Bearer</code> → <code>401</code>. Not <code>X-Auth-Token</code> (that's Catalyst Center)</div>
+    </div></div>
+    <div class="arrow">➜<small>HTTPS<br>REST<br>JSON</small></div>
+    <div class="zone z-cloud"><h2>☁️ Meraki cloud = the controller <span class="ids">T18.01 · T18.02</span></h2><div class="body">
+      <div class="row">One URL for every customer: <code>https://api.meraki.com/api/v1</code></div>
+      <table class="apis">
+        <tr class="pull"><td>Dashboard API</td><td><b>you pull</b>: REST config + monitoring</td></tr>
+        <tr class="push"><td>Scanning (Location)</td><td>Meraki <b>POSTs</b> WiFi/BLE location JSON to your receiver (validator GET + secret)</td></tr>
+        <tr class="push"><td>Webhooks</td><td>Meraki <b>POSTs</b> alerts to your HTTPS URL</td></tr>
+        <tr class="mq"><td>MV Sense</td><td>camera analytics: <b>MQTT</b> to your broker (real-time) + REST counts</td></tr>
+        <tr><td>Captive portal</td><td>AP redirects guests to your splash page (awareness)</td></tr>
+      </table>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> Scanning + webhooks are <b>push</b>: you host the endpoint, you don't poll</div>
+    </div></div>
+    <div class="arrow">⇄<small>mgmt<br>tunnel<br>only</small></div>
+    <div class="zone z-site"><h2>🏢 A site = one network <span class="ids">T18.01</span></h2><div class="body">
+      <div class="devs">
+        <div class="dev"><b>MX</b> security appliance<small>firewall · SD-WAN · <code>appliance</code></small></div>
+        <div class="dev"><b>MS</b> switch<small><code>switch</code></small></div>
+        <div class="dev"><b>MR</b> wireless AP<small><code>wireless</code></small></div>
+        <div class="dev"><b>MV</b> camera<small><code>camera</code></small></div>
+      </div>
+      <div class="row">Devices <b>dial out</b> to the cloud. Configured in the <b>dashboard</b>, no on-prem controller.</div>
+      <div class="row">User traffic stays on site; cloud down = no config changes, traffic still flows.</div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <b>MX</b> = security appliance, <b>MR</b> = wireless. No controller VM to deploy</div>
+    </div></div>
+  </div>
+
+  <!-- HIERARCHY -->
+  <div class="zone z-tree"><h2>🌳 Hierarchy: one ID per hop, always in this order <span class="ids">T18.04 · T18.08</span></h2><div class="body">
+    <div class="tree">
+      <div class="hop o"><h4><span class="n">1</span>Organization</h4><code>GET /organizations</code><span class="carry">carry <code>id</code> → <code>organizationId</code> e.g. <code>549236</code></span></div>
+      <div class="tarrow">➜</div>
+      <div class="hop nw"><h4><span class="n">2</span>Network (= site)</h4><code>GET /organizations/{organizationId}</code><br><code>/networks</code><span class="carry">carry <code>id</code> → <code>networkId</code> e.g. <code>L_646829496481105433</code></span></div>
+      <div class="tarrow">➜</div>
+      <div class="hop d"><h4><span class="n">3</span>Device (by serial)</h4><code>GET /networks/{networkId}/devices</code><span class="carry">carry <code>serial</code> e.g. <code>Q2HP-3WCD-7KZE</code> → <code>GET /devices/{serial}</code></span></div>
+      <div class="tarrow">➜</div>
+      <div class="hop cl"><h4><span class="n">4</span>Client</h4><code>GET /networks/{networkId}/clients</code><span class="carry">or <code>GET /devices/{serial}/clients</code></span></div>
+    </div>
+    <div class="trap"><span class="n">!</span><b>Trap:</b> each path needs the ID the previous reply gave you. Network ID in an org path → <code>404</code>. Lists are bare arrays: <code>resp.json()[0]["id"]</code>, not <code>["response"]</code></div>
+  </div></div>
+
+  <div class="bottom">
+    <!-- CONSTRAINTS -->
+    <div class="zone z-lim"><h2>🚦 Constraints <span class="ids">T18.05</span></h2><div class="body">
+      <div class="row"><span class="n">1</span><b>10 req/s per organisation</b> (shared by all apps; +10 burst) · 100 req/s per source IP</div>
+      <div class="row"><span class="n">2</span>over it → <code>429 Too Many Requests</code> + <code>Retry-After: 1</code> → sleep, retry</div>
+      <div class="row"><span class="n">3</span>pages: <code>perPage=3</code> + <code>startingAfter</code> token</div>
+      <div class="row"><span class="n">4</span>response <code>Link</code> header holds the <code>rel=next</code> URL<span class="c">GET it; stop when there is no <code>rel=next</code></span></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> the next page is in the <code>Link</code> <b>header</b>, not the body. 429 = wait, not re-auth</div>
+    </div></div>
+    <!-- SDK -->
+    <div class="zone z-sdk"><h2>🐍 Python SDK <span class="ids">T18.06</span></h2><div class="body">
+      <div class="row">Pattern: <b>dashboard.<div class="row"><code>dashboard.&lt;scope&gt;.&lt;operationId&gt;(path_args, query=kw)</code></div>lt;scope<div class="row"><code>dashboard.&lt;scope&gt;.&lt;operationId&gt;(path_args, query=kw)</code></div>gt;.<div class="row"><code>dashboard.&lt;scope&gt;.&lt;operationId&gt;(path_args, query=kw)</code></div>lt;operationId<div class="row"><code>dashboard.&lt;scope&gt;.&lt;operationId&gt;(path_args, query=kw)</code></div>gt;</b>; path params positional, query params as keywords</div>
+      <table class="mini">
+        <tr><td>orgs</td><td><code>dashboard.organizations.</code><br><code>getOrganizations()</code></td></tr>
+        <tr><td>networks</td><td><code>dashboard.organizations.</code><br><code>getOrganizationNetworks(org_id)</code></td></tr>
+        <tr><td>devices</td><td><code>dashboard.networks.</code><br><code>getNetworkDevices(net_id)</code></td></tr>
+        <tr><td>clients</td><td><code>dashboard.networks.</code><br><code>getNetworkClients(net_id)</code></td></tr>
+      </table>
+      <div class="row">Sends Bearer · retries <code>429</code> using <code>Retry-After</code> · walks pages · raises <code>meraki.APIError</code></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> default <code>total_pages=1</code> → only page 1. Use <code>total_pages="all"</code></div>
+    </div></div>
+    <!-- CLIENT DISCOVERY -->
+    <div class="zone z-cli"><h2>🔎 Client discovery (3.9.c) <span class="ids">T18.07</span></h2><div class="body">
+      <table class="mini">
+        <tr><td>MAC only</td><td><code>GET /organizations/{organizationId}</code><br><code>/clients/search?mac=</code> → <code>records[].network</code></td></tr>
+        <tr><td>IP + network</td><td><code>GET /networks/{networkId}/clients</code><br><code>?ip=10.10.10.21</code></td></tr>
+        <tr><td>a switch / AP</td><td><code>GET /devices/{serial}/clients</code></td></tr>
+      </table>
+      <div class="row">Answer fields: <code>recentDeviceSerial</code> <code>switchport</code> or <code>ssid</code> <code>vlan</code> → <code>GET /devices/{serial}</code> for the name</div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> clients = seen in <code>timespan</code> (default 1 day). Wired → <code>switchport</code>; wireless → <code>ssid</code></div>
+    </div></div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = order / index</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = you pull</span>
+    <span class="k k5">green = Meraki pushes</span>
+    <span class="k k6">yellow = MQTT stream</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T18/run_lab.sh</code> · details in each T18.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

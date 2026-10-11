@@ -1,0 +1,23 @@
+%%{init: {"flowchart": {"wrappingWidth": 360}}}%%
+flowchart LR
+    subgraph POOLS["Pools: where identities come from"]
+        direction TB
+        P1["UUID pool"]
+        P2["MAC pool<br/>00:25:B5:..."]
+        P3["WWNN / WWPN pool<br/>20:00:00:25:B5:..."]
+    end
+    subgraph POL["Policies: how the server behaves"]
+        direction TB
+        Q1["Boot policy (SAN / local / PXE)"]
+        Q2["Host firmware policy"]
+        Q3["BIOS policy"]
+    end
+    POOLS --> T
+    POL --> T
+    T["<b>Service profile template</b><br/>initial or updating"] -- "instantiate" --> SP["<b>Service profile</b> ls-ESX-01<br/>UUID · MACs · WWNs · boot order<br/>firmware · BIOS"]
+    SP -- "associate" --> B1["blade-1<br/>boots with that identity"]
+    SP -. "blade-1 fails: disassociate,<br/>associate to blade-3" .-> B3["blade-3<br/>same UUID / MAC / WWPN"]
+    style T fill:#fff3cd,stroke:#e0a800
+    style SP fill:#cfe2ff,stroke:#0d6efd
+    style B1 fill:#fde8e8,stroke:#b42318
+    style B3 fill:#d4edda,stroke:#28a745

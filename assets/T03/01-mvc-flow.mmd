@@ -1,0 +1,13 @@
+flowchart LR
+    U["👤 User<br/>CLI / browser"] -- "1 input<br/>set Gi1/0/2 down" --> C["Controller<br/>Controller.handle()"]
+    C -- "2 update / query" --> M[("Model<br/>InterfaceModel<br/>data + rules")]
+    M -- "3 data / state" --> C
+    C -- "4 select view,<br/>feed it data" --> V["View<br/>TableView / JsonView"]
+    V -- "5 rendered output" --> U
+    M -. "optional: change<br/>notification (Observer)" .-> V
+    classDef ctl fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111
+    classDef mdl fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    classDef viw fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#111
+    class C ctl
+    class M mdl
+    class V viw

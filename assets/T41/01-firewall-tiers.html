@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 architecture: firewall tiers</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .top > .zb, .edge > .zb { justify-content: flex-start; }
+  #bad { margin-left: 40px; } #cli { margin-left: 78px; } .top .note { margin: 20px 30px 0 auto; max-width: 420px; }
+  #fw { margin-left: 260px; } #waf { margin-left: 180px; }
+  .row.tiers { gap: 120px; }
+  .spacer { flex: 1 1 0; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T41 · <span class="pill">Firewall</span> tiers</h1>
+    <div class="meta"><b>200-901 blueprint 4.9</b><br>Ordered rules, first match, implicit deny<br>Rules as in <code>labs/T41/stack.py</code> <code>FW_RULES</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone ext top">
+      <div class="zh">Internet</div>
+      <div class="zb">
+        <div class="node" id="bad" data-icon="laptop"><div class="nm">Blocklisted client</div><div class="sub"><code>127.0.0.66</code></div></div>
+        <div class="node w" id="cli" data-icon="laptop"><div class="nm">Internet client</div><div class="sub"><code>203.0.113.5</code></div></div>
+        <div class="note"><b>First match wins, then stop.</b> Rule order: 1 deny <code>127.0.0.66</code> · 2 permit web port to VIPs · 3 web → app <code>8443</code> · 4 app → DB <code>5432</code> · then implicit deny. No rule mentions port 22, so SSH is denied.</div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone dmz edge">
+      <div class="zh">Edge · L3/L4 firewall + WAF <small>first match wins · implicit deny ip any any</small></div>
+      <div class="zb">
+        <div class="node xw" id="fw" data-icon="firewall"><div class="nm">Edge firewall (stateful)</div><div class="sub">rule 1: deny ip <code>127.0.0.66/32</code> any<br>rule 2: permit tcp any → VIP <code>127.0.41.0/24</code> web port</div></div>
+        <div class="node w" id="waf" data-icon="firewall"><div class="nm">WAF (L7)</div><div class="sub">reads the HTTP request<br>SQLi / XSS → <code>403</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row tiers">
+      <div class="zone site">
+        <div class="zh">Web tier <small><b>10.41.1.0/24</b></small></div>
+        <div class="zb"><div class="node w" id="web" data-icon="lb"><div class="nm">LB / reverse proxy</div><div class="sub"><code>10.41.1.10</code> · VIP <code>127.0.41.1</code></div></div></div>
+      </div>
+      <div class="zone site">
+        <div class="zh">App tier <small><b>10.41.2.0/24</b></small></div>
+        <div class="zb"><div class="node w" id="app" data-icon="server"><div class="nm">App servers</div><div class="sub"><code>10.41.2.20:8443</code></div></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row tiers">
+      <div class="spacer"></div>
+      <div class="zone site">
+        <div class="zh">DB tier <small><b>10.41.3.0/24</b></small></div>
+        <div class="zb"><div class="node w" id="db" data-icon="db"><div class="nm">PostgreSQL</div><div class="sub"><code>10.41.3.30:5432</code></div></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Tiers:</b> each tier is its own subnet; the internal firewall allows only the <b>next</b> tier's port (rules 3, 4). A hacked web server can't reach the DB.</div>
+      <div class="note trap"><b>Trap:</b> a <b>drop</b> gives the client a <b>timeout</b>; a <b>reject</b> (RST / ICMP) fails fast. An L3/L4 rule can't see SQLi: that's the WAF's job, and it needs the decrypted HTTP.</div>
+      <div class="note"><b>Stateful:</b> the DB's <b>reply</b> to a permitted flow passes with no rule (state table). A <b>new</b> connection from the DB to the app is denied.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>permitted traffic (rule number on the line)</span>
+    <span><i class="sw error"></i>denied / dropped</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "cli", b: "fw", k: "data", dir: "fwd", s: "b-t", ao: -14, bo: -14, label: "tcp/443 (lab <code>:18041</code>)<br>rule 2 ✅", t: 0.4, lx: -78 },
+  { a: "cli", b: "fw", k: "error", s: "b-t", ao: 14, bo: 14, label: "tcp/22<br>implicit deny ❌", t: 0.4, lx: 62 },
+  { a: "bad", b: "fw", k: "error", s: "b-l", label: "rule 1 deny → dropped<br>→ client times out", t: 0.17 },
+  { a: "fw", b: "waf", k: "data", dir: "fwd", label: "HTTP" },
+  { a: "waf", b: "web", k: "data", dir: "fwd", s: "b-t", label: "clean requests only", t: 0.5 },
+  { a: "web", b: "app", k: "data", dir: "fwd", label: "rule 3: tcp/8443 ✅" },
+  { a: "app", b: "db", k: "data", dir: "fwd", s: "b-t", label: "rule 4: tcp/5432 ✅" },
+  { a: "web", b: "db", k: "error", s: "b-l", label: "tcp/5432 skips a tier · implicit deny ❌", t: 0.3 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

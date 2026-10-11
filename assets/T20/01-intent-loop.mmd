@@ -1,0 +1,11 @@
+flowchart LR
+    D["1 Design<br/>sites, IP pools,<br/>settings (AAA, DNS, NTP)"] --> P["2 Policy<br/>who talks to whom<br/>(groups, SGTs, QoS)"]
+    P --> V["3 Provision<br/>push config to devices<br/>(automation)"]
+    V --> A["4 Assurance<br/>health scores, issues,<br/>client 360 (analytics)"]
+    A -. "drift / issue found" .-> D
+    U(["You state the INTENT<br/>(GUI or Intent API)"]) --> D
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#111
+    classDef ok fill:#dcfce7,stroke:#15803d,stroke-width:2px,color:#111
+    class D,P,V rec
+    class A ok
+    style U fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#111

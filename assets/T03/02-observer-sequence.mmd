@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant O1 as Observer A<br/>SyslogObserver
+    participant O2 as Observer B<br/>AlertObserver
+    participant S as Subject<br/>InterfaceModel
+    O1->>S: attach(syslog)
+    O2->>S: attach(alerts)
+    Note over S: state changes<br/>Gi1/0/2 up → down
+    S->>O1: update(event)
+    S->>O2: update(event)
+    Note over S: same state again<br/>no change → no notify
+    O2->>S: detach(alerts)
+    Note over S: state changes<br/>Gi1/0/1 up → down
+    S->>O1: update(event)
+    Note over O2: detached: hears nothing

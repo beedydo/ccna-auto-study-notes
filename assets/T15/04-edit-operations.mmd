@@ -1,0 +1,12 @@
+%%{init: {"flowchart": {"wrappingWidth": 460}}}%%
+flowchart LR
+    M["<b>merge</b> (default-operation)"] --> M1["exists → update only the leaves sent<br/>missing → created"]
+    R["<b>replace</b>"] --> R1["exists → whole node swapped, unsent leaves wiped<br/>missing → created"]
+    C["<b>create</b>"] --> C1["exists → ❌ rpc-error data-exists<br/>missing → created"]
+    D["<b>delete</b>"] --> D1["exists → removed<br/>missing → ❌ rpc-error data-missing"]
+    X["<b>remove</b>"] --> X1["exists → removed<br/>missing → ✅ ok, silently ignored"]
+    style M fill:#d1ecf1,stroke:#17a2b8
+    style R fill:#fff3cd,stroke:#e0a800
+    style C fill:#d4edda,stroke:#28a745
+    style D fill:#f8d7da,stroke:#dc3545
+    style X fill:#f8d7da,stroke:#dc3545

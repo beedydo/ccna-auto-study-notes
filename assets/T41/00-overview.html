@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 overview: firewall, DNS, load balancer, reverse proxy</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --ok: #e3f6ee; --ok-b: #28a745; --bad: #fde8e8; --bad-b: #dc3545;
+    --rec: #e3f1f8; --rec-b: #1f6feb; --part: #fff6dc; --part-b: #e0a800;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1500px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.8px; background: var(--code); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .map { display: grid; grid-template-columns: 110px 26px repeat(4, minmax(0, 1fr) 26px) 150px; align-items: stretch; }
+  .arrow { display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: var(--line); }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; display: flex; flex-direction: column; overflow: hidden; }
+  .zone h2 { margin: 0; padding: 8px 10px; font-size: 17px; font-weight: 800; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--line); }
+  .zone h2 .ic { font-size: 22px; }
+  .zone h2 .ids { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .zone .q { font-size: 12.5px; font-style: italic; color: var(--muted); padding: 6px 10px 0; }
+  .zone .body { padding: 6px 10px 10px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .item { font-size: 12.8px; line-height: 1.38; }
+  .item .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 12.3px; line-height: 1.35; margin-top: auto; }
+  .trap b { color: var(--trap-ink); }
+  .step { display: inline-flex; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 14px;
+          font-weight: 800; align-items: center; justify-content: center; flex: none; }
+  .z-dns h2 { background: var(--rec); } .z-fw h2 { background: var(--bad); } .z-lb h2 { background: var(--ok); }
+  .z-rp h2 { background: var(--part); }
+  .end { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 8px; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
+  .box { border: 2px solid var(--ok-b); background: var(--ok); border-radius: 8px; padding: 6px; font-size: 12.5px; text-align: center; line-height: 1.35; }
+  .box.down { border-color: var(--bad-b); background: var(--bad); }
+  .client { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 8px; text-align: center; font-size: 12.5px; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+  .client .big { font-size: 34px; }
+
+  .mini { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px; }
+  .mini div { border: 1.5px solid var(--line); border-radius: 6px; padding: 4px 6px; font-size: 11.8px; line-height: 1.3; }
+  table.t { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 11.8px; }
+  table.t td, table.t th { border: 1.2px solid #999; padding: 3px 5px; text-align: left; vertical-align: top; }
+  table.t th { background: #f0f0f0; }
+
+  .bottom { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.45fr); gap: 16px; margin-top: 16px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h3 { margin: 0 0 8px; font-size: 17px; font-weight: 800; display: flex; gap: 8px; align-items: center; }
+  .panel h3 .ids { margin-left: auto; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .flow { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .flow span.c { border: 2px solid var(--line); border-radius: 7px; padding: 3px 7px; background: #fff; }
+  .flow .ar { font-weight: 800; }
+  .picker { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 6px 14px; }
+  .pick { font-size: 12.8px; line-height: 1.35; }
+  .pick b.ans { color: var(--rec-b); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: #f6b8b8; border: 1.5px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: #a8e0c0; border: 1.5px solid var(--ok-b); }
+  footer .k5::before { background: #f6b8b8; border: 2px solid var(--bad-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T41 · <span class="pill">Firewall, DNS, LB &amp; reverse proxy</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.9</b> (+ 6.3 load balancers)<br>Every T41 concept on one page<br>Code from <code>labs/T41/</code></div>
+  </header>
+
+  <div class="map">
+    <div class="client"><div class="big">💻</div><b>Client</b><code>127.0.0.10</code>types<br><code>app.t41.lab</code></div>
+    <div class="arrow">➜</div>
+
+    <!-- DNS -->
+    <div class="zone z-dns">
+      <h2><span class="step">1</span><span class="ic">🌐</span>DNS<span class="ids">T41.02</span></h2>
+      <div class="q">Where is the app?</div>
+      <div class="body">
+        <div class="item">Name → <b>VIP</b> of the LB, not a server. Carries <b>no</b> app traffic.</div>
+        <div class="item"><span class="n">1</span><b>Round robin</b>: many A records, order rotates<br><code>['127.0.41.1', '127.0.41.2']</code></div>
+        <div class="item"><span class="n">2</span><b>GSLB</b>: health-checked DNS drops a failed site (Route 53 failover / weighted / latency)</div>
+        <div class="item"><span class="n">3</span><b>TTL</b> (s) = how long answers are cached. Low = fast failover; ELB uses <code>60</code></div>
+        <div class="item"><span class="n">4</span>name missing → <code>NXDOMAIN</code></div>
+        <div class="trap"><b>Trap:</b> plain round robin has <b>no health checks</b>; clients keep the stale answer until the TTL expires</div>
+      </div>
+    </div>
+    <div class="arrow">➜</div>
+
+    <!-- FIREWALL + WAF -->
+    <div class="zone z-fw">
+      <h2><span class="step">2</span><span class="ic">🧱</span>Firewall + WAF<span class="ids">T41.01</span></h2>
+      <div class="q">May this pass?</div>
+      <div class="body">
+        <div class="item"><span class="n">1</span>Match IP, protocol, port (NGFW: + app). <b>First match wins</b>, then <b>implicit deny</b></div>
+        <div class="item"><span class="n">2</span><b>Stateful</b>: reply to a permitted flow passes with <b>no rule</b> (state table). Stateless ACL needs both directions</div>
+        <div class="item"><span class="n">3</span><b>Tiers</b>: web → app <code>8443</code> → DB <code>5432</code>; web → DB denied</div>
+        <div class="item"><span class="n">4</span><b>WAF</b> (L7): reads the HTTP request, blocks SQLi / XSS → <code>403</code><br><code>q=' OR 1=1--</code></div>
+        <div class="trap"><b>Trap:</b> port firewall can't see SQLi (it's normal 443). Drop = <b>timeout</b>; reject = refused</div>
+      </div>
+    </div>
+    <div class="arrow">➜</div>
+
+    <!-- LB -->
+    <div class="zone z-lb">
+      <h2><span class="step">3</span><span class="ic">⚖️</span>Load balancer<span class="ids">T41.03</span></h2>
+      <div class="q">Which server?</div>
+      <div class="body">
+        <div class="item"><span class="n">1</span>Clients hit one <b>VIP</b>; a <b>pool</b> (target group) is behind it = scale out</div>
+        <div class="item"><span class="n">2</span><b>Round robin</b> · <b>weighted</b> (2:1:1) · <b>least conn</b> (long requests) · source-IP hash</div>
+        <div class="item"><span class="n">3</span><b>Health check</b> <code>GET /health</code> → <code>200</code> = UP; DOWN leaves rotation. All down → <code>503</code></div>
+        <div class="mini"><div><b>L4</b> (NLB): IP + port, TLS passes through</div><div><b>L7</b> (ALB): Host, path, cookie; terminates TLS</div></div>
+        <div class="item"><span class="n">4</span><b>TLS offload</b> (cert on LB) · <b>sticky</b> <code>Set-Cookie: T41_STICKY=app1</code></div>
+        <div class="trap"><b>Trap:</b> sticky = uneven load, and the session still dies with its server. Only L7 routes by path</div>
+      </div>
+    </div>
+    <div class="arrow">➜</div>
+
+    <!-- REVERSE PROXY -->
+    <div class="zone z-rp">
+      <h2><span class="step">4</span><span class="ic">🛡️</span>Reverse proxy<span class="ids">T41.04</span></h2>
+      <div class="q">Front the servers</div>
+      <div class="body">
+        <div class="item"><span class="n">1</span><b>Hides backends</b>: <code>Server: t41-proxy</code> <code>Via: 1.1 t41-proxy</code></div>
+        <div class="item"><span class="n">2</span>Client IP passed in <code>X-Forwarded-For</code> (backend sees the proxy IP)</div>
+        <div class="item"><span class="n">3</span><b>Path routing</b> <code>/api/*</code> · <code>/static/*</code> · <b>cache</b> <code>X-Cache: HIT</code> · <b>gzip</b> 2110 → 181 B · <b>TLS</b></div>
+        <table class="t">
+          <tr><th style="width:22%"></th><th style="width:44%">Forward</th><th>Reverse</th></tr>
+          <tr><td>serves</td><td>clients → internet</td><td>internet → servers</td></tr>
+          <tr><td>set by</td><td>client:<br><code>HTTPS_PROXY</code></td><td>server owner</td></tr>
+        </table>
+        <div class="trap"><b>Trap:</b> an L7 LB <b>is</b> a reverse proxy with a pool; a forward proxy is on the <b>client</b> side</div>
+      </div>
+    </div>
+    <div class="arrow">➜</div>
+
+    <div class="end">
+      <div class="box">app1 ✅</div>
+      <div class="box down">app2 ❌ DOWN</div>
+      <div class="box">app3 ✅</div>
+      <div style="text-align:center;font-size:12px">internal FW<br><code>5432</code> ⬇</div>
+      <div class="box" style="border-color:var(--rec-b);background:var(--rec)">🗄️ DB tier</div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <h3>🔁 Typical flow<span class="ids">T41.05</span></h3>
+      <div class="flow">
+        <span class="c">Client</span><span class="ar">→</span><span class="c">DNS</span><span class="ar">→</span>
+        <span class="c">Firewall / WAF</span><span class="ar">→</span><span class="c">LB / reverse proxy</span><span class="ar">→</span>
+        <span class="c">App</span><span class="ar">→</span><span class="c">DB</span>
+      </div>
+      <div class="item">Reply returns the same way; the stateful firewall lets it out. DNS is asked once, then cached for the TTL.</div>
+      <table class="t" style="margin-top:6px">
+        <tr><th>Generic</th><th>AWS (top-up T41.1)</th></tr>
+        <tr><td>DNS / GSLB</td><td>Route 53 + health checks</td></tr>
+        <tr><td>Stateful FW / stateless ACL</td><td>security group / network ACL</td></tr>
+        <tr><td>WAF</td><td>AWS WAF (on ALB, CloudFront)</td></tr>
+        <tr><td>L7 LB · L4 LB</td><td>ALB · NLB</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h3>🎯 Which box solves it?<span class="ids">T41.06</span></h3>
+      <div class="picker">
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">1</span> users need the IP of a name; some still hit the old IP → <b class="ans">DNS (TTL)</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">2</span> fail over to the DR site by name → <b class="ans">GSLB</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">3</span> allow only 443; DB only from app tier → <b class="ans">firewall</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">4</span> block SQLi / XSS → <b class="ans">WAF</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">5</span> more servers, one address, survive a failure → <b class="ans">load balancer</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">6</span> cart empties every few clicks → <b class="ans">sticky sessions</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">7</span> hide servers, one cert, <code>/api</code> vs <code>/images</code> → <b class="ans">reverse proxy</b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">8</span> backend logs one IP for all users → <b class="ans"><code>X-Forwarded-For</code></b></div>
+        <div class="pick"><span class="n step" style="width:18px;height:18px;font-size:11px">9</span> script times out in office only → <b class="ans">forward proxy</b></div>
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> two boxes often fit (an ALB is LB + reverse proxy). Pick the one whose <b>only job</b> is the requirement: "block port 22" = firewall, not WAF</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = order a request meets the boxes / index</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact value from the lab</span>
+    <span class="k k4">green = up / permitted</span>
+    <span class="k k5">red box = down / denied</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T41/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

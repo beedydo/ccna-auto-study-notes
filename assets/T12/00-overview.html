@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T12 overview: automation foundations, controller vs device</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #dbeafe; --blue-b: #1d4ed8; --ok: #dcfce7; --ok-b: #15803d; --part: #fef9c3; --part-b: #a16207;
+    --dark: #1e293b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1500px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; flex: none;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; font-size: 13px; line-height: 1.4; margin-top: 8px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+  .trap code { white-space: normal; }
+
+  .map { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 14px 16px 12px; }
+  .map h2, .card h2 { margin: 0 0 2px; font-size: 18px; font-weight: 800; }
+  .maprow { display: grid; grid-template-columns: minmax(0, 215px) minmax(0, 1fr) minmax(0, 330px) minmax(0, 175px) minmax(0, 215px);
+            grid-template-rows: auto auto; column-gap: 0; row-gap: 10px; margin-top: 10px; }
+  .zone { border: 2.5px solid; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .zone .zh { color: #fff; font-weight: 800; font-size: 13px; padding: 5px 10px; letter-spacing: .4px; }
+  .zone .zb { padding: 8px 10px; font-size: 13px; line-height: 1.45; flex: 1; }
+  .z-client { border-color: var(--blue-b); } .z-client .zh { background: var(--blue-b); } .z-client .zb { background: var(--blue); }
+  .z-ctrl { border-color: var(--dark); } .z-ctrl .zh { background: var(--dark); } .z-ctrl .zb { background: #f1f5f9; }
+  .z-dev { border-color: var(--ok-b); } .z-dev .zh { background: var(--ok-b); } .z-dev .zb { background: var(--ok); }
+  .calls { display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 0 10px; }
+  .call { font-size: 12.5px; display: flex; align-items: center; border-bottom: 2px dashed #999; padding-bottom: 3px; }
+  .call code { white-space: normal; }
+  .call.back { border-bottom-color: var(--ok-b); }
+  .dir { text-align: center; font-weight: 800; font-size: 12px; color: var(--blue-b); letter-spacing: .5px; margin-bottom: 2px; }
+  .dir.g { color: var(--ok-b); }
+  .funcs { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; margin-top: 6px; }
+  .f { border: 2px solid var(--dark); border-radius: 7px; padding: 4px 6px; font-size: 12px; line-height: 1.3; background: #fff; }
+  .f b { font-size: 12.5px; }
+  .south { display: flex; flex-direction: column; justify-content: center; gap: 8px; padding: 0 8px; font-size: 12px; text-align: center; }
+  .south .lbl { font-weight: 800; color: var(--ok-b); font-size: 12px; letter-spacing: .5px; }
+  .south div.s { border-bottom: 2px solid var(--ok-b); padding-bottom: 3px; }
+  .south div.s::after { content: " ➜"; color: var(--ok-b); font-weight: 800; }
+  .devrow { grid-row: 2; grid-column: 2 / span 3; display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 6px 12px;
+            border: 2px dashed var(--ok-b); border-radius: 10px; margin: 0 10px; background: #fbfffc; }
+  .devrow .call { border-bottom-color: var(--ok-b); }
+  .devrow .row2 { display: flex; gap: 14px; align-items: center; font-size: 12.5px; flex-wrap: wrap; }
+  .devrow .trap { margin-top: 2px; }
+  .ctrlnote { grid-column: 1; font-size: 12.5px; line-height: 1.4; padding: 6px 4px; }
+
+  .cards { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.15fr) minmax(0,1.15fr) minmax(0,1fr); gap: 12px; margin-top: 12px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; font-size: 13.2px; line-height: 1.45; display: flex; flex-direction: column; }
+  .card .top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .card .icon { font-size: 24px; line-height: 1; }
+  .card .sig { display: inline-block; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace; font-size: 12px; padding: 4px 9px; border-radius: 7px; margin: 2px 0 6px; align-self: flex-start; }
+  .card ul { margin: 0; padding-left: 0; list-style: none; }
+  .card li { margin: 3px 0; display: flex; align-items: baseline; }
+  .card li > span.t { min-width: 0; }
+  .card .spacer { flex: 1; }
+  .card code { white-space: nowrap; }
+  .vs code { font-size: 10.4px; padding: 1px 3px; }
+  .vs div { padding: 4px 5px !important; }
+  .tbl { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12.3px; margin-top: 2px; }
+  .tbl th { text-align: left; font-size: 11.5px; color: var(--muted); border-bottom: 2px solid #ccc; padding: 2px 4px; }
+  .tbl td { border-bottom: 1px solid #ddd; padding: 3px 4px; vertical-align: top; }
+  .tbl code { white-space: nowrap; }
+  .vs { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; margin: 4px 0; }
+  .vs div { border: 2px solid; border-radius: 7px; padding: 4px 6px; font-size: 12.3px; line-height: 1.35; }
+  .vs .bad { border-color: var(--part-b); background: var(--part); } .vs .good { border-color: var(--blue-b); background: var(--blue); }
+  .planes { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; margin: 4px 0; font-size: 12px; text-align: center; }
+  .planes .p { border: 2px solid; border-radius: 7px; padding: 4px; }
+  .planes .c { border-color: var(--blue-b); background: var(--blue); grid-column: 1 / span 2; }
+  .planes .d { border-color: var(--ok-b); background: var(--ok); }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 4px 0; font-size: 12.3px; }
+  .chain .st { border: 2px solid; border-radius: 6px; padding: 2px 6px; background: #fff; }
+  .chain .st.b { border-color: var(--blue-b); background: var(--blue); } .chain .st.g { border-color: var(--ok-b); background: var(--ok); }
+  .chain .ar { font-weight: 800; }
+
+  .cmp { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 16px; margin-top: 12px;
+         display: grid; grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr); gap: 16px; }
+  .cmp h2 { margin: 0 0 4px; font-size: 18px; font-weight: 800; }
+  .cmp .tbl td:first-child { width: 22%; font-weight: 700; }
+  .cmp .tbl th:nth-child(2), .cmp .tbl td:nth-child(2) { background: #f3fbf5; }
+  .cmp .tbl th:nth-child(3), .cmp .tbl td:nth-child(3) { background: #f2f6ff; }
+  .rule { font-size: 13px; line-height: 1.5; }
+  .rule li { margin: 3px 0; display: flex; align-items: baseline; }
+  .rule ul { list-style: none; padding: 0; margin: 4px 0 0; }
+
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  footer .k5::before { background: var(--ok); border: 1px solid var(--ok-b); } footer .k6::before { background: var(--part); border: 1px solid var(--part-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T12 · <span class="pill">Controller vs device</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.1, 5.2</b><br>Every T12 concept on one page<br>Code from <code>labs/T12/automation_levels.py</code></div>
+  </header>
+
+  <!-- ===== SYSTEM MAP ===== -->
+  <div class="map">
+    <h2>🌐 Two ways to reach a switch: through a controller (top) or straight in (bottom) <span class="ids">T12.05 · T12.06 · T12.07</span></h2>
+    <div class="maprow">
+      <div class="zone z-client" style="grid-column: 1; grid-row: 1 / span 2"><div class="zh">CLIENT · your code</div><div class="zb">
+        🐍 <code>automation_levels.py</code> (requests)<br>
+        ⌨️ <code>curl_drill.sh</code><br>
+        🧰 also Ansible, Terraform, NSO<br><br>
+        <b>Job:</b> at site SG-HQ, shut every unused (DOWN) port, label it UNUSED<br><br>
+        <span style="color:var(--muted)">mock <code>http://127.0.0.1:18012</code></span></div></div>
+
+      <div class="calls" style="grid-column: 2; grid-row: 1">
+        <div class="dir">⬆ NORTHBOUND · REST + JSON · controller level</div>
+        <div class="call"><span class="n">1</span><span><code>POST /ctrl/api/v1/intents</code><br><code>{"intent": "disable-unused-ports", "site": "SG-HQ"}</code></span></div>
+        <div class="call back">⬅&nbsp;<code>202 Accepted, taskId 14ad84aa...</code>&nbsp;(not done yet)</div>
+        <div class="call"><span class="n">2</span><code>GET /ctrl/api/v1/tasks/{taskId}</code>&nbsp;→&nbsp;<code style="white-space:nowrap">SUCCESS</code></div>
+        <div class="call"><span class="n">3</span><code>GET /ctrl/api/v1/devices</code>&nbsp;= network-wide view</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> northbound = app → controller. Script total <b>2 calls</b>.</div>
+      </div>
+
+      <div class="zone z-ctrl" style="grid-column: 3; grid-row: 1"><div class="zh">CONTROLLER · intent, policy, inventory</div><div class="zb">
+        You say <b>what</b>; it works out <b>how</b> (5 ports on 3 switches), pushes it, checks it.
+        <div class="funcs">
+          <div class="f"><b>Catalyst Center</b> (DNA Center) · campus</div>
+          <div class="f"><b>APIC</b> · ACI data centre</div>
+          <div class="f"><b>SD-WAN Manager</b> (vManage) · WAN</div>
+          <div class="f"><b>Meraki dashboard</b> · cloud</div>
+        </div></div></div>
+
+      <div class="south" style="grid-column: 4; grid-row: 1">
+        <div class="lbl">⬇ SOUTHBOUND</div>
+        <div class="s">NETCONF / RESTCONF</div>
+        <div class="s">SSH CLI · SNMP</div>
+        <div class="s">OpenFlow · OpFlex (ACI)</div>
+        <div class="s">proprietary (Meraki)</div>
+      </div>
+
+      <div class="zone z-dev" style="grid-column: 5; grid-row: 1 / span 2"><div class="zh">DEVICES · data plane</div><div class="zb">
+        🔌 <b>sw1, sw2</b> C9300 · IOS XE<br>
+        🔌 <b>sw3</b> N9K · NX-OS<br>
+        each one: <code>openconfig-interfaces</code> over RESTCONF, plus CLI text<br><br>
+        Ports changed: <b>sw1 2 · sw2 1 · sw3 2</b><br>
+        <span style="color:var(--muted)">controller down → traffic still forwards</span></div></div>
+
+      <div class="devrow">
+        <div class="dir g">⬌ DEVICE LEVEL · script → every box directly (NETCONF :830 · RESTCONF · NX-API · gNMI · SSH CLI)</div>
+        <div class="call"><span class="n">1</span><code>GET /swN/restconf/data/openconfig-interfaces:interfaces</code>&nbsp;× 3 switches</div>
+        <div class="call"><span class="n">2</span><code>PATCH .../interface=GigabitEthernet1%2F0%2F3/config</code>&nbsp;× 5 ports →&nbsp;<code>204</code></div>
+        <div class="row2"><span>🧮 <code>HTTP calls made by the script: 8</code></span><span>loop, order, retries, partial failure = <b>your job</b></span><span>granular, no controller needed</span></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> calling RESTCONF/NETCONF on a switch yourself = <b>device level</b>, not "southbound". <code>/</code> in a key → <code>%2F</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CARDS ===== -->
+  <div class="cards">
+    <div class="card">
+      <div class="top"><span class="icon">🎯</span><h2>Why automate</h2><span class="ids">T12.01</span></div>
+      <span class="sig">manual CLI ✗ scale</span>
+      <ul>
+        <li><span class="n">1</span><span class="t"><b>Scale</b>: 3 or 3,000 boxes, same effort</span></li>
+        <li><span class="n">2</span><span class="t"><b>Speed</b>: seconds, not a change night</span></li>
+        <li><span class="n">3</span><span class="t"><b>Fewer errors</b>, consistency: code types the config</span></li>
+        <li><span class="n">4</span><span class="t"><b>Repeatable</b> / idempotent: 2nd run → <code>HTTP calls made by the script: 3</code>, no PATCH</span></li>
+        <li><span class="n">5</span><span class="t"><b>Compliance + audit</b>: config in Git, every run logged</span></li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> automation needs an <b>API</b> + <b>structured data</b> + <b>tooling</b>; speed alone isn't the answer to "why".</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">🧱</span><h2>Model-driven &amp; its value</h2><span class="ids">T12.02 · T12.03</span></div>
+      <div class="vs">
+        <div class="bad"><b>Screen-scrape</b><br>regex on <code>show ip interface brief</code><br>sw1 → <code>4 ports parsed</code><br>sw3 NX-OS → <code>0 ports parsed []</code></div>
+        <div class="good"><b>YANG model</b><br><code>i["state"]["oper-status"]</code><br>same code on every OS<br>no parsing</div>
+      </div>
+      <ul>
+        <li><span class="n">1</span><span class="t"><b>Vendor-neutral</b>: OpenConfig, IETF (native = per platform)</span></li>
+        <li><span class="n">2</span><span class="t"><b>Validated</b>: <code>"enabled": "no"</code> → <code>400 invalid-value</code>, nothing applied</span></li>
+        <li><span class="n">3</span><span class="t"><b>Transactions</b>: NETCONF candidate → <code>&lt;commit&gt;</code> / rollback</span></li>
+        <li><span class="n">4</span><span class="t"><b>Tooling + streaming telemetry</b> (push, not SNMP poll)</span></li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> RESTCONF has <b>no commit</b>: each edit is live on success. Scraping fails <b>silently</b>.</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">⚙️</span><h2>Programmability stack</h2><span class="ids">T12.04</span></div>
+      <table class="tbl">
+        <tr><th style="width:23%">Layer</th><th>NETCONF</th><th>RESTCONF</th><th>gNMI</th></tr>
+        <tr><td><b>Model</b></td><td>YANG</td><td>YANG</td><td>YANG</td></tr>
+        <tr><td><b>Encoding</b></td><td>XML only</td><td>XML or JSON</td><td>protobuf (or JSON)</td></tr>
+        <tr><td><b>Protocol</b></td><td>RFC 6241 RPCs</td><td>RFC 8040 HTTP verbs</td><td>gRPC <code>Get</code> <code>Set</code><br><code>Subscribe</code></td></tr>
+        <tr><td><b>Transport</b></td><td>SSH <b>830</b></td><td>HTTPS 443</td><td>HTTP/2 + TLS</td></tr>
+      </table>
+      <div style="font-size:12.3px;margin-top:6px">Media type <code>application/yang-data+json</code></div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> YANG is the <b>model</b>, not a protocol. NETCONF can't do JSON.</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">🧠</span><h2>SDN &amp; intent</h2><span class="ids">T12.07</span></div>
+      <div class="planes">
+        <div class="p c"><b>Controller</b>: control plane + network-wide view</div>
+        <div class="p d">switches: <b>data plane</b></div>
+        <div class="p d">programmed southbound</div>
+      </div>
+      <div class="chain">
+        <span class="st b">1 intent (what)</span><span class="ar">→</span><span class="st">2 translate (how)</span><span class="ar">→</span><span class="st">3 provision</span><span class="ar">→</span><span class="st g">4 verify / assure</span>
+      </div>
+      <div style="font-size:12.3px">IBN = Catalyst Center. Drift → re-apply.</div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> SDN centralises the <b>control</b> plane, not the data plane. <code>202</code> ≠ done.</div>
+    </div>
+  </div>
+
+  <!-- ===== COMPARISON ===== -->
+  <div class="cmp">
+    <div>
+      <h2>⚖️ Device level vs controller level (5.2) <span class="ids">T12.05 · T12.06 · T12.08</span></h2>
+      <table class="tbl">
+        <tr><th></th><th>Device level</th><th>Controller level</th></tr>
+        <tr><td>You talk to</td><td>each device</td><td>one controller</td></tr>
+        <tr><td>API</td><td>NETCONF · RESTCONF · NX-API · gNMI · SSH</td><td>northbound REST (JSON over HTTPS)</td></tr>
+        <tr><td>You express</td><td>config per box (<b>how</b>)</td><td>intent / policy (<b>what</b>)</td></tr>
+        <tr><td>Scale + state</td><td>your script loops, tracks state</td><td>the controller does</td></tr>
+        <tr><td>Pro / con</td><td>granular, no dependency / you own failures</td><td>abstraction, network-wide view / depends on the controller</td></tr>
+        <tr><td>Lab calls</td><td><b>8</b></td><td><b>2</b></td></tr>
+      </table>
+    </div>
+    <div class="rule">
+      <h2>🧭 Scenario → answer</h2>
+      <ul>
+        <li><span class="n">1</span><span>No controller for the domain → <b>device</b></span></li>
+        <li><span class="n">2</span><span>Same policy on many devices, "intent", "assurance" → <b>controller</b></span></li>
+        <li><span class="n">3</span><span>One box, setting the controller doesn't expose → <b>device</b></span></li>
+      </ul>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> campus = Catalyst Center · DC = APIC · WAN = SD-WAN Manager · cloud = Meraki. "NETCONF to one switch on 830" = device.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered steps / items</span>
+    <span class="k2">exam trap</span>
+    <span class="k3">exact syntax / output from labs/T12</span>
+    <span class="k4">recommended answer / your code</span>
+    <span class="k5">devices · kept / works</span>
+    <span class="k6">fragile (screen-scraping)</span>
+  </footer>
+</div>
+</body>
+</html>

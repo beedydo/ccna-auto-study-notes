@@ -1,6 +1,6 @@
 aid_id,topic_id,type,title,est_min,resource
 T01.1,T01,Video,Software Development Practices for all IT Professionals,4,CBT module
-T01.2,T01,Top-up,Agile vs lean vs waterfall comparison,30,DevNet Learning Labs / OCG ch. 1
+T01.2,T01,Top-up,Agile vs lean vs waterfall comparison,30,DevNet Learning Labs / OCG ch. 2
 T02.1,T02,Video,"Code structures, functions/methods, OOP videos (1.5x)",21,CBT: Basic Programming Control Flow
 T03.1,T03,Video,Determine When to Use Design Patterns (skip Singleton),18,CBT module
 T04.1,T04,Video,Git Diff + Merging/Resolving Conflicts only (1.5x),12,CBT: Getting Started with Git / Collaborate with Git

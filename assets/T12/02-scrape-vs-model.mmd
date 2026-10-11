@@ -1,0 +1,24 @@
+flowchart LR
+    subgraph CLI["Screen-scraping (unstructured)"]
+        direction TB
+        C1["send 'show ip interface brief'"] --> C2["free-form text<br/>columns differ per OS / release"]
+        C2 --> C3["regex per OS"]
+        C3 --> C4["IOS XE: 4 ports parsed"]
+        C3 --> C5["NX-OS: 0 ports parsed<br/>(different layout, Eth1/1)"]
+    end
+    subgraph MD["Model-driven (structured)"]
+        direction TB
+        D1["GET openconfig-interfaces:interfaces"] --> D2["JSON shaped by the YANG model<br/>same keys on every OS"]
+        D2 --> D3["i['state']['oper-status']"]
+        D3 --> D4["IOS XE + NX-OS:<br/>all ports, no parsing"]
+    end
+    CLI ~~~ MD
+    classDef red fill:#fde8e8,stroke:#b42318,color:#111
+    classDef yellow fill:#fef9c3,stroke:#a16207,color:#111
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111
+    class C2,C3 yellow
+    class C5 red
+    class C4 yellow
+    class D1,D2,D3 blue
+    class D4 green

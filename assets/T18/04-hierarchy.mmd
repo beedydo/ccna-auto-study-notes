@@ -1,0 +1,14 @@
+flowchart TD
+    O["GET /organizations"] -->|"pick id → organizationId"| N["GET /organizations/{organizationId}/networks"]
+    N -->|"pick id → networkId"| D["GET /networks/{networkId}/devices"]
+    N -->|"networkId"| C["GET /networks/{networkId}/clients"]
+    D -->|"serial e.g. Q2HP-3WCD-7KZE"| S["GET /devices/{serial}"]
+    C -->|"recentDeviceSerial"| S
+    S -->|"serial"| DC["GET /devices/{serial}/clients"]
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef yellow fill:#fff3cd,stroke:#e0a800,color:#111
+    class O blue
+    class N green
+    class D,S,DC yellow
+    class C green

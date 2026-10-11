@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T41 architecture: DNS with GSLB</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row.top { gap: 170px; }
+  .row.top > .zone > .zb { flex-direction: column; align-items: center; gap: 60px; }
+  .row.top > .zone.client { flex: 0.8; } .row.top > .zone.cloud { flex: 0.8; } .row.top > .zone.ctrl { flex: 0 0 360px; }
+  .row.sites { gap: 170px; }
+  .row.sites > .zone.site:last-child { flex: 0 0 360px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T41 · <span class="pill">DNS + GSLB</span> where, not how</h1>
+    <div class="meta"><b>200-901 blueprint 4.9</b><br>Round robin, health-checked answers, TTL<br>Lab DNS: <code>udp/127.0.0.1:18041</code> (<code>labs/T41/stack.py</code>)</div>
+  </header>
+
+  <div class="canvas">
+    <div class="row top">
+      <div class="zone client">
+        <div class="zh">Client</div>
+        <div class="zb">
+          <div class="node w" id="cli" data-icon="laptop"><div class="nm">Client</div><div class="sub">stub resolver + <b>cache</b><br>keeps the answer for the TTL</div></div>
+        </div>
+      </div>
+      <div class="zone cloud">
+        <div class="zh">Resolver</div>
+        <div class="zb">
+          <div class="node w" id="rec" data-icon="dns"><div class="nm">Recursive resolver</div><div class="sub">walks the tree · <b>caches</b> too</div></div>
+        </div>
+      </div>
+      <div class="zone ctrl">
+        <div class="zh">DNS hierarchy</div>
+        <div class="zb">
+          <div class="node w" id="root" data-icon="dns"><div class="nm">Root → <code>.lab</code> TLD</div><div class="sub">referrals only</div></div>
+          <div class="node xw" id="auth" data-icon="dns"><div class="nm">Authoritative DNS / GSLB</div><div class="sub"><code>app.t41.lab</code> · TTL <code>3</code> s<br>health-checks each site VIP</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row sites">
+      <div class="zone site">
+        <div class="zh">Site A</div>
+        <div class="zb"><div class="node w" id="sa" data-icon="lb"><div class="nm">Site A VIP</div><div class="sub"><code>127.0.41.1</code> · UP</div></div></div>
+      </div>
+      <div class="zone site">
+        <div class="zh">Site B</div>
+        <div class="zb"><div class="node w down" id="sb" data-icon="lb"><div class="nm">Site B VIP</div><div class="sub"><code>127.0.41.2</code> · failed check</div></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Round robin:</b> two A records, order rotates per query: <code>['127.0.41.1', '127.0.41.2']</code> then <code>['127.0.41.2', '127.0.41.1']</code>. Distribution, not health-aware.</div>
+      <div class="note trap"><b>Trap:</b> after site B fails, a client still gets <code>['127.0.41.1', '127.0.41.2']</code> <b>from cache</b> until the TTL (3 s) expires. Low TTL = fast failover, more queries.</div>
+      <div class="note"><b>DNS carries no app traffic.</b> "Could not resolve host" but <code>curl https://&lt;IP&gt;</code> works = DNS problem. <code>NXDOMAIN</code> = RCODE 3.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw control"></i>DNS query / answer (numbered)</span>
+    <span><i class="sw mgmt"></i>GSLB health check</span>
+    <span><i class="sw error"></i>failed check → removed from answers</span>
+    <span><i class="sw data"></i>app traffic (HTTP)</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "cli", b: "rec", k: "control", dir: "both", label: "1 · A <code>app.t41.lab</code>?<br>4 · answer + TTL" },
+  { a: "rec", b: "root", k: "control", dir: "both", label: "2 · referrals" },
+  { a: "rec", b: "auth", k: "control", dir: "both", s: "b-l", label: "3 · A <code>127.0.41.1</code>, <code>127.0.41.2</code><br>TTL 3 · order rotates", t: 0.16 },
+  { a: "auth", b: "sa", k: "mgmt", s: "b-t", ao: -30, bo: 40, mid: 0.4, label: "health check ✅", t: 0.45 },
+  { a: "auth", b: "sb", k: "error", s: "b-t", ao: 30, bo: 30, label: "check ✗ → GSLB now answers<br><code>['127.0.41.1']</code> only", t: 0.45, lx: 40 },
+  { a: "cli", b: "sa", k: "data", dir: "fwd", s: "b-t", bo: -20, mid: 0.72, label: "5 · HTTP to the VIP <code>:18041</code><br>(DNS is out of the path)", t: 0.6 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

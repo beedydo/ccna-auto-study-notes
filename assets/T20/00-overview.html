@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T20 overview: Catalyst Center (DNA Center)</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #dbeafe; --blue-b: #1d4ed8; --ok: #dcfce7; --ok-b: #15803d; --part: #fef9c3; --part-b: #a16207;
+    --dark: #1e293b;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; flex: none;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: .2px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; font-size: 13px; line-height: 1.4; margin-top: 8px; }
+  .trap .n { background: var(--trap-ink); } .trap b { color: var(--trap-ink); }
+
+  /* ---- system map ---- */
+  .map { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 14px 16px 12px; }
+  .map h2, .card h2 { margin: 0 0 2px; font-size: 18px; font-weight: 800; }
+  .maprow { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 320px) minmax(0, 130px) minmax(0, 200px); align-items: stretch; margin-top: 10px; }
+  .zone { border: 2.5px solid; border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .zone .zh { color: #fff; font-weight: 800; font-size: 13px; padding: 5px 10px; letter-spacing: .4px; }
+  .zone .zb { padding: 8px 10px; font-size: 13px; line-height: 1.45; flex: 1; }
+  .z-client { border-color: var(--blue-b); } .z-client .zh { background: var(--blue-b); } .z-client .zb { background: var(--blue); }
+  .z-ctrl { border-color: var(--dark); } .z-ctrl .zh { background: var(--dark); } .z-ctrl .zb { background: #f1f5f9; }
+  .z-dev { border-color: var(--ok-b); } .z-dev .zh { background: var(--ok-b); } .z-dev .zb { background: var(--ok); }
+  .z-it { border-color: var(--part-b); } .z-it .zh { background: var(--part-b); } .z-it .zb { background: var(--part); }
+  .calls { display: flex; flex-direction: column; justify-content: center; gap: 5px; padding: 0 10px; }
+  .call { font-size: 12.5px; display: flex; align-items: center; border-bottom: 2px dashed #999; padding-bottom: 3px; }
+  .call.back { border-bottom-color: var(--ok-b); }
+  .dir { text-align: center; font-weight: 800; font-size: 12px; color: var(--blue-b); letter-spacing: .5px; margin-bottom: 2px; }
+  .funcs { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px; margin-top: 6px; }
+  .f { border: 2px solid; border-radius: 7px; padding: 4px 6px; font-size: 12px; line-height: 1.3; background: #fff; }
+  .f b { font-size: 13px; } .f.a { border-color: var(--blue-b); } .f.s { border-color: var(--ok-b); }
+  .south { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 10px; padding: 0 8px; font-size: 12px; text-align: center; }
+  .south div { border-bottom: 2px solid var(--ok-b); padding-bottom: 3px; }
+  .south div::after { content: " ➜"; color: var(--ok-b); font-weight: 800; }
+  .sides { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 400px); gap: 12px; margin-top: 10px; align-items: stretch; }
+  .sides .note { font-size: 13px; line-height: 1.45; padding: 4px 2px; }
+
+  /* ---- cards ---- */
+  .cards { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 12px; margin-top: 12px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; font-size: 13.2px; line-height: 1.45; display: flex; flex-direction: column; }
+  .card .top { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; }
+  .card .icon { font-size: 26px; line-height: 1; }
+  .card .sig { display: inline-block; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace; font-size: 12px; padding: 4px 9px; border-radius: 7px; margin: 2px 0 6px; }
+  .card ul { margin: 0; padding-left: 0; list-style: none; }
+  .card li { margin: 3px 0; display: flex; align-items: baseline; }
+  .card li > span.t { min-width: 0; }
+  .card .spacer { flex: 1; }
+  .chain { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 4px 0; font-size: 12.5px; }
+  .chain .st { border: 2px solid; border-radius: 6px; padding: 2px 6px; background: #fff; }
+  .chain .st.y { border-color: var(--part-b); background: var(--part); } .chain .st.g { border-color: var(--ok-b); background: var(--ok); }
+  .chain .st.b { border-color: var(--blue-b); background: var(--blue); }
+  .chain .ar { font-weight: 800; }
+  .tbl { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12.5px; margin-top: 2px; }
+  .tbl td { border-bottom: 1px solid #ddd; padding: 3px 4px; vertical-align: top; }
+  .tbl td:first-child { width: 50%; }
+  .tbl code, .call code { white-space: normal; overflow-wrap: anywhere; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+  footer .k5::before { background: var(--ok); border: 1px solid var(--ok-b); } footer .k6::before { background: var(--part); border: 1px solid var(--part-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T20 · <span class="pill">Catalyst Center (DNA Center)</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.1, 3.2, 3.9</b><br>Every T20 concept on one page<br>Code from <code>labs/T20/catc_inventory.py</code></div>
+  </header>
+
+  <!-- ===== SYSTEM MAP ===== -->
+  <div class="map">
+    <h2>🌐 The system: script → controller → devices <span class="ids">T20.01 · T20.02</span></h2>
+    <div class="maprow">
+      <div class="zone z-client"><div class="zh">CLIENT · your code</div><div class="zb">
+        🐍 <code>catc_inventory.py</code> (requests)<br>
+        🧰 <code>sdk_inventory.py</code> (dnacentersdk)<br>
+        ⌨️ <code>curl_drill.sh</code><br>
+        <span style="color:var(--muted)">host <code>sandboxdnac2.cisco.com</code></span></div></div>
+
+      <div class="calls">
+        <div class="dir">⬆ NORTHBOUND · INTENT API (REST + JSON)</div>
+        <div class="call"><span class="n">1</span><code>POST /dna/system/api/v1/auth/token</code></div>
+        <div class="call"><span class="n">2</span><code>GET /network-device?hostname=sw1</code></div>
+        <div class="call"><span class="n">3</span><code>GET /site-health</code>&nbsp;+&nbsp;<code>/topology/physical-topology</code></div>
+        <div class="call"><span class="n">4</span><code>POST /network-device-poller/cli/read-request</code></div>
+        <div class="call"><span class="n">5</span><code>GET /client-detail?macAddress=</code></div>
+        <div class="call back">⬅&nbsp;<code>{"response": [...], "version": "1.0"}</code></div>
+      </div>
+
+      <div class="zone z-ctrl"><div class="zh">CONTROLLER · Catalyst Center (DNA Center)</div><div class="zb">
+        Campus + branch controller. <b>Intent-based</b>: you say <b>what</b>, it works out <b>how</b>, then checks it.
+        <div class="funcs">
+          <div class="f a"><b>Design</b><br>sites, IP pools, settings</div>
+          <div class="f a"><b>Policy</b><br>groups / SGT, QoS</div>
+          <div class="f a"><b>Provision</b><br>automation: push config</div>
+          <div class="f s"><b>Assurance</b><br>analytics: health scores</div>
+        </div></div></div>
+
+      <div class="south">
+        <div>SOUTH: SSH, SNMP, NETCONF</div>
+        <div>SOUTH: <b>Multivendor SDK</b></div>
+      </div>
+
+      <div class="zone z-dev"><div class="zh">DEVICES</div><div class="zb">
+        🔌 <b>Cisco</b>: sw1–sw4 <code>C9KV-UADP-8P</code>, WLC, APs<br>
+        🧩 <b>3rd-party</b> devices (via Multivendor SDK device packages)</div></div>
+    </div>
+
+    <div class="sides">
+      <div class="trap" style="margin-top:0"><span class="n">!</span><b>Trap:</b> Provision = <b>automation</b>; Assurance = <b>analytics</b> (health). DNA Center = Catalyst Center: same product.</div>
+      <div class="zone z-it"><div class="zh">⬅ WESTBOUND · INTEGRATION API</div><div class="zb">ITSM (<b>ServiceNow</b>: incidents, change approval) · <b>IPAM</b> (Infoblox, BlueCat)</div></div>
+      <div class="zone z-it"><div class="zh">➡ EASTBOUND · EVENTS &amp; NOTIFICATIONS</div><div class="zb">Catalyst Center <b>pushes</b> events to you: <b>webhook</b> (REST POST), email, syslog</div></div>
+      <div class="trap" style="margin-top:0"><span class="n">!</span><b>Trap:</b> Intent = <b>north</b> (your code) · Integration = <b>west</b> (ITSM/IPAM) · Multivendor SDK = <b>south</b> (3rd-party) · Events = <b>east</b> (push, not poll)</div>
+    </div>
+  </div>
+
+  <!-- ===== CARDS ===== -->
+  <div class="cards">
+    <div class="card">
+      <div class="top"><span class="icon">🔐</span><h2>Authentication</h2><span class="ids">T20.03</span></div>
+      <span class="sig">Basic → Token → X-Auth-Token</span>
+      <ul>
+        <li><span class="n">1</span><span class="t"><code>POST /dna/system/api/v1/auth/token</code><br><code>auth=HTTPBasicAuth(USER, PASSWORD)</code></span></li>
+        <li><span class="n">2</span><span class="t">reply <code>{"Token": "eyJhbGci..."}</code>, valid <b>60 min</b><br><code>return resp.json()["Token"]</code></span></li>
+        <li><span class="n">3</span><span class="t">every other call: <code>{"X-Auth-Token": token, ...}</code></span></li>
+        <li><span class="n">4</span><span class="t">missing / wrong header → <code>401 {"message": "Unauthorized"}</code></span></li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>X-Auth-Token</code>, <b>not</b> <code>Authorization: Bearer</code>. Key is <code>Token</code> (capital T). Path is <code>system</code>, not <code>intent</code>.</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">📚</span><h2>Common endpoints</h2><span class="ids">T20.04</span></div>
+      <span class="sig">/dna/intent/api/v1 + resource</span>
+      <table class="tbl">
+        <tr><td><code>/network-device</code></td><td>inventory, filter <code>?hostname=</code></td></tr>
+        <tr><td><code>/site</code> · <code>/site-health</code></td><td>sites · health %</td></tr>
+        <tr><td><code>/client-health</code></td><td>overall client score</td></tr>
+        <tr><td><code>/client-detail</code><br><code>?macAddress=</code></td><td>one client (T20.07)</td></tr>
+        <tr><td><code>/topology/</code><br><code>physical-topology</code></td><td><code>nodes[]</code> + <code>links[]</code> by UUID</td></tr>
+        <tr><td><code>/network-device-poller/</code><br><code>cli/read-request</code></td><td>command runner: <code>{"commands": [...],</code><br><code>"deviceUuids": [...]}</code></td></tr>
+      </table>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> command runner takes device <b>UUIDs</b> and is <b>read-only</b>: <code>configure terminal</code> → <code>BLOCKLISTED</code></div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">⏳</span><h2>Asynchronous tasks</h2><span class="ids">T20.05</span></div>
+      <span class="sig">202 → poll /task/{taskId} → /file/{fileId}</span>
+      <div class="chain">
+        <span class="st b"><span class="n">1</span>POST → <code>202</code></span><span class="ar">→</span>
+        <span class="st y"><span class="n">2</span><code>{"taskId": ...}</code></span><span class="ar">→</span>
+        <span class="st y"><span class="n">3</span>GET task: no <code>endTime</code></span><span class="ar">↻</span>
+      </div>
+      <div class="chain">
+        <span class="st g"><span class="n">4</span><code>endTime</code> set, <code>isError</code> false</span><span class="ar">→</span>
+        <span class="st g"><span class="n">5</span><code>json.loads(task["progress"])["fileId"]</code></span>
+      </div>
+      <div class="chain"><span class="st g"><span class="n">6</span><code>GET /file/{fileId}</code> → <code>SUCCESS</code> / <code>FAILURE</code> / <code>BLOCKLISTED</code></span></div>
+      <div style="font-size:12.5px">In code: <code>task = wait_for_task(token, task_id)</code></div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>202</code> ≠ done, and a <code>200</code> task poll ≠ done. Finished = <code>endTime</code>. <code>progress</code> is a JSON <b>string</b>.</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">🧰</span><h2>Python SDK</h2><span class="ids">T20.06</span></div>
+      <span class="sig">pip install dnacentersdk</span>
+      <ul>
+        <li><span class="n">1</span><span class="t"><code>from dnacentersdk import DNACenterAPI, ApiError</code></span></li>
+        <li><span class="n">2</span><span class="t"><code>api = DNACenterAPI(base_url=..., username=...,</code><br><code>password=..., verify=False)</code> token handled for you</span></li>
+        <li><span class="n">3</span><span class="t"><code>devices = api.devices.get_device_list()</code><br><code>dev.hostname</code> or <code>dev["hostname"]</code></span></li>
+        <li><span class="n">4</span><span class="t"><code>api.clients.get_client_detail(mac_address=...)</code> · non-2xx → <code>ApiError</code></span></li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> query params → snake_case kwargs (<code>mac_address=</code>), body fields stay camelCase (<code>deviceUuids=</code>)</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">📍</span><h2>Client discovery (3.9.c)</h2><span class="ids">T20.07</span></div>
+      <span class="sig">GET /client-detail?macAddress=&lt;mac&gt;</span>
+      <table class="tbl">
+        <tr><td><b>WIRED</b> <code>printer-l2</code></td><td><b>WIRELESS</b> <code>jdoe-laptop</code></td></tr>
+        <tr><td><code>SWITCH</code> sw1</td><td><code>AP</code> AP-F2-01</td></tr>
+        <tr><td><code>port</code> GigabitEthernet1/0/5</td><td><code>ssid</code> CORP-WIFI</td></tr>
+        <tr><td><code>vlanId</code> 30 · OVERALL 10/10</td><td><code>vlanId</code> 40 · OVERALL 3/10</td></tr>
+      </table>
+      <div style="font-size:12.5px;margin-top:4px"><code>client = resp.json()["detail"]</code> · health 1–10, 0 = idle · unknown MAC → <code>404</code> Entity not found</div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> data is under <code>detail</code>, <b>not</b> <code>response</code>. Wired → <code>port</code>, wireless → <code>ssid</code> + AP.</div>
+    </div>
+
+    <div class="card">
+      <div class="top"><span class="icon">🎯</span><h2>Exam angle</h2><span class="ids">T20.08</span></div>
+      <span class="sig">fill the blank · put in order</span>
+      <ul>
+        <li><span class="n">1</span><span class="t">auth: <code>POST</code> + Basic → <code>["Token"]</code> → <code>X-Auth-Token</code></span></li>
+        <li><span class="n">2</span><span class="t">filter: <code>params={"hostname": "sw1"}</code>, then <code>.json()["response"]</code></span></li>
+        <li><span class="n">3</span><span class="t">async: <code>taskId</code> → poll → <code>endTime</code> → <code>fileId</code> → file</span></li>
+        <li><span class="n">4</span><span class="t">platform match: campus LAN/WLAN + assurance → Catalyst Center (DC → ACI, WAN → SD-WAN, cloud → Meraki)</span></li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> Basic auth goes <b>only</b> on the token call. Sending <code>--user</code> to <code>/network-device</code> → <code>401</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = call order in catc_inventory.py / steps</span>
+    <span class="k3">grey chip = exact syntax</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k4">blue = your code / recommended path</span>
+    <span class="k5">green = devices / done</span>
+    <span class="k6">yellow = other IT systems / in progress</span>
+  </footer>
+</div>
+</body>
+</html>

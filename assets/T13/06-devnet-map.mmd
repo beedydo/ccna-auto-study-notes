@@ -1,0 +1,26 @@
+flowchart LR
+    HUB["developer.cisco.com<br/>Cisco DevNet<br/>(free account)"]
+    DOC["Documentation<br/>/docs/"]
+    LL["Learning Labs<br/>/learning/"]
+    CE["Code Exchange<br/>/codeexchange/"]
+    SB["Sandbox<br/>/site/sandbox/<br/>devnetsandbox.cisco.com"]
+    COM["Community<br/>community.cisco.com"]
+    SUP["DevNet Support<br/>/docs/devnet-support/"]
+    EE["Ecosystem Exchange<br/>partner solutions<br/>legacy: /ecosystem/ = 404"]
+    AE["Automation Exchange<br/>/network-automation/"]
+    HUB == "home-page tile" ==> DOC
+    HUB == "home-page tile" ==> LL
+    HUB == "home-page tile" ==> CE
+    HUB == "home-page tile" ==> SB
+    HUB -. link .-> COM
+    HUB -. link .-> SUP
+    HUB -. "product pages" .-> EE
+    AE -. "consolidated into" .-> CE
+    classDef blue fill:#d6e4ff,stroke:#2f5bd3,color:#111
+    classDef green fill:#d4edda,stroke:#28a745,color:#111
+    classDef yellow fill:#fff3cd,stroke:#d4a106,color:#111
+    classDef grey fill:#f2f2f2,stroke:#555,color:#111
+    class DOC,LL,CE,SB blue
+    class COM,SUP green
+    class AE,EE yellow
+    class HUB grey

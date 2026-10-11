@@ -1,0 +1,18 @@
+flowchart LR
+    PO(["Product Owner<br/>orders the backlog"]) --> PB["Product backlog<br/>commitment: Product Goal"]
+    PB --> SP["Sprint planning"]
+    SP --> SB["Sprint backlog<br/>commitment: Sprint Goal"]
+    SB --> SPR["Sprint: 1 month or less<br/>Daily Scrum 15 min"]
+    SPR --> INC["Increment<br/>commitment: Definition of Done"]
+    INC --> REV["Sprint review<br/>stakeholders inspect, give feedback"]
+    REV --> RET["Sprint retrospective<br/>improve how the team works"]
+    RET -->|next sprint| PB
+    SM(["Scrum Master<br/>coaches, removes blockers"]) -.-> SPR
+    DEV(["Developers<br/>build the increment"]) -.-> SPR
+    style PB fill:#d1ecf1,stroke:#17a2b8
+    style SB fill:#d1ecf1,stroke:#17a2b8
+    style INC fill:#d4edda,stroke:#28a745
+    style SPR fill:#fff3cd,stroke:#e0a800
+    style PO fill:#e8dcf7,stroke:#7b4bc4
+    style SM fill:#e8dcf7,stroke:#7b4bc4
+    style DEV fill:#e8dcf7,stroke:#7b4bc4

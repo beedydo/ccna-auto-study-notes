@@ -1,0 +1,21 @@
+%%{init: {"flowchart": {"wrappingWidth": 420}}}%%
+flowchart LR
+    subgraph IN["Inside (RFC 1918)"]
+        direction TB
+        h1["PC1 10.10.20.10:51000"]
+        h2["PC2 10.10.20.11:51000"]
+    end
+    subgraph R["Edge router · ip nat inside source list 1 interface Gi0/0 overload"]
+        direction TB
+        tbl["PAT table<br/>inside local → inside global<br/>10.10.20.10:51000 → 203.0.113.5:51000<br/>10.10.20.11:51000 → 203.0.113.5:51001"]
+    end
+    subgraph OUT["Outside (internet)"]
+        direction TB
+        srv["Server 198.51.100.7:443<br/>(outside global)"]
+    end
+    h1 -->|"src 10.10.20.10:51000"| tbl
+    h2 -->|"src 10.10.20.11:51000"| tbl
+    tbl -->|"src 203.0.113.5:51000 / :51001"| srv
+    style IN fill:#e3f6ee,stroke:#28a745,stroke-width:2px
+    style R fill:#d6e4ff,stroke:#1f5bd6,stroke-width:2px
+    style OUT fill:#fff6dc,stroke:#e0a800,stroke-width:2px

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T38 components: what each box reads and decides</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .path > .zb { justify-content: space-between; padding: 22px 18px; align-items: flex-start; }
+  .path .node { width: 168px; }
+  .pool { display: flex; flex-direction: column; gap: 34px; }
+  .pool .node { width: 116px !important; }
+  .wl > .zb { justify-content: space-between; flex-wrap: nowrap; padding: 20px 40px; }
+  .wl .node { width: 250px; }
+  .bottom { display: flex; gap: 26px; align-items: stretch; }
+  .bottom .zone { flex: 0 0 760px; }
+  .bottom .notes { flex: 1; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+  .bottom .note { max-width: none; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T38 · <span class="pill">Components</span> what each box reads</h1>
+    <div class="meta"><b>200-901 blueprint 6.3</b><br>Left to right: each box looks one layer deeper<br>Names and IPs from <code>labs/T38/topology.json</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone dashed path">
+      <div class="zh" style="background:#2b2b2b">One request: pc1 → web VIP <small>the path every exam diagram asks you to trace</small></div>
+      <div class="zb">
+        <div class="node" id="host" data-icon="laptop"><div class="nm">Host</div><div class="sub">pc1 10.10.10.21/24<br>gw 10.10.10.1</div><span class="tag">ARPs for the gateway</span></div>
+        <div class="node" id="sw" data-icon="switch"><div class="nm">Switch · L2</div><div class="sub">reads dst <b>MAC</b><br>MAC table · VLANs<br>1 broadcast domain / VLAN</div><span class="tag">acc1 · no IP lookup</span></div>
+        <div class="node hl" id="rt" data-icon="l3switch"><div class="nm">Router / L3 switch</div><div class="sub">reads dst <b>IP</b><br>routing table · longest match<br>SVI = default gateway</div><span class="tag">dist1 · core1</span></div>
+        <div class="node" id="fw" data-icon="firewall"><div class="nm">Firewall · L3-L4+</div><div class="sub">reads IP + port + <b>state</b><br>zones inside / dmz / outside<br>implicit deny</div><span class="tag">fw1</span></div>
+        <div class="node" id="lb" data-icon="lb"><div class="nm">Load balancer · L4-L7</div><div class="sub">owns the <b>VIP</b><br>health-checks the pool<br>rewrites dst to a real server</div><span class="tag">lb1 · 172.16.50.10</span></div>
+        <div class="pool">
+          <div class="node" id="w1" data-icon="server"><div class="nm">web1</div><div class="sub">up</div></div>
+          <div class="node down" id="w2" data-icon="server"><div class="nm">web2</div><div class="sub">down</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap s"></div>
+
+    <div class="bottom">
+      <div class="zone site wl">
+        <div class="zh">Wireless</div>
+        <div class="zb">
+          <div class="node" id="ap" data-icon="ap"><div class="nm">Access point</div><div class="sub">radio ↔ wired · SSID ↔ VLAN<br>lightweight AP: no local config</div><span class="tag">ap1 10.10.30.40</span></div>
+          <div class="node" id="wlc" data-icon="wlc"><div class="nm">WLC</div><div class="sub">central config, firmware, RF, roaming<br>Catalyst 9800</div><span class="tag">wlc1 10.0.9.10</span></div>
+        </div>
+      </div>
+      <div class="notes">
+        <div class="note"><b>Switch hop:</b> frame unchanged. <b>Router hop:</b> new src/dst MAC, same IPs, TTL − 1.</div>
+        <div class="note trap"><b>Trap:</b> firewall = <b>stateful</b> (replies allowed back), router ACL = <b>stateless</b>. LB ≠ firewall: it spreads load, it doesn't enforce policy.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>user traffic, one hop per box</span>
+    <span><i class="sw error"></i>failed health check: no traffic</span>
+    <span><i class="sw control"></i>CAPWAP control + data tunnel</span>
+    <span style="margin-left:auto">Blue glow = the default gateway</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "host", b: "sw", k: "data", s: "r-l", label: "frame", t: 0.5 },
+  { a: "sw", b: "rt", k: "data", s: "r-l", label: "dst MAC = gw" },
+  { a: "rt", b: "fw", k: "data", s: "r-l", label: "route" },
+  { a: "fw", b: "lb", k: "data", s: "r-l", label: "permit 443" },
+  { a: "lb", b: "w1", k: "data", s: "r-l" },
+  { a: "lb", b: "w2", k: "error", s: "r-l", ao: 9, mid: 0.6 },
+  { a: "ap", b: "wlc", k: "control", dir: "both", label: "CAPWAP UDP <code>5246</code> control · <code>5247</code> data" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

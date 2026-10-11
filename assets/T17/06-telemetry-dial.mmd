@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph OLD["SNMP polling (pull): the old way"]
+        direction LR
+        N["NMS"] -- "GET every 5 min" --> D3["Device"]
+        D3 -- "reply" --> N
+    end
+    subgraph OUT["Dial-out = configured subscription (push)"]
+        direction LR
+        D2["Device<br/>subscription saved in running-config"] -- "1 · device opens the connection: gRPC / TCP / UDP<br/>2 · pushes kvGPB or JSON on a timer or on change" --> C2["Collector / receiver<br/>(e.g. Telegraf)"]
+    end
+    subgraph IN["Dial-in = dynamic subscription (push)"]
+        direction LR
+        C1["Collector<br/>(gNMI / NETCONF client)"] -- "1 · opens session + Subscribe" --> D1["Device"]
+        D1 -- "2 · streams updates on that session" --> C1
+    end
+    style IN fill:#e3f1f8,stroke:#17a2b8
+    style OUT fill:#e3f6ee,stroke:#28a745
+    style OLD fill:#fde8e8,stroke:#dc3545

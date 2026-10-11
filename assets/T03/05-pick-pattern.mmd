@@ -1,0 +1,13 @@
+flowchart TB
+    Q["Exam scenario:<br/>what does the description stress?"]
+    Q --> A{"Splits the app into<br/>data / display / input handling?"}
+    A -- yes --> MVC["MVC<br/>advantage: separation of concerns,<br/>parallel dev, many views, testable"]
+    A -- no --> B{"One object changes,<br/>many dependents told automatically?"}
+    B -- yes --> OB["Observer<br/>advantage: loose coupling,<br/>one-to-many broadcast, subscribe at run time"]
+    B -- no --> C{"Only one instance<br/>of a class allowed?"}
+    C -- yes --> SG["Singleton<br/>not named in 1.6: usually a distractor"]
+    C -- no --> X["Some other pattern<br/>(not tested in 1.6)"]
+    classDef ans fill:#dbeafe,stroke:#1d4ed8,stroke-width:3px,color:#111
+    classDef aware fill:#fef9c3,stroke:#a16207,stroke-width:2px,color:#111
+    class MVC,OB ans
+    class SG aware

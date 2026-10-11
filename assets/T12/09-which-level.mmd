@@ -1,0 +1,11 @@
+flowchart LR
+    Q1{"1 · Controller deployed<br/>for this domain?"} -->|no| DEV
+    Q1 -->|yes| Q2{"2 · Same change / policy<br/>across many devices?"}
+    Q2 -->|yes| CTRL
+    Q2 -->|no| Q3{"3 · Granular setting the<br/>controller doesn't expose?"}
+    Q3 -->|yes| DEV["DEVICE-LEVEL<br/>NETCONF · RESTCONF<br/>NX-API · SSH CLI<br/>script loops, handles state"]
+    Q3 -->|no| CTRL["CONTROLLER-LEVEL<br/>1 northbound REST call<br/>Catalyst Center · APIC<br/>SD-WAN Manager · Meraki"]
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef green fill:#dcfce7,stroke:#15803d,color:#111
+    class CTRL blue
+    class DEV green
