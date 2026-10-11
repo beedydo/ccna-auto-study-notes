@@ -1,0 +1,12 @@
+sequenceDiagram
+    autonumber
+    participant C as Client (auth_tour.py)
+    participant S as API server
+    C->>S: GET /basic/devices (no Authorization header)
+    S-->>C: 401 Unauthorized<br/>WWW-Authenticate: Basic realm="mock"
+    Note over C: base64("admin:C1sco12345")<br/>= YWRtaW46QzFzY28xMjM0NQ==
+    C->>S: GET /basic/devices<br/>Authorization: Basic YWRtaW46QzFzY28xMjM0NQ==
+    S-->>C: 200 OK
+    C->>S: GET /basic/devices (next call)<br/>Authorization: Basic YWRtaW46... AGAIN
+    S-->>C: 200 OK
+    Note over C,S: Password crosses the wire on EVERY call.<br/>Base64 is reversible, so only TLS (HTTPS) protects it.

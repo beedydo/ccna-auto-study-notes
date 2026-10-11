@@ -1,0 +1,22 @@
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant S as Controller (Catalyst Center shape)
+    rect rgb(255, 243, 205)
+    Note over C,S: Step 1 · authenticate ONCE
+    C->>S: POST /catc/auth/token<br/>Authorization: Basic YWRtaW46...
+    S-->>C: 200 OK  {"Token": "tok-1f602c7a"}
+    end
+    rect rgb(212, 237, 218)
+    Note over C,S: Step 2 · token on every call (no password)
+    C->>S: GET /catc/devices<br/>X-Auth-Token: tok-1f602c7a
+    S-->>C: 200 OK
+    C->>S: GET /catc/devices<br/>X-Auth-Token: tok-1f602c7a
+    S-->>C: 200 OK
+    end
+    rect rgb(253, 232, 232)
+    Note over C,S: Step 3 · token expires
+    C->>S: GET /catc/devices<br/>X-Auth-Token: tok-1f602c7a (expired)
+    S-->>C: 401 Unauthorized
+    Note over C,S: fix: back to step 1 (or refresh, if the API supports it)
+    end

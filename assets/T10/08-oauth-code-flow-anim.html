@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T10 OAuth 2.0 authorization-code animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1160px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:300px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.u { border-color:#7b4bc4; } .lane.a { border-color:#17a2b8; } .lane.s { border-color:#e0a800; } .lane.r { border-color:#28a745; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.4); }
+  .item { font-family:Menlo,monospace; font-size:12px; line-height:1.45; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:7px; word-break:break-all; }
+  .item small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; word-break:normal; }
+  .item.k { background:#e8dcf7; border-color:#7b4bc4; }   /* secret / credential */
+  .item.c { background:#fff3cd; border-color:#e0a800; }   /* code / request */
+  .item.t { background:#d4edda; border-color:#28a745; }   /* token */
+  .item.e { background:#fde8e8; border-color:#dc3545; }   /* error / expired */
+  .item.new { box-shadow:0 0 0 4px rgba(47,179,128,.5); }
+  .item.gone { opacity:.3; border-style:dashed; text-decoration:line-through; }
+  .arrowrow { position:relative; height:52px; margin-top:8px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T10 · <span class="pill">OAuth 2.0</span> authorization-code grant</h1>
+  <div class="sub">Same calls as <code>oauth_code_flow()</code> in <code>labs/T10/auth_tour.py</code>. Watch <b>who holds what</b> after each step.</div>
+  <div class="lanes">
+    <div class="lane u" id="u"><h3>🧑 User + browser</h3><div class="where">resource owner</div><div id="u-f"></div></div>
+    <div class="lane a" id="a"><h3>📱 Client app</h3><div class="where">integration: demo-app</div><div id="a-f"></div></div>
+    <div class="lane s" id="s"><h3>🔐 Authorization server</h3><div class="where">/oauth/authorize · /oauth/token</div><div id="s-f"></div></div>
+    <div class="lane r" id="r"><h3>🗄️ Resource server</h3><div class="where">/oauth/api/devices</div><div id="r-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (cls, t, s="") => `<div class="item ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const pw = I("k", "admin:C1sco12345", "only the user knows it");
+const secret = I("k", "client_secret", "demo-secret · app only");
+const frames = [
+  { active:"u", u: pw + I("c new", "GET /oauth/authorize?<br>response_type=code<br>&client_id=demo-app<br>&scope=devices:read<br>&state=1bbde62a"),
+    a: secret + I("c", "state=1bbde62a", "remembered"), s:"", r:"",
+    cmd:{at:0, t:"redirect to /authorize"},
+    txt:"<b>App redirects the browser</b> to the auth server with <code>response_type=code</code>, its <code>client_id</code>, the <b>scope</b> it wants, and a random <code>state</code>." },
+  { active:"s", u: pw, a: secret + I("c", "state=1bbde62a"),
+    s: I("k new", "login form: admin / ••••", "password typed HERE") + I("c", "consent: devices:read"), r:"",
+    cmd:{at:2, t:"user logs in"},
+    txt:"<b>User logs in at the authorization server</b>, not in the app, and approves the scopes. The app <b>never sees the password</b>." },
+  { active:"u", u: pw + I("c new", "302 Location:<br>/callback?code=5005cd8804<br>&state=1bbde62a"),
+    a: secret + I("c", "state=1bbde62a"), s: I("c", "code 5005cd8804", "single use · ≤ 10 min"), r:"",
+    cmd:{at:1, t:"302 + code", back:true},
+    txt:"Auth server answers <code>302</code> to the <b>redirect_uri</b> with a one-time <b>code</b> and the same <code>state</code>. The code is <b>not</b> a token." },
+  { active:"a", u: pw, a: secret + I("c new", "code=5005cd8804", "state matches ✔"), s: I("c", "code 5005cd8804"), r:"",
+    cmd:{at:1, t:"POST /oauth/token"},
+    txt:"App checks <code>state</code> (anti-CSRF), then POSTs <code>grant_type=authorization_code</code> + code + <code>client_secret</code> to <code>/token</code> (back channel)." },
+  { active:"a", u: pw, a: secret + I("t new", "access_token acc-678ea5f7", "expires_in · scope devices:read") + I("t new", "refresh_token ref-02281d06"),
+    s: I("c gone", "code 5005cd8804", "used: reuse → invalid_grant"), r:"",
+    cmd:{at:1, t:"200 tokens", back:true},
+    txt:"Auth server returns <code>access_token</code> (short-lived) + <code>refresh_token</code> (long-lived). The code is now <b>spent</b>." },
+  { active:"r", u: pw, a: secret + I("t", "access_token acc-678ea5f7") + I("t", "refresh_token ref-02281d06"), s:"",
+    r: I("c new", "GET /oauth/api/devices<br>Authorization: Bearer acc-678ea5f7") + I("t", "200 OK") + I("e", "POST → 403 insufficient_scope"),
+    cmd:{at:3, t:"Bearer access_token"},
+    txt:"App calls the API with <code>Authorization: Bearer</code>. GET works; a POST needs <code>devices:write</code> → <b>403</b>: scope limits the token." },
+  { active:"s", u: pw, a: secret + I("e gone", "acc-678ea5f7", "expired → 401 invalid_token") + I("t", "refresh_token ref-02281d06") + I("t new", "access_token acc-00c50aa9"),
+    s: I("c", "grant_type=refresh_token"), r: I("t", "200 OK with new token"),
+    cmd:{at:2, t:"refresh", back:false},
+    txt:"Access token expires → <b>401</b>. App sends <code>grant_type=refresh_token</code> and gets a new access token <b>with no user login</b>." },
+];
+const pos = [20, 290, 565, 840];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["u","a","s","r"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const ar = document.getElementById("arrows"); ar.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; ar.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

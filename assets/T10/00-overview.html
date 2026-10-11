@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T10 overview: API authentication</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1240px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.8px; background: var(--code); padding: 1px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .card { background: #fff; border: 2.5px solid var(--line); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+  .card .hd { padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-bottom: 2px solid var(--line); }
+  .card .hd .ic { font-size: 28px; }
+  .card .hd .nm { font-weight: 800; font-size: 18px; }
+  .card .hd .ids { margin-left: auto; font-size: 11px; color: var(--muted); text-align: right; }
+  .card .bd { padding: 10px 14px 12px; font-size: 13px; line-height: 1.45; flex: 1; display: flex; flex-direction: column; gap: 7px; }
+  .c1 .hd { background: #fff3cd; } .c2 .hd { background: #d1ecf1; } .c3 .hd { background: #e8dcf7; }
+  .c4 .hd { background: #e3f6ee; } .c5 .hd { background: #ffe5d0; } .c6 .hd { background: #f1f1f1; }
+
+  /* the shared mini-diagram: client -> wire -> server */
+  .wire { display: grid; grid-template-columns: 58px minmax(0, 1fr) 58px; align-items: center; gap: 6px; }
+  .box { border: 2px solid var(--line); border-radius: 7px; text-align: center; font-size: 11px; font-weight: 700; padding: 5px 2px; background: #fafafa; }
+  .arrows { display: flex; flex-direction: column; gap: 4px; }
+  .ar { font-family: Menlo, Consolas, monospace; font-size: 10.8px; border-radius: 5px; padding: 3px 6px; white-space: nowrap; overflow: hidden; text-overflow: clip; }
+  .ar.out { background: #fff3cd; border: 1.5px solid #e0a800; }
+  .ar.back { background: #d4edda; border: 1.5px solid #28a745; }
+  .ar.out::before { content: "➜ "; } .ar.back::before { content: "⬅ "; }
+  .row { display: flex; gap: 6px; align-items: baseline; }
+  .row .k { flex: none; width: 82px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .3px; }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 4px; vertical-align: 1px; }
+  .trap { background: var(--trap); border: 1.5px solid var(--trap-ink); border-radius: 7px; padding: 5px 8px; font-size: 12.5px; margin-top: auto; }
+  .trap b { color: var(--trap-ink); }
+
+  .strip { margin-top: 16px; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; }
+  .panel { background: #fff; border: 2.5px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 13px; line-height: 1.45; }
+  .panel h3 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .panel h3 .ids { margin-left: auto; font-size: 11px; color: var(--muted); font-weight: 400; }
+  .flow { display: grid; grid-template-columns: 1fr 20px 1.1fr 20px 1.1fr; align-items: center; gap: 4px; text-align: center; font-size: 12px; }
+  .st { border: 2px solid; border-radius: 8px; padding: 6px 4px; }
+  .st.q { background: #fff3cd; border-color: #e0a800; } .st.e { background: #fde8e8; border-color: #dc3545; } .st.ok { background: #d4edda; border-color: #28a745; }
+  .flow .a { font-weight: 800; }
+  .two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 6px 16px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: #fff3cd; border: 1px solid #e0a800; } footer .k5::before { background: #d4edda; border: 1px solid #28a745; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T10 · <span class="pill">API Authentication</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.7</b><br>Every T10 concept on one page<br>Code from <code>labs/T10/auth_tour.py</code></div>
+  </header>
+
+  <div class="cards">
+    <!-- 1 BASIC -->
+    <div class="card c1">
+      <div class="hd"><span class="ic">🔑</span><span class="nm">Basic auth</span><span class="ids">T10.02 · T10.07</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">client</div>
+          <div class="arrows"><div class="ar out">Authorization: Basic YWRtaW46...</div><div class="ar back">200 OK</div></div>
+          <div class="box">server</div></div>
+        <div class="row"><span class="k">get it</span><span>none: <b>base64("user:pass")</b>, sent on <b>every</b> call</span></div>
+        <div class="row"><span class="k">python</span><span><code>auth=(USER, PASSWORD)</code></span></div>
+        <div class="row"><span class="k">platforms</span><span>RESTCONF on IOS XE, NX-API, token endpoints</span></div>
+        <div class="trap"><b>Trap:</b> base64 = <b>encoding</b>, not encryption. <code>YWRtaW46QzFzY28xMjM0NQ==</code> → <code>admin:C1sco12345</code>. HTTPS only.</div>
+      </div>
+    </div>
+    <!-- 2 CUSTOM TOKEN -->
+    <div class="card c2">
+      <div class="hd"><span class="ic">🔖</span><span class="nm">Custom token</span><span class="ids">T10.03 · T10.07</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">client</div>
+          <div class="arrows"><div class="ar out">POST /auth/token + Basic</div><div class="ar back">{"Token": "tok-1f602c7a"}</div><div class="ar out">X-Auth-Token: tok-1f602c7a</div></div>
+          <div class="box">server</div></div>
+        <div class="row"><span class="k">get it</span><span><span class="n">1</span>Basic once <span class="n">2</span>token back <span class="n">3</span>token on each call</span></div>
+        <div class="row"><span class="k">python</span><span><code>s.headers.update({</code><br><code>"X-Auth-Token": token,</code><br><code>"Accept": "application/json"})</code></span></div>
+        <div class="row"><span class="k">platforms</span><span>Catalyst Center <code>X-Auth-Token</code> · FMC <code>X-auth-access-token</code></span></div>
+        <div class="trap"><b>Trap:</b> Catalyst Center is <b>not</b> <code>Bearer</code>. Token expires → <code>401</code> → log in / refresh.</div>
+      </div>
+    </div>
+    <!-- 3 API KEY -->
+    <div class="card c3">
+      <div class="hd"><span class="ic">🗝️</span><span class="nm">API key</span><span class="ids">T10.04 · T10.07</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">portal</div>
+          <div class="arrows"><div class="ar out">X-API-Key: 6bec40cf...</div><div class="ar out">?api_key=6bec40cf... (leaks)</div></div>
+          <div class="box">server</div></div>
+        <div class="row"><span class="k">get it</span><span>generated <b>once in a portal</b>, static, no login call</span></div>
+        <div class="row"><span class="k">python</span><span><code>headers={"X-API-Key": API_KEY}</code></span></div>
+        <div class="row"><span class="k">platforms</span><span>Meraki <code>Authorization: Bearer</code> (older <code>X-Cisco-Meraki-API-Key</code>)</span></div>
+        <div class="trap"><b>Trap:</b> query-string key lands in <b>access logs</b>. Leaked key = full access until revoked → rotate.</div>
+      </div>
+    </div>
+    <!-- 4 COOKIE -->
+    <div class="card c4">
+      <div class="hd"><span class="ic">🍪</span><span class="nm">Session cookie</span><span class="ids">T10.05 · T10.07</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">Session</div>
+          <div class="arrows"><div class="ar out">POST j_security_check (form)</div><div class="ar back">Set-Cookie: JSESSIONID=...</div><div class="ar out">Cookie + X-XSRF-TOKEN</div></div>
+          <div class="box">server</div></div>
+        <div class="row"><span class="k">get it</span><span>login call → <code>Set-Cookie</code> → jar sends <code>Cookie</code> back</span></div>
+        <div class="row"><span class="k">python</span><span><code>s = requests.Session()</code> keeps cookies</span></div>
+        <div class="row"><span class="k">platforms</span><span>APIC <code>APIC-cookie</code> · SD-WAN Mgr <code>JSESSIONID</code></span></div>
+        <div class="trap"><b>Trap:</b> SD-WAN write without <code>X-XSRF-TOKEN</code> → <code>403</code>. Bare <code>requests.get()</code> has no jar.</div>
+      </div>
+    </div>
+    <!-- 5 OAUTH -->
+    <div class="card c5">
+      <div class="hd"><span class="ic">🤝</span><span class="nm">OAuth 2.0</span><span class="ids">T10.06</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">app</div>
+          <div class="arrows"><div class="ar out">/authorize?response_type=code</div><div class="ar back">302 ?code=...&amp;state=...</div><div class="ar out">/token code+client_secret</div><div class="ar back">access_token, refresh_token</div></div>
+          <div class="box">auth srv</div></div>
+        <div class="row"><span class="k">get it</span><span>user logs in at <b>auth server</b>, app gets a 1-use code, swaps it</span></div>
+        <div class="row"><span class="k">send</span><span><code>Authorization: Bearer &lt;access_token&gt;</code> · <b>scope</b> limits it</span></div>
+        <div class="row"><span class="k">platforms</span><span>Webex <b>integration</b> (acts for a user)</span></div>
+        <div class="trap"><b>Trap:</b> app never sees the password. Refresh token = new access token, no login. Code reuse → <code>invalid_grant</code>.</div>
+      </div>
+    </div>
+    <!-- 6 STATIC BEARER -->
+    <div class="card c6">
+      <div class="hd"><span class="ic">🤖</span><span class="nm">Static bearer token</span><span class="ids">T10.03 · T10.06</span></div>
+      <div class="bd">
+        <div class="wire"><div class="box">portal</div>
+          <div class="arrows"><div class="ar out">Authorization: Bearer &lt;token&gt;</div><div class="ar back">200 OK</div></div>
+          <div class="box">Webex</div></div>
+        <div class="row"><span class="k">get it</span><span>copied from developer portal: <b>bot</b> token or <b>personal</b> token</span></div>
+        <div class="row"><span class="k">python</span><span><code>{"Authorization": f"Bearer {token}"}</code></span></div>
+        <div class="row"><span class="k">platforms</span><span>Webex bots (long-lived) · personal token (testing, ~12 h ⚠)</span></div>
+        <div class="trap"><b>Trap:</b> <b>bot</b> = own long-lived token, no OAuth. <b>Integration</b> = OAuth for a user.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="panel">
+      <h3>🚦 401 vs 403 <span class="ids">T10.01 · T10.09</span></h3>
+      <div class="flow">
+        <div class="st q"><b>AuthN</b><br>who are you?</div><div class="a">→</div>
+        <div class="st e">fail → <b>401</b><br>re-authenticate</div><div class="a">→</div>
+        <div class="st q"><b>AuthZ</b><br>what may you do?</div>
+      </div>
+      <div class="flow" style="margin-top:6px">
+        <div></div><div></div><div></div><div></div>
+        <div class="st e">fail → <b>403</b><br>role / scope · new token won't help</div>
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> "Unauthorized" (401) really means <b>unauthenticated</b>. Wrong scheme word (<code>Bearer</code> vs <code>Basic</code>) or wrong header name → <code>401</code>.</div>
+    </div>
+    <div class="panel">
+      <h3>🔐 Credential handling <span class="ids">T10.08</span></h3>
+      <div class="two">
+        <div><span class="n">1</span>secrets from env / vault<br><code>os.environ.get(name)</code></div>
+        <div><span class="n">2</span>load fake/real values<br><code>set -a &amp;&amp; source labs/.env</code></div>
+        <div><span class="n">3</span>HTTPS = encrypted <b>in transit</b></div>
+        <div><span class="n">4</span><code>labs/.env</code> git-ignored</div>
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> never hardcode or commit secrets; HTTPS doesn't stop a key in a URL being <b>logged</b>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k4">➜ request out</span><span class="k5">⬅ response back</span><span class="k3">exact syntax</span>
+    <span class="k1">order of steps</span><span class="k2">exam trap</span><span>⚠ = verify (version-sensitive)</span>
+  </footer>
+</div>
+</body>
+</html>

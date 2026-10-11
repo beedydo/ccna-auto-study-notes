@@ -1,0 +1,15 @@
+sequenceDiagram
+    autonumber
+    participant C as requests.Session()
+    participant S as SD-WAN Manager (vManage) shape
+    C->>S: POST /sdwan/j_security_check<br/>form: j_username=admin&j_password=...
+    S-->>C: 200 OK<br/>Set-Cookie: JSESSIONID=56F61F31D6D2721D
+    Note over C,S: Session cookie jar stores JSESSIONID
+    C->>S: GET /sdwan/dataservice/device<br/>Cookie: JSESSIONID=56F6... (sent automatically)
+    S-->>C: 200 OK
+    C->>S: GET /sdwan/dataservice/client/token<br/>Cookie: JSESSIONID=56F6...
+    S-->>C: 200 OK  (body = XSRF token)
+    C->>S: POST /sdwan/dataservice/template<br/>Cookie only
+    S-->>C: 403 Forbidden (missing X-XSRF-TOKEN)
+    C->>S: POST /sdwan/dataservice/template<br/>Cookie + X-XSRF-TOKEN: (token)
+    S-->>C: 201 Created

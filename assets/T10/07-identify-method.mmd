@@ -1,0 +1,17 @@
+flowchart LR
+    S["Snippet to classify"] --> B{"Basic header,<br/>auth=(u, p)<br/>or curl --user?"}
+    B -- yes --> BA["<b>Basic auth</b><br/>RESTCONF on IOS XE,<br/>token endpoints"]
+    B -- no --> T{"Where did the<br/>credential come from?"}
+    T -- "login call →<br/>custom header" --> CT["<b>Custom token</b><br/>X-Auth-Token · Catalyst Center<br/>X-auth-access-token · FMC"]
+    T -- "login call →<br/>Set-Cookie" --> CK["<b>Session cookie</b><br/>APIC-cookie · APIC<br/>JSESSIONID + X-XSRF-TOKEN · SD-WAN Mgr"]
+    T -- "redirect + code<br/>exchange" --> OA["<b>OAuth 2.0</b><br/>Bearer access_token<br/>Webex integration"]
+    T -- "portal,<br/>no login call" --> AK["<b>API key / static token</b><br/>Meraki dashboard key<br/>Webex bot token"]
+
+    style S fill:#f8f9fa,stroke:#6c757d
+    style B fill:#fff3cd,stroke:#e0a800
+    style T fill:#fff3cd,stroke:#e0a800
+    style BA fill:#d1ecf1,stroke:#17a2b8
+    style CT fill:#d1ecf1,stroke:#17a2b8
+    style CK fill:#d1ecf1,stroke:#17a2b8
+    style OA fill:#d1ecf1,stroke:#17a2b8
+    style AK fill:#d1ecf1,stroke:#17a2b8

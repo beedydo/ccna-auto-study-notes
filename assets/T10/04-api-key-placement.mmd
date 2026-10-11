@@ -1,0 +1,11 @@
+flowchart LR
+    K["API key<br/>generated in a portal<br/>static, no login step"] --> H["<b>Header</b><br/>X-API-Key: 6bec40cf...<br/>or Authorization: Bearer key"]
+    K --> Q["<b>Query string</b><br/>/key/devices?api_key=6bec40cf..."]
+    H --> HL["Server access log:<br/>GET /key/devices<br/>key NOT logged"]
+    Q --> QL["Server access log:<br/>GET /key/devices?api_key=6bec40cf...<br/>key LEAKED into logs, proxies, history"]
+
+    style K fill:#f8f9fa,stroke:#6c757d
+    style H fill:#d1ecf1,stroke:#17a2b8
+    style HL fill:#d4edda,stroke:#28a745
+    style Q fill:#fff3cd,stroke:#e0a800
+    style QL fill:#fde8e8,stroke:#dc3545

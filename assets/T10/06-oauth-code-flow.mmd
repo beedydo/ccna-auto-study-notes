@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    actor U as Resource owner (user + browser)
+    participant App as Client app (integration)
+    participant AS as Authorization server
+    participant RS as Resource server (API)
+    App->>U: redirect to /oauth/authorize?response_type=code<br/>&client_id=demo-app&redirect_uri=...&scope=devices:read&state=1bbde62a
+    U->>AS: log in + approve scopes (password typed HERE, never in the app)
+    AS-->>U: 302 Location: redirect_uri?code=5005cd8804&state=1bbde62a
+    U->>App: browser follows redirect, delivers code + state
+    Note over App: check state matches (anti-CSRF)
+    App->>AS: POST /oauth/token (back channel)<br/>grant_type=authorization_code, code, redirect_uri,<br/>client_id, client_secret
+    AS-->>App: 200 {"access_token", "token_type": "Bearer",<br/>"expires_in", "refresh_token", "scope"}
+    App->>RS: GET /oauth/api/devices<br/>Authorization: Bearer acc-678ea5f7
+    RS-->>App: 200 OK
+    Note over App,AS: access token expires → POST /oauth/token<br/>grant_type=refresh_token → new access token, no user login

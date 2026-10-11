@@ -1,0 +1,13 @@
+flowchart LR
+    R["Request arrives<br/>with credentials?"] --> A{"Authentication<br/><b>who are you?</b><br/>credentials valid?"}
+    A -- "no / missing / expired" --> E401["<b>401 Unauthorized</b><br/>+ WWW-Authenticate<br/>fix: log in again"]
+    A -- "yes" --> Z{"Authorisation<br/><b>what may you do?</b><br/>role / scope allows it?"}
+    Z -- "no" --> E403["<b>403 Forbidden</b><br/>fix: different account,<br/>role or scope"]
+    Z -- "yes" --> OK["<b>200 / 201</b><br/>request served"]
+
+    style R fill:#f8f9fa,stroke:#6c757d
+    style A fill:#fff3cd,stroke:#e0a800
+    style Z fill:#fff3cd,stroke:#e0a800
+    style E401 fill:#fde8e8,stroke:#dc3545
+    style E403 fill:#fde8e8,stroke:#dc3545
+    style OK fill:#d4edda,stroke:#28a745
