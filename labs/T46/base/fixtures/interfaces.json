@@ -1,0 +1,11 @@
+{
+  "ietf-interfaces:interfaces-state": {
+    "interface": [
+      {"name": "GigabitEthernet1", "oper-status": "up", "statistics": {"in-errors": 250}},
+      {"name": "GigabitEthernet2", "oper-status": "up", "statistics": {"in-errors": 0}},
+      {"name": "GigabitEthernet3", "oper-status": "down", "statistics": {"in-errors": 0}},
+      {"name": "GigabitEthernet4", "oper-status": "up", "statistics": {"in-errors": 120}},
+      {"name": "Loopback0", "oper-status": "up"}
+    ]
+  }
+}

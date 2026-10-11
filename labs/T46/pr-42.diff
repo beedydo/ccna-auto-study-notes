@@ -1,0 +1,56 @@
+diff --git a/link_report.py b/link_report.py
+index cba917c..6029e0f 100644
+--- a/link_report.py
++++ b/link_report.py
+@@ -1,7 +1,10 @@
+ """Report interfaces that are down, from a saved RESTCONF reply (ietf-interfaces)."""
+ import json
++import os
+ import sys
+ 
++import requests
++
+ 
+ def load_interfaces(path):
+     """Return the interface list from a saved ietf-interfaces JSON reply."""
+@@ -10,15 +13,39 @@ def load_interfaces(path):
+     return data["ietf-interfaces:interfaces-state"]["interface"]
+ 
+ 
++def get_live(h):
++    r = requests.get("https://" + h + "/restconf/data/ietf-interfaces:interfaces-state",
++                     auth=("admin", "FAKE-Passw0rd-not-real"),
++                     headers={"Accept": "application/yang-data+json"},
++                     verify=False)
++    return r.json()["ietf-interfaces:interfaces-state"]["interface"]
++
++
+ def down_interfaces(interfaces):
+     """Return the names of interfaces whose oper-status is not 'up'."""
+     return [intf["name"] for intf in interfaces if intf["oper-status"] != "up"]
+ 
+ 
++def chk(d):
++    x = []
++    for i in d:
++        try:
++            if i["statistics"]["in-errors"] > 100:
++                x.append(i["name"])
++        except:
++            pass
++        return x
++
++
+ def main(argv):
+-    interfaces = load_interfaces(argv[1])
++    if argv[1].startswith("live:"):
++        interfaces = get_live(argv[1][5:])
++    else:
++        interfaces = load_interfaces(argv[1])
+     for name in down_interfaces(interfaces):
+         print(f"DOWN    {name}")
++    for name in chk(interfaces):
++        print(f"ERRORS  {name}")
+     return 0
+ 
+ 

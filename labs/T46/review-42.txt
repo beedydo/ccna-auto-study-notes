@@ -1,0 +1,21 @@
+Thanks for adding live mode, Beedy. Reading straight from the device is what the NOC asked for, and keeping load_interfaces() for saved replies means the old workflow still works.
+
+Requesting changes for the 4 blocking items below; the rest are suggestions.
+
+BLOCKING
+1. link_report.py:18 (security) The password is hard-coded, so it ends up in Git history and in every clone. Please read it from the environment, e.g. os.environ["RESTCONF_USER"] / os.environ["RESTCONF_PASS"] (T29). The unused `import os` on line 3 suggests that was the plan.
+2. link_report.py:20 (security) verify=False turns off TLS certificate checks, so a man-in-the-middle can read the credentials. Please keep verification on; if the lab device uses a private CA, pass its bundle path: verify=os.environ.get("RESTCONF_CA", True).
+3. link_report.py:37 (bug) `return x` is indented inside the for loop, so chk() returns after the first interface. With fixtures/interfaces.json it reports Gi1 but misses Gi4 (120 errors). Dedent the return one level, and please add a test that has two interfaces over the threshold so this can't come back.
+4. test_link_report.py (tests) The PR adds get_live() and chk() but no tests. Could you add unit tests for chk() (several errored interfaces, an interface without "statistics") and one for the live path with requests.get mocked (T32)?
+
+SHOULD FIX
+5. link_report.py:17 requests.get() has no timeout, so one dead device hangs the whole run. Suggest timeout=10 (a named constant), plus response.raise_for_status() so a 401/404 gives a clear error instead of a KeyError on r.json().
+6. link_report.py:35 The bare `except: pass` hides every error, including typos and KeyboardInterrupt. If the goal is to skip interfaces without statistics (Loopback0), intf.get("statistics", {}).get("in-errors", 0) says that directly without any try/except.
+7. link_report.py:41-42 A failed live call raises a traceback at the user. Catch requests.RequestException in main(), print one line to stderr and return 1, so cron/CI sees a non-zero exit.
+
+NITS (non-blocking)
+8. Nit: names chk / d / x / i / h / r don't say what they hold. Maybe error_interfaces(interfaces) and fetch_interfaces(host), to match down_interfaces().
+9. Nit: 100 is a magic number; IN_ERRORS_THRESHOLD = 100 at the top, used as a default parameter, makes it tunable and self-documenting.
+10. Nit: the module docstring still says "down" only; worth mentioning input errors and live mode. An f-string would also read better than "https://" + h + "...".
+
+CI already flagged 2, 5 and 6 plus the unused import (ruff/pylint/bandit output is in the checks tab). Items 1, 3, 4, 7 and the naming only show up when a person reads the change.

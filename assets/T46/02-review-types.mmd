@@ -1,0 +1,15 @@
+%%{init: {"flowchart": {"wrappingWidth": 320}}}%%
+flowchart TB
+    Q{"When does the review happen?"}
+    Q -- "while the code is written" --> P["Pair programming<br/>driver types, navigator reviews<br/>continuous, real-time"]
+    Q -- "after, in person" --> O["Over-the-shoulder<br/>author walks reviewer through it<br/>fast, informal, little record"]
+    Q -- "after, by email" --> M["Email-based<br/>git format-patch + git send-email<br/>mailing list replies (Linux kernel)"]
+    Q -- "after, in a tool" --> T["Tool-assisted<br/>GitHub PR / GitLab MR<br/>inline comments, CI, audit trail"]
+    T --> W["Most common today<br/>= the exam's default answer"]
+
+    classDef info fill:#ffffff,stroke:#2b2b2b,stroke-width:2px,color:#1d1d1f
+    classDef partial fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2.5px,color:#1d1d1f
+    class Q info
+    class P,O,M partial
+    class T,W rec

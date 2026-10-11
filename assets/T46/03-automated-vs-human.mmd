@@ -1,0 +1,17 @@
+%%{init: {"flowchart": {"wrappingWidth": 320}}}%%
+flowchart LR
+    PR["PR #42 diff<br/>link_report.py"] --> CI["Automated checks (CI)<br/>ruff · flake8 · pylint · bandit"]
+    PR --> HU["Human reviewer"]
+    CI --> C1["✓ unused import os<br/>✓ bare except / try-except-pass<br/>✓ requests without timeout<br/>✓ verify=False"]
+    HU --> H1["✓ hard-coded password<br/>✓ logic bug: return inside the loop<br/>✓ no tests for the new code<br/>✓ names chk / d / x / h, magic 100<br/>✓ design: no error handling on live call"]
+    C1 --> R["Linters catch patterns.<br/>Humans catch intent, logic, design, missing tests.<br/>You need both."]
+    H1 --> R
+
+    classDef info fill:#ffffff,stroke:#2b2b2b,stroke-width:2px,color:#1d1d1f
+    classDef auto fill:#e3f6ee,stroke:#2fb380,stroke-width:2px,color:#1d1d1f
+    classDef human fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2.5px,color:#1d1d1f
+    class PR info
+    class CI,C1 auto
+    class HU,H1 human
+    class R rec

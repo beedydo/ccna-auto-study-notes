@@ -1,0 +1,20 @@
+%%{init: {"flowchart": {"wrappingWidth": 320}}}%%
+flowchart LR
+    A["1 · Branch<br/>git switch -c feature/live-errors"] --> B["2 · Commit + push<br/>git push -u origin feature/live-errors"]
+    B --> C["3 · Open PR / MR<br/>title + description:<br/>what, why, how tested"]
+    C --> D{"4 · CI checks<br/>lint · tests · security scan"}
+    D -- "red ✗" --> F["6 · Author fixes<br/>new commit on same branch"]
+    D -- "green ✓" --> E{"5 · Human review<br/>comment · request changes · approve"}
+    E -- "request changes" --> F
+    F -- "push again: CI re-runs" --> D
+    E -- "approved + CI green" --> G["7 · Merge to main<br/>(branch protection enforces both)"]
+    G --> H["8 · CD deploys main<br/>delete feature branch"]
+
+    classDef step fill:#ffffff,stroke:#2b2b2b,stroke-width:2px,color:#1d1d1f
+    classDef gate fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef fix fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    classDef done fill:#dbeafe,stroke:#1d4ed8,stroke-width:2.5px,color:#1d1d1f
+    class A,B,C step
+    class D,E gate
+    class F fix
+    class G,H done

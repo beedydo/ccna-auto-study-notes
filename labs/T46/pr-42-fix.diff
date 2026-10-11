@@ -1,0 +1,152 @@
+diff --git a/link_report.py b/link_report.py
+index 6029e0f..8a4191a 100644
+--- a/link_report.py
++++ b/link_report.py
+@@ -1,24 +1,38 @@
+-"""Report interfaces that are down, from a saved RESTCONF reply (ietf-interfaces)."""
++"""Report interfaces that are down or have input errors, from a saved RESTCONF reply
++or a live device (ietf-interfaces)."""
+ import json
+ import os
+ import sys
+ 
+ import requests
+ 
++INTERFACES_STATE = "ietf-interfaces:interfaces-state"
++IN_ERRORS_THRESHOLD = 100          # flag an interface with more input errors than this
++REQUEST_TIMEOUT_S = 10             # seconds; never wait forever on a device
++
+ 
+ def load_interfaces(path):
+     """Return the interface list from a saved ietf-interfaces JSON reply."""
+     with open(path, encoding="utf-8") as reply:
+         data = json.load(reply)
+-    return data["ietf-interfaces:interfaces-state"]["interface"]
++    return data[INTERFACES_STATE]["interface"]
++
+ 
++def fetch_interfaces(host):
++    """Return the interface list from a live device over RESTCONF.
+ 
+-def get_live(h):
+-    r = requests.get("https://" + h + "/restconf/data/ietf-interfaces:interfaces-state",
+-                     auth=("admin", "FAKE-Passw0rd-not-real"),
+-                     headers={"Accept": "application/yang-data+json"},
+-                     verify=False)
+-    return r.json()["ietf-interfaces:interfaces-state"]["interface"]
++    Credentials come from RESTCONF_USER / RESTCONF_PASS; TLS is verified
++    (set RESTCONF_CA to a CA bundle path for a private CA).
++    """
++    response = requests.get(
++        f"https://{host}/restconf/data/{INTERFACES_STATE}",
++        auth=(os.environ["RESTCONF_USER"], os.environ["RESTCONF_PASS"]),
++        headers={"Accept": "application/yang-data+json"},
++        verify=os.environ.get("RESTCONF_CA", True),
++        timeout=REQUEST_TIMEOUT_S,
++    )
++    response.raise_for_status()
++    return response.json()[INTERFACES_STATE]["interface"]
+ 
+ 
+ def down_interfaces(interfaces):
+@@ -26,25 +40,31 @@ def down_interfaces(interfaces):
+     return [intf["name"] for intf in interfaces if intf["oper-status"] != "up"]
+ 
+ 
+-def chk(d):
+-    x = []
+-    for i in d:
+-        try:
+-            if i["statistics"]["in-errors"] > 100:
+-                x.append(i["name"])
+-        except:
+-            pass
+-        return x
++def error_interfaces(interfaces, threshold=IN_ERRORS_THRESHOLD):
++    """Return the names of interfaces with more than `threshold` input errors.
++
++    Interfaces without a statistics container (e.g. some loopbacks) are skipped.
++    """
++    return [
++        intf["name"]
++        for intf in interfaces
++        if intf.get("statistics", {}).get("in-errors", 0) > threshold
++    ]
+ 
+ 
+ def main(argv):
+-    if argv[1].startswith("live:"):
+-        interfaces = get_live(argv[1][5:])
++    source = argv[1]
++    if source.startswith("live:"):
++        try:
++            interfaces = fetch_interfaces(source.removeprefix("live:"))
++        except requests.RequestException as err:
++            print(f"ERROR   RESTCONF request failed: {err}", file=sys.stderr)
++            return 1
+     else:
+-        interfaces = load_interfaces(argv[1])
++        interfaces = load_interfaces(source)
+     for name in down_interfaces(interfaces):
+         print(f"DOWN    {name}")
+-    for name in chk(interfaces):
++    for name in error_interfaces(interfaces):
+         print(f"ERRORS  {name}")
+     return 0
+ 
+diff --git a/test_link_report.py b/test_link_report.py
+index d084b5d..649a449 100644
+--- a/test_link_report.py
++++ b/test_link_report.py
+@@ -1,16 +1,45 @@
+ """Unit tests for link_report.py (run: python3 -m unittest -v)."""
++import io
+ import unittest
++from unittest.mock import patch
+ 
+-from link_report import down_interfaces
++import requests
++
++from link_report import down_interfaces, error_interfaces, main
++
++INTERFACES = [
++    {"name": "GigabitEthernet1", "oper-status": "up", "statistics": {"in-errors": 250}},
++    {"name": "GigabitEthernet2", "oper-status": "down", "statistics": {"in-errors": 0}},
++    {"name": "GigabitEthernet4", "oper-status": "up", "statistics": {"in-errors": 120}},
++    {"name": "Loopback0", "oper-status": "up"},
++]
+ 
+ 
+ class DownInterfacesTest(unittest.TestCase):
+     def test_lists_only_down_interfaces(self):
+-        interfaces = [
+-            {"name": "GigabitEthernet1", "oper-status": "up"},
+-            {"name": "GigabitEthernet2", "oper-status": "down"},
+-        ]
+-        self.assertEqual(down_interfaces(interfaces), ["GigabitEthernet2"])
++        self.assertEqual(down_interfaces(INTERFACES), ["GigabitEthernet2"])
++
++
++class ErrorInterfacesTest(unittest.TestCase):
++    def test_checks_every_interface_not_just_the_first(self):
++        self.assertEqual(error_interfaces(INTERFACES), ["GigabitEthernet1", "GigabitEthernet4"])
++
++    def test_threshold_is_strictly_greater_than(self):
++        self.assertEqual(error_interfaces(INTERFACES, threshold=250), [])
++
++    def test_skips_interface_without_statistics(self):
++        self.assertEqual(error_interfaces([{"name": "Loopback0", "oper-status": "up"}]), [])
++
++
++class MainLiveTest(unittest.TestCase):
++    @patch.dict("os.environ", {"RESTCONF_USER": "u", "RESTCONF_PASS": "p"})
++    @patch("link_report.requests.get")
++    @patch("sys.stderr", new_callable=io.StringIO)
++    def test_live_failure_returns_1(self, fake_stderr, mock_get):
++        mock_get.side_effect = requests.ConnectionError("no route to host")
++        self.assertEqual(main(["link_report.py", "live:192.0.2.10"]), 1)
++        self.assertIn("RESTCONF request failed", fake_stderr.getvalue())
++        self.assertEqual(mock_get.call_args.kwargs["timeout"], 10)
+ 
+ 
+ if __name__ == "__main__":

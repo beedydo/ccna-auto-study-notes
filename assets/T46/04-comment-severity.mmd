@@ -1,0 +1,20 @@
+flowchart LR
+    S["You spotted something in the diff"] --> A{"Bug, security hole,<br/>missing test, broken design?"}
+    A -- yes --> B["Blocking comment<br/>→ submit as Request changes"]
+    A -- no --> C{"Can a linter or<br/>formatter enforce it?"}
+    C -- yes --> D["Add the rule to CI<br/>don't argue it by hand"]
+    C -- no --> E{"Style guide rule,<br/>or just your preference?"}
+    E -- "style guide" --> F["Ask for it<br/>(cite PEP 8)"]
+    E -- preference --> G["Nit: / Optional:<br/>author may ignore"]
+    S --> H["Something good?<br/>Say so too"]
+
+    classDef info fill:#ffffff,stroke:#2b2b2b,stroke-width:2px,color:#1d1d1f
+    classDef block fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    classDef partial fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef safe fill:#e3f6ee,stroke:#2fb380,stroke-width:2px,color:#1d1d1f
+    classDef rec fill:#dbeafe,stroke:#1d4ed8,stroke-width:2.5px,color:#1d1d1f
+    class S,A,C,E info
+    class B block
+    class D rec
+    class F partial
+    class G,H safe

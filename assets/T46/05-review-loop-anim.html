@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T46 PR #42 review loop animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --g:#e3f6ee; --g-b:#2fb380; --y:#fff3cd; --y-b:#e0a800; --r:#fde8e8; --r-b:#b42318; --b:#dbeafe; --b-b:#1d4ed8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code, .step code, .item code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:290px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .item { font-size:12.5px; border:2px solid #999; border-radius:7px; padding:6px 8px; margin-bottom:7px; line-height:1.3; background:#fafafa; }
+  .item.g { background:var(--g); border-color:var(--g-b); } .item.y { background:var(--y); border-color:var(--y-b); }
+  .item.r { background:var(--r); border-color:var(--r-b); } .item.b { background:var(--b); border-color:var(--b-b); }
+  .item small { display:block; color:var(--muted); font-size:11px; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .cmdrow { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; height:46px; margin-top:8px; }
+  .cmd { justify-self:center; align-self:start; font-family:Menlo,monospace; font-size:13px; font-weight:700; background:var(--ink); color:#fff;
+         padding:6px 10px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; } .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; } .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T46 · <span class="pill">PR #42</span> one review loop, start to merge</h1>
+  <div class="sub">Branch <code>feature/live-errors</code> → <code>main</code>. Each frame = one event. Real check output from <code>labs/T46/review_pr.sh</code>.</div>
+  <div class="lanes">
+    <div class="lane" id="au"><h3>🧑‍💻 Author branch</h3><div class="where">feature/live-errors</div><div id="au-f"></div></div>
+    <div class="lane" id="ci"><h3>⚙️ CI checks</h3><div class="where">run on every push</div><div id="ci-f"></div></div>
+    <div class="lane" id="rv"><h3>🧐 Reviewer (Bob)</h3><div class="where">reads the diff</div><div id="rv-f"></div></div>
+    <div class="lane" id="mn"><h3>🗄️ main</h3><div class="where">protected branch</div><div id="mn-f"></div></div>
+  </div>
+  <div class="cmdrow" id="cmds"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (t, s="", c="") => `<div class="item ${c}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const base = I("ca8140d list down interfaces", "only down interfaces");
+const c1 = I("03160d6 live mode + error check", "+28 −1 lines · PR #42 opened");
+const c2 = I("+ Address review", "env creds, TLS, timeout, fix loop, tests", "g");
+const red = I("✗ ruff: 5 errors", "F401 · S113 · S501 · E722 · S110", "r") + I("✗ bandit: B501 [HIGH]", "verify=False", "r") + I("✓ unittest: 1 test OK", "old test only", "g");
+const green = I("✓ ruff: All checks passed!", "", "g") + I("✓ flake8 · pylint · bandit", "", "g") + I("✓ unittest: 5 tests OK", "", "g");
+const blocking = I("Request changes", "4 blocking items", "r") + I("1 hard-coded password", "", "r") + I("3 return inside the loop", "misses Gi4", "r") + I("4 no tests for new code", "", "r");
+const frames = [
+  { active:"au", au:c1, ci:I("waiting…","","ghost"), rv:I("waiting…","","ghost"), mn:base,
+    cmd:{at:0, t:"git push -u origin"}, txt:"Author pushes the branch and opens PR #42 with a description: <b>what, why, how tested</b>." },
+  { active:"ci", au:c1, ci:red, rv:I("waiting…","","ghost"), mn:base,
+    cmd:{at:1, t:"lint · test · scan"}, txt:"CI runs automatically: linters flag <code>verify=False</code>, no timeout, bare <code>except</code>. <b>The one old test still passes.</b>" },
+  { active:"rv", au:c1, ci:red, rv:blocking, mn:base,
+    cmd:{at:2, t:"Request changes", back:true}, txt:"Human review finds what CI can't: <b>hard-coded password, logic bug, missing tests</b>. Merge stays blocked." },
+  { active:"au", au:c1 + c2, ci:I("re-running…","","y"), rv:blocking.replace(/class="item r"/g,'class="item r ghost"'), mn:base,
+    cmd:{at:0, t:"git push (same branch)"}, txt:"Author fixes on the <b>same branch</b>: a new commit updates the same PR. No new PR needed." },
+  { active:"ci", au:c1 + c2, ci:green, rv:I("re-review…","","y"), mn:base,
+    cmd:{at:1, t:"CI re-runs"}, txt:"The push re-runs CI on the new head commit: <b>all green, 5 tests</b>. Green alone still can't merge." },
+  { active:"rv", au:c1 + c2, ci:green, rv:I("✓ Approve", "blocking items resolved", "b") + I("Nit: docstring wording", "optional", "g"), mn:base,
+    cmd:{at:2, t:"Approve"}, txt:"Reviewer re-checks the fixes and <b>approves</b>. Nits are optional for the author." },
+  { active:"mn", au:I("branch deleted","","ghost"), ci:green, rv:I("✓ Approved","","b"), mn:I("merge PR #42", "approved + checks green", "b") + base,
+    cmd:{at:3, t:"merge"}, txt:"Branch protection is satisfied (<b>approval + green checks</b>), so PR #42 merges into <code>main</code>; CD can deploy it." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["au","ci","rv","mn"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const row = document.getElementById("cmds");
+  row.innerHTML = [0,1,2,3].map(j => j === f.cmd.at ? `<div class="cmd${f.cmd.back ? " back" : ""}">${f.cmd.t}</div>` : "<div></div>").join("");
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T46 overview: code review principles</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee; --blue: #1d4ed8; --blue-soft: #dbeafe;
+    --yellow: #e0a800; --yellow-soft: #fff3cd;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .n { display: inline-flex; width: 21px; height: 21px; border-radius: 50%; background: var(--ink); color: #fff; flex: none;
+       font-size: 12px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+  .panel { border: 2.5px solid var(--line); background: #fff; border-radius: 10px; margin-bottom: 14px; }
+  .panel > h2 { margin: 0; padding: 9px 14px; font-size: 17px; border-bottom: 1.5px solid var(--line); display: flex; align-items: center; gap: 8px; }
+  .panel > h2 .ids { margin-left: auto; }
+  /* swim-lanes */
+  .lanes { display: grid; grid-template-columns: 130px minmax(0, 1fr); }
+  .lane-name { border-bottom: 1.5px dashed #bbb; padding: 10px 8px; font-weight: 800; font-size: 14px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+  .lane-name .icon { font-size: 26px; line-height: 1.1; }
+  .lane { border-bottom: 1.5px dashed #bbb; border-left: 1.5px solid var(--line); padding: 10px 12px; display: grid;
+          grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; align-items: center; min-height: 74px; }
+  .lanes > :nth-last-child(-n+2) { border-bottom: none; }
+  .box { border: 2px solid var(--line); border-radius: 8px; padding: 6px 7px; font-size: 12.5px; line-height: 1.3; background: #fff; position: relative; }
+  .box b { display: block; font-size: 13px; margin-bottom: 2px; }
+  .box.ci { border-color: var(--yellow); background: var(--yellow-soft); }
+  .box.rev { border-color: var(--yellow); background: var(--yellow-soft); }
+  .box.fix { border-color: var(--trap-ink); background: var(--trap); }
+  .box.done { border-color: var(--blue); background: var(--blue-soft); }
+  .box code { font-size: 11px; padding: 1px 4px; }
+  .arrow { text-align: center; font-size: 20px; color: var(--muted); }
+  .flowtrap { margin: 0 12px 10px; }
+  /* 3-column bottom */
+  .cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .body { padding: 10px 14px; font-size: 13.5px; line-height: 1.4; }
+  .row { display: flex; align-items: flex-start; margin-bottom: 7px; }
+  .trapbox { background: var(--trap); border-radius: 6px; padding: 6px 8px; font-size: 13px; line-height: 1.35; }
+  .trapbox b { color: var(--trap-ink); }
+  table.types { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.8px; }
+  table.types th, table.types td { border: 1.2px solid #999; padding: 5px 6px; text-align: left; vertical-align: top; }
+  table.types th { background: #f0f0ee; }
+  table.types tr.rec td { background: var(--blue-soft); }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-bottom: 8px; }
+  .mini { border-radius: 8px; padding: 6px 8px; font-size: 12.5px; line-height: 1.35; border: 2px solid; }
+  .mini.auto { border-color: var(--green); background: var(--green-soft); }
+  .mini.human { border-color: var(--yellow); background: var(--yellow-soft); }
+  .mini b { display: block; }
+  .sev { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 4px 8px; font-size: 12.8px; margin-bottom: 8px; }
+  .tag { border-radius: 5px; padding: 2px 6px; font-weight: 700; font-size: 12px; text-align: center; }
+  .tag.b { background: var(--trap); color: var(--trap-ink); border: 1.5px solid var(--trap-ink); }
+  .tag.s { background: var(--yellow-soft); border: 1.5px solid var(--yellow); }
+  .tag.nit { background: var(--green-soft); border: 1.5px solid var(--green); }
+  footer { display: flex; gap: 16px; white-space: nowrap; margin-top: 4px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+  footer .k5::before { background: var(--yellow-soft); border: 1px solid var(--yellow); }
+  footer .right { margin-left: auto; } footer .right::before { display: none; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T46 · <span class="pill">Code Review</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.13</b><br>Every T46 concept on one page<br>Lab: <code>labs/T46/</code> (PR #42)</div>
+  </header>
+
+  <!-- PROCESS SWIM-LANE -->
+  <div class="panel">
+    <h2>🚀 The review process: where review sits between CI and merge <span class="ids">T46.02 · T46.05</span></h2>
+    <div class="lanes">
+      <div class="lane-name"><span class="icon">🧑‍💻</span>AUTHOR</div>
+      <div class="lane">
+        <div class="box"><span class="n">1</span><b>Branch</b><code>git switch -c</code></div>
+        <div class="box"><span class="n">2</span><b>Push</b><code>git push -u</code> <code>origin</code></div>
+        <div class="box"><span class="n">3</span><b>Open PR / MR</b>what · why · how tested</div>
+        <div class="arrow">→ CI</div>
+        <div class="box fix"><span class="n">6</span><b>Fix + push</b>same branch; CI re-runs</div>
+        <div class="arrow">↺</div>
+        <div></div>
+      </div>
+      <div class="lane-name"><span class="icon">⚙️</span>CI BOT</div>
+      <div class="lane">
+        <div></div><div></div><div></div>
+        <div class="box ci"><span class="n">4</span><b>Checks</b>lint · tests · scan</div>
+        <div class="arrow">✗ → 6<br>✓ → 5</div>
+        <div></div><div></div>
+      </div>
+      <div class="lane-name"><span class="icon">🧐</span>REVIEWER</div>
+      <div class="lane">
+        <div></div><div></div><div></div><div></div>
+        <div class="box rev"><span class="n">5</span><b>Review</b>Comment · Request changes · Approve</div>
+        <div class="arrow">✓ →</div>
+        <div class="box done"><span class="n">7</span><b>Merge to main</b>approved <i>and</i> green</div>
+      </div>
+    </div>
+    <div class="flowtrap trapbox"><b>Trap:</b> order is <b>branch → commit → push → PR → CI → review → fix → approve → merge</b>. Review happens <b>before</b> merge; CI runs on every push and does <b>not</b> replace the human reviewer. Branch protection = "required reviews" + "required status checks".</div>
+  </div>
+
+  <div class="cols">
+    <!-- PURPOSE -->
+    <div class="panel">
+      <h2>🎯 Why review (the benefit questions) <span class="ids">T46.01 · T46.05</span></h2>
+      <div class="body">
+        <div class="row"><span class="n">1</span><div><b>Find defects + security issues early</b>: cheaper before merge than in prod (PR #42: <code>return x</code> in the loop, <code>verify=False</code>)</div></div>
+        <div class="row"><span class="n">2</span><div><b>Share knowledge</b>: 2+ people know each change; fewer single points of knowledge (bus factor)</div></div>
+        <div class="row"><span class="n">3</span><div><b>Consistent style + standards</b> across the codebase (PEP 8, team checklist)</div></div>
+        <div class="row"><span class="n">4</span><div><b>Mentoring + code quality</b>: juniors learn; code health improves over time</div></div>
+        <div class="trapbox"><b>Trap:</b> "makes code run faster", "replaces testing" or "removes the need for CI" are <b>never</b> the benefit</div>
+      </div>
+    </div>
+
+    <!-- TYPES -->
+    <div class="panel">
+      <h2>🧭 Review types <span class="ids">T46.03</span></h2>
+      <div class="body">
+        <table class="types">
+          <colgroup><col style="width:28%"><col style="width:24%"><col style="width:48%"></colgroup>
+          <tr><th>Type</th><th>When</th><th>How</th></tr>
+          <tr><td><b>Over-the-shoulder</b></td><td>after, in person</td><td>author walks reviewer through at the desk</td></tr>
+          <tr class="rec"><td><b>Tool-assisted</b></td><td>after, async</td><td>GitHub PR / GitLab MR; inline comments + CI. <b>Most common</b></td></tr>
+          <tr><td><b>Pair programming</b></td><td>while coding</td><td>driver types, navigator reviews live</td></tr>
+          <tr><td><b>Email-based</b></td><td>after, async</td><td><code>git format-patch</code> + <code>git send-email</code></td></tr>
+        </table>
+        <div class="trapbox" style="margin-top:8px"><b>Trap:</b> pair programming = <b>continuous</b> review <b>during</b> coding; a PR review comes <b>after</b> the code is pushed</div>
+      </div>
+    </div>
+
+    <!-- AUTOMATED VS HUMAN -->
+    <div class="panel">
+      <h2>🔧 What to look for: CI vs human <span class="ids">T46.04</span></h2>
+      <div class="body">
+        <div class="split">
+          <div class="mini auto"><b>⚙️ Linters / CI catch</b>style, unused <code>import os</code>, bare <code>except</code>, missing <code>timeout=</code>, <code>verify=False</code></div>
+          <div class="mini human"><b>🧐 Humans catch</b>logic bugs, hard-coded password, missing tests, unclear names (<code>chk</code>, <code>x</code>), magic <code>100</code>, design</div>
+        </div>
+        <div class="row"><span class="n">1</span><div><b>Checklist:</b> design · functionality · security · tests · naming · readability</div></div>
+        <div class="row"><span class="n">2</span><div><b>Small, focused</b> PRs (~100 lines ok, 1000 too big); one change per PR</div></div>
+        <div class="trapbox"><b>Trap:</b> style debates belong to the <b>linter/formatter</b> in CI, not to human reviewers</div>
+      </div>
+    </div>
+
+    <!-- FEEDBACK -->
+    <div class="panel">
+      <h2>💬 Giving feedback <span class="ids">T46.04</span></h2>
+      <div class="body">
+        <div class="sev">
+          <span class="tag b">Blocking</span><span>bug / security / missing test → <b>Request changes</b></span>
+          <span class="tag s">Should fix</span><span>timeout, error handling: explain why</span>
+          <span class="tag nit">Nit:</span><span>polish; author may ignore</span>
+        </div>
+        <div class="row"><span class="n">1</span><div><b>About the code, not the person</b>: "this loop returns early", not "you broke it"</div></div>
+        <div class="row"><span class="n">2</span><div><b>Specific + actionable</b>: line, problem, why, suggested fix; praise good parts too</div></div>
+        <div class="trapbox"><b>Trap:</b> the reviewer points out the problem + why; the <b>author</b> owns the fix (new commit on the <b>same</b> branch, not a new PR)</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = step</span>
+    <span class="k2">red = trap / fix loop</span>
+    <span class="k3">grey = exact syntax</span>
+    <span class="k5">yellow = gate</span>
+    <span class="k4">blue = recommended</span>
+    <span class="right">Lab: <code>labs/T46/review_pr.sh</code> · details in T46.NN sections</span>
+  </footer>
+</div>
+</body>
+</html>
