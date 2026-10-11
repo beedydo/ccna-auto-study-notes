@@ -1,0 +1,12 @@
+flowchart TD
+    T["task with notify: Save running config"] --> Q{"task result?"}
+    Q -- "ok (no change)" --> N["handler NOT queued"]:::dim
+    Q -- "skipped" --> N
+    Q -- "failed" --> F["host stops: queued handlers<br/>do NOT run (unless --force-handlers)"]:::bad
+    Q -- "changed" --> Y["handler queued once<br/>(more notifies = still once)"]:::good
+    Y --> R["rest of tasks run"]
+    R --> E["end of tasks section:<br/>RUNNING HANDLER, in handlers: order"]:::ans
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold
+    classDef bad fill:#fde8e8,stroke:#b42318,color:#1d1d1f
+    classDef dim fill:#f2f2f2,stroke:#999,color:#555

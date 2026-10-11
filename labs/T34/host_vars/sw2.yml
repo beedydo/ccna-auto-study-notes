@@ -1,0 +1,10 @@
+---
+device_hostname: LAB-SW2
+site_role: lab
+# Replaces the whole vlans list from group_vars/all.yml (lists are not merged)
+vlans:
+  - { id: 10, name: USERS }
+  - { id: 99, name: LAB-TEST }
+unused_ports:
+  - GigabitEthernet1/0/23
+  - GigabitEthernet1/0/24

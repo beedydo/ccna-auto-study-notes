@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T34 handler queue animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --ok:#e3f6ee; --ok-b:#28a745; --ch:#fff3cd; --ch-b:#e0a800; --sk:#e6f4f7; --sk-b:#17a2b8;
+          --hd:#d1ecf1; --hd-b:#17a2b8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1140px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .sub code, .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns: 430px minmax(0,1fr) 270px; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:340px; padding:10px 12px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .task { font-family:Menlo,monospace; font-size:12.5px; padding:6px 8px; margin-bottom:6px; border:2px solid #ccc; border-radius:7px; color:#999; }
+  .task.cur { border-color:var(--ink); color:var(--ink); font-weight:700; background:#fafafa; }
+  .task.done { color:#444; border-style:solid; }
+  .task .tag { float:right; font-family:-apple-system,Arial,sans-serif; font-size:11px; padding:1px 7px; border-radius:10px; font-weight:700; }
+  .t-ok { background:var(--ok); border:1px solid var(--ok-b); } .t-ch { background:var(--ch); border:1px solid var(--ch-b); }
+  .t-sk { background:var(--sk); border:1px solid var(--sk-b); }
+  .res { font-family:Menlo,monospace; font-size:13px; line-height:1.5; white-space:pre; background:#1d1d1f; color:#e8e8e8;
+         border-radius:8px; padding:10px 12px; height:220px; overflow:hidden; }
+  .res .ok { color:#7ee2b8; } .res .ch { color:#ffd36b; } .res .sk { color:#7fd3e6; } .res .hd { color:#9ecbff; font-weight:700; }
+  .cmd { display:inline-block; margin-top:10px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .q { font-family:Menlo,monospace; font-size:13px; border:2px solid var(--hd-b); background:var(--hd); border-radius:7px; padding:8px; margin-bottom:8px; }
+  .q small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11.5px; margin-top:3px; }
+  .q.ran { background:var(--ok); border-color:var(--ok-b); }
+  .empty { color:#aaa; font-style:italic; font-size:13px; border:2px dashed #ccc; border-radius:7px; padding:8px; }
+  .recap { margin-top:14px; font-family:Menlo,monospace; font-size:12.5px; line-height:1.6; }
+  .recap b { display:inline-block; min-width:22px; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T34 · <span class="pill">Handlers</span> notify queues, the handler runs once at the end</h1>
+  <div class="sub">Play 1 of <code>labs/T34/site.yml</code> on <b>sw2</b> (lab switch). Imagined device state: VLAN 10 exists, VLAN 99 doesn't. Each frame = one task.</div>
+  <div class="lanes">
+    <div class="lane" id="L1"><h3>📜 tasks: (top to bottom)</h3><div class="where">play 1 · hosts: ios_switches</div><div id="tasks"></div></div>
+    <div class="lane" id="L2"><h3>🖥️ ansible-playbook output</h3><div class="where">what this task printed</div><div class="res" id="res"></div><div id="cmd"></div></div>
+    <div class="lane" id="L3"><h3>🔔 Handler queue</h3><div class="where">notified, not yet run</div><div id="queue"></div><div class="recap" id="recap"></div></div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const TASKS = ["Collect device facts","Read the VLAN table","Create VLANs that are missing","Push the baseline template","Shut unused ports on lab switches","Report version"];
+const frames = [
+  { cur:0, done:[], tags:{0:"ok"}, active:"L2",
+    res:'TASK [Collect device facts] ****\n<span class="ok">ok: [sw2]</span>', cmd:"cisco.ios.ios_facts", queue:[], rc:{ok:1,changed:0,skipped:0},
+    txt:"<code>ios_facts</code> reads the device and sets <code>ansible_net_version</code>. Reads never change anything: <b>ok</b>." },
+  { cur:1, done:[0], tags:{0:"ok",1:"ok"}, active:"L2",
+    res:'TASK [Read the VLAN table] ****\n<span class="ok">ok: [sw2]</span>\n\n# register: vlan_out\n# vlan_out.stdout[0] has "USERS"', cmd:"register: vlan_out", queue:[], rc:{ok:2,changed:0,skipped:0},
+    txt:"<code>show vlan brief</code> output is saved with <code>register: vlan_out</code>, for the next task's <code>when:</code>." },
+  { cur:2, done:[0,1], tags:{0:"ok",1:"ok",2:"changed"}, active:"L3",
+    res:'TASK [Create VLANs that are missing] ****\n<span class="sk">skipping: [sw2] => (item={\'id\': 10, ...})</span>\n<span class="ch">changed: [sw2] => (item={\'id\': 99, ...})</span>', cmd:"notify: Save running config", queue:[{t:"Save running config",s:"queued by task 3"}], rc:{ok:3,changed:1,skipped:0},
+    txt:"<code>when:</code> is checked <b>per loop item</b>: USERS skipped, LAB-TEST created. A change → handler <b>queued, not run</b>." },
+  { cur:3, done:[0,1,2], tags:{0:"ok",1:"ok",2:"changed",3:"changed"}, active:"L3",
+    res:'TASK [Push the baseline template] ****\n<span class="ch">changed: [sw2]</span>', cmd:"notify: Save running config", queue:[{t:"Save running config",s:"queued by task 3 + task 4 → still ONE entry"}], rc:{ok:4,changed:2,skipped:0},
+    txt:"Second notify of the same handler. The queue <b>still holds one entry</b>: it will run once." },
+  { cur:4, done:[0,1,2,3], tags:{0:"ok",1:"ok",2:"changed",3:"changed",4:"changed"}, active:"L2",
+    res:'TASK [Shut unused ports on lab switches] ****\n<span class="ch">changed: [sw2] => (item=GigabitEthernet1/0/23)</span>\n<span class="ch">changed: [sw2] => (item=GigabitEthernet1/0/24)</span>', cmd:"(no notify line)", queue:[{t:"Save running config",s:"unchanged: this task has no notify"}], rc:{ok:5,changed:3,skipped:0},
+    txt:"Changed, but this task has <b>no <code>notify:</code></b>, so nothing new is queued. On <b>sw1</b> (prod) the whole task is skipped." },
+  { cur:5, done:[0,1,2,3,4], tags:{0:"ok",1:"ok",2:"changed",3:"changed",4:"changed",5:"ok"}, active:"L2",
+    res:'TASK [Report version] ****\n<span class="ok">ok: [sw2] => {\n    "msg": "sw2 runs 17.09.04a on C9300-24T"\n}</span>', cmd:"ansible.builtin.debug", queue:[{t:"Save running config",s:"waiting for end of tasks:"}], rc:{ok:6,changed:3,skipped:0},
+    txt:"<code>debug</code> prints facts and is always <b>ok</b>. The handler is <b>still waiting</b>: last task first." },
+  { cur:-1, done:[0,1,2,3,4,5], tags:{0:"ok",1:"ok",2:"changed",3:"changed",4:"changed",5:"ok"}, active:"L3", ran:true,
+    res:'<span class="hd">RUNNING HANDLER [Save running config] ****</span>\n<span class="ch">changed: [sw2]</span>\n\nPLAY RECAP ****\nsw2 : ok=7 changed=4 failed=0', cmd:"save_when: modified", back:true, queue:[{t:"Save running config",s:"ran ONCE, after all tasks"}], rc:{ok:7,changed:4,skipped:0},
+    txt:"After the <b>last task</b>, each queued handler runs <b>once</b>. A rerun with no changes queues nothing: no save." },
+];
+function show(i) {
+  const f = frames[i];
+  document.getElementById("tasks").innerHTML = TASKS.map((t, j) => {
+    const cls = j === f.cur ? "cur" : (f.done.includes(j) ? "done" : "");
+    const tg = f.tags[j]; const tag = tg ? `<span class="tag t-${tg === "changed" ? "ch" : tg === "ok" ? "ok" : "sk"}">${tg}</span>` : "";
+    return `<div class="task ${cls}">${j + 1}. ${t}${tag}</div>`;
+  }).join("") + `<div class="task ${f.ran ? "cur" : ""}" style="border-style:dashed">handlers: Save running config${f.ran ? '<span class="tag t-ch">changed</span>' : ""}</div>`;
+  document.getElementById("res").innerHTML = f.res;
+  document.getElementById("cmd").innerHTML = `<span class="cmd ${f.back ? "back" : ""}">${f.cmd}</span>`;
+  document.getElementById("queue").innerHTML = f.queue.length
+    ? f.queue.map(q => `<div class="q ${f.ran ? "ran" : ""}">${q.t}<small>${q.s}</small></div>`).join("")
+    : '<div class="empty">empty: nothing has changed yet</div>';
+  document.getElementById("recap").innerHTML = `running tally for sw2 (ok counts changed too)<br>ok=<b>${f.rc.ok}</b> changed=<b>${f.rc.changed}</b>`;
+  for (const id of ["L1","L2","L3"]) document.getElementById(id).classList.toggle("active", f.active === id);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

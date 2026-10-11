@@ -1,0 +1,10 @@
+flowchart LR
+    A["group_vars/all.yml<br/>vlans: 10, 20"]:::dim --> B["group_vars/ios_switches.yml<br/>ansible_connection: network_cli"]:::dim
+    B --> C["host_vars/sw2.yml<br/>vlans: 10, 99"]:::good
+    C --> D["play vars:<br/>ansible_connection: httpapi"]:::warn
+    D --> E["register / set_fact<br/>vlan_out"]:::warn
+    E --> F["-e extra vars<br/>ALWAYS WIN"]:::ans
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold
+    classDef warn fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef dim fill:#f2f2f2,stroke:#999,color:#555

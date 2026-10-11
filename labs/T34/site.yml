@@ -1,0 +1,90 @@
+---
+# Play 1: CLI over SSH (network_cli). Targets the ios_switches group only.
+- name: Baseline the IOS XE switches
+  hosts: ios_switches
+  gather_facts: false
+
+  tasks:
+    - name: Collect device facts
+      cisco.ios.ios_facts:
+        gather_subset: min
+      tags: [facts]
+
+    - name: Read the VLAN table
+      cisco.ios.ios_command:
+        commands:
+          - show vlan brief
+      register: vlan_out
+      tags: [vlans]
+
+    - name: Create VLANs that are missing
+      cisco.ios.ios_config:
+        parents: "vlan {{ item.id }}"
+        lines:
+          - "name {{ item.name }}"
+      loop: "{{ vlans }}"
+      when: item.name not in vlan_out.stdout[0]
+      notify: Save running config
+      tags: [vlans]
+
+    - name: Push the baseline template
+      cisco.ios.ios_config:
+        src: templates/ios_baseline.j2
+      notify: Save running config
+      tags: [baseline]
+
+    - name: Shut unused ports on lab switches
+      cisco.ios.ios_config:
+        parents: "interface {{ item }}"
+        lines:
+          - shutdown
+      loop: "{{ unused_ports | default([]) }}"
+      when: site_role == "lab"
+      tags: [ports]
+
+    - name: Report version
+      ansible.builtin.debug:
+        msg: "{{ inventory_hostname }} runs {{ ansible_net_version }} on {{ ansible_net_model }}"
+      tags: [facts]
+
+  handlers:
+    - name: Save running config
+      cisco.ios.ios_config:
+        save_when: modified
+
+# Play 2: same switches, but over RESTCONF (httpapi). Play vars override group_vars.
+- name: Audit interfaces over RESTCONF
+  hosts: ios_switches
+  gather_facts: false
+  vars:
+    ansible_connection: ansible.netcommon.httpapi
+    ansible_network_os: ansible.netcommon.restconf
+    ansible_httpapi_use_ssl: true
+    ansible_httpapi_validate_certs: false
+
+  tasks:
+    - name: GET ietf-interfaces with restconf_get
+      ansible.netcommon.restconf_get:
+        path: /data/ietf-interfaces:interfaces
+      register: intf
+      tags: [restconf]
+
+    - name: Same GET with the generic uri module
+      ansible.builtin.uri:
+        url: "https://{{ ansible_host }}/restconf/data/ietf-interfaces:interfaces"
+        method: GET
+        url_username: "{{ ansible_user }}"
+        url_password: "{{ ansible_password }}"
+        force_basic_auth: true
+        validate_certs: false
+        headers:
+          Accept: application/yang-data+json
+        return_content: true
+      delegate_to: localhost
+      register: intf_uri
+      tags: [restconf]
+
+    - name: Print interface names
+      ansible.builtin.debug:
+        msg: "{{ intf.response['ietf-interfaces:interfaces']['interface'] | map(attribute='name') | list }}"
+      tags: [restconf]

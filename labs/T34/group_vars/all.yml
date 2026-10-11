@@ -1,0 +1,6 @@
+---
+# Applies to every host unless a more specific group or host sets the same name
+ntp_server: 10.0.0.1
+vlans:
+  - { id: 10, name: USERS }
+  - { id: 20, name: VOICE }

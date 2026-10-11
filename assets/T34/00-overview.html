@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T34 overview: Ansible playbook interpretation</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T34 · <span class="pill">Ansible Playbook Reading</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.8</b><br>Every T34 concept on one page<br>Code from <code>labs/T34/</code></div>
+  </header>
+
+  <table>
+    <tr>
+      <td class="label"><span class="icon">🗂️</span><div class="name">INVENTORY</div><div class="ids">T34.01</div></td>
+      <td class="what"><span class="sig">inventory.yml</span> <span class="sig">group_vars/</span> <span class="sig">host_vars/</span><br>
+        <b>Who</b> gets automated. Groups of hosts (INI or YAML). Per-group vars in <code>group_vars/&lt;group&gt;.yml</code>, per-host in <code>host_vars/&lt;host&gt;.yml</code>. Host beats group; <b>lists are replaced, not merged</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>group → hosts<span class="c"><code>ios_switches:</code> → <code>sw1</code>, <code>sw2</code></span></div>
+        <div class="item"><span class="n">4</span>which CLI/API dialect<span class="c"><code>ansible_network_os: cisco.ios.ios</code></span></div>
+        <div class="item"><span class="n">2</span>real address vs inventory name<span class="c"><code>ansible_host: 10.10.20.12</code></span></div>
+        <div class="item"><span class="n">5</span>how to connect<span class="c"><code>ansible_connection:</code><br><code>&nbsp;&nbsp;ansible.netcommon.network_cli</code></span></div>
+        <div class="item"><span class="n">3</span>host var wins over group var<span class="c">sw2 <code>vlans</code> = 10, 99 (not 20)</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>hosts: nxos_switches</code> never touches sw1; <code>--limit</code> only narrows, never adds</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📜</span><div class="name">PLAY</div><div class="ids">T34.02</div></td>
+      <td class="what"><span class="sig">playbook → plays → tasks → module</span><br>
+        Play = <b>which hosts</b> + how. Task = <code>name</code> + <b>one module</b> + args. Tasks run <b>top to bottom</b>, each on all hosts before the next. Indentation <b>is</b> the structure.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>play header<span class="c"><code>- name: Baseline the IOS XE switches</code><br><code>&nbsp;&nbsp;hosts: ios_switches</code></span></div>
+        <div class="item"><span class="n">4</span>SSH CLI · NETCONF :830<span class="c"><code>network_cli</code> · <code>netconf</code></span></div>
+        <div class="item"><span class="n">2</span>skip the setup task<span class="c"><code>gather_facts: false</code></span></div>
+        <div class="item"><span class="n">5</span>REST/RESTCONF · control node<span class="c"><code>httpapi</code> · <code>local</code></span></div>
+        <div class="item"><span class="n">3</span>play vars override group_vars<span class="c"><code>ansible_connection:</code><br><code>&nbsp;&nbsp;ansible.netcommon.httpapi</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>register:</code> one level too far left → <code>YAML parsing failed</code>; two modules in one task → <code>conflicting action statements</code></div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔧</span><div class="name">MODULES</div><div class="ids">T34.03</div></td>
+      <td class="what"><span class="sig">collection.namespace.module</span><br>
+        The <b>verb</b> of each task. <b>Network modules run on the control node</b> and talk to the device over the connection. <code>*_command</code> = read (show), <code>*_config</code> = write.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>run show commands (read)<span class="c"><code>cisco.ios.ios_command:</code><br><code>&nbsp;&nbsp;commands:</code> <code>- show vlan brief</code></span></div>
+        <div class="item"><span class="n">4</span>NETCONF / RESTCONF<span class="c"><code>netconf_get</code> <code>netconf_config</code><br><code>restconf_get</code> <code>restconf_config</code></span></div>
+        <div class="item"><span class="n">2</span>push config lines (write)<span class="c"><code>parents: "vlan {{ item.id }}"</code><br><code>lines:</code> <code>- "name {{ item.name }}"</code></span></div>
+        <div class="item"><span class="n">5</span>Jinja2 → file · print<span class="c"><code>ansible.builtin.template</code> · <code>debug</code></span></div>
+        <div class="item"><span class="n">3</span>any REST API<span class="c"><code>ansible.builtin.uri:</code> <code>method: GET</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>ios_command</code> never changes config; <code>ios_config</code> alone doesn't save → <code>save_when: modified</code></div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🧮</span><div class="name">VARIABLES</div><div class="ids">T34.04</div></td>
+      <td class="what"><span class="sig">{{ var }} · register · facts</span><br>
+        Jinja2 fills <code>{{ }}</code> at run time. <code>register</code> saves a task's <b>result dict</b>. Facts = data read from the target (<code>ansible_facts</code>, <code>ansible_net_*</code>). <code>-e</code> always wins.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>substitution<span class="c"><code>hostname {{ device_hostname }}</code></span></div>
+        <div class="item"><span class="n">4</span>network facts<span class="c"><code>ansible_net_version</code> from <code>ios_facts</code></span></div>
+        <div class="item"><span class="n">2</span>save output<span class="c"><code>register: vlan_out</code></span></div>
+        <div class="item"><span class="n">5</span>whole value is a var → quote<span class="c"><code>loop: "{{ vlans }}"</code></span></div>
+        <div class="item"><span class="n">3</span>read it back: a <b>list</b>, one per command<span class="c"><code>vlan_out.stdout[0]</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>gather_facts: false</code> on a play that prints <code>ansible_facts</code> → undefined variable</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔁</span><div class="name">CONTROL</div><div class="ids">T34.05</div></td>
+      <td class="what"><span class="sig">loop · when · notify → handlers</span><br>
+        <code>loop</code> repeats a task per item (<code>item</code>). <code>when</code> is a raw Jinja2 test, no <code>{{ }}</code>, checked <b>per item</b>. Handler runs <b>once</b>, at the <b>end</b>, only if a notifying task was <b>changed</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>repeat per VLAN<span class="c"><code>loop: "{{ vlans }}"</code></span></div>
+        <div class="item"><span class="n">4</span>queue the handler<span class="c"><code>notify: Save running config</code></span></div>
+        <div class="item"><span class="n">2</span>skip VLANs already there<span class="c"><code>when: item.name not in vlan_out.stdout[0]</code></span></div>
+        <div class="item"><span class="n">5</span>2 notifies → still 1 run<span class="c"><code>RUNNING HANDLER [Announce rebuild]</code></span></div>
+        <div class="item"><span class="n">3</span>only lab switches<span class="c"><code>when: site_role == "lab"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> rerun with no change → handler <b>not</b> run; a later failed task → queued handler <b>not</b> run</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🚀</span><div class="name">RUNNING</div><div class="ids">T34.06</div></td>
+      <td class="what"><span class="sig">ansible-playbook -i inventory.yml</span> <span class="sig">site.yml</span><br>
+        Recap per host: <b>ok</b> (no change) · <b>changed</b> · <b>skipped</b> (<code>when</code> false) · <b>failed</b> · <b>unreachable</b>. Second run of an idempotent play = <code>changed=0</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>dry run + show diff<span class="c"><code>--check --diff</code></span></div>
+        <div class="item"><span class="n">4</span>read without running<span class="c"><code>--syntax-check</code> · <code>--list-tasks</code></span></div>
+        <div class="item"><span class="n">2</span>one host only<span class="c"><code>--limit sw2</code></span></div>
+        <div class="item"><span class="n">5</span>run 1 vs run 2 of <code>build.yml</code><span class="c"><code>changed=2</code> → <code>changed=0</code></span></div>
+        <div class="item"><span class="n">3</span>more output · only some tasks<span class="c"><code>-v</code> … <code>-vvvv</code> · <code>--tags vlans</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>--check</code> changes nothing; <code>--syntax-check</code> doesn't contact devices; <code>ok</code> = "no change", not "passed"</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📦</span><div class="name">ROLES, CFG<br>&amp; READING</div><div class="ids">T34.07 · T34.08</div></td>
+      <td class="what"><span class="sig">roles/&lt;name&gt;/tasks/main.yml</span><br>
+        Role = reusable folder of tasks/handlers/templates/vars; play lists it under <code>roles:</code>. <code>ansible.cfg</code> = defaults (first found: <code>$ANSIBLE_CONFIG</code>, <b>./</b>, <code>~/</code>, <code>/etc/ansible/</code>).</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>role skeleton<span class="c"><code>ansible-galaxy role init ios_baseline</code></span></div>
+        <div class="item"><span class="n">4</span>Read: <b>which modules</b><span class="c">module line of each task → read or write?</span></div>
+        <div class="item"><span class="n">2</span>default inventory<span class="c"><code>inventory = inventory.yml</code></span></div>
+        <div class="item"><span class="n">5</span>Read: <b>what data</b><span class="c"><code>lines:</code> / <code>src:</code> / <code>path:</code> / <code>content:</code></span></div>
+        <div class="item"><span class="n">3</span>Read: <b>which devices</b><span class="c"><code>hosts:</code> → group in inventory</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> roles run <b>before</b> <code>tasks:</code>; order = plays, then tasks, then handlers</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = example from the reference playbooks</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Playbooks + real output: <code>labs/T34/</code> · details in each T34.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+---
+# Runs on the control node only: renders each switch's intended config to a file.
+- name: Build intended configs on the control node
+  hosts: localhost
+  connection: local
+  gather_facts: true
+  vars:
+    build_dir: "{{ lookup('ansible.builtin.env', 'T34_BUILD_DIR') | default('/tmp/t34-build', true) }}"
+
+  tasks:
+    - name: Create the build directory
+      ansible.builtin.file:
+        path: "{{ build_dir }}"
+        state: directory
+        mode: "0755"
+      tags: [build]
+
+    - name: Render one config per IOS switch
+      ansible.builtin.template:
+        src: templates/ios_baseline.j2
+        dest: "{{ build_dir }}/{{ item }}.cfg"
+        mode: "0644"
+      loop: "{{ groups['ios_switches'] }}"
+      vars:
+        device_hostname: "{{ hostvars[item]['device_hostname'] }}"
+        site_role: "{{ hostvars[item]['site_role'] }}"
+        vlans: "{{ hostvars[item]['vlans'] }}"
+      register: rendered
+      notify: Announce rebuild
+      tags: [build]
+
+    - name: List files that changed this run
+      ansible.builtin.debug:
+        msg: "{{ rendered.results | selectattr('changed') | map(attribute='item') | list }}"
+      when: rendered is changed
+      tags: [build]
+
+    - name: Warn about lab switches
+      ansible.builtin.debug:
+        msg: "{{ item }} is a lab switch: banner added"
+      loop: "{{ groups['ios_switches'] }}"
+      when: hostvars[item]['site_role'] == "lab"
+      tags: [report]
+
+    - name: Show where it ran
+      ansible.builtin.debug:
+        msg: "Control node {{ ansible_facts['system'] }}, Python {{ ansible_facts['python_version'] }}"
+      tags: [report]
+
+  handlers:
+    - name: Announce rebuild
+      ansible.builtin.debug:
+        msg: "Handler ran once: configs rebuilt in {{ build_dir }}"

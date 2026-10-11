@@ -1,0 +1,5 @@
+---
+ansible_network_os: cisco.nxos.nxos
+ansible_connection: ansible.netcommon.network_cli
+ansible_user: "{{ lookup('ansible.builtin.env', 'NXOS_USER') }}"
+ansible_password: "{{ lookup('ansible.builtin.env', 'NXOS_PASSWORD') }}"

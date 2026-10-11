@@ -1,0 +1,10 @@
+! Intended config for {{ device_hostname }} ({{ site_role }}), rendered by Ansible
+hostname {{ device_hostname }}
+ntp server {{ ntp_server }}
+{% for vlan in vlans %}
+vlan {{ vlan.id }}
+ name {{ vlan.name }}
+{% endfor %}
+{% if site_role == "lab" %}
+banner motd ^LAB SWITCH: changes allowed^
+{% endif %}

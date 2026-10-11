@@ -1,0 +1,6 @@
+---
+# How Ansible reaches an IOS XE switch: SSH to the CLI, IOS command/prompt handling
+ansible_network_os: cisco.ios.ios
+ansible_connection: ansible.netcommon.network_cli
+ansible_user: "{{ lookup('ansible.builtin.env', 'IOS_USER') }}"
+ansible_password: "{{ lookup('ansible.builtin.env', 'IOS_PASSWORD') }}"

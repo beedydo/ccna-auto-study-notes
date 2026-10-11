@@ -1,0 +1,12 @@
+flowchart LR
+    S["ansible-playbook -i inventory.yml site.yml"] --> M{"module compares<br/>wanted vs actual"}
+    M -- "already matches" --> OK["ok<br/>(green)"]:::good
+    M -- "made a change" --> CH["changed<br/>(yellow)"]:::warn
+    M -- "when: was false" --> SK["skipping<br/>(cyan)"]:::dim
+    M -- "error" --> FA["failed<br/>(red, host stops)"]:::bad
+    M -- "can't connect" --> UN["unreachable<br/>(red)"]:::bad
+    CH -. "second run" .-> OK
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef warn fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,color:#1d1d1f
+    classDef dim fill:#e6f4f7,stroke:#17a2b8,color:#1d1d1f

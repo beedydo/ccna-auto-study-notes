@@ -1,0 +1,29 @@
+---
+# NETCONF over SSH (port 830): netconf_get reads, netconf_config writes.
+- name: VLAN description over NETCONF
+  hosts: ios_switches
+  gather_facts: false
+  vars:
+    ansible_connection: ansible.netcommon.netconf
+    ansible_port: 830
+
+  tasks:
+    - name: Get the running hostname
+      ansible.netcommon.netconf_get:
+        source: running
+        filter: <native xmlns="http://cisco.com/ns/yang/Cisco-IOS-XE-native"><hostname/></native>
+        display: json
+      register: nc_host
+
+    - name: Set the interface description (edit-config)
+      ansible.netcommon.netconf_config:
+        target: running
+        content: |
+          <config>
+            <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+              <interface>
+                <name>GigabitEthernet1</name>
+                <description>Managed by Ansible</description>
+              </interface>
+            </interfaces>
+          </config>

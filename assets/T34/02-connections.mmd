@@ -1,0 +1,11 @@
+flowchart LR
+    CN["Control node<br/>(ansible-playbook runs here,<br/>network modules execute here)"]:::ans
+    CN -- "network_cli<br/>CLI over SSH :22" --> D1["IOS XE CLI<br/>ios_command · ios_config"]:::good
+    CN -- "netconf<br/>XML over SSH :830" --> D2["NETCONF server<br/>netconf_get · netconf_config"]:::good
+    CN -- "httpapi + network_os restconf<br/>HTTPS :443" --> D3["RESTCONF API<br/>restconf_get · restconf_config"]:::good
+    CN -- "local / uri module<br/>HTTPS from the control node" --> D4["Any REST API<br/>Meraki · Catalyst Center · RESTCONF"]:::warn
+    CN -. "ssh + Python on target<br/>(NOT for switches)" .-> D5["Linux server<br/>module copied and run there"]:::bad
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold
+    classDef warn fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,color:#1d1d1f
