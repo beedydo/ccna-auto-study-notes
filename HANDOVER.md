@@ -4,13 +4,13 @@ Written 5 Oct 2026. It covers everything decided so far, so a Claude Code sessio
 
 ## 1. Context in one screen
 
-- **Exam:** Cisco 200-901 CCNAAUTO v1.1 ("CCNA Automation", formerly DevNet Associate), on **Sun 1 Nov 2026**.
+- **Exam:** Cisco 200-901 CCNAAUTO v1.1 ("CCNA Automation", formerly DevNet Associate), on **Mon 9 Nov 2026** (moved from 1 Nov on 11 Oct 2026).
 - **People:**
   - **Beedy** (Wendy Tan, `beedydo`): Cloud Infrastructure Engineer and Automation SME. RHCSA, RHCE, AWS SAA, ex-Ansible SA. Strong on Ansible, AWS, Bash, YAML, Docker, Git and CI/CD. New to Cisco platforms and model-driven programmability.
   - **Bob** (Jun Hao): network engineer. Strong on networking. Owns the platform and network topics.
 - **Main course:** CBT Nuggets *Cisco CCNA Automation (200-901)*. Videos are skimmed at 1.5–2x for main points; notes come from this repo.
 - **Practice questions:** the N2K practice exams inside the CBT course, using the domain filter.
-- **Time:** 30 min per night per person, from 5 Oct to 31 Oct.
+- **Time:** 30 min per night per person, from 5 Oct to 1 Nov, then a break week (2–8 Nov) with the mock and review.
 
 ## 2. What exists already
 
@@ -28,30 +28,29 @@ Written 5 Oct 2026. It covers everything decided so far, so a Claude Code sessio
 
 ## 4. Schedule (Pair Plan)
 
-| Date | Beedy | Bob | Together |
-|---|---|---|---|
-| Mon 5 Oct | T02, T04 | T01, T03, T12 | |
-| Tue 6 | T05, T06 | T13, T35, T36 | |
-| Wed 7 | Qs on T02–T06 + teach-back cards | T39 + cards | |
-| **Thu 8** | | | **Teach-back 1** |
-| Fri 9 | T07, T08 | T14 | |
-| Sat 10 | T09, T10 | T15 | |
-| Sun 11 | T11 + cards | T16, T17 + cards | |
-| **Mon 12** | | | **Teach-back 2** |
-| Tue 13 | T26, T27, T28 | T18, T19 | |
-| Wed 14 | T29, T30 | T20, T21 | |
-| Thu 15 | T31 + cards | T22, T37 + cards | |
-| **Fri 16** | | | **Teach-back 3** |
-| Sat 17 | T32, T33, T34 | T23, T24, T25 | |
-| Sun 18 | T43, T44 | T42, T45, T38 | |
-| Mon 19 | T46, T47 + cards | T40, T41 + cards | |
-| **Tue 20** | | | **Teach-back 4** |
-| 21–23 Oct | Cross-study Bob's notes | Cross-study Beedy's notes | |
-| **Sat 24** | | | **Swap quiz** |
-| 25–28 Oct | Mock 1 blocks A–D | Mock 1 blocks A–D | Same evening |
-| **Thu 29** | | | **Joint mock review** |
-| Fri 30 | Weak-domain Qs | Weak-domain Qs | 10-min rapid-fire |
-| Sat 31 | Cheat sheet, admin, rest | same | |
+Re-planned on Sun 11 Oct 2026: the exam moved to **Mon 9 Nov**. Four weekly cycles: **Mon–Sat** self-study (draft notes, check and correct them, practice questions, teach-back cards), **Sunday** teach-back together. Topics were rebalanced across cycles by note size, CBT gaps and how new each topic is to its owner.
+
+| Cycle | Study | Teach-back | Beedy | Bob |
+|---|---|---|---|---|
+| 1 | 5–10 Oct | **Sun 11 Oct** | T02, T04, T05, T06 | T01, T03, T12, T13, T35, T36, T39 |
+| 2 | 12–17 Oct | **Sun 18 Oct** | T07, T08, T09, T10, T11 | T14, T15, T16, T17, T18, T19 |
+| 3 | 19–24 Oct | **Sun 25 Oct** | T43, T47, T26, T27, T28, T29 | T20, T21, T22, T37, T23, T24, T25 |
+| 4 | 26–31 Oct | **Sun 1 Nov** | T30, T31, T32, T33, T34, T44, T46 | T42, T45, T38, T40, T41 |
+
+| Date | Together |
+|---|---|
+| Tue 20 / Thu 22 Oct | Cross-study the partner's cycle 1 / cycle 2 notes (after own topics) |
+| Tue 27 Oct | Cross-study the partner's cycle 3 notes |
+| **Fri 30 Oct** | **Swap quiz** |
+| **Mon 2 Nov** | **Mock exam, one 2-hour sitting** (fixes the old 4×30-min stamina gap) |
+| **Tue 3 Nov** | **Joint mock review** |
+| Wed 4 Nov | Weak-domain Qs + cross-study cycle 4 notes |
+| Thu 5 Nov | Weak-domain Qs |
+| Fri 6 Nov | 10-min rapid-fire |
+| Sat 7 – Sun 8 Nov | Cheat sheet, booking/ID check, rest |
+| **Mon 9 Nov** | **Exam** |
+
+Day-by-day detail: `data/pair-plan.csv`.
 
 **Teach-back format (30 min):** Beedy teaches for 12 min and Bob for 12 min, using 3 key points and 1 exam trap per topic. The last 6 min is one question per topic, with weak topic IDs logged.
 
@@ -86,7 +85,7 @@ Written 5 Oct 2026. It covers everything decided so far, so a Claude Code sessio
 | Version-sensitive facts | various | FMC token lifetime; Meraki rate limit; Catalyst Center / SD-WAN Manager paths; Webex token lifetimes; ISE ERS port. Confirm against current docs or a sandbox and mark `⚠ verify` until done. |
 | Blueprint 3.9.a/b/c sub-item wording | T18–T22, T42 | Labels are paraphrased; confirm in the Cisco PDF |
 | Bob's GitHub username | repo | Needed for `CODEOWNERS` and the collaborator invite |
-| Mock 1 is four 30-min blocks, which doesn't train 120-min stamina | both | If possible, do one 2-hour sitting on Sun 25 Oct |
+| Mock 1 is four 30-min blocks, which doesn't train 120-min stamina | both | Resolved: the mock is now one 2-hour sitting on Mon 2 Nov |
 
 ## 7. How to start in Claude Code (Beedy, today)
 

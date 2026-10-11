@@ -4,7 +4,7 @@ Project memory for Claude Code. Read this first in every session.
 
 ## Mission
 
-- Two people are preparing for **Cisco 200-901 CCNAAUTO v1.1**, with the **exam on Sun 1 Nov 2026**.
+- Two people are preparing for **Cisco 200-901 CCNAAUTO v1.1**, with the **exam on Mon 9 Nov 2026**.
   - **Beedy** (Wendy, GitHub `beedydo`, repo owner) is a DevOps/cloud infra engineer. She owns the dev, API, DevOps and app-deployment topics.
   - **Bob** (Jun Hao) is a network engineer. He owns the platforms, model-driven programmability and network-fundamentals topics.
 - This repo holds the learning notes for all 47 tracker topics, in 6 blueprint domains.
@@ -33,7 +33,7 @@ Full background from the planning chats: topic split, Pair Plan schedule, teach-
 | CBT videos/labs/top-ups per topic | `data/study-aids.csv` |
 | Topics CBT doesn't cover (fully) and how to fill the gap | `data/top-ups.csv` |
 | CBT videos to skip | `data/cbt-skip-list.csv` |
-| Night-by-night pair plan, 5 Oct to 1 Nov | `data/pair-plan.csv` |
+| Night-by-night pair plan, 5 Oct to 9 Nov (4 weekly cycles, Sunday teach-backs) | `data/pair-plan.csv` |
 | Practice scores | `data/practice-log.csv` |
 | Original Google Sheet (tracker with status columns) | `CCNA_Automation_Training_Schedule` in Beedy's Google Drive |
 
@@ -129,7 +129,7 @@ scripts/progress.py               prints progress from note front matter
 | `/verify T07` | Fact-check a drafted note against official docs; fix errors; tick the checklist; list `⚠ verify` items. |
 | `/quiz T07` or `/quiz batch-2` | Generate or extend an exam-style question bank in `quizzes/`, answers hidden. |
 | `/teachback 2` | Build the teach-back cards for session 2 from the TL;DRs of that batch's notes. |
-| `/crossstudy beedy` | Make a condensed study pack of the *partner's* notes for cross-study nights (21–23 Oct). |
+| `/crossstudy beedy` | Make a condensed study pack of the *partner's* notes for cross-study nights (20, 22, 27 Oct and 4 Nov). |
 | `/lab T16` | Write a runnable lab script for a topic (DevNet Sandbox target, Docker lab container). |
 | `/cheatsheet` | Rebuild `cheatsheet.md` from all "Exam traps" sections. |
 | `/progress` | Run `scripts/progress.py` and summarise what is behind schedule against `data/pair-plan.csv`. |

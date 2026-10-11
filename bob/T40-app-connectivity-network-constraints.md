@@ -7,14 +7,14 @@ primary_domain: D6
 cbt_coverage: "Partial"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-19
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T40 · App connectivity + network constraints
 
-> Owner: **Bob** · Blueprint: **6.8, 6.9** · CBT coverage: **Partial** · Learn by 2026-10-19 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **6.8, 6.9** · CBT coverage: **Partial** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T40 at a glance: where an app call breaks on the path, the diagnostic ladder, constraints and the symptom-to-fix table](../assets/T40/00-overview.png)
 

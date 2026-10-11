@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-15
-teach_back: 2026-10-16
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T22 · Catalyst SD-WAN
 
-> Owner: **Bob** · Blueprint: **3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-15 · Teach-back 2026-10-16
+> Owner: **Bob** · Blueprint: **3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T22 at a glance: SD-WAN components, the /dataservice API, the 3-step session login and the common endpoints](../assets/T22/00-overview.png)
 

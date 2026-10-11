@@ -1,4 +1,4 @@
-# Teach-back 2 · 2026-10-12
+# Teach-back 2 · 2026-10-18
 
 30 min together: Beedy teaches 12 min, Bob teaches 12 min, 6 min swapping one question per topic.
 
@@ -71,6 +71,22 @@
 - Question for partner:
 
 ### T17 · IOS XE and NX-OS device-level APIs
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T18 · Meraki
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T19 · ACI
 
 - Key point 1:
 - Key point 2:

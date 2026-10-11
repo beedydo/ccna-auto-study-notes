@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-17
-teach_back: 2026-10-20
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T25 · NSO + Cisco Modeling Labs
 
-> Owner: **Bob** · Blueprint: **3.2, 5.3, 5.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **3.2, 5.3, 5.6** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T25 at a glance: NSO architecture, transactions, sync, CML and tool choice on one page](../assets/T25/00-overview.png)
 

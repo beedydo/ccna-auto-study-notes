@@ -7,14 +7,14 @@ primary_domain: D2
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-09
-teach_back: 2026-10-12
-cross_study: 2026-10-21
+learn_by: 2026-10-17
+teach_back: 2026-10-18
+cross_study: 2026-10-22
 ---
 
 # T07 · REST fundamentals, HTTP codes
 
-> Owner: **Beedy** · Blueprint: **2.1, 2.4-2.6** · CBT coverage: **Full** · Learn by 2026-10-09 · Teach-back 2026-10-12
+> Owner: **Beedy** · Blueprint: **2.1, 2.4-2.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
 
 ![T07 at a glance: every REST and HTTP-code concept on one page](../assets/T07/00-overview.png)
 

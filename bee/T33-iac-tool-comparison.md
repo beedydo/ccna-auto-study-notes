@@ -7,14 +7,14 @@ primary_domain: D5
 cbt_coverage: "Full"
 status: drafted       # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-17
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T33 · IaC + tool comparison
 
-> Owner: **Beedy** · Blueprint: **5.5, 5.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **5.5, 5.6** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T33 at a glance: IaC principles, declarative vs imperative, push vs pull, a six-tool matrix and scenario answers on one page](../assets/T33/00-overview.png)
 

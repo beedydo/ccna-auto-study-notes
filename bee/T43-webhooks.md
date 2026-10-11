@@ -7,14 +7,14 @@ primary_domain: D2
 cbt_coverage: "None"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-18
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T43 · Webhooks
 
-> Owner: **Beedy** · Blueprint: **2.2** · CBT coverage: **None** · Learn by 2026-10-18 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **2.2** · CBT coverage: **None** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T43 at a glance: register once, event happens, platform POSTs to you, verify and ack, follow-up GET](../assets/T43/00-overview.png)
 

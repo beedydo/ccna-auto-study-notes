@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-11
-teach_back: 2026-10-12
-cross_study: 2026-10-21
+learn_by: 2026-10-17
+teach_back: 2026-10-18
+cross_study: 2026-10-22
 ---
 
 # T17 · IOS XE and NX-OS device-level APIs
 
-> Owner: **Bob** · Blueprint: **3.6** · CBT coverage: **Full** · Learn by 2026-10-11 · Teach-back 2026-10-12
+> Owner: **Bob** · Blueprint: **3.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
 
 ![T17 at a glance: IOS XE and NX-OS device APIs as a system map](../assets/T17/00-overview.png)
 

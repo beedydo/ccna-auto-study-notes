@@ -7,14 +7,14 @@ primary_domain: D5
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-18
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T45 · Reading Python scripts using Cisco APIs
 
-> Owner: **Bob** · Blueprint: **5.7** · CBT coverage: **Full** · Learn by 2026-10-18 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **5.7** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T45 at a glance: script shape, platform fingerprints, workflow, bug symptoms and exam angle on one page](../assets/T45/00-overview.png)
 

@@ -7,14 +7,14 @@ primary_domain: D4
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-13
-teach_back: 2026-10-16
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T28 · CI/CD + DevOps principles
 
-> Owner: **Beedy** · Blueprint: **4.4, 4.12, 5.4** · CBT coverage: **Full** · Learn by 2026-10-13 · Teach-back 2026-10-16
+> Owner: **Beedy** · Blueprint: **4.4, 4.12, 5.4** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T28 at a glance: CI stages, artifact, CD environments, NetDevOps and DevOps principles on one swim-lane sheet](../assets/T28/00-overview.png)
 

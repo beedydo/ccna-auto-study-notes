@@ -7,14 +7,14 @@ primary_domain: D4
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-13
-teach_back: 2026-10-16
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T27 · Docker
 
-> Owner: **Beedy** · Blueprint: **4.3, 4.6, 4.7** · CBT coverage: **Full** · Learn by 2026-10-13 · Teach-back 2026-10-16
+> Owner: **Beedy** · Blueprint: **4.3, 4.6, 4.7** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T27 at a glance: Docker build, run, network and storage on one system map](../assets/T27/00-overview.png)
 

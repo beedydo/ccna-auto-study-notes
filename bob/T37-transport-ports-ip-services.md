@@ -7,14 +7,14 @@ primary_domain: D6
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-15
-teach_back: 2026-10-16
-cross_study: 2026-10-23
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T37 · Transport, ports, IP services
 
-> Owner: **Bob** · Blueprint: **6.6, 6.7** · CBT coverage: **Full** · Learn by 2026-10-15 · Teach-back 2026-10-16
+> Owner: **Bob** · Blueprint: **6.6, 6.7** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T37 at a glance: TCP vs UDP, exam ports and the five IP services on one page](../assets/T37/00-overview.png)
 

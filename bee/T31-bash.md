@@ -7,14 +7,14 @@ primary_domain: D4
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-15
-teach_back: 2026-10-16
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T31 · Bash
 
-> Owner: **Beedy** · Blueprint: **4.11, 5.9** · CBT coverage: **Full** · Learn by 2026-10-15 · Teach-back 2026-10-16
+> Owner: **Beedy** · Blueprint: **4.11, 5.9** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T31 at a glance: every Bash concept on one page](../assets/T31/00-overview.png)
 

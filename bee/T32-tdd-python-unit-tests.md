@@ -7,14 +7,14 @@ primary_domain: D1
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-17
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T32 · TDD + Python unit tests
 
-> Owner: **Beedy** · Blueprint: **1.3, 4.5** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **1.3, 4.5** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T32 at a glance: TDD cycle, test types, unittest anatomy, output codes, mocking, pytest](../assets/T32/00-overview.png)
 

@@ -7,14 +7,14 @@ primary_domain: D2
 cbt_coverage: "None"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-09
-teach_back: 2026-10-12
-cross_study: 2026-10-21
+learn_by: 2026-10-17
+teach_back: 2026-10-18
+cross_study: 2026-10-22
 ---
 
 # T08 · API consumption constraints
 
-> Owner: **Beedy** · Blueprint: **2.3** · CBT coverage: **None** · Learn by 2026-10-09 · Teach-back 2026-10-12
+> Owner: **Beedy** · Blueprint: **2.3** · CBT coverage: **None** · Learn by 2026-10-17 · Teach-back 2026-10-18
 
 ![T08 at a glance: every API consumption limit, its signal, the fix and the trap](../assets/T08/00-overview.png)
 

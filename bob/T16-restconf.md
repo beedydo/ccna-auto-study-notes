@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-11
-teach_back: 2026-10-12
-cross_study: 2026-10-21
+learn_by: 2026-10-17
+teach_back: 2026-10-18
+cross_study: 2026-10-22
 ---
 
 # T16 · RESTCONF
 
-> Owner: **Bob** · Blueprint: **3.8, 5.10, 2.9** · CBT coverage: **Full** · Learn by 2026-10-11 · Teach-back 2026-10-12
+> Owner: **Bob** · Blueprint: **3.8, 5.10, 2.9** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
 
 ![T16 at a glance: every RESTCONF concept on one page](../assets/T16/00-overview.png)
 

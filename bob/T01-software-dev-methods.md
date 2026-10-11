@@ -7,14 +7,14 @@ primary_domain: D1
 cbt_coverage: "Partial"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-05
-teach_back: 2026-10-08
-cross_study: 2026-10-21
+learn_by: 2026-10-10
+teach_back: 2026-10-11
+cross_study: 2026-10-20
 ---
 
 # T01 · Software dev methods: agile, lean, waterfall
 
-> Owner: **Bob** · Blueprint: **1.4** · CBT coverage: **Partial** · Learn by 2026-10-05 · Teach-back 2026-10-08
+> Owner: **Bob** · Blueprint: **1.4** · CBT coverage: **Partial** · Learn by 2026-10-10 · Teach-back 2026-10-11
 
 ![T01 at a glance: waterfall, agile, Scrum and Kanban, lean, and a compare-and-pick matrix on one page](../assets/T01/00-overview.png)
 

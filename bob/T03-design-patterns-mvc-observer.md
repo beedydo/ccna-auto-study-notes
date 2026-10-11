@@ -7,14 +7,14 @@ primary_domain: D1
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-05
-teach_back: 2026-10-08
-cross_study: 2026-10-21
+learn_by: 2026-10-10
+teach_back: 2026-10-11
+cross_study: 2026-10-20
 ---
 
 # T03 · Design patterns: MVC + Observer
 
-> Owner: **Bob** · Blueprint: **1.6** · CBT coverage: **Full** (unconfirmed, see To verify) · Learn by 2026-10-05 · Teach-back 2026-10-08
+> Owner: **Bob** · Blueprint: **1.6** · CBT coverage: **Full** (unconfirmed, see To verify) · Learn by 2026-10-10 · Teach-back 2026-10-11
 
 ![T03 at a glance: design patterns, MVC, Observer, comparison and exam angle on one page](../assets/T03/00-overview.png)
 

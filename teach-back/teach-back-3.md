@@ -1,8 +1,24 @@
-# Teach-back 3 · 2026-10-16
+# Teach-back 3 · 2026-10-25
 
 30 min together: Beedy teaches 12 min, Bob teaches 12 min, 6 min swapping one question per topic.
 
 ## Beedy teaches
+
+### T43 · Webhooks
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T47 · Sequence diagrams with API calls
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
 
 ### T26 · Deployment models + edge computing
 
@@ -36,39 +52,7 @@
 - Exam trap:
 - Question for partner:
 
-### T30 · OWASP: XSS, SQLi, CSRF
-
-- Key point 1:
-- Key point 2:
-- Key point 3:
-- Exam trap:
-- Question for partner:
-
-### T31 · Bash
-
-- Key point 1:
-- Key point 2:
-- Key point 3:
-- Exam trap:
-- Question for partner:
-
 ## Bob teaches
-
-### T18 · Meraki
-
-- Key point 1:
-- Key point 2:
-- Key point 3:
-- Exam trap:
-- Question for partner:
-
-### T19 · ACI
-
-- Key point 1:
-- Key point 2:
-- Key point 3:
-- Exam trap:
-- Question for partner:
 
 ### T20 · Catalyst Center (DNA Center)
 
@@ -95,6 +79,30 @@
 - Question for partner:
 
 ### T37 · Transport, ports, IP services
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T23 · Security platforms
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T24 · Compute: UCS Manager + Intersight
+
+- Key point 1:
+- Key point 2:
+- Key point 3:
+- Exam trap:
+- Question for partner:
+
+### T25 · NSO + Cisco Modeling Labs
 
 - Key point 1:
 - Key point 2:

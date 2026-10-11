@@ -7,14 +7,14 @@ primary_domain: D5
 cbt_coverage: "None"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-19
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T47 · Sequence diagrams with API calls
 
-> Owner: **Beedy** · Blueprint: **5.14** · CBT coverage: **None** · Learn by 2026-10-19 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **5.14** · CBT coverage: **None** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T47 at a glance: notation, frames, auth, async, webhook and reading flows](../assets/T47/00-overview.png)
 

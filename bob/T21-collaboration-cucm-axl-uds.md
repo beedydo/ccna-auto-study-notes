@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-14
-teach_back: 2026-10-16
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T21 · Collaboration: CUCM AXL + UDS
 
-> Owner: **Bob** · Blueprint: **3.4** · CBT coverage: **Full** · Learn by 2026-10-14 · Teach-back 2026-10-16
+> Owner: **Bob** · Blueprint: **3.4** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T21 at a glance: CUCM, its APIs, AXL vs UDS on one page](../assets/T21/00-overview.png)
 

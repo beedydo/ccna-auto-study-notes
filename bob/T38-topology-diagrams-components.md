@@ -7,14 +7,14 @@ primary_domain: D6
 cbt_coverage: "Partial"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-18
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T38 · Topology diagrams + components
 
-> Owner: **Bob** · Blueprint: **6.3, 6.4** · CBT coverage: **Partial** · Learn by 2026-10-18 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **6.3, 6.4** · CBT coverage: **Partial** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T38 at a glance: components, physical vs logical, common designs and how to trace a path](../assets/T38/00-overview.png)
 

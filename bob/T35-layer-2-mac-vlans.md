@@ -7,14 +7,14 @@ primary_domain: D6
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-06
-teach_back: 2026-10-08
-cross_study: 2026-10-23
+learn_by: 2026-10-10
+teach_back: 2026-10-11
+cross_study: 2026-10-20
 ---
 
 # T35 · Layer 2: MAC, VLANs
 
-> Owner: **Bob** · Blueprint: **6.1** · CBT coverage: **Full** · Learn by 2026-10-06 · Teach-back 2026-10-08
+> Owner: **Bob** · Blueprint: **6.1** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
 
 ![T35 at a glance: MAC anatomy, switch logic, VLANs, access vs trunk, inter-VLAN routing, exam angle](../assets/T35/00-overview.png)
 

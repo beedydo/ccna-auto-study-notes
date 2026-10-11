@@ -7,14 +7,14 @@ primary_domain: D4
 cbt_coverage: "None"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-19
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T41 · Firewall, DNS, LB, reverse proxy
 
-> Owner: **Bob** · Blueprint: **4.9** · CBT coverage: **None** · Learn by 2026-10-19 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **4.9** · CBT coverage: **None** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T41 at a glance: the request path client → DNS → firewall/WAF → LB/reverse proxy → app → DB, with what each box does](../assets/T41/00-overview.png)
 

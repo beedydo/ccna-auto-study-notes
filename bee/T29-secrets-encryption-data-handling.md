@@ -7,14 +7,14 @@ primary_domain: D4
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-14
-teach_back: 2026-10-16
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T29 · Secrets, encryption, data handling
 
-> Owner: **Beedy** · Blueprint: **4.8** · CBT coverage: **Full** · Learn by 2026-10-14 · Teach-back 2026-10-16
+> Owner: **Beedy** · Blueprint: **4.8** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T29 at a glance: encoding vs hashing vs symmetric vs asymmetric, then secrets, transit/rest, PKI, data and input handling](../assets/T29/00-overview.png)
 

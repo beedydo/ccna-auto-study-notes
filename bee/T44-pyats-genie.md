@@ -7,14 +7,14 @@ primary_domain: D5
 cbt_coverage: "Full"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-18
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T44 · pyATS + Genie
 
-> Owner: **Beedy** · Blueprint: **5.3** · CBT coverage: **Full** · Learn by 2026-10-18 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **5.3** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T44 at a glance: pyATS/Genie/Unicon stack, testbed YAML, parse vs execute, learn + diff change window, AEtest structure, use cases and tool choice](../assets/T44/00-overview.png)
 

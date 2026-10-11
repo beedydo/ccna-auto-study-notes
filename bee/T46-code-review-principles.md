@@ -7,14 +7,14 @@ primary_domain: D5
 cbt_coverage: "None"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-19
-teach_back: 2026-10-20
-cross_study: 2026-10-23
+learn_by: 2026-10-31
+teach_back: 2026-11-01
+cross_study: 2026-11-04
 ---
 
 # T46 · Code review principles
 
-> Owner: **Beedy** · Blueprint: **5.13** · CBT coverage: **None** · Learn by 2026-10-19 · Teach-back 2026-10-20
+> Owner: **Beedy** · Blueprint: **5.13** · CBT coverage: **None** · Learn by 2026-10-31 · Teach-back 2026-11-01
 
 ![T46 at a glance: review process swim-lane, benefits, review types, CI vs human, giving feedback](../assets/T46/00-overview.png)
 

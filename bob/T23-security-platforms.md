@@ -7,14 +7,14 @@ primary_domain: D3
 cbt_coverage: "Partial"
 status: drafted   # not-started | drafted | verified | taught
 confidence: 0         # 1-5, owner's self-rating after practice Qs
-learn_by: 2026-10-17
-teach_back: 2026-10-20
-cross_study: 2026-10-22
+learn_by: 2026-10-24
+teach_back: 2026-10-25
+cross_study: 2026-10-27
 ---
 
 # T23 · Security platforms
 
-> Owner: **Bob** · Blueprint: **3.5** · CBT coverage: **Partial** · Learn by 2026-10-17 · Teach-back 2026-10-20
+> Owner: **Bob** · Blueprint: **3.5** · CBT coverage: **Partial** · Learn by 2026-10-24 · Teach-back 2026-10-25
 
 ![T23 at a glance: seven Cisco security platforms, their job, their API auth and their key calls](../assets/T23/00-overview.png)
 
