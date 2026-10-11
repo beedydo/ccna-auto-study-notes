@@ -1,0 +1,8 @@
+sequenceDiagram
+    autonumber
+    participant Client as Client (flows.py)
+    participant CatC as Catalyst Center<br/>(mock :8147)
+    Client->>+CatC: POST /dna/system/api/v1/auth/token<br/>Authorization: Basic ZGV2bmV0OmNpc2NvMTIz
+    CatC-->>-Client: 200 OK {"Token": "tok-0001"}
+    Client->>+CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=2<br/>X-Auth-Token: tok-0001
+    CatC-->>-Client: 200 OK [edge1, edge2]

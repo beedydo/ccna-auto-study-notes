@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    participant App as App<br/>(flows.py listener)
+    participant Webex as Webex (mock :8147)
+    actor User
+    App->>Webex: POST /v1/webhooks<br/>{"targetUrl": ".../webhook-listener", "resource": "messages", "event": "created"}
+    Webex-->>App: 200 OK {"id": "hook-1", "status": "active"}
+    Note over App: idle: no polling
+    User->>Webex: POST /v1/messages {"text": "edge1 is down"}
+    Webex-->>User: 200 OK {"id": "msg-1"}
+    Webex->>App: POST /webhook-listener<br/>{"id": "msg-1", "roomId": "room-1", "personEmail": ...}
+    App-->>Webex: 200 OK (ack fast)
+    App->>Webex: GET /v1/messages/msg-1<br/>Authorization: Bearer ...
+    Webex-->>App: 200 OK {"text": "edge1 is down"}

@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant Client
+    participant API
+    Client->>API: GET /devices (X-Auth-Token)
+    alt status 200
+        API-->>Client: 200 + data
+    else status 401
+        API-->>Client: 401 Unauthorized
+    end
+    loop until endTime is set
+        Client->>API: GET /task/{taskId}
+        API-->>Client: 200 status
+    end
+    opt only if isError is true
+        Client->>API: GET /task/{taskId}/logs
+        API-->>Client: 200 failureReason
+    end
+    par site A
+        Client->>API: POST /sites/A/provision
+    and site B
+        Client->>API: POST /sites/B/provision
+    end
+    API-->>Client: 202 (A)
+    API-->>Client: 202 (B)

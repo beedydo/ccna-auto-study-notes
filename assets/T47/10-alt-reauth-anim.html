@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T47 alt 401 re-auth: diagram arrow = code line</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; --red:#b42318; --green:#1e7b3a; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1440px; height:640px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:12px; }
+  .sub code, .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns: 520px minmax(0,1fr); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; background:#fff; padding:10px 12px; height:400px; }
+  .lane h3 { margin:0 0 6px; font-size:16px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  svg text { font-family:Menlo,monospace; font-size:11.5px; }
+  svg .p { font-family:-apple-system,Arial,sans-serif; font-size:13px; font-weight:700; }
+  .ar { transition:none; }
+  .ar.future { opacity:0; }
+  .ar.past { opacity:.35; }
+  .ar.now text { font-weight:700; }
+  pre { margin:0; font-family:Menlo,monospace; font-size:11.2px; line-height:2.1; white-space:pre; }
+  pre span { display:block; padding:0 6px; border-radius:4px; }
+  pre span.hl { background:#fff3cd; outline:2px solid #e0a800; }
+  pre span.dim { opacity:.35; }
+  .trace { margin-top:14px; font-family:Menlo,monospace; font-size:11.2px; background:#1d1d1f; color:#e8e8e8; border-radius:8px; padding:8px 10px; min-height:52px; white-space:pre; overflow:hidden; }
+  .trace b { color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T47 · <span class="pill">alt frame</span> one arrow = one line of code</h1>
+  <div class="sub">Flow 2 of <code>labs/T47/flows.py</code>: <code>get_devices()</code> after the token has expired. Real trace, real code.</div>
+  <div class="lanes">
+    <div class="lane" id="lane-d"><h3>📈 Sequence diagram</h3>
+      <svg id="d" width="512" height="356"></svg>
+    </div>
+    <div class="lane" id="lane-c"><h3>🐍 Code that draws it: <code style="font-size:13px">get_devices()</code></h3>
+<pre id="code"><span>def get_devices(session, path=&quot;/dna/intent/api/v1/network-device&quot;):</span><span>    status, body = call(&quot;Client&quot;, &quot;CatC&quot;, &quot;GET&quot;, path, headers={&quot;X-Auth-Token&quot;: session[&quot;token&quot;]})</span><span>    if status == 401:                                              # alt [401 token expired]</span><span>        seqtrace.note(&quot;Client&quot;, &quot;alt 401: token expired -&gt; log in again, retry once&quot;)</span><span>        session[&quot;token&quot;] = get_token()</span><span>        status, body = call(&quot;Client&quot;, &quot;CatC&quot;, &quot;GET&quot;, path, headers={&quot;X-Auth-Token&quot;: session[&quot;token&quot;]})</span><span>    return body[&quot;response&quot;]</span></pre>
+      <div class="trace" id="trace"></div>
+    </div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("d");
+function el(parent, tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (text !== undefined) e.textContent = text;
+  parent.appendChild(e); return e;
+}
+const XC = 80, XS = 440;
+// frame
+el(svg, "rect", { x: 12, y: 72, width: 488, height: 276, fill: "#fffbea", stroke: "#e0a800", "stroke-dasharray": "5 3", rx: 4 });
+el(svg, "rect", { x: 12, y: 72, width: 36, height: 17, fill: "#fff3cd", stroke: "#e0a800" });
+el(svg, "text", { x: 19, y: 85, "font-weight": 700 }, "alt");
+const g200 = el(svg, "text", { x: 58, y: 85, fill: "#7a5b00" }, "[200 OK]  -> return body[\"response\"]");
+el(svg, "line", { x1: 12, y1: 104, x2: 500, y2: 104, stroke: "#e0a800", "stroke-dasharray": "5 3" });
+const g401 = el(svg, "text", { x: 20, y: 118, fill: "#7a5b00" }, "[401 Unauthorized]");
+// participants
+for (const [x, name] of [[XC, "Client"], [XS, "CatC"]]) {
+  el(svg, "line", { x1: x, y1: 30, x2: x, y2: 352, stroke: "#999", "stroke-dasharray": "3 3" });
+  el(svg, "rect", { x: x - 60, y: 2, width: 120, height: 26, rx: 5, fill: "#d1ecf1", stroke: "#17a2b8", "stroke-width": 1.8 });
+  el(svg, "text", { x, y: 20, "text-anchor": "middle", class: "p" }, name);
+}
+const arrows = [
+  { from: XC, to: XS, y: 56,  label: "GET /network-device [X-Auth-Token: tok-0001]" },
+  { from: XS, to: XC, y: 145, label: "401 Unauthorized", ret: true, color: "#b42318" },
+  { from: XC, to: XS, y: 190, label: "POST /dna/system/api/v1/auth/token (Basic)" },
+  { from: XS, to: XC, y: 230, label: '200 OK {"Token": "tok-0002"}', ret: true },
+  { from: XC, to: XS, y: 270, label: "GET /network-device [X-Auth-Token: tok-0002]" },
+  { from: XS, to: XC, y: 320, label: "200 OK [edge1]", ret: true, color: "#1e7b3a" },
+].map((a, i) => {
+  const g = el(svg, "g", { class: "ar future" });
+  const dir = Math.sign(a.to - a.from), c = a.color || "#1d1d1f", end = a.to - dir * 4;
+  el(g, "line", { x1: a.from, y1: a.y, x2: end - dir * 8, y2: a.y, stroke: c, "stroke-width": 2, ...(a.ret ? { "stroke-dasharray": "6 4" } : {}) });
+  el(g, "polygon", { points: `${end - dir * 11},${a.y - 6} ${end},${a.y} ${end - dir * 11},${a.y + 6}`, fill: c });
+  el(g, "text", { x: (a.from + a.to) / 2, y: a.y - 7, "text-anchor": "middle", fill: c }, a.label);
+  el(g, "circle", { cx: a.from, cy: a.y, r: 9, fill: "#1d1d1f" });
+  el(g, "text", { x: a.from, y: a.y + 4, "text-anchor": "middle", fill: "#fff", "font-size": 10.5, "font-weight": 700 }, String(i + 1));
+  return g;
+});
+
+const T = [
+  "03 Client->>CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=1 [X-Auth-Token: tok-0001]",
+  "04 CatC-->>Client: 401 Unauthorized {\"error\": \"Unauthorized: token missing or expired\"}",
+  "05 Client->>CatC: POST /dna/system/api/v1/auth/token [Authorization: Basic ZGV2bmV0OmNpc2NvMTIz]",
+  "06 CatC-->>Client: 200 OK {\"Token\": \"tok-0002\"}",
+  "07 Client->>CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=1 [X-Auth-Token: tok-0002]",
+  "08 CatC-->>Client: 200 OK [edge1]",
+];
+// frame: [arrows shown, code lines highlighted, trace lines, branch state, lane, caption]
+const F = [
+  [1, [1], 1, "", "d", "Arrow <b>1</b> = <code>call(... \"GET\" ...)</code>. Solid line: a request, sent with the <b>old</b> token <code>tok-0001</code>."],
+  [2, [1], 2, "", "d", "Arrow <b>2</b> is dashed: the <b>response</b> to arrow 1 (same <code>call()</code>). It lands in the <b>[401]</b> branch of the alt frame."],
+  [2, [2], 2, "401", "c", "<b>alt</b> = <code>if/else</code>: guard <b>[401]</b> is true, so only that branch runs; <b>[200]</b> (straight to <code>return</code>) is skipped."],
+  [3, [3, 4], 3, "401", "d", "Arrow <b>3</b> = <code>get_token()</code>: log in again with Basic. The 401 is not a dead end."],
+  [4, [4], 4, "401", "d", "Arrow <b>4</b>: <code>200</code> + a <b>new</b> token <code>tok-0002</code>, stored in <code>session[\"token\"]</code>."],
+  [5, [5], 5, "401", "d", "Arrow <b>5</b> = the <b>retry</b>, the same GET with the new token. Still inside the [401] branch."],
+  [6, [6], 6, "401", "c", "Arrow <b>6</b>: <code>200 OK [edge1]</code> → <code>return body[&quot;response&quot;]</code>. <b>6 arrows = 3 calls</b>; each dashed arrow answers the solid one above it."],
+];
+window.FRAME_COUNT = F.length;
+const lines = [...document.querySelectorAll("#code span")];
+window.show = (i) => {
+  const [na, hl, nt, br, lane, cap] = F[i];
+  arrows.forEach((g, k) => g.setAttribute("class", "ar " + (k < na - 1 ? "past" : k === na - 1 ? "now" : "future")));
+  lines.forEach((s, k) => s.className = hl.includes(k) ? "hl" : "");
+  if (br === "401") { lines[6].className = hl.includes(6) ? "hl" : ""; }
+  g200.setAttribute("opacity", br === "401" ? 0.3 : 1);
+  g401.setAttribute("font-weight", br === "401" ? 700 : 400);
+  g401.setAttribute("fill", br === "401" ? "#b42318" : "#7a5b00");
+  document.getElementById("trace").innerHTML = T.slice(0, nt).map((t, k) => k === nt - 1 ? `<b>${t}</b>` : t).slice(-3).join("\n");
+  document.getElementById("lane-d").className = "lane" + (lane === "d" ? " active" : "");
+  document.getElementById("lane-c").className = "lane" + (lane === "c" ? " active" : "");
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = cap;
+  document.getElementById("dots").innerHTML = F.map((_, k) => `<i class="${k === i ? "on" : ""}"></i>`).join("");
+};
+show(0);
+</script>
+</body>
+</html>

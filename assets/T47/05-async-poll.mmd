@@ -1,0 +1,17 @@
+sequenceDiagram
+    autonumber
+    participant Client as Client (flows.py)
+    participant CatC as Catalyst Center<br/>(mock :8147)
+    Client->>+CatC: POST /dna/intent/api/v1/network-device-poller/cli/read-request<br/>{"commands": ["show version"], "deviceUuids": ["dev-1"]}
+    CatC-->>-Client: 202 Accepted {"taskId": "task-001"}
+    Note over Client,CatC: 202 = queued, NOT done. CatC works on the job in the background.
+    loop every 0.2 s until endTime is set (real run: 3 polls)
+        Client->>CatC: GET /dna/intent/api/v1/task/task-001
+        alt still running
+            CatC-->>Client: 200 OK isError=false, no endTime yet
+        else finished
+            CatC-->>Client: 200 OK isError=false, endTime set, progress={"fileId": "file-001"}
+        end
+    end
+    Client->>CatC: GET /dna/intent/api/v1/file/file-001
+    CatC-->>Client: 200 OK SUCCESS: show version

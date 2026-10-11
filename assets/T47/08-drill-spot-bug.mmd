@@ -1,0 +1,10 @@
+sequenceDiagram
+    autonumber
+    participant S as Script
+    participant M as Secure Firewall<br/>Management Center (FMC)
+    S->>M: GET /api/fmc_config/v1/domain/{domainUUID}/object/networks
+    M-->>S: 401 Unauthorized
+    S->>M: POST /api/fmc_platform/v1/auth/generatetoken (Basic)
+    M-->>S: 204 + headers X-auth-access-token, DOMAIN_UUID
+    S->>M: GET /api/fmc_config/v1/domain/{domainUUID}/object/networks<br/>X-auth-access-token: ...
+    M-->>S: 200 OK {"items": [...]}

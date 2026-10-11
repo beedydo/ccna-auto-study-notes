@@ -1,0 +1,11 @@
+sequenceDiagram
+    autonumber
+    participant Client as Client (flows.py)
+    participant CatC as Catalyst Center<br/>(mock :8147)
+    Note over Client: offset = 1
+    loop until a page has fewer than limit=2 items
+        Client->>CatC: GET /dna/intent/api/v1/network-device?offset={offset}&limit=2
+        CatC-->>Client: 200 OK [page of devices]
+        Note over Client: devices += page<br/>offset += 2
+    end
+    Note over Client,CatC: real run: offset=1 → [edge1, edge2]<br/>offset=3 → [core1, core2]<br/>offset=5 → [access1] = short page, stop

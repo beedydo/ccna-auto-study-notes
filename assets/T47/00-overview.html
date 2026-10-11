@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T47 overview: sequence diagrams with API calls</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #d1ecf1; --blue-b: #17a2b8; --yellow: #fff3cd; --yellow-b: #e0a800; --ok: #d4edda; --ok-b: #28a745;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1240px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.5px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 10px; background: #fff; padding: 11px 13px; display: flex; flex-direction: column; }
+  .panel h3 { margin: 0 0 6px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 .ids { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: auto; }
+  .panel ul { margin: 4px 0 0; padding-left: 17px; font-size: 12.8px; line-height: 1.45; }
+  .panel li { margin-bottom: 2px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 8px; margin-top: auto; font-size: 12.4px; line-height: 1.4; }
+  .trap b { color: var(--trap-ink); }
+  .spacer { height: 6px; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11.5px;
+       font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .trap .n { background: var(--trap-ink); }
+  svg { display: block; margin: 2px auto 6px; }
+  svg text { font-family: Menlo, Consolas, monospace; font-size: 10px; paint-order: stroke; stroke: #fff; stroke-width: 3.5px; stroke-linejoin: round; }
+  svg text.num { stroke: none; }
+  svg .p { font-family: -apple-system, Arial, sans-serif; font-size: 12px; font-weight: 700; }
+  .legend { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 5px 10px; font-size: 12.6px; align-items: center; margin-top: 4px; }
+  .legend svg { margin: 0; }
+  .steps { display: grid; gap: 5px; font-size: 12.8px; line-height: 1.4; }
+  .step { display: flex; align-items: flex-start; }
+  .wide { grid-column: span 2; }
+  .cols2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--ok); border: 1px solid var(--ok-b); }
+  footer .k5::before { background: var(--yellow); border: 1px solid var(--yellow-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T47 · <span class="pill">Sequence Diagrams</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.14</b><br>Every T47 concept on one page<br>Code from <code>labs/T47/</code></div>
+  </header>
+
+  <div class="grid">
+    <!-- Notation -->
+    <div class="panel">
+      <h3>🧱 Notation <span class="ids">T47.01</span></h3>
+      <svg id="s-notation" width="350" height="186"></svg>
+      <div class="legend">
+        <svg width="110" height="14"><line x1="2" y1="7" x2="100" y2="7" stroke="#1d1d1f" stroke-width="1.6"/><polygon points="100,2 110,7 100,12" fill="#1d1d1f"/></svg>
+        <div><b>solid + filled head</b> = request / sync call (method + URL)</div>
+        <svg width="110" height="14"><line x1="2" y1="7" x2="102" y2="7" stroke="#1d1d1f" stroke-width="1.6" stroke-dasharray="5 4"/><polygon points="100,2 110,7 100,12" fill="#1d1d1f"/></svg>
+        <div><b>dashed</b> = response / return (status + data)</div>
+        <svg width="110" height="14"><line x1="2" y1="7" x2="108" y2="7" stroke="#1d1d1f" stroke-width="1.6"/><polyline points="99,2 109,7 99,12" fill="none" stroke="#1d1d1f" stroke-width="1.6"/></svg>
+        <div><b>open head</b> = async message (sender doesn't wait)</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> time runs <b>down</b>, not left→right. Boxes = participants; the left-to-right order of boxes means nothing</div>
+    </div>
+
+    <!-- Frames -->
+    <div class="panel">
+      <h3>🔲 Activation + frames <span class="ids">T47.02</span></h3>
+      <svg id="s-frames" width="350" height="186"></svg>
+      <ul>
+        <li><b>Activation bar</b> (thin box on a lifeline) = that participant is busy</li>
+        <li><code>alt</code> [guard] / [else] = <b>if/else</b>: exactly one branch runs</li>
+        <li><code>opt</code> = <b>if</b> with no else · <code>loop</code> = repeat (poll, paginate)</li>
+        <li><code>par</code> = branches run <b>in parallel</b> · <code>break</code> = exit early</li>
+      </ul>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>alt</code> ≠ both branches. <code>opt</code> = one block that may be skipped. <code>loop</code> = the arrows inside repeat</div>
+    </div>
+
+    <!-- Auth -->
+    <div class="panel">
+      <h3>🔐 Auth flow <span class="ids">T47.03</span></h3>
+      <svg id="s-auth" width="350" height="186"></svg>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>Basic creds once<br><code>POST /dna/system/api/v1/auth/token</code></div></div>
+        <div class="step"><span class="n">2</span><div><code>200</code> + <code>{"Token": "tok-0001"}</code></div></div>
+        <div class="step"><span class="n">3</span><div>token on every call: <code>X-Auth-Token: tok-0001</code></div></div>
+        <div class="step"><span class="n">4</span><div><code>200</code> + data · <code>401</code> = token missing/expired → re-auth</div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> a data call drawn <b>before</b> the token arrow = the bug (→ <code>401</code>). <code>403</code> = token fine, no permission</div>
+    </div>
+
+    <!-- Async -->
+    <div class="panel">
+      <h3>⏳ Async flow <span class="ids">T47.04</span></h3>
+      <svg id="s-async" width="350" height="200"></svg>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>submit: <code>POST …/cli/read-request</code></div></div>
+        <div class="step"><span class="n">2</span><div><code>202 Accepted</code> + <code>taskId</code> (<b>not done</b>)</div></div>
+        <div class="step"><span class="n">3</span><div><code>loop</code>: <code>GET /dna/intent/api/v1/task/{taskId}</code> until <code>endTime</code></div></div>
+        <div class="step"><span class="n">4</span><div>result: <code>GET /dna/intent/api/v1/file/{fileId}</code></div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> arrow after <code>202</code> = <b>GET the task</b>, not the result and not the POST again (duplicate job)</div>
+    </div>
+
+    <!-- Webhook -->
+    <div class="panel">
+      <h3>📣 Webhook flow <span class="ids">T47.05</span></h3>
+      <svg id="s-webhook" width="350" height="200"></svg>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>register: <code>POST /v1/webhooks</code> + <code>targetUrl</code></div></div>
+        <div class="step"><span class="n">2</span><div>event happens → <b>service POSTs</b> to <code>targetUrl</code></div></div>
+        <div class="step"><span class="n">3</span><div>app replies <code>200</code> fast (2xx or the hook gets disabled)</div></div>
+        <div class="step"><span class="n">4</span><div>app GETs details: <code>GET /v1/messages/{id}</code></div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> arrow 2 points <b>from the service to the app</b>; the app does not poll. Payload = IDs, not full text</div>
+    </div>
+
+    <!-- Reading + exam -->
+    <div class="panel">
+      <h3>🎯 Reading + exam angle <span class="ids">T47.06 · T47.07</span></h3>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>Name the <b>participants</b> (client, controller, device, auth server)</div></div>
+        <div class="step"><span class="n">2</span><div>Each solid arrow → <b>method + URL</b>; each dashed → <b>status + data</b></div></div>
+        <div class="step"><span class="n">3</span><div>Read <b>top → bottom</b>; frames change the flow (repeat, branch, skip)</div></div>
+        <div class="step"><span class="n">4</span><div>Check the <b>order</b>: auth → call → 202 → poll → result</div></div>
+        <div class="step"><span class="n">5</span><div>Missing step? Wrong status? Call to the wrong lifeline?</div></div>
+        <div class="step"><span class="n">6</span><div>Map to code: arrow = one <code>requests.get/post</code>; <code>loop</code> = <code>while</code>; <code>alt</code> = <code>if/else</code></div></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> "What is returned at arrow N?" Read the dashed arrow's label <b>and</b> the frame guard it sits under</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = order of arrows</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">green = success</span>
+    <span class="k k5">yellow = frame / note</span>
+    <span style="margin-left:auto">Run it: <code>python3 labs/T47/flows.py</code></span>
+  </footer>
+</div>
+
+<script>
+// Tiny sequence-diagram drawer: participants = [names], items = arrows / frames.
+const NS = "http://www.w3.org/2000/svg";
+function el(svg, tag, attrs, text) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  if (text !== undefined) e.textContent = text;
+  svg.appendChild(e);
+  return e;
+}
+function seq(id, parts, items) {
+  const svg = document.getElementById(id);
+  const W = +svg.getAttribute("width"), H = +svg.getAttribute("height");
+  const gap = W / parts.length, xs = parts.map((_, i) => gap * i + gap / 2);
+  // frames first (behind)
+  for (const it of items.filter(i => i.frame)) {
+    el(svg, "rect", { x: 8, y: it.y0, width: W - 16, height: it.y1 - it.y0, fill: "#fff8e1", stroke: "#e0a800", "stroke-dasharray": "4 3", rx: 3 });
+    el(svg, "rect", { x: 8, y: it.y0, width: it.frame.length * 7.5 + 12, height: 15, fill: "#fff3cd", stroke: "#e0a800" });
+    el(svg, "text", { x: 14, y: it.y0 + 11, "font-weight": 700 }, it.frame);
+    if (it.guard) el(svg, "text", { x: it.frame.length * 7.5 + 26, y: it.y0 + 11, fill: "#7a5b00" }, it.guard);
+    if (it.split) el(svg, "line", { x1: 8, y1: it.split, x2: W - 8, y2: it.split, stroke: "#e0a800", "stroke-dasharray": "4 3" });
+    if (it.guard2) el(svg, "text", { x: 14, y: it.split + 11, fill: "#7a5b00" }, it.guard2);
+  }
+  parts.forEach((p, i) => {
+    el(svg, "line", { x1: xs[i], y1: 26, x2: xs[i], y2: H - 2, stroke: "#999", "stroke-dasharray": "3 3" });
+    el(svg, "rect", { x: xs[i] - gap / 2 + 8, y: 2, width: gap - 16, height: 22, rx: 4, fill: "#d1ecf1", stroke: "#17a2b8", "stroke-width": 1.6 });
+    el(svg, "text", { x: xs[i], y: 17, "text-anchor": "middle", class: "p" }, p);
+  });
+  for (const it of items.filter(i => i.act)) {
+    el(svg, "rect", { x: xs[it.act] - 4, y: it.y0, width: 8, height: it.y1 - it.y0, fill: "#ececec", stroke: "#555" });
+  }
+  for (const it of items.filter(i => i.from !== undefined)) {
+    const x1 = xs[it.from], x2 = xs[it.to], dir = Math.sign(x2 - x1), y = it.y;
+    const color = it.color || "#1d1d1f";
+    const end = x2 - dir * 5;
+    el(svg, "line", { x1: x1 + dir * 5, y1: y, x2: end - dir * (it.open ? 0 : 6), y2: y, stroke: color, "stroke-width": 1.6, ...(it.ret ? { "stroke-dasharray": "5 4" } : {}) });
+    if (it.open) el(svg, "polyline", { points: `${end - dir * 9},${y - 5} ${end},${y} ${end - dir * 9},${y + 5}`, fill: "none", stroke: color, "stroke-width": 1.6 });
+    else el(svg, "polygon", { points: `${end - dir * 9},${y - 5} ${end},${y} ${end - dir * 9},${y + 5}`, fill: color });
+    el(svg, "text", { x: (x1 + x2) / 2 + (it.n ? dir * 8 : 0), y: y - 5, "text-anchor": "middle", fill: color }, it.label);
+    if (it.n) {
+      el(svg, "circle", { cx: x1 + dir * 0, cy: y, r: 7.5, fill: "#1d1d1f" });
+      el(svg, "text", { x: x1, y: y + 3.5, "text-anchor": "middle", fill: "#fff", "font-size": 9.5, "font-weight": 700, class: "num" }, it.n);
+    }
+  }
+}
+
+seq("s-notation", ["Client", "CatC", "Switch"], [
+  { act: 1, y0: 44, y1: 76 },
+  { from: 0, to: 1, y: 48, label: "GET /devices" },
+  { from: 1, to: 0, y: 74, label: "200 [edge1,…]", ret: true },
+  { from: 0, to: 1, y: 106, label: "POST /token" },
+  { from: 1, to: 0, y: 132, label: "401 bad creds", ret: true, color: "#b42318" },
+  { from: 1, to: 2, y: 166, label: "push config", open: true },
+]);
+
+seq("s-frames", ["Client", "API"], [
+  { frame: "alt", guard: "[200]", split: 70, guard2: "[401]", y0: 30, y1: 108 },
+  { from: 1, to: 0, y: 58, label: "200 + data", ret: true, color: "#1e7b3a" },
+  { from: 1, to: 0, y: 98, label: "401 → re-auth", ret: true, color: "#b42318" },
+  { frame: "loop", guard: "[until endTime]", y0: 116, y1: 180 },
+  { from: 0, to: 1, y: 144, label: "GET /task/{taskId}" },
+  { from: 1, to: 0, y: 170, label: "200 status", ret: true },
+]);
+
+seq("s-auth", ["Client", "CatC"], [
+  { act: 1, y0: 40, y1: 76 }, { act: 1, y0: 112, y1: 148 },
+  { from: 0, to: 1, y: 46, label: "POST /auth/token (Basic)", n: 1 },
+  { from: 1, to: 0, y: 74, label: '200 {"Token": "tok-0001"}', ret: true, n: 2 },
+  { from: 0, to: 1, y: 118, label: "GET /network-device", n: 3 },
+  { from: 1, to: 0, y: 146, label: "200 [edge1, edge2]", ret: true, n: 4, color: "#1e7b3a" },
+  { from: 1, to: 0, y: 176, label: "(or 401: token expired)", ret: true, color: "#b42318" },
+]);
+
+seq("s-async", ["Client", "CatC"], [
+  { frame: "loop", guard: "[until endTime set]", y0: 92, y1: 156 },
+  { from: 0, to: 1, y: 46, label: "POST …/cli/read-request", n: 1 },
+  { from: 1, to: 0, y: 74, label: '202 {"taskId": "task-001"}', ret: true, n: 2 },
+  { from: 0, to: 1, y: 122, label: "GET /task/task-001", n: 3 },
+  { from: 1, to: 0, y: 148, label: "200 no endTime yet", ret: true },
+  { from: 0, to: 1, y: 176, label: "GET /file/file-001", n: 4 },
+  { from: 1, to: 0, y: 196, label: "200 SUCCESS: show version", ret: true, color: "#1e7b3a" },
+]);
+
+seq("s-webhook", ["App", "Webex", "User"], [
+  { from: 0, to: 1, y: 46, label: "POST /webhooks", n: 1 },
+  { from: 1, to: 0, y: 70, label: "200 hook-1", ret: true },
+  { from: 2, to: 1, y: 98, label: "POST /messages" },
+  { from: 1, to: 0, y: 128, label: "POST targetUrl", n: 2, color: "#0b6e80" },
+  { from: 0, to: 1, y: 154, label: "200 OK", ret: true, n: 3 },
+  { from: 0, to: 1, y: 186, label: "GET /messages/msg-1", n: 4 },
+]);
+</script>
+</body>
+</html>

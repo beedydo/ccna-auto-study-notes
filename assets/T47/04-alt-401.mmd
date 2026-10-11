@@ -1,0 +1,21 @@
+sequenceDiagram
+    autonumber
+    participant Client as Client (flows.py)
+    participant CatC as Catalyst Center<br/>(mock :8147)
+    Client->>CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=1<br/>X-Auth-Token: tok-0001
+    CatC-->>Client: 200 OK [edge1]
+    Note over CatC: time passes: tok-0001 expires
+    Client->>CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=1<br/>X-Auth-Token: tok-0001
+    alt 200 OK
+        rect rgb(212, 237, 218)
+        CatC-->>Client: 200 OK [edge1] (use the data, done)
+        end
+    else 401 Unauthorized
+        rect rgb(253, 232, 232)
+        CatC-->>Client: 401 Unauthorized
+        Client->>CatC: POST /dna/system/api/v1/auth/token (Basic)
+        CatC-->>Client: 200 OK {"Token": "tok-0002"}
+        Client->>CatC: GET /dna/intent/api/v1/network-device?offset=1&limit=1<br/>X-Auth-Token: tok-0002
+        CatC-->>Client: 200 OK [edge1]
+        end
+    end

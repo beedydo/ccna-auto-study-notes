@@ -1,0 +1,14 @@
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant API as Controller
+    C->>API: POST /api/v1/auth/token (Basic)
+    API-->>C: 200 OK {"Token": "abc"}
+    C->>API: PUT /api/v1/templates/deploy<br/>X-Auth-Token: abc
+    API-->>C: 202 Accepted {"taskId": "t-77"}
+    loop until done
+        C->>API: ??? (arrow 5)
+        API-->>C: 200 OK {"progress": "..."}
+    end
+    C->>API: GET /api/v1/templates/deploy/status/{deploymentId}
+    API-->>C: 200 OK {"status": "SUCCESS"}

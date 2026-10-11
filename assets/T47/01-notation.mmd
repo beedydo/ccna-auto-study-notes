@@ -1,0 +1,14 @@
+sequenceDiagram
+    actor U as Engineer
+    participant Client as Python script
+    participant CatC as Catalyst Center
+    participant Dev as Switch
+    U->>Client: python3 flows.py
+    activate Client
+    Client->>+CatC: GET /dna/intent/api/v1/network-device
+    Note right of CatC: activation bar:<br/>CatC is busy
+    CatC-->>-Client: 200 OK [edge1, edge2]
+    CatC-)Dev: push config (async: open arrowhead,<br/>sender does not wait)
+    Dev--)CatC: done (later)
+    deactivate Client
+    Note over U,Dev: solid line = request · dashed line = response · time runs DOWN
