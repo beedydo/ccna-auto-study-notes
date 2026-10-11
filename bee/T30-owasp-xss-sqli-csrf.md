@@ -16,6 +16,22 @@ cross_study: 2026-10-22
 
 > Owner: **Beedy** · Blueprint: **4.10** · CBT coverage: **Full** · Learn by 2026-10-14 · Teach-back 2026-10-16
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T30.01](#t3001--owasp) OWASP · [T30.02](#t3002--xss) XSS · [T30.03](#t3003--xss-defences) XSS defences · [T30.04](#t3004--sql-injection) SQL injection · [T30.05](#t3005--sqli-defences) SQLi defences · [T30.06](#t3006--csrf) CSRF · [T30.07](#t3007--csrf-defences) CSRF defences · [T30.08](#t3008--other-top-10-awareness) Other Top 10 (awareness) · [T30.09](#t3009--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 <!-- 3 key points + 1 exam trap. Written last. -->

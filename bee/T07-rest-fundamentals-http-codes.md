@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Every T07 concept on one page. Each row is a concept group (IDs under the icon), numbered items are calls from the mock API session in `labs/T07/`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T07.01](#t0701--rest-basics) REST basics · [T07.02](#t0702--rest-constraints) REST constraints · [T07.03](#t0703--http-methods) HTTP methods · [T07.04](#t0704--http-methods) HTTP methods · [T07.05](#t0705--request-parts) Request parts · [T07.06](#t0706--headers) Headers · [T07.07](#t0707--response-parts) Response parts · [T07.08](#t0708--status-classes) Status classes · [T07.09](#t0709--key-codes) Key codes · [T07.10](#t0710--troubleshooting) Troubleshooting · [T07.11](#t0711--using-api-docs) Using API docs · [T07.12](#t0712--curl) curl · [T07.13](#t0713--media-types) Media types · [T07.14](#t0714--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Request = method + URI + headers + body.** CRUD: POST creates on the collection (`201` + `Location`), GET reads, PUT replaces **all** fields, PATCH changes **some**, DELETE removes (`204`). Path param = which resource (`/devices/1`), query param = filter (`?role=edge`).

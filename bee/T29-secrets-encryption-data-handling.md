@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T29 concept on one page. The top table answers "which transform, and is it security?" (key, reversible, use, exact Python). The six panels below cover where secrets live and how data is protected, handled and validated. Red boxes are the exam traps; grey chips are exact code or output from `labs/T29/secure_data_tour.py`.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T29.01](#t2901--secrets) Secrets · [T29.02](#t2902--encryption) Encryption · [T29.03](#t2903--crypto-basics) Crypto basics · [T29.04](#t2904--pki) PKI · [T29.05](#t2905--hashing) Hashing · [T29.06](#t2906--data-handling) Data handling · [T29.07](#t2907--input-handling) Input handling · [T29.08](#t2908--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Four transforms, one question each: is there a key, and can it be reversed?** Encoding (base64) has no key and anyone can reverse it, so it is **not security**. Hashing (SHA-256) has no key and can't be reversed: it's for integrity and password checks. Symmetric encryption (AES) uses **one shared key** both ways; it's fast. Asymmetric (RSA/ECC) uses a **key pair**: encrypt with the public key, decrypt with the private key; sign with the private key, verify with the public key.

@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T43 concept on one page. Read the top row left to right as one event's life (numbers = order; the "who" line shows who is client and who is server at each step). The bottom row covers comparison, testing, retries and exam scenarios. Red boxes = exam traps; grey chips = exact syntax from `labs/T43/`.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T43.01](#t4301--concept) Concept · [T43.02](#t4302--comparison) Comparison · [T43.03](#t4303--components) Components · [T43.04](#t4304--registration) Registration · [T43.05](#t4305--payload) Payload · [T43.06](#t4306--security) Security · [T43.07](#t4307--testing-tools) Testing tools · [T43.08](#t4308--use-cases) Use cases · [T43.09](#t4309--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Webhook = the platform calls you.** You register once (`POST /v1/webhooks` with `name`, `targetUrl`, `resource`, `event`, optional `filter` + `secret`). When a matching event happens, the platform sends an HTTP **POST** with a JSON body to your `targetUrl`. Push, not poll: no wasted "anything new?" calls, near real time, no rate-limit burn.

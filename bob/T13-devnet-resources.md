@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Each card is one resource with the same parts (what / where / how / use when / trap), so the differences stand out. The coloured pill is the verb to remember. The bottom strip is the exam drill: numbers 1-7 are the `--drill` scenarios from `labs/T13/devnet_finder.py`. Red = traps, yellow = legacy or awareness only.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T13.01](#t1301--devnet-sandbox) DevNet Sandbox · [T13.02](#t1302--learning-labs) Learning Labs · [T13.03](#t1303--code-exchange) Code Exchange · [T13.04](#t1304--api-documentation) API documentation · [T13.05](#t1305--support-and-community) Support and community · [T13.06](#t1306--other-awareness) Other (awareness) · [T13.07](#t1307--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **One verb per resource:** Sandbox = **TRY** (run code on real or virtual Cisco gear) · Learning Labs = **LEARN** (guided steps) · Code Exchange = **REUSE** (curated GitHub repos) · Docs = **LOOK UP** (endpoint, params, schema) · Community = **ASK** (peers) · Developer support = **ESCALATE** (case with a Cisco engineer).

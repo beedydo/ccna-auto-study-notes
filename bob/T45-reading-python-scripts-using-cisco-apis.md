@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T45 concept on one page. Rows are concept groups (IDs under the icon), numbered items are lines from `labs/T45/device_audit.py` (or the platform fingerprint table), and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T45.01](#t4501--typical-script-structure) Typical script structure · [T45.02](#t4502--recognise-the-platform) Recognise the platform · [T45.03](#t4503--read-the-workflow) Read the workflow · [T45.04](#t4504--spot-bugs) Spot bugs · [T45.05](#t4505--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Same skeleton every time:** imports → constants (base URL, creds from env) → `get_token()` → call functions → `main()` that loops, filters and acts. Read `main()` for the order. The definition order in the file doesn't tell you the run order.

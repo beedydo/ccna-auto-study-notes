@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Read it left to right like traffic: your script (left) → Meraki cloud (middle) → devices and clients (right). Numbered circles are the call order from `labs/T18/`; red boxes are exam traps; IDs under each panel title map to the T18.NN sections.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T18.01](#t1801--platform) Platform · [T18.02](#t1802--apis) APIs · [T18.03](#t1803--authentication) Authentication · [T18.04](#t1804--hierarchy-and-endpoints) Hierarchy and endpoints · [T18.05](#t1805--constraints) Constraints · [T18.06](#t1806--python-sdk) Python SDK · [T18.07](#t1807--client-discovery-39c) Client discovery (3.9.c) · [T18.08](#t1808--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Cloud-managed, no controller on-prem.** MX (security/SD-WAN appliance), MS (switch), MR (wireless AP), MV (camera) dial out to the Meraki cloud. Config, monitoring and the API all live at `https://api.meraki.com/api/v1`. User traffic stays on site.

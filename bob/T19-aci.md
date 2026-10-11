@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Top band = the system map (client → APIC with its object tree → spine-leaf fabric). Each row below is a concept group (IDs under the icon), numbered items are calls from `labs/T19/aci_tenant_builder.py`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T19.01](#t1901--what-aci-is) What ACI is · [T19.02](#t1902--object-model) Object model · [T19.03](#t1903--logical-constructs) Logical constructs · [T19.04](#t1904--rest-api-login) REST API login · [T19.05](#t1905--queries) Queries · [T19.06](#t1906--tools) Tools · [T19.07](#t1907--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **ACI = SDN for the data centre.** The APIC cluster (the controller) holds the policy; the Nexus 9000 spine-leaf fabric forwards traffic. You declare intent (tenant, EPGs, contracts) and APIC programs every switch. APIC is not in the data path.

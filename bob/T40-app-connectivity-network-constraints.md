@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Read the top panel left to right as the path an API call takes (App → VPN → proxy → firewall → NAT → server), one failure point per box. The middle strip is the diagnostic ladder in order. Bottom: constraints (6.9) and the exam's symptom → cause → fix table. Numbered items are steps or lab examples; red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T40.01](#t4001--nat-issues) NAT issues · [T40.02](#t4002--port-blocking) Port blocking · [T40.03](#t4003--proxy-issues) Proxy issues · [T40.04](#t4004--vpn-issues) VPN issues · [T40.05](#t4005--diagnostic-tools) Diagnostic tools · [T40.06](#t4006--network-constraints-69) Network constraints (6.9) · [T40.07](#t4007--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Read the failure mode, not just "it failed".** Instant `Connection refused` = RST = host is reachable but nothing listens. Hang then `timed out` = silent drop (firewall/ACL, no route, missing NAT). `407` = the **proxy** wants credentials. `CERTIFICATE_VERIFY_FAILED` only on the corp network = TLS inspection, so trust the corp CA.

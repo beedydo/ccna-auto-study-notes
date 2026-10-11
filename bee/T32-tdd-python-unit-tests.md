@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Read top to bottom: panel 1 is the red → green → refactor loop with the real run results, panel 2 the test-type pyramid, panel 3 the anatomy of a `TestCase` (numbered = run order), panel 4 the `.`/`F`/`E` output codes, panel 5 mocking and pytest. Red boxes are exam traps. All code chips come from `labs/T32/`.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T32.01](#t3201--tdd) TDD · [T32.02](#t3202--test-types) Test types · [T32.03](#t3203--unittest) unittest · [T32.04](#t3204--unittest) unittest · [T32.05](#t3205--running) Running · [T32.06](#t3206--mocking-awareness) Mocking (awareness) · [T32.07](#t3207--pytest-awareness) pytest (awareness) · [T32.08](#t3208--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **TDD = red → green → refactor.** Write a failing test first (red), the minimum code to pass it (green), then clean up while the tests stay green (refactor). The test is the requirement.

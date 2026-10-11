@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T25 concept on one page. The top panel is the NSO system map, read left to right (you → NSO core → NEDs → devices). The panels below it cover transactions, sync, CML, tool choice and the exam angle. Numbers are examples taken from `labs/T25/`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T25.01](#t2501--what-nso-is) What NSO is · [T25.02](#t2502--architecture) Architecture · [T25.03](#t2503--transactions) Transactions · [T25.04](#t2504--sync) Sync · [T25.05](#t2505--cml) CML · [T25.06](#t2506--tool-choice) Tool choice · [T25.07](#t2507--not-tested) Not tested · [T25.08](#t2508--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **NSO = model-driven, transactional, multivendor orchestration.** A **service** (YANG model + template/Python mapping) turns intent into config for each device. **NEDs** translate that config into each device's native interface (CLI, NETCONF, SNMP, REST). **CDB** holds the services and every device's config. You reach NSO northbound through CLI, Web UI, RESTCONF, NETCONF or JSON-RPC.

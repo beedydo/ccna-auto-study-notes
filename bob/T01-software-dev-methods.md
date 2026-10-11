@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Read it top to bottom: one row per method, then the comparison row. The IDs under each icon map to the T01.NN sections, numbered circles are key points, red boxes are exam traps, and blue cells are the answer to pick for a scenario.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T01.01](#t0101--waterfall) Waterfall · [T01.02](#t0102--agile) Agile · [T01.03](#t0103--agile-frameworks) Agile frameworks · [T01.04](#t0104--lean) Lean · [T01.05](#t0105--comparison) Comparison · [T01.06](#t0106--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Waterfall = plan-driven and sequential.** Requirements → design → implementation → testing → deployment → maintenance. Each phase is signed off before the next one starts. Predictable, but feedback comes late and late change is expensive. Pick it for fixed scope, contracts and regulated work.

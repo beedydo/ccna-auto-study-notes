@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Read top to bottom: panel 1 is the system map (your code → pyATS + Genie → Unicon → devices), panel 2 the testbed and the three device calls, panel 3 the before/after diff, panel 4 the AEtest structure and result words, panel 5 the use cases and "which tool" table. Numbers are order or index, red boxes are exam traps, and every code chip comes from `labs/T44/`.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T44.01](#t4401--components) Components · [T44.02](#t4402--testbed) Testbed · [T44.03](#t4403--workflow) Workflow · [T44.04](#t4404--learn-and-diff) Learn and diff · [T44.05](#t4405--aetest) AEtest · [T44.06](#t4406--cml-link) CML link · [T44.07](#t4407--use-cases) Use cases · [T44.08](#t4408--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Three layers, three jobs.** **pyATS** is Cisco's free Python **test framework** (testbed loader, AEtest harness, `pyats run job` runner). **Genie** (the pyATS Library) **parses** show output into dicts, **learns** whole features (`dev.learn("routing")`) and **diffs** snapshots. **Unicon** **connects** over SSH, Telnet or console and handles prompts.

@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T21 concept on one page. Top row is the system map (who calls which API, and what each API touches inside the cluster). The AXL and UDS rows list exact syntax from `labs/T21/`, numbered items are calls from the lab run, red boxes are exam traps, and the bottom row is the AXL vs UDS decision table.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T21.01](#t2101--cucm) CUCM · [T21.02](#t2102--axl) AXL · [T21.03](#t2103--uds) UDS · [T21.04](#t2104--other-uc-apis-awareness) Other UC APIs (awareness) · [T21.05](#t2105--choosing) Choosing · [T21.06](#t2106--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **CUCM (Unified CM) = on-prem call control.** Phones register to it. One **Publisher** holds the writable config DB; **Subscribers** process calls. Several APIs, one job each: AXL (config), UDS (one user's data), RisPort70 (live registration), JTAPI/TAPI (live calls), Finesse (contact-centre agents).

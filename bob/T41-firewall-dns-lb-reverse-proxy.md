@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Read left to right like a request. Each zone is one box from blueprint 4.9 (concept IDs in grey), numbered circles are the order a request meets them, and red boxes are exam traps. The bottom strip is the "which box solves it?" picker.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T41.01](#t4101--firewall) Firewall · [T41.02](#t4102--dns) DNS · [T41.03](#t4103--load-balancer) Load balancer · [T41.04](#t4104--reverse-proxy) Reverse proxy · [T41.05](#t4105--typical-flow) Typical flow · [T41.06](#t4106--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Each box answers one question.** DNS: *where* is the app (name → VIP, TTL, GSLB failover). Firewall: *may* this packet pass (IP / port / protocol, stateful, first match, implicit deny). WAF: is this *HTTP request* an attack (SQLi, XSS). LB: *which* server (VIP → pool, round robin / least conn / weighted, health checks). Reverse proxy: *front* the servers (hide them, TLS termination, cache, compress, route by path).

@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T22 concept on one page. The top panel is the fabric (4 components, old name in brackets, one plane each), the middle panels are the API (base URL, login steps numbered in order, endpoints), and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T22.01](#t2201--components) Components · [T22.02](#t2202--api-base) API base · [T22.03](#t2203--authentication) Authentication · [T22.04](#t2204--common-endpoints) Common endpoints · [T22.05](#t2205--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Four components, four planes.** SD-WAN **Manager** (vManage) = management + the **only REST API**. SD-WAN **Controller** (vSmart) = control plane, runs **OMP**, pushes policy. SD-WAN **Validator** (vBond) = orchestration, **authenticates** devices and points them at the controllers. **WAN Edge** (vEdge/cEdge) = data plane, IPsec tunnels + BFD.

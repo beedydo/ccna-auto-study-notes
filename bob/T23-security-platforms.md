@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *One card per platform, all with the same parts (what · auth · calls · trap) so the differences pop. The dark card compares the auth styles; the bottom strip is the exam's "scenario → platform" mapping. Red = exam traps, grey = exact syntax.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T23.01](#t2301--secure-firewall-management-center-fmc) Secure Firewall Management Center (FMC) · [T23.02](#t2302--fdm-awareness) FDM (awareness) · [T23.03](#t2303--ise) ISE · [T23.04](#t2304--xdr) XDR · [T23.05](#t2305--secure-endpoint) Secure Endpoint · [T23.06](#t2306--secure-malware-analytics) Secure Malware Analytics · [T23.07](#t2307--secure-connect) Secure Connect · [T23.08](#t2308--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Know the job of each box.** FMC = central manager for many firewalls; FDM = on-box manager for one firewall; ISE = who/what is on the network (AAA, NAC, posture, guest); Secure Endpoint (AMP) = EDR on the laptop; Secure Malware Analytics (Threat Grid) = sandbox that detonates files and returns a threat score; XDR = correlates telemetry from all of them and triggers responses; Secure Connect = cloud SASE (Umbrella + Meraki) for remote users and DNS/web security.

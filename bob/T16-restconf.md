@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Every T16 concept on one page. Each row is a concept group (IDs under the icon), numbered items are calls from the lab session in `labs/T16/`, red boxes are exam traps, and the last row is the NETCONF vs RESTCONF table.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T16.01](#t1601--what-restconf-is) What RESTCONF is · [T16.02](#t1602--uri-structure) URI structure · [T16.03](#t1603--methods) Methods · [T16.04](#t1604--headers) Headers · [T16.05](#t1605--responses) Responses · [T16.06](#t1606--query-parameters) Query parameters · [T16.07](#t1607--device-setup) Device setup · [T16.08](#t1608--netconf-vs-restconf) NETCONF vs RESTCONF · [T16.09](#t1609--python) Python · [T16.10](#t1610--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **RESTCONF (RFC 8040) = YANG data over HTTPS 443**, in JSON or XML, using HTTP methods on URIs. The URI follows the YANG tree: `/restconf/data/<module>:<container>/<list>=<key>/<leaf>`. RPCs go under `/restconf/operations/`. On IOS XE you enable it with `restconf` + `ip http secure-server`.

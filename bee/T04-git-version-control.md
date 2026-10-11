@@ -16,6 +16,22 @@ cross_study: 2026-10-21
 
 > Owner: **Beedy** · Blueprint: **1.7, 1.8** · CBT coverage: **Full** · Learn by 2026-10-05 · Teach-back 2026-10-08
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T04.01](#t0401--version-control) Version control · [T04.02](#t0402--version-control) Version control · [T04.03](#t0403--git-model) Git model · [T04.04](#t0404--git-model) Git model · [T04.05](#t0405--commands-start) Commands: start · [T04.06](#t0406--commands-change) Commands: change · [T04.07](#t0407--commands-inspect) Commands: inspect · [T04.08](#t0408--commands-sync) Commands: sync · [T04.09](#t0409--branching) Branching · [T04.10](#t0410--merging) Merging · [T04.11](#t0411--conflicts) Conflicts · [T04.12](#t0412--undo) Undo · [T04.13](#t0413--other) Other · [T04.14](#t0414--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Why version control (1.7):** history (who/what/when/why), rollback, parallel branches, collaboration via PRs, CI/CD triggers. Git is **distributed**: every clone has full history, commit offline.

@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T27 concept on one page. Read left to right: Dockerfile → image → container → host/registry. Grey IDs label each zone, numbered circles are the drill steps in `labs/T27/docker_drill.sh`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T27.01](#t2701--concepts) Concepts · [T27.02](#t2702--dockerfile) Dockerfile · [T27.03](#t2703--dockerfile) Dockerfile · [T27.04](#t2704--commands) Commands · [T27.05](#t2705--commands) Commands · [T27.06](#t2706--commands) Commands · [T27.07](#t2707--networkingstorage) Networking/storage · [T27.08](#t2708--local-dev) Local dev · [T27.09](#t2709--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Image = read-only layers (template). Container = image + its own writable layer + one running process.** `docker build` turns a Dockerfile into an image, `docker run` turns an image into a container, and a registry stores images as `[host/]namespace/repo:tag` (no tag = `latest`).

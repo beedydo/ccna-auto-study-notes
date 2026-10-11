@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T42 concept on one page. Zones left to right are your code, the Webex cloud and the RoomOS device. Numbers are calls from `labs/T42/`, grey chips are exact syntax, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T42.01](#t4201--webex-rest-api) Webex REST API · [T42.02](#t4202--authentication) Authentication · [T42.03](#t4203--common-calls) Common calls · [T42.04](#t4204--bots) Bots · [T42.05](#t4205--webex-devices-xapi) Webex devices xAPI · [T42.06](#t4206--sdks-awareness) SDKs (awareness) · [T42.07](#t4207--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **One base URL, one header.** Every call goes to `https://webexapis.com/v1/<resource>` with `Authorization: Bearer <token>`. Rooms = spaces. To post: `POST /messages` with `roomId` (a space) **or** `toPersonEmail` (1:1, no room needed), plus `text` / `markdown` / `files`. To add people: `POST /memberships`.

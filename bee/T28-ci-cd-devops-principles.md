@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T28 concept on one page. Top row = one commit flowing left to right through the lanes (Source → CI → Artifact → CD → Operate), the dashed red bar = the feedback loop back to the developer. Bottom row = NetDevOps, DevOps culture, scenario → principle and tools. Numbered circles are the stages of `labs/T28/pipeline.sh`; red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T28.01](#t2801--ci) CI · [T28.02](#t2802--cd) CD · [T28.03](#t2803--pipeline-components) Pipeline components · [T28.04](#t2804--tools-awareness) Tools (awareness) · [T28.05](#t2805--benefits) Benefits · [T28.06](#t2806--infra-cicd) Infra CI/CD · [T28.07](#t2807--devops) DevOps · [T28.08](#t2808--devops-practices) DevOps practices · [T28.09](#t2809--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **CI = merge small changes to main at least daily; every push triggers an automated lint + test + build.** A failing stage stops the line, so main stays releasable. The output is **one artifact**, built once and stored in an artifact repo (registry, Nexus, Artifactory).

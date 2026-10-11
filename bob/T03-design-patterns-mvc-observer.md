@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Read it top to bottom. Each row is one concept group (IDs under the row name), and the right column is a tiny diagram of its shape. Numbered items are lines from `labs/T03/link_monitor.py`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T03.01](#t0301--design-patterns) Design patterns · [T03.02](#t0302--mvc) MVC · [T03.03](#t0303--mvc-advantages) MVC advantages · [T03.04](#t0304--observer) Observer · [T03.05](#t0305--observer-advantages) Observer advantages · [T03.06](#t0306--singleton-awareness) Singleton (awareness) · [T03.07](#t0307--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Design pattern = a reusable, proven template for a recurring design problem, not code.** The Gang of Four (GoF) book groups 23 of them as creational, structural and behavioural. Blueprint 1.6 asks for the **advantages** of two: MVC and Observer.

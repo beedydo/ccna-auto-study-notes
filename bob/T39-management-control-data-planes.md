@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Read it left to right: who sends the traffic (left) → which plane inside the box handles it (middle, top to bottom = config flows down into forwarding) → what SDN moves to a controller (right). The bottom strip is the exam "place it" list. Red boxes are exam traps; the IDs under each panel title map to the T39.NN sections.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T39.01](#t3901--management-plane) Management plane · [T39.02](#t3902--control-plane) Control plane · [T39.03](#t3903--data-plane) Data plane · [T39.04](#t3904--sdn-link) SDN link · [T39.05](#t3905--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Management = how you reach and watch the box** (SSH, SNMP, NETCONF/RESTCONF, syslog, NTP, AAA). **Control = how the boxes decide paths** (OSPF, BGP, EIGRP, STP, ARP, LACP) and fill the RIB, MAC and ARP tables. **Data = moving the user's packet** using the FIB + adjacency table in the ASIC (plus ACL, NAT, QoS, encap).

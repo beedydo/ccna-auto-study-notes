@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T31 concept on one page. Rows follow the concept sections, numbered examples are lines from `labs/T31/device_report.sh` or the drills, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T31.01](#t3101--navigation) Navigation · [T31.02](#t3102--file-management) File management · [T31.03](#t3103--permissions) Permissions · [T31.04](#t3104--environment-variables) Environment variables · [T31.05](#t3105--redirection) Redirection · [T31.06](#t3106--scripts) Scripts · [T31.07](#t3107--scripts) Scripts · [T31.08](#t3108--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Two blueprint asks:** 4.11 = pick the command for a file, navigation or env-var task. 5.9 = read a short script and state what it does, what it prints and what exit code it returns.

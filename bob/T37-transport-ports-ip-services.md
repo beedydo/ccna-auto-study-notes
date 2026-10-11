@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T37 concept on one page. Top strip = TCP vs UDP and the port board; each card = one IP service with the same parts (job, port, key terms, verify command); red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T37.01](#t3701--tcp-vs-udp) TCP vs UDP · [T37.02](#t3702--ports-to-memorise) Ports to memorise · [T37.03](#t3703--ip-services) IP services · [T37.04](#t3704--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **TCP = handshake first (SYN, SYN-ACK, ACK), then acked, ordered bytes. UDP = fire a datagram, no ack, no order.** Closed TCP port → RST at once; closed UDP port → silence (app times out).

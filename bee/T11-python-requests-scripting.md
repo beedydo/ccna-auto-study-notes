@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T11 concept on one page. Each row is a concept group (IDs under the icon), numbered items are lines from `labs/T11/inventory_client.py`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T11.01](#t1101--calls) Calls · [T11.02](#t1102--arguments) Arguments · [T11.03](#t1103--response) Response · [T11.04](#t1104--sessions) Sessions · [T11.05](#t1105--errors) Errors · [T11.06](#t1106--tls-warnings) TLS warnings · [T11.07](#t1107--patterns) Patterns · [T11.08](#t1108--output) Output · [T11.09](#t1109--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **One call = method + URL + keyword args.** `requests.get/post/put/patch/delete(url, ...)` or `requests.request("PATCH", url, ...)`. `params=` builds `?a=1&b=2`, `headers=` adds headers, `json=` sends a dict as JSON **and** sets `Content-Type: application/json`, `auth=(u, p)` adds Basic auth, `verify=` and `timeout=` are client-side only.

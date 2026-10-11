@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Top table: one row per API style, compared on the same columns; the right-hand column shows how to spot each style from the wire. Bottom: sync vs async side by side, with the Catalyst Center taskId steps numbered in order. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T09.01](#t0901--rest) REST · [T09.02](#t0902--rpc) RPC · [T09.03](#t0903--soap) SOAP · [T09.04](#t0904--comparison) Comparison · [T09.05](#t0905--synchronous) Synchronous · [T09.06](#t0906--asynchronous) Asynchronous · [T09.07](#t0907--async-example) Async example · [T09.08](#t0908--choosing) Choosing · [T09.09](#t0909--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Where is the verb?** REST: the verb is the **HTTP method** and the URI is a **noun** (`GET /api/v1/devices/1`). RPC: the verb is a **named function** in the body or URL, usually `POST` to one endpoint (`{"jsonrpc": "2.0", "method": "getDevice"}`; NETCONF `<rpc><get-config>`). SOAP: XML **Envelope > Header? > Body (> Fault)**, contract in a **WSDL**; Cisco example = CUCM **AXL**.

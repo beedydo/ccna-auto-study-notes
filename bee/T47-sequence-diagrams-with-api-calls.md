@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Six panels, one per concept group (IDs top right). Each mini diagram is read top to bottom; black numbers are the order of the arrows, solid = request, dashed = response, yellow boxes = frames. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T47.01](#t4701--notation) Notation · [T47.02](#t4702--notation) Notation · [T47.03](#t4703--auth-flow) Auth flow · [T47.04](#t4704--async-flow) Async flow · [T47.05](#t4705--webhook-flow) Webhook flow · [T47.06](#t4706--reading) Reading · [T47.07](#t4707--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **How to read it:** boxes across the top are **participants**, and each has a dashed **lifeline** going down. **Time runs top → bottom.** A **solid** arrow is a request (method + URL); a **dashed** arrow is the response (status + data) going back the other way. A thin **activation bar** means "this one is busy".

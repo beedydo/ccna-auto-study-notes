@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Read it as a system map, left to right: your script → Catalyst Center → devices. The coloured zones are the four API directions. Numbered circles are the calls in `labs/T20/catc_inventory.py`, in order. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T20.01](#t2001--what-catalyst-center-is) What Catalyst Center is · [T20.02](#t2002--api-families) API families · [T20.03](#t2003--authentication) Authentication · [T20.04](#t2004--common-endpoints) Common endpoints · [T20.05](#t2005--asynchronous-tasks) Asynchronous tasks · [T20.06](#t2006--python-sdk) Python SDK · [T20.07](#t2007--client-discovery-39c) Client discovery (3.9.c) · [T20.08](#t2008--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Catalyst Center (DNA Center) is the campus/branch controller.** You state the intent and it turns that into device config. Four jobs: **Design → Policy → Provision → Assurance**. Four API directions: **north = Intent API** (your scripts), **west = Integration API** (ServiceNow, IPAM), **south = Multivendor SDK** (3rd-party devices), **east = Events and Notifications** (webhook, email, syslog, pushed to you).

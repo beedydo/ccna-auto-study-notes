@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T38 concept on one page. The centre map is the reference topology from `labs/T38/` (zones = campus, core, edge, DMZ, branch). Side panels hold the component cheat sheet, physical vs logical, the four designs and the 3 exam questions. Numbers are the trace order of flow C. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T38.01](#t3801--components) Components · [T38.02](#t3802--reading-diagrams) Reading diagrams · [T38.03](#t3803--common-designs) Common designs · [T38.04](#t3804--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Each box reads one header.** Switch = dst **MAC** (L2, VLANs). Router / L3 switch = dst **IP** (routing table, longest match; it's the gateway). Firewall = IP + port + **state**, between **zones**, implicit deny. Load balancer = owns a **VIP**, health checks a pool, rewrites dst to a real server. AP = radio ↔ wire; WLC = central brain for lightweight APs (CAPWAP).

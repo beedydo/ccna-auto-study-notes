@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Every T14 concept on one page. The six cards in the middle are the node and reuse types, each drawn the same way so the differences stand out. The top strip covers what YANG is and where models come from, and the bottom strip turns a tree into a RESTCONF URL. Numbers are indexes, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T14.01](#t1401--what-yang-is) What YANG is · [T14.02](#t1402--model-sources) Model sources · [T14.03](#t1403--module-header) Module header · [T14.04](#t1404--node-types) Node types · [T14.05](#t1405--reuse-and-types) Reuse and types · [T14.06](#t1406--config-vs-state) Config vs state · [T14.07](#t1407--pyang-tree-output) pyang tree output · [T14.08](#t1408--model-to-api-path) Model to API path · [T14.09](#t1409--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **YANG is the schema, not the data and not the protocol.** A module (name, `namespace`, `prefix`, `import`, `revision`) describes config and state. NETCONF (XML), RESTCONF (JSON/XML) and gNMI carry data that fits it. Models come from **IETF** (standard), **OpenConfig** (vendor-neutral, written by operators) and **Native** (vendor, e.g. `Cisco-IOS-XE-native`), all published in github.com/YangModels/yang.

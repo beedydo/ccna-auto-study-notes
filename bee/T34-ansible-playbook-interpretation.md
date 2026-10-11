@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T34 concept on one page. Rows follow the concept sections (IDs under the icon). Numbered examples are lines from the playbooks in `labs/T34/`. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T34.01](#t3401--inventory) Inventory · [T34.02](#t3402--playbook-structure) Playbook structure · [T34.03](#t3403--modules) Modules · [T34.04](#t3404--variables) Variables · [T34.05](#t3405--control) Control · [T34.06](#t3406--running) Running · [T34.07](#t3407--structure-awareness) Structure (awareness) · [T34.08](#t3408--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Read a playbook in four passes.** (1) `hosts:` → which inventory group, and so which devices. (2) The connection (`ansible_connection` in group_vars or play vars): `network_cli` = SSH CLI, `netconf` = XML over SSH 830, `httpapi` = REST/RESTCONF. (3) The module on each task: `*_command`/`*_get` = read, `*_config` = write, `uri` = any REST call. (4) The data: `lines:`/`src:`/`content:`/`path:` and the `{{ vars }}` that fill them. Tasks run **top to bottom**.

@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T26 concept on one page. Each row is a concept group (IDs under the icon), blue cells mark the winner on that criterion, numbered items are traits or scenario cues, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T26.01](#t2601--cloud-models) Cloud models · [T26.02](#t2602--service-models) Service models · [T26.03](#t2603--cloud-traits) Cloud traits · [T26.04](#t2604--edge-computing) Edge computing · [T26.05](#t2605--deployment-types) Deployment types · [T26.06](#t2606--comparison) Comparison · [T26.07](#t2607--other-types) Other types · [T26.08](#t2608--app-architecture) App architecture · [T26.09](#t2609--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Two separate questions:** *who* the cloud is for (private · public · community · hybrid; multi-cloud = 2+ public providers) and *how much the provider runs* (IaaS → you patch the OS, PaaS → you push code, SaaS → you use the app). NIST's 5 traits: self-service, broad network access, pooling, rapid elasticity, measured service.

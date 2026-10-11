@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T10 concept on one page. Each card is one auth method with the same parts: how you get the credential, what goes on the wire, the Cisco platforms that use it, and a red trap. The bottom strip is 401 vs 403 and credential handling. Numbers are the order of calls in `labs/T10/auth_tour.py`.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T10.01](#t1001--concepts) Concepts · [T10.02](#t1002--basic-auth) Basic auth · [T10.03](#t1003--custom-token) Custom token · [T10.04](#t1004--api-key) API key · [T10.05](#t1005--sessioncookie) Session/cookie · [T10.06](#t1006--oauth-20-awareness) OAuth 2.0 (awareness) · [T10.07](#t1007--python) Python · [T10.08](#t1008--credential-handling) Credential handling · [T10.09](#t1009--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Read the header to name the method.** `Authorization: Basic <base64 user:pass>` = Basic. A token fetched from a login call and then sent as `X-Auth-Token` / `X-auth-access-token` = custom token (Catalyst Center (DNA Center) / Secure Firewall Management Center (FMC)). A static key from a portal = API key (Meraki). `Set-Cookie` after login = session cookie (APIC `APIC-cookie`, SD-WAN Manager (vManage) `JSESSIONID` + `X-XSRF-TOKEN`). Redirect → code → token exchange = OAuth 2.0 (Webex integrations).

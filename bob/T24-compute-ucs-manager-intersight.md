@@ -20,6 +20,22 @@ cross_study: 2026-10-22
 
 *Every T24 concept on one page. The top map is left = one UCS domain (UCS Manager), right = many domains (Intersight). Each row below is a concept group (IDs under the icon), numbered items come from `labs/T24/compute_inventory.py`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T24.01](#t2401--ucs-and-ucs-manager) UCS and UCS Manager · [T24.02](#t2402--service-profiles) Service profiles · [T24.03](#t2403--ucsm-xml-api) UCSM XML API · [T24.04](#t2404--ucsm-python-sdk) UCSM Python SDK · [T24.05](#t2405--intersight) Intersight · [T24.06](#t2406--ucsm-vs-intersight) UCSM vs Intersight · [T24.07](#t2407--not-tested) Not tested · [T24.08](#t2408--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **UCS Manager (UCSM) = on-prem, one domain.** It runs on the fabric interconnect pair and manages every blade/rack server behind it. Everything is a **managed object** with a **DN** in one tree (`sys/chassis-1/blade-1`, `org-root/ls-ESX-01`). API = **XML POSTed to `/nuova`**: `aaaLogin` → `outCookie`, then `configResolveClass` / `configResolveDn`; SDK = `ucsmsdk` (`UcsHandle(...).login()`, `query_classid("computeBlade")`).

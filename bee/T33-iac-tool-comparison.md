@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T33 concept on one page. Rows are concept groups (IDs under the icon), the matrix compares six tools on the same criteria, blue cells are the exam's go-to answer, and red boxes are traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T33.01](#t3301--iac-principles) IaC principles · [T33.02](#t3302--models) Models · [T33.03](#t3303--properties) Properties · [T33.04](#t3304--architectures) Architectures · [T33.05](#t3305--ansible) Ansible · [T33.06](#t3306--terraform) Terraform · [T33.07](#t3307--nso) NSO · [T33.08](#t3308--puppetchef-awareness) Puppet/Chef (awareness) · [T33.09](#t3309--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **IaC = infrastructure described in files, kept in Git, applied by a tool.** You get history, review, rollback and repeatable dev → prod. **Declarative** = describe the end state, and the tool diffs it against reality (Terraform, NSO, Puppet). **Imperative** = list the steps (scripts; Ansible runs tasks in order). **Idempotent** = run again, nothing changes.

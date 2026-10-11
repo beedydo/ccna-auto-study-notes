@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T46 concept on one page. The top swim-lane is the process (numbers = order, red = the fix loop, blue = merge); the four panels below are purpose, types, what to look for and feedback. Red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T46.01](#t4601--purpose) Purpose · [T46.02](#t4602--process) Process · [T46.03](#t4603--types) Types · [T46.04](#t4604--good-practice) Good practice · [T46.05](#t4605--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Why (the 5.13 "benefits" answer):** find bugs and security issues **early** (cheaper than in prod) · **share knowledge** (no single person owns a module) · keep **style and standards** consistent · **mentor** and raise code quality over time. Never "faster code" or "replaces testing".

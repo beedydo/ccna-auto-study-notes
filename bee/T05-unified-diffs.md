@@ -16,6 +16,22 @@ cross_study: 2026-10-21
 
 > Owner: **Beedy** · Blueprint: **5.12** · CBT coverage: **Full** · Learn by 2026-10-06 · Teach-back 2026-10-08
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T05.01](#t0501--diff-header) Diff header · [T05.02](#t0502--hunk-header) Hunk header · [T05.03](#t0503--line-prefixes) Line prefixes · [T05.04](#t0504--context) Context · [T05.05](#t0505--producing-diffs) Producing diffs · [T05.06](#t0506--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Header:** `--- a/file` = old, `+++ b/file` = new. `/dev/null` on the `---` side = file created; on the `+++` side = file deleted.

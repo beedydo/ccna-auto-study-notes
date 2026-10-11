@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Every T02 concept on one page. Rows follow the concept sections; numbered examples are lines from the reference program in `labs/T02/`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T02.01](#t0201--why-organise-code) Why organise code · [T02.02](#t0202--functions) Functions · [T02.03](#t0203--functions) Functions · [T02.04](#t0204--methods) Methods · [T02.05](#t0205--classes) Classes · [T02.06](#t0206--oop-principles) OOP principles · [T02.07](#t0207--modules) Modules · [T02.08](#t0208--modules) Modules · [T02.09](#t0209--packages) Packages · [T02.10](#t0210--dependencies) Dependencies · [T02.11](#t0211--python-basics) Python basics · [T02.12](#t0212--python-basics) Python basics · [T02.13](#t0213--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Why organise code (the 1.5 answer):** reuse (DRY), readability, maintainability (fix once), testability (unit-test each piece), separation of concerns.

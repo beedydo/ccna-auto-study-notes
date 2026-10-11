@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Read it top to bottom. The map shows the two ways to reach a switch: straight in at device level (bottom lane), or through a controller (top lane). The strip below it compares them. Numbered circles are the call order in `labs/T12/`, red boxes are exam traps, and the grey IDs map to the T12.NN sections.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T12.01](#t1201--why-automate) Why automate · [T12.02](#t1202--model-driven-programmability) Model-driven programmability · [T12.03](#t1203--value-of-model-driven-programmability-51) Value of model-driven programmability (5.1) · [T12.04](#t1204--programmability-stack) Programmability stack · [T12.05](#t1205--device-level-management) Device-level management · [T12.06](#t1206--controller-level-management) Controller-level management · [T12.07](#t1207--sdn-concepts) SDN concepts · [T12.08](#t1208--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Model-driven programmability (5.1):** config and state are described by a **YANG model**, not CLI text. You read and write them through an API (NETCONF, RESTCONF, gNMI) that returns **structured XML/JSON**. That gives you parsing-free data, the same code across vendors (OpenConfig/IETF models), validation before apply, and transactions (NETCONF candidate → commit / rollback).

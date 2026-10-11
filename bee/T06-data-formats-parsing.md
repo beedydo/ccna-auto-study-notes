@@ -16,6 +16,22 @@ cross_study: 2026-10-21
 
 > Owner: **Beedy** · Blueprint: **1.1, 1.2** · CBT coverage: **Full** · Learn by 2026-10-06 · Teach-back 2026-10-08
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T06.01](#t0601--xml) XML · [T06.02](#t0602--xml) XML · [T06.03](#t0603--json) JSON · [T06.04](#t0604--yaml) YAML · [T06.05](#t0605--comparison) Comparison · [T06.06](#t0606--python-mapping) Python mapping · [T06.07](#t0607--python-json) Python json · [T06.08](#t0608--python-yaml) Python YAML · [T06.09](#t0609--python-xml) Python XML · [T06.10](#t0610--python-xml) Python XML · [T06.11](#t0611--navigating-data) Navigating data · [T06.12](#t0612--terms) Terms · [T06.13](#t0613--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Formats:** XML uses tags, one root, attributes and namespaces, and is used by NETCONF/SOAP. JSON uses `{}` and `[]`, double quotes only, has no comments, and is used by REST/RESTCONF. YAML uses indentation (spaces only), supports `#` comments, and is used by Ansible/CI. YAML 1.2 is a superset of JSON.

@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *System map, read left to right: the client, then IOS XE (YANG interfaces), then NX-OS (NX-API CLI, NX-API REST and YANG interfaces, all on one DME). The bottom row compares NX-API CLI with NX-API REST and covers telemetry. Numbered items are examples or scenarios, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T17.01](#t1701--ios-xe-programmability) IOS XE programmability · [T17.02](#t1702--nx-api-cli) NX-API CLI · [T17.03](#t1703--nx-api-rest) NX-API REST · [T17.04](#t1704--other-nx-os-interfaces) Other NX-OS interfaces · [T17.05](#t1705--dynamic-interfaces) Dynamic interfaces · [T17.06](#t1706--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **IOS XE = YANG interfaces.** NETCONF (SSH 830), RESTCONF (HTTPS `/restconf`) and gNMI (9339), over IETF / OpenConfig / `Cisco-IOS-XE-native` models. There's no NX-API on IOS XE. Guest Shell (on-box Python) and EEM are awareness-level only.

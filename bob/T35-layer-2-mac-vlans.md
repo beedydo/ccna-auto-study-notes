@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T35 concept on one page. Each row is a concept group (IDs under the icon), numbered items are examples from the SW1 simulation in `labs/T35/`, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T35.01](#t3501--mac-addresses) MAC addresses · [T35.02](#t3502--switching) Switching · [T35.03](#t3503--vlans) VLANs · [T35.04](#t3504--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **MAC = 48 bits, 12 hex digits: first 24 bits = OUI (vendor), last 24 = NIC.** The lowest bit of the first octet (I/G) says unicast (0) or group (1). Broadcast = `FF:FF:FF:FF:FF:FF`.

@@ -20,6 +20,22 @@ cross_study: 2026-10-21
 
 *Every T15 concept on one page. The top row is the system map (client → SSH 830 → device datastores); the panels below are session, operations, filters/replies, the safe-change code and the exam angle. Concept IDs are in each header, numbers are steps or items, and red boxes are exam traps.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T15.01](#t1501--what-netconf-is) What NETCONF is · [T15.02](#t1502--layers) Layers · [T15.03](#t1503--session) Session · [T15.04](#t1504--operations) Operations · [T15.05](#t1505--datastores) Datastores · [T15.06](#t1506--filters) Filters · [T15.07](#t1507--replies) Replies · [T15.08](#t1508--python-ncclient) Python ncclient · [T15.09](#t1509--device-setup-and-value) Device setup and value · [T15.10](#t1510--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **NETCONF = RPC over SSH, TCP 830, XML only** (RFC 6241). Four layers: Transport (SSH) → Messages (`<rpc>`/`<rpc-reply>`/`<notification>`) → Operations (`<get>`, `<edit-config>` …) → Content (YANG-modelled XML). The session opens with a `<hello>` exchange of **capabilities**.

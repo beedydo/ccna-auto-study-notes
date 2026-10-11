@@ -20,6 +20,22 @@ cross_study: 2026-10-23
 
 *Every T36 concept on one page. Each card has the same parts: the rule (black pill), a mini diagram, numbered examples taken from `labs/T36/l3_check.py`, and a red exam trap.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [Concepts](#concepts)
+  - [T36.01](#t3601--ipv4-addressing) IPv4 addressing · [T36.02](#t3602--ipv6-awareness) IPv6 (awareness) · [T36.03](#t3603--gateway-and-arp) Gateway and ARP · [T36.04](#t3604--routing-table) Routing table · [T36.05](#t3605--exam-angle) Exam angle
+- [Exam traps](#exam-traps)
+- [Examples](#examples)
+- [Practice questions](#practice-questions)
+- [Study aids](#study-aids)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## TL;DR (teach-back card)
 
 - **Mask splits network from host:** network = IP AND mask, broadcast = all host bits 1, usable = 2^h − 2 (except /31 = 2 and /32 = 1). RFC 1918 = `10/8`, `172.16/12` (up to 172.31), `192.168/16`.
