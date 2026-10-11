@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T33 architecture: push vs pull</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .row > .zone > .zb { display: grid; grid-template-rows: auto auto; row-gap: 120px; justify-items: center; padding: 22px 14px 24px; }
+  .push > .zb { grid-template-columns: 1fr 1fr 1fr; } .pull > .zb { grid-template-columns: 1fr 1fr; }
+  #ctl { grid-column: 1 / span 3; grid-row: 1; } #srv { grid-column: 1 / span 2; grid-row: 1; }
+  .push .dv { grid-row: 2; } .pull .ag { grid-row: 2; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T33 · <span class="pill">Push vs pull</span> architecture</h1>
+    <div class="meta"><b>200-901 blueprint 5.6 · T33.04</b><br>The question is who opens the connection<br>Demo: <code>apply()</code> pushes · <code>agent sw2</code> pulls (<code>labs/T33/iac_demo.py</code>)</div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="zone ctrl push">
+        <div class="zh">PUSH · agentless <small>the control node starts every connection, when you run it</small></div>
+        <div class="zb">
+          <div class="node xw hl" id="ctl" data-icon="server"><div class="nm">Control node</div><div class="sub">Ansible · Terraform · NSO · Salt master</div><span class="tag">ansible-playbook site.yml</span></div>
+          <div class="node dv" id="p1" data-icon="router"><div class="nm">router</div><div class="sub">nothing installed</div></div>
+          <div class="node dv" id="p2" data-icon="switch"><div class="nm">switch</div><div class="sub">nothing installed</div></div>
+          <div class="node dv" id="p3" data-icon="cloud"><div class="nm">cloud / controller</div><div class="sub">vendor REST API</div></div>
+        </div>
+      </div>
+      <div class="zone site pull">
+        <div class="zh">PULL · agent-based <small>the agent on each node starts the connection, on a schedule</small></div>
+        <div class="zb">
+          <div class="node xw hl" id="srv" data-icon="server"><div class="nm">Config server</div><div class="sub">Puppet primary server · Chef Infra Server</div><span class="tag">HTTPS :8140 (Puppet)</span></div>
+          <div class="node w ag" id="a1" data-icon="server"><div class="nm">node + Puppet agent</div><div class="sub"><code>runinterval</code> 30m default</div></div>
+          <div class="node w ag" id="a2" data-icon="server"><div class="nm">node + Chef Infra Client</div><div class="sub">periodic check-in</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Push:</b> changes land when you run it; drift stays until the next run. Network devices can't host agents, so network automation = agentless push.</div>
+      <div class="note trap"><b>Trap:</b> agentless ≈ push and agent ≈ pull, but they are separate axes. <b>Salt</b> has agents (minions) yet <b>pushes</b> (ZeroMQ 4505/4506).</div>
+      <div class="note"><b>Pull:</b> the agent fixes drift on every check-in, automatically. <code>ansible-pull</code> turns Ansible into pull mode.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw mgmt"></i>config connection (line starts at whoever opens it, arrow at the target)</span>
+    <span style="margin-left:auto">Blue glow = the central box you manage</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "ctl", b: "p1", k: "mgmt", s: "b-t", ao: -60, mid: 0.75, t: 0.62, label: "SSH :22" },
+  { a: "ctl", b: "p2", k: "mgmt", s: "b-t", t: 0.3, label: "NETCONF :830" },
+  { a: "ctl", b: "p3", k: "mgmt", s: "b-t", ao: 60, mid: 0.75, t: 0.62, label: "HTTPS API" },
+  { a: "a1", b: "srv", k: "mgmt", s: "t-b", bo: -50, mid: 0.25, t: 0.38, label: "fetch catalog" },
+  { a: "a2", b: "srv", k: "mgmt", s: "t-b", bo: 50, mid: 0.25, t: 0.38, label: "fetch cookbooks" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

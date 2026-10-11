@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T26 architecture: edge, fog and cloud</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .wan > .zb { justify-content: space-between; align-items: center; padding: 12px 24px; }
+  .wan .wtxt { font-size: 13px; color: var(--muted); width: 400px; line-height: 1.4; }
+  .wan .wtxt.r { text-align: right; }
+  .stack > .zb { flex-direction: column; align-items: stretch; gap: 64px; padding: 16px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T26 · <span class="pill">Edge, fog and cloud</span> layers</h1>
+    <div class="meta"><b>200-901 blueprint 4.1</b><br>What is processed where<br>and what crosses the WAN</div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone cloud">
+      <div class="zh">Cloud / central DC <small>far away · every request pays a WAN round trip</small></div>
+      <div class="zb">
+        <div class="node w" id="store" data-icon="db"><div class="nm">Long-term storage</div><div class="sub">keeps the history</div></div>
+        <div class="node w" id="analytics" data-icon="server"><div class="nm">Fleet analytics</div><div class="sub">across every site</div></div>
+        <div class="node w" id="ml" data-icon="server"><div class="nm">ML training</div><div class="sub">builds the models the edge runs</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ext wan">
+      <div class="zh">WAN <small>thin and costly at a factory, ship or store · may fail</small></div>
+      <div class="zb">
+        <div class="wtxt"><b>Latency:</b> light in fibre covers about <b>200 km per ms</b> each way, plus queuing and processing.</div>
+        <div class="node n" id="wan" data-icon="internet"><div class="nm">WAN link</div></div>
+        <div class="wtxt r"><b>Bandwidth:</b> every byte sent uses WAN bandwidth, which costs money and may be thin.</div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone site stack">
+      <div class="zh">Site <small>branch · factory · IoT deployment · raw data stays on the LAN</small></div>
+      <div class="zb">
+        <div class="zone fabric">
+          <div class="zh">Fog layer <small>fog nodes in the network, between devices and cloud · also storage and control</small></div>
+          <div class="zb">
+            <div class="node w" id="sw" data-icon="switch"><div class="nm">Catalyst switch</div><div class="sub">fog node</div></div>
+            <div class="node w" id="rtr" data-icon="router"><div class="nm">Industrial router</div><div class="sub">e.g. IR1101 · fog node</div><span class="tag">Cisco IOx app hosting</span></div>
+            <div class="node w" id="gw" data-icon="server"><div class="nm">Gateway / local server</div><div class="sub">fog node (physical or VM)</div></div>
+          </div>
+        </div>
+        <div class="zone client">
+          <div class="zh">Edge layer <small>on or next to the device · raw data is produced HERE</small></div>
+          <div class="zb">
+            <div class="node w" id="sensors"><span class="ico"><svg viewBox="0 0 64 50" xmlns="http://www.w3.org/2000/svg"><rect x="20" y="24" width="24" height="22" rx="3" fill="#1b6fa8"/><circle cx="32" cy="35" r="5" fill="#fff"/><path d="M26 18 A9 9 0 0 1 38 18 M22 13 A15 15 0 0 1 42 13 M18 8 A21 21 0 0 1 46 8" stroke="#1b6fa8" stroke-width="2.2" fill="none"/></svg></span><div class="nm">Sensors · meters · PLCs</div><div class="sub">thousands of readings</div></div>
+            <div class="node w" id="edge" data-icon="server"><div class="nm">Edge compute</div><div class="sub">filter · aggregate · <b>act in ms</b><br>no WAN round trip</div></div>
+            <div class="node w" id="cams" data-icon="camera"><div class="nm">Cameras · phones</div><div class="sub">e.g. HD video at every branch</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Edge = at/on the device.</b> Fog = network-layer nodes (routers, switches, gateways) <b>between</b> edge and cloud.</div>
+      <div class="note trap"><b>Trap:</b> edge doesn't remove the cloud. It cuts latency and WAN traffic; central analytics, storage and ML training stay central. Cisco edge platform = <b>IOx</b>, not IOS XE itself or Intersight.</div>
+      <div class="note"><b>Four benefits:</b> lower latency · less WAN bandwidth · keeps working if the WAN fails · data stays local.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw data"></i>data (readings, results)</span>
+    <span><i class="sw mgmt"></i>management / config (cloud → site)</span>
+    <span><i class="sw phys"></i>physical / LAN link</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "sensors", b: "edge", k: "phys", label: "raw data", t: 0.5 },
+  { a: "cams", b: "edge", k: "phys", label: "raw video", t: 0.5 },
+  { a: "edge", b: "rtr", k: "data", dir: "fwd", s: "t-b", label: "LAN: filtered results", t: 0.5, lx: 85 },
+  { a: "sw", b: "rtr", k: "phys" },
+  { a: "gw", b: "rtr", k: "phys" },
+  { a: "rtr", b: "wan", k: "data", dir: "fwd", s: "t-b", ao: -24, bo: -24, label: "summaries only<br>not every raw reading", t: 0.62, lx: -95 },
+  { a: "wan", b: "analytics", k: "data", dir: "fwd", s: "t-b", ao: -24, bo: -24, label: "results · summaries · alerts", t: 0.5, lx: -110 },
+  { a: "analytics", b: "wan", k: "mgmt", s: "b-t", ao: 24, bo: 24, label: "models, config,<br>app updates", t: 0.5, lx: 80 },
+  { a: "wan", b: "rtr", k: "mgmt", s: "b-t", ao: 24, bo: 24, label: "pushed down<br>to fog nodes", t: 0.4, lx: 75 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

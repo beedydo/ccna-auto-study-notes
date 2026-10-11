@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T43 architecture: webhook components</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 560px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T43 · <span class="pill">Webhook</span> components</h1>
+    <div class="meta"><b>200-901 blueprint 2.2</b><br>Event source · target URL · receiver<br>Names as in <code>labs/T43/</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="row">
+      <div class="zone cloud" style="flex: 2.3">
+        <div class="zh">① Event source <small>Webex · Meraki · Catalyst Center · GitHub · lab: <code style="color:#1d1d1f">platform.py</code> :8143</small></div>
+        <div class="zb">
+          <div class="node xw" id="deliver" data-icon="server"><div class="nm">Delivery service</div><div class="sub">filter matches → sign → POST → retry<br><code>deliver_forever()</code></div><span class="tag">X-Spark-Signature: HMAC-SHA1</span></div>
+          <div class="node xw" id="api" data-icon="cloud"><div class="nm">Platform REST API</div><div class="sub">messages · webhooks<br><code>http://127.0.0.1:8143/v1</code></div></div>
+        </div>
+      </div>
+      <div class="zone client" style="flex: 0.8">
+        <div class="zh">Room member</div>
+        <div class="zb">
+          <div class="node" id="alice" data-icon="user"><div class="nm">Alice</div><div class="sub">posts a message<br>= the event</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone dmz" style="flex: 1">
+        <div class="zh">Internet edge <small>in front of your app</small></div>
+        <div class="zb">
+          <div class="node w" id="fw" data-icon="firewall"><div class="nm">Firewall / NAT</div><div class="sub">must allow <b>inbound</b> HTTPS 443<br>from the platform</div></div>
+        </div>
+      </div>
+      <div style="flex: 1.75"></div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone client">
+      <div class="zh">② Target URL + ③ Receiver app <small>you host it · lab: <code style="color:#1d1d1f">receiver.py</code> :8144</small></div>
+      <div class="zb">
+        <div class="node w" id="url" data-icon="dns"><div class="nm">Target URL</div><div class="sub">public DNS name · valid CA cert<br><code>https://bot.example.com/webhook</code></div><span class="tag">targetUrl</span></div>
+        <div class="node w hl" id="rx" data-icon="server"><div class="nm">Receiver <code>do_POST()</code></div><div class="sub">raw body → verify HMAC → dedupe<br>→ <b>200 OK at once</b> → queue</div><span class="tag">POST /webhook</span></div>
+        <div class="node w" id="wk" data-icon="script"><div class="nm">Worker <code>worker()</code></div><div class="sub">background thread<br>follow-up GET → <code>act()</code></div></div>
+      </div>
+    </div>
+
+    <div class="notes">
+          <div class="note trap"><b>Trap:</b> <code>http://127.0.0.1:8144/webhook</code> or a private IP never gets a cloud delivery. The target URL must be <b>public HTTPS</b> with a CA-signed cert (Meraki: no self-signed). Testing fix = ngrok.</div>
+          <div class="note"><b>Roles flip per link.</b> Delivery: platform = client, you = server. Follow-up GET: you = client, platform = server (normal REST, your token).</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>HTTPS API call (arrow = client → server)</span>
+    <span><i class="sw phys"></i>in-process hand-off</span>
+    <span style="margin-left:auto">Blue glow = the server you must expose</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "alice", b: "api", k: "api", s: "l-r", label: "<code>POST /v1/messages</code>", t: 0.5 },
+  { a: "api", b: "deliver", k: "phys", s: "l-r", label: "messages / created", t: 0.5 },
+  { a: "deliver", b: "fw", k: "api", s: "b-t", label: "HTTPS POST (JSON, IDs only)<br>platform = client", t: 0.5 },
+  { a: "fw", b: "url", k: "api", s: "b-t", label: "inbound 443", t: 0.5 },
+  { a: "url", b: "rx", k: "api", s: "r-l" },
+  { a: "rx", b: "wk", k: "phys", s: "r-l", label: "<code>jobs</code> queue", t: 0.5 },
+  { a: "wk", b: "api", k: "api", s: "t-b", label: "<code>GET /v1/messages/{id}</code><br>Bearer token · you = client", t: 0.5 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T44 architecture: pyATS + Genie + Unicon stack</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client { width: 900px; margin: 0 auto; }
+  .pz > .zb { padding-left: 120px; }
+  .gz > .zb { padding-left: 110px; }
+  .dz > .zb { padding-left: 70px; }
+  #unicon { width: 360px; }
+  .uz { width: 720px; margin: 0 auto; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 18px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T44 · <span class="pill">pyATS + Genie</span> stack</h1>
+    <div class="meta"><b>200-901 blueprint 5.3</b><br>Your code → framework + library → connection → device<br>Names as in <code>labs/T44/</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Your code <small>three ways in</small></div>
+      <div class="zb">
+        <div class="node" id="job" data-icon="script"><div class="nm">Job file</div><div class="sub"><code>pyats run job job.py</code><br><code>--testbed-file testbed.yaml</code></div></div>
+        <div class="node w" id="script" data-icon="script"><div class="nm">Python script</div><div class="sub"><code>change_window.py</code><br><code>from genie.testbed import load</code></div></div>
+        <div class="node" id="cli" data-icon="script"><div class="nm">genie CLI</div><div class="sub"><code>genie parse</code> · <code>learn</code> · <code>diff</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ctrl pz">
+        <div class="zh">pyATS <small>framework</small></div>
+        <div class="zb">
+          <div class="node n" id="easypy" data-icon="server"><div class="nm">Easypy</div><div class="sub">job runner<br>logs + archive</div></div>
+          <div class="node n" id="aetest" data-icon="controller"><div class="nm">AEtest</div><div class="sub">test harness<br>setup · test · cleanup</div><span class="tag">interface_check.py</span></div>
+          <div class="node n" id="tb" data-icon="db"><div class="nm">Testbed loader</div><div class="sub">YAML → objects<br><code>testbed.yaml</code></div><span class="tag">devices["csr1"]</span></div>
+        </div>
+      </div>
+      <div class="zone cloud gz">
+        <div class="zh">Genie <small>(pyATS Library)</small></div>
+        <div class="zb">
+          <div class="node n" id="parsers" data-icon="proxy"><div class="nm">Parsers</div><div class="sub">show text → dict<br><code>dev.parse(...)</code></div></div>
+          <div class="node n" id="ops" data-icon="db"><div class="nm">Ops / learn</div><div class="sub">feature model<br><code>dev.learn("routing")</code></div></div>
+          <div class="node n" id="diff" data-icon="gui"><div class="nm">Diff</div><div class="sub">before vs after<br><code>Diff(pre, post)</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ext uz">
+      <div class="zh">Unicon <small>connection library</small></div>
+      <div class="zb">
+        <div class="node xw" id="unicon" data-icon="proxy"><div class="nm">Unicon plugin (per <code>os:</code>)</div><div class="sub"><b>only layer that touches a device</b><br>login + enable prompts · <code>config term</code> · paging<br><code>connect()</code> · <code>execute()</code> · <code>configure()</code></div><span class="tag">class: unicon.Unicon</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone site dz" id="devices">
+      <div class="zh">Devices <small>any CLI device</small></div>
+      <div class="zb">
+        <div class="node w" id="phys" data-icon="router"><div class="nm">Physical</div><div class="sub">real router / switch<br>IOS XE · NX-OS · IOS XR</div></div>
+        <div class="node w" id="cml" data-icon="router"><div class="nm">Virtual / CML</div><div class="sub">C8000v, NX-OSv in a<br>CML topology (simulates)</div></div>
+        <div class="node w" id="mock" data-icon="server"><div class="nm">Mock <code>csr1</code> (this lab)</div><div class="sub">local process, no router<br>answers from <code>mock/csr1.yaml</code></div><span class="tag">mock_device_cli</span></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Who does what:</b> pyATS = testbed, AEtest, Easypy. Genie = parse, learn, diff. Unicon = SSH / Telnet / console session.</div>
+      <div class="note trap"><b>Trap:</b> "Which component turns <code>show</code> output into a dictionary?" → <b>Genie</b>, not Unicon. And pyATS <b>tests</b>; CML <b>simulates</b>. pyATS runs <i>against</i> CML devices.</div>
+      <div class="note"><b><code>os:</code> picks both</b> the Unicon plugin and the Genie parser. No <code>os:</code> → <code>OS is unknown</code> and the wrong (or no) parser.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>Python call (your code → library)</span>
+    <span><i class="sw mgmt"></i>CLI session to the device (SSH / Telnet / console)</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "job", b: "easypy", k: "api", s: "b-t", label: "<code>main(runtime)</code> → <code>run(testscript=…)</code>", t: 0.35 },
+  { a: "easypy", b: "aetest", k: "api", s: "r-l" },
+  { a: "script", b: "tb", k: "api", s: "b-t", ao: -40, label: "<code>load(\"testbed.yaml\")</code>", t: 0.45, mid: 0.4 },
+  { a: "script", b: "parsers", k: "api", s: "b-t", ao: 40, label: "<code>parse</code> · <code>learn</code> · <code>Diff</code>", t: 0.55, mid: 0.4 },
+  { a: "cli", b: "ops", k: "api", s: "b-t", label: "<code>--testbed-file</code>", t: 0.5 },
+  { a: "tb", b: "unicon", k: "api", s: "b-t", bo: -60, label: "<code>dev.connect()</code>", t: 0.5, mid: 0.5 },
+  { a: "parsers", b: "unicon", k: "api", s: "b-t", bo: 60, label: "runs <code>show …</code>", t: 0.5, mid: 0.5 },
+  { a: "unicon", b: "phys", k: "mgmt", s: "b-t", ao: -90, label: "SSH / Telnet / console", t: 0.6, mid: 0.5 },
+  { a: "unicon", b: "cml", k: "mgmt", s: "b-t", ao: 0, label: "SSH", t: 0.5 },
+  { a: "unicon", b: "mock", k: "mgmt", s: "b-t", ao: 90, label: "spawns <code>cli: command:</code>", t: 0.6, mid: 0.5 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

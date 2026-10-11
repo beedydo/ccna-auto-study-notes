@@ -192,9 +192,9 @@ down after : []
 
 - **The problem it solves.** CLI output is text made for humans. To test a network in code you need: a list of devices and how to reach them, a way to log in and run commands, a way to turn text into data, and a test harness that reports pass or fail. pyATS + Genie + Unicon is Cisco's packaged answer to all four.
 
-![pyATS stack: your code → pyATS framework + Genie library → Unicon → devices](../assets/T44/01-stack.png)
+![pyATS stack architecture: your code (job file, change_window.py, genie CLI) → pyATS framework + Genie library → Unicon → physical, CML or mock csr1 devices](../assets/T44/08-stack-arch.png)
 
-*Your code only talks to pyATS and Genie. Unicon is the only part that touches the device. Swapping a real router for CML or the mock changes only the testbed YAML.*
+*Read top to bottom. Blue arrows are Python calls (job → Easypy → AEtest, `load("testbed.yaml")`, `parse` / `learn` / `Diff`); grey dashed lines are CLI sessions. Only Unicon touches a device, so swapping a real router for CML or the mock `csr1` changes only `testbed.yaml`.*
 
 | Piece | What it is | In this lab |
 |---|---|---|
@@ -1096,6 +1096,7 @@ D. The method runs as the Testcase cleanup
 - Overview image: HTML source `assets/T44/00-overview.html`, rendered to PNG (see `assets/README.md`).
 - Animation: `assets/T44/07-change-window-anim.html` → `07-change-window.gif`. Frame values come from the real `genie learn` / `genie diff` runs above.
 - Diagrams: `assets/T44/01-stack.mmd`, `02-parse-vs-execute.mmd`, `03-change-window.mmd`, `04-aetest.mmd`, `05-cicd.mmd`, `06-tool-choice.mmd` → `.png`.
+- Architecture diagram: HTML source `assets/T44/08-stack-arch.html` (shared kit `assets/_arch/`)
 - pyATS Getting Started (install extras, testbed example, loader, connect/execute/configure, AEtest example, job file, `pyats run job --testbed-file`): https://pubhub.devnetcloud.com/media/pyats/docs/getting_started/index.html
 - pyATS topology schema (testbed keys, credentials, `%ASK`, `%ENC`): https://pubhub.devnetcloud.com/media/pyats/docs/topology/schema.html
 - pyATS YAML markup (`%ENV{}`, `%CALLABLE{}`, `%INCLUDE{}`): https://pubhub.devnetcloud.com/media/pyats/docs/utilities/yaml_markup.html

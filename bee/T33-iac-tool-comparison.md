@@ -474,9 +474,9 @@ No changes. Devices match the desired state.
 
 **Notes:**
 
-![Push vs pull](../assets/T33/02-push-vs-pull.png)
+![Push vs pull architecture: a control node connecting out to agentless devices, and agents on nodes calling a config server](../assets/T33/09-push-vs-pull-arch.png)
 
-*The question is who opens the connection. Push: the control node connects out to each device when you run it. Pull: an agent on each node calls the server on a schedule.*
+*The question is who opens the connection: follow each line from its start to its arrow. Push (left): the control node connects out over SSH, NETCONF or HTTPS when you run it, and nothing is installed on the devices. Pull (right): an agent on each node calls the server on a schedule. The red box is the Salt exception.*
 
 | | **Push** | **Pull** |
 |---|---|---|
@@ -650,9 +650,9 @@ resource "iosxe_vlan" "voice" {
 
 - Exam-level summary only. Bob owns the deep dive in [T25](../bob/T25-nso-cisco-modeling-labs.md).
 
-![NSO architecture](../assets/T33/05-nso-architecture.png)
+![NSO architecture: northbound clients, NSO core with Service Manager, Device Manager and CDB, one NED per vendor, multivendor devices](../assets/T33/08-nso-architecture-arch.png)
 
-*Requests come in northbound (blue). The Service Manager maps a YANG service onto device config, the Device Manager pushes it through one NED per vendor, and the whole change is one transaction (green).*
+*Read top to bottom. Every northbound interface (blue: NETCONF, RESTCONF, CLI, JSON-RPC, Web UI) reaches the same core. The Service Manager maps a YANG service onto per-device config, both kept in the CDB (glowing). The Device Manager sends each diff through one NED per vendor, and the whole change is one atomic transaction across all devices.*
 
 - **Cisco (Crosswork) Network Services Orchestrator**, from the Tail-f acquisition. CLI and file names still say `ncs` / `tail-f`.
   - Two layers: the **Service Manager** (YANG **service models**, e.g. "L3VPN for customer ACME") and the **Device Manager** (device config).
@@ -1046,6 +1046,7 @@ D. Imperative IaC; steps run in order
 
 ## Sources
 
+- Architecture diagrams: HTML source `assets/T33/08-nso-architecture-arch.html`, `assets/T33/09-push-vs-pull-arch.html` (shared kit `assets/_arch/`)
 - Overview image: HTML source `assets/T33/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T33/*.mmd`. Animation: `assets/T33/07-drift-loop-anim.html` → `07-drift-loop.gif`.
 - Ansible, Introduction (agentless, SSH with existing credentials, YAML, idempotent "does not change anything" wording): https://docs.ansible.com/ansible/latest/getting_started/introduction.html
 - Ansible, How network automation is different (network modules execute on the control node; connection types): https://docs.ansible.com/ansible/latest/network/getting_started/network_differences.html

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T27 architecture: where container writes go</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .ctr > .zb, .row > .zone > .zb { justify-content: center; }
+  .ctr > .zb { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); justify-items: center; padding: 18px 0; column-gap: 26px; }
+  .row .zh small { float: right; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T27 · <span class="pill">Docker</span> where writes go</h1>
+    <div class="meta"><b>200-901 blueprint 4.5</b><br>Writable layer vs bind mount vs named volume<br>Names as in <code>labs/T27/docker_drill.sh</code> step 8</div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone site ctr">
+      <div class="zh">Container filesystem <small>image t27-mock-api:1.0 · read-only layers underneath, one mount target per path</small></div>
+      <div class="zb">
+        <div class="node w" id="wl" data-icon="db"><div class="nm">/app, /tmp …</div><div class="sub">no mount: writes land in the<br>container's <b>writable layer</b></div><span class="tag">any container, e.g. t27-api</span></div>
+        <div class="node w" id="bind" data-icon="db"><div class="nm">/data</div><div class="sub"><b>bind mount</b> (source is a path)<br>hides the image's <code>/data</code></div><span class="tag">container t27-bind</span></div>
+        <div class="node w hl" id="vol" data-icon="db"><div class="nm">/data</div><div class="sub"><b>named volume</b> (source is a name)<br>empty volume gets the image's <code>/data</code></div><span class="tag">containers t27-vol, t27-vol2</span></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="row">
+      <div class="zone ext">
+        <div class="zh">Lost <small>dies with the container</small></div>
+        <div class="zb">
+          <div class="node w down" id="gone" data-icon="db"><div class="nm">writable layer</div><div class="sub">survives <code>docker stop</code><br>deleted with <code>docker rm</code></div></div>
+        </div>
+      </div>
+      <div class="zone client">
+        <div class="zh">Host filesystem <small>a folder you choose</small></div>
+        <div class="zb">
+          <div class="node w" id="hostdir" data-icon="server"><div class="nm">labs/T27/seed</div><div class="sub">edit on host = seen in container<br>manage with normal host tools</div></div>
+        </div>
+      </div>
+      <div class="zone fabric">
+        <div class="zh">Docker-managed storage <small>Docker's own area</small></div>
+        <div class="zb">
+          <div class="node w" id="vdata" data-icon="db"><div class="nm">volume t27-data</div><div class="sub">survives <code>docker rm</code><br>gone only with <code>docker volume rm</code></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Spot it in <code>-v</code>:</b> starts with a path (<code>"$(pwd)/…"</code>, <code>/abs</code>) = bind mount. A bare name = named volume.</div>
+      <div class="note trap"><b>Trap:</b> <code>docker rm</code> keeps named volumes. Only <code>docker volume rm t27-data</code> deletes the data; <code>docker rm -v</code> removes <b>anonymous</b> volumes only.</div>
+      <div class="note"><b>Read-only:</b> add <code>:ro</code> to the mount, as the drill does for the seed folder.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw phys"></i>mount: container path ↔ storage</span>
+    <span><i class="sw error"></i>data lost on <code>docker rm</code></span>
+    <span style="margin-left:auto">Blue glow = the option that keeps data across containers</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "wl", b: "gone", k: "error", label: "no <code>-v</code>" },
+  { a: "bind", b: "hostdir", k: "phys", dir: "both", label: "<code>-v \"$(pwd)/labs/T27/seed\":/data:ro</code>" },
+  { a: "vol", b: "vdata", k: "phys", dir: "both", label: "<code>-v t27-data:/data</code>" },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

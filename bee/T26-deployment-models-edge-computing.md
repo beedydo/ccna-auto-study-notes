@@ -130,9 +130,9 @@ The note hangs on two pictures: **where** the workload runs (cloud model, edge) 
 - **First principles.** A cloud region is far away. Every request pays a **WAN round trip** (light in fibre covers about 200 km per ms each way, plus queuing and processing). Every byte sent uses **WAN bandwidth**, which costs money and may be thin at a factory, ship or store.
 - **Edge computing** moves the processing to the data: on the device, or on a box next to it (router, switch, gateway, local server). Only results, summaries or alerts go to the cloud.
 
-![Edge, fog and cloud layers](../assets/T26/03-edge-fog-cloud.png)
+![Edge, fog and cloud layers: edge devices and edge compute at the site, fog nodes (switch, IOx router, gateway), WAN, cloud](../assets/T26/03-edge-fog-cloud-arch.png)
 
-*Raw data stays on the LAN. Only summaries cross the WAN; the cloud pushes models, config and app updates back down.*
+*Read it bottom to top. Raw data stops at the edge layer; only filtered results reach the fog nodes and only summaries cross the WAN (green). The cloud pushes models, config and app updates back down (grey dashed).*
 
 **The four benefits (blueprint 4.1):**
 
@@ -490,6 +490,7 @@ A. Cisco IOx  B. Cisco Intersight  C. Meraki dashboard  D. Catalyst Center (DNA 
 ## Sources
 
 - Overview image: HTML source `assets/T26/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T26/*.mmd`.
+- Architecture diagram: HTML source `assets/T26/03-edge-fog-cloud-arch.html` (shared kit `assets/_arch/`)
 - NIST SP 800-145, The NIST Definition of Cloud Computing (5 essential characteristics, 3 service models, 4 deployment models; quoted wording checked): https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-145.pdf
 - NIST SP 500-325, Fog Computing Conceptual Model (fog nodes = gateways, switches, routers, servers; Annex A fog vs edge): https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.500-325.pdf
 - NIST SP 800-125, Guide to Security for Full Virtualization Technologies (bare-metal/native vs hosted virtualisation): https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-125.pdf

@@ -394,9 +394,9 @@ webhook: 0 GETs to discover them; 1 POST per event pushed to you (+1 follow-up G
 - **③ Receiver app:** the code behind the URL, `receiver.py`. It reads the raw body, verifies the signature, checks the shape, dedupes, answers 2xx, then a worker fetches the details and acts.
   - The two **halves** are separate on purpose: `do_POST()` (fast, synchronous) and `worker()` → `act()` (slow, background). See T43.05.
 
-![Components: event source with a delivery service, the Internet and your firewall, your public target URL, receiver and worker; the worker calls back into the API](../assets/T43/02-components.png)
+![Components: event source (delivery service + REST API on :8143), firewall/NAT allowing inbound 443, your public target URL, receiver on :8144 and worker; the worker's follow-up GET goes back to the API](../assets/T43/10-components-arch.png)
 
-*Three components. The yellow box is the usual reason nothing arrives: the target URL isn't reachable from the Internet. The worker's follow-up GET goes the normal direction (you → API), with your token.*
+*Three components in zones: ① event source (top), Internet edge (middle), ② target URL + ③ receiver (bottom). Blue arrows point client → server, so the delivery runs down (platform = client) and the follow-up `GET /v1/messages/{id}` runs back up (you = client, with your token). The firewall zone is the usual reason nothing arrives: the target URL isn't reachable from the Internet.*
 
 ### T43.04 · Registration
 
@@ -538,9 +538,9 @@ webhook: 0 GETs to discover them; 1 POST per event pushed to you (+1 follow-up G
   - Never point a real production webhook (with real data) at a public inspection site.
 - **Local-only alternative (this lab):** run the sender yourself. `curl_drill.sh` plays the platform with `openssl dgst -sha1 -hmac` + `curl`, which tests the receiver with no Internet at all.
 
-![Testing: Webex POSTs to the ngrok edge, which forwards down the tunnel to the agent and receiver.py on 127.0.0.1:8144; or to webhook.site just to inspect](../assets/T43/07-testing-ngrok.png)
+![Testing: Webex POSTs to the ngrok edge, which forwards down the tunnel the agent opened to receiver.py on 127.0.0.1:8144; or to webhook.site just to inspect; a direct POST to 127.0.0.1 is unreachable](../assets/T43/11-testing-ngrok-arch.png)
 
-*ngrok **exposes** your real app (blue). webhook.site only **shows** the request (yellow). The tunnel is opened outbound from the laptop, which is why it works through NAT.*
+*ngrok **exposes** your real app (blue glow = the public URL you register). webhook.site only **shows** the request. The green tunnel is opened **outbound** by the agent, which is why it works through NAT; the red dashed line is why `127.0.0.1` as `targetUrl` gets nothing.*
 
 ### T43.08 · Use cases
 
@@ -1056,6 +1056,7 @@ A. Respond with 2xx immediately and create the ticket in a background worker  B.
 - GitHub Docs, Best practices for using webhooks (respond with 2XX within 10 seconds, queue and process asynchronously, `X-GitHub-Delivery` against replays, redeliver missed deliveries, HTTPS): https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks
 - ngrok documentation, Get started ("Put your local app on a public URL"): https://ngrok.com/docs/getting-started/
 - RFC 6455, The WebSocket Protocol: https://www.rfc-editor.org/rfc/rfc6455
+- Architecture diagrams: HTML source `assets/T43/10-components-arch.html`, `assets/T43/11-testing-ngrok-arch.html` (shared kit `assets/_arch/`)
 - RFC 2104, HMAC; Python `hmac` and `hashlib` docs: https://www.rfc-editor.org/rfc/rfc2104 · https://docs.python.org/3/library/hmac.html · https://docs.python.org/3/library/hashlib.html
 - Python `http.server` (`ThreadingHTTPServer`, `BaseHTTPRequestHandler`) and `urllib.request`: https://docs.python.org/3/library/http.server.html · https://docs.python.org/3/library/urllib.request.html
 - Cisco 200-901 v1.1 exam topics (2.2): https://learningcontent.cisco.com/documents/marketing/exam-topics/200-901-CCNAAUTO_v.1.1.pdf

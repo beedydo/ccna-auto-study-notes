@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T27 architecture: build, ship, run</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px; }
+  .reg { grid-column: 2 / span 2; } .cli { grid-column: 1; grid-row: 1; }
+  .reg > .zb, .host > .zb { display: grid; gap: 26px 26px; padding: 18px 0; justify-items: center; }
+  .reg > .zb { display: flex; justify-content: flex-start; gap: 36px; padding: 18px 0 18px 90px; }
+  .host { grid-column: 1 / span 3; }
+  .host > .zb { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 70px; }
+  .cli > .zb { padding: 18px 0; justify-content: center; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T27 · <span class="pill">Docker</span> build, ship, run</h1>
+    <div class="meta"><b>200-901 blueprint 4.5</b><br>Where each object lives<br>Names as in <code>labs/T27/Dockerfile</code></div>
+  </header>
+
+  <div class="canvas grid3">
+    <div class="zone cloud reg">
+      <div class="zh">Registry <small>stores images in repositories · <code style="color:#1d1d1f">[host/]namespace/repo:tag</code></small></div>
+      <div class="zb">
+        <div class="node w" id="hub" data-icon="cloud"><div class="nm">Docker Hub</div><div class="sub">default registry · official base images</div><span class="tag">python:3.12-slim</span></div>
+        <div class="node w" id="priv" data-icon="cloud"><div class="nm">Your repository</div><div class="sub">Docker Hub or private<br>(Harbor, GitLab, ECR)</div><span class="tag">[host/]namespace/t27-mock-api:1.0</span></div>
+      </div>
+    </div>
+    <div class="zone client cli">
+      <div class="zh">Client <small>your terminal</small></div>
+      <div class="zb">
+        <div class="node w" id="cli" data-icon="script"><div class="nm">docker CLI</div><div class="sub">sends every command to the Engine</div></div>
+      </div>
+    </div>
+
+    <div class="zone fabric host" style="margin-top: 44px">
+      <div class="zh">Docker host <small style="float:right">the Engine builds images and runs containers on the host kernel</small></div>
+      <div class="zb">
+        <div class="node w hl" id="engine" data-icon="controller"><div class="nm">Docker Engine</div><div class="sub"><code>dockerd</code> daemon<br>does ① to ④ for the CLI</div></div>
+        <div class="node w" id="base" data-icon="db"><div class="nm">Base image</div><div class="sub">pulled once, cached locally<br>read-only layers</div><span class="tag">python:3.12-slim</span></div>
+        <div></div>
+        <div class="node w" id="df" data-icon="script"><div class="nm">Dockerfile + context</div><div class="sub">build recipe + files it may COPY</div><span class="tag">labs/T27/</span></div>
+        <div class="node w" id="img" data-icon="db"><div class="nm">Image</div><div class="sub">immutable · read-only layers<br>+ config (ENTRYPOINT, CMD, EXPOSE)</div><span class="tag">t27-mock-api:1.0</span></div>
+        <div class="node w" id="ctr" data-icon="server"><div class="nm">Container</div><div class="sub">image layers + <b>writable layer</b><br>+ one isolated process</div><span class="tag">t27-api</span></div>
+      </div>
+    </div>
+
+    <div class="notes" style="grid-column: 1 / span 3">
+      <div class="note"><b>One image, many containers.</b> Each container shares the image's read-only layers and gets its own writable layer.</div>
+      <div class="note trap"><b>Trap:</b> <code>docker build</code> makes an <b>image</b>, <code>docker run</code> makes a <b>container</b>. The image never changes when the container writes.</div>
+      <div class="note"><b>Container ≠ VM:</b> it is a process on the host kernel, with no kernel of its own.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>CLI → Engine API</span>
+    <span><i class="sw mgmt"></i>Engine action (FROM, build, run)</span>
+    <span><i class="sw data"></i>image layers over the network (pull, push)</span>
+    <span style="margin-left:auto">Numbers = usual order · blue glow = the daemon your CLI talks to</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "cli", b: "engine", k: "api", label: "Engine API" },
+  { a: "hub", b: "base", k: "data", dir: "fwd", label: "① <code>docker pull</code>" },
+  { a: "base", b: "img", k: "mgmt", label: "<code>FROM</code>" },
+  { a: "img", b: "priv", k: "data", dir: "fwd", s: "r-b", ao: -14, label: "③ <code>docker push</code>", t: 0.55 },
+  { a: "df", b: "img", k: "mgmt", label: "② <code>docker build</code>" },
+  { a: "img", b: "ctr", k: "mgmt", ao: 12, bo: 12, label: "④ <code>docker run</code>", t: 0.72 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

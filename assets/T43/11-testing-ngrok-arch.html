@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T43 architecture: testing with ngrok</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T43 · <span class="pill">Testing webhooks</span> ngrok vs webhook.site</h1>
+    <div class="meta"><b>200-901 blueprint 2.2</b><br>Expose (ngrok) vs inspect (webhook.site)<br>Receiver: <code>labs/T43/receiver.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone cloud">
+      <div class="zh">Internet <small>public HTTPS URLs</small></div>
+      <div class="zb">
+        <div class="node w" id="site" data-icon="server"><div class="nm">webhook.site / RequestBin</div><div class="sub">unique inspect URL · no code<br>only <b>shows</b> headers + JSON</div></div>
+        <div class="node w" id="webex" data-icon="cloud"><div class="nm">Webex cloud</div><div class="sub">event source<br>POSTs to <code>targetUrl</code></div></div>
+        <div class="node xw hl" id="edge" data-icon="proxy"><div class="nm">ngrok edge</div><div class="sub">public URL, forwards down the tunnel<br><code>https://&lt;random&gt;.ngrok-free.app</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone site">
+      <div class="zh">Your laptop <small>behind NAT · no inbound connections</small></div>
+      <div class="zb">
+        <div class="note" style="align-self:center; max-width:260px"><b>No Internet at all?</b> <code>curl_drill.sh</code> plays the platform locally with <code>openssl dgst -sha1 -hmac</code> + <code>curl</code>.</div>
+        <div class="node w" id="app" data-icon="server"><div class="nm">receiver.py</div><div class="sub"><code>127.0.0.1:8144</code><br>handles <code>POST /webhook</code></div></div>
+        <div class="node xw" id="agent" data-icon="script"><div class="nm">ngrok agent</div><div class="sub">opens the tunnel <b>outbound</b><br>API: <code>http://localhost:4040/api/tunnels</code></div><span class="tag">ngrok http 8144</span></div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>ngrok exposes</b> your real app: register <code>https://&lt;random&gt;.ngrok-free.app/webhook</code> as <code>targetUrl</code>.</div>
+      <div class="note trap"><b>Trap:</b> registering <code>http://127.0.0.1:8144/webhook</code> (or a private IP) means <b>nothing arrives</b>: the cloud can't reach your laptop.</div>
+      <div class="note"><b>webhook.site only inspects:</b> no verify, no 200 logic, no follow-up GET. Use it to see the real payload first.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>HTTPS POST (webhook delivery)</span>
+    <span><i class="sw data"></i>tunnel (opened outbound by the agent)</span>
+    <span><i class="sw phys"></i>local forward on the laptop</span>
+    <span><i class="sw error"></i>unreachable</span>
+    <span style="margin-left:auto">Blue glow = the public URL you register</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "webex", b: "edge", k: "api", s: "r-l", label: "POST · <code>targetUrl</code> = ngrok URL", t: 0.5 },
+  { a: "webex", b: "site", k: "api", s: "l-r", label: "or <code>targetUrl</code> = inspect URL", t: 0.5 },
+  { a: "agent", b: "edge", k: "data", s: "t-b", ao: -10, dir: "both", label: "tunnel · agent dialled out", t: 0.5 },
+  { a: "agent", b: "app", k: "phys", s: "l-r", dir: "fwd", label: "forward to :8144", t: 0.5 },
+  { a: "webex", b: "app", k: "error", s: "b-t", bo: -30, label: "<code>http://127.0.0.1:8144</code> ✗ unreachable", t: 0.5 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

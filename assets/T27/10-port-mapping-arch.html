@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T27 architecture: port mapping and the bridge network</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .host > .zb { display: block; padding: 18px 22px 22px; }
+  .hostrow { display: flex; justify-content: space-around; align-items: flex-start; }
+  .bridge { margin-top: 90px; }
+  .bridge > .zb { justify-content: space-around; padding: 22px 14px; }
+  .ct { flex: 0 0 380px; }
+  .ct > .zb { padding: 16px 10px; }
+  .client { width: 520px; margin: 0 0 0 61px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 390px; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T27 · <span class="pill">Docker</span> port mapping</h1>
+    <div class="meta"><b>200-901 blueprint 4.5</b><br><code>-p HOST:CONTAINER</code> through the default bridge<br>Names as in <code>labs/T27/docker_drill.sh</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Client <small>on the laptop or another machine</small></div>
+      <div class="zb">
+        <div class="node xw" id="curl" data-icon="script"><div class="nm">curl</div><div class="sub"><code>http://127.0.0.1:8127/api/v1/devices</code></div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="zone ext host">
+      <div class="zh">Host (your laptop) <small style="margin-left:330px">Docker publishes on all host interfaces unless you give an IP</small></div>
+      <div class="zb">
+        <div class="hostrow">
+          <div class="node xw hl" id="hport" data-icon="server"><div class="nm">host port 8127</div><div class="sub">the only port the outside can reach<br><code>-p 127.0.0.1:8127:8080</code> = loopback only</div></div>
+          <div class="node xw" id="hnet" data-icon="router"><div class="nm"><code>--network host</code></div><div class="sub">no bridge, no NAT: the app's 8080<br>is the host's 8080 · <code>-p</code> ignored</div></div>
+        </div>
+
+        <div class="zone fabric bridge">
+          <div class="zh">bridge network <small style="margin-left:300px">default: <code style="color:#1d1d1f">bridge</code> · containers get 172.17.0.x</small></div>
+          <div class="zb">
+            <div class="zone site ct">
+              <div class="zh">container <code style="color:#1d1d1f">t27-api</code></div>
+              <div class="zb">
+                <div class="node xw" id="app" data-icon="script"><div class="nm">mock_api.py</div><div class="sub">listens on <code>0.0.0.0:8080</code><br><code>EXPOSE 8080</code> = documentation only</div><span class="tag">image t27-mock-api:1.0</span><br><span class="tag">IP 172.17.0.x</span></div>
+              </div>
+            </div>
+            <div class="zone site dashed ct">
+              <div class="zh" style="color:#b45309; background:transparent">second container, same image</div>
+              <div class="zb">
+                <div class="node xw" id="app2" data-icon="script"><div class="nm">also listens on 8080</div><div class="sub">needs its <b>own</b> host port, e.g. <code>-p 8128:8080</code><br>reusing 8127 → "port is already allocated"</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Host side first.</b> <code>--publish 8127:8080</code>: 8127 on the laptop, 8080 inside <code>t27-api</code>. TCP by default; add <code>/udp</code> for UDP.</div>
+      <div class="note trap"><b>Trap:</b> <code>EXPOSE</code> opens nothing. Only <code>-p</code> publishes. An app bound to <code>127.0.0.1</code> inside the container is unreachable even with <code>-p</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>your HTTP request</span>
+    <span><i class="sw data"></i>published port → container port (NAT on the bridge)</span>
+    <span style="margin-left:auto">Blue glow = the port your code actually calls</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "curl", b: "hport", k: "api", s: "b-t", label: "TCP <code>127.0.0.1:8127</code>" },
+  { a: "hport", b: "app", k: "data", dir: "fwd", label: "<code>--publish 8127:8080</code><br>HOST : CONTAINER", t: 0.3 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

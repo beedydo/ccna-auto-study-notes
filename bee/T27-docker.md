@@ -239,9 +239,9 @@ echo "t27 containers left: $(docker ps --all --quiet --filter name=t27- | wc -l 
 
 **Notes:**
 
-![Build, ship, run](../assets/T27/01-build-ship-run.png)
+![Build, ship, run: CLI, Engine, registry and host](../assets/T27/09-build-ship-run-arch.png)
 
-*Follow the numbers: pull the base, build your image, push it, run it. Blue = images (read-only), green = the running container.*
+*Follow ① to ④: pull the base, build your image, push it, run it. Notice the CLI only talks to the Engine (`dockerd`), and images (read-only) and containers (plus a writable layer) both live on the Docker host.*
 
 - **Image:** an immutable, read-only stack of filesystem layers + config (env, user, entrypoint, cmd, exposed ports). Built once, run many times. Drill step 1 builds `t27-mock-api:1.0`.
 - **Container:** a running (or stopped) instance of one image. Docker adds a thin **writable layer** on top. Everything the process writes goes there, and it is **deleted with `docker rm`**. The image doesn't change.
@@ -448,9 +448,9 @@ The official interaction table (exec form unless stated):
 
 **Notes:**
 
-![Port mapping through the bridge network](../assets/T27/05-port-mapping.png)
+![Port mapping through the bridge network](../assets/T27/10-port-mapping-arch.png)
 
-*Host port first, container port second. The app inside must listen on 0.0.0.0, and EXPOSE alone opens nothing.*
+*Host port first, container port second: only host port 8127 is reachable from outside. The app inside must listen on 0.0.0.0, EXPOSE alone opens nothing, and a second container on the same image needs its own host port.*
 
 - **`-p HOST:CONTAINER`**, host side **first**. `--publish 8127:8080` → `http://127.0.0.1:8127` on the laptop reaches port 8080 inside `t27-api`.
   - `-p 127.0.0.1:8127:8080` binds only the host loopback. Without an IP, Docker publishes on **all** host interfaces (`0.0.0.0` and `::`).
@@ -458,9 +458,9 @@ The official interaction table (exec form unless stated):
   - Two containers can both listen on container port 8080, but each needs its **own host port** ("port is already allocated" otherwise).
 - **Bind mount vs named volume** (drill step 8):
 
-![Where writes go](../assets/T27/06-storage.png)
+![Where writes go](../assets/T27/11-storage-arch.png)
 
-*Red = writable layer, lost on docker rm. Yellow = bind mount, it's your host folder. Green = named volume, kept by Docker until docker volume rm.*
+*Each container path maps down to where its data really lives. Red dashed = writable layer, lost on docker rm. Bind mount = your host folder. Named volume (glow) = kept by Docker until docker volume rm.*
 
 | | Bind mount | Named volume |
 |---|---|---|
@@ -757,6 +757,7 @@ A. It's available as an environment variable in every running container  B. It's
 ## Sources
 
 - Overview image: HTML source `assets/T27/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T27/*.mmd`. Animation: `assets/T27/08-data-lifecycle-anim.html` → `.gif`.
+- Architecture diagrams: HTML source `assets/T27/09-build-ship-run-arch.html`, `assets/T27/10-port-mapping-arch.html`, `assets/T27/11-storage-arch.html` (shared kit `assets/_arch/`)
 - Dockerfile reference (FROM first, ARG before FROM, RUN vs CMD, only the last CMD/ENTRYPOINT counts, CMD/ENTRYPOINT interaction table, exec vs shell form, EXPOSE doesn't publish and defaults to TCP, ADD URL/Git/local-tar extraction, WORKDIR auto-created, ENV overrides ARG): https://docs.docker.com/reference/dockerfile/
 - Building best practices (ADD or COPY guidance, `apt-get update && install` in one RUN, USER non-root, cache busting): https://docs.docker.com/build/building/best-practices/
 - Build cache (a changed layer rebuilds all later layers): https://docs.docker.com/build/cache/
