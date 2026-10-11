@@ -1,0 +1,20 @@
+flowchart TB
+  subgraph W1["1st Way: FLOW (left to right)"]
+    direction LR
+    a1[Dev: commit] ==> a2[Build + test] ==> a3[Deploy] ==> a4[Ops: production]
+  end
+  subgraph W2["2nd Way: FEEDBACK (right to left)"]
+    direction RL
+    b1[Monitoring + alerts] -.-> b2[Failed test / stage] -.-> b3[Dev fixes fast]
+  end
+  subgraph W3["3rd Way: CONTINUAL LEARNING"]
+    direction LR
+    c1[Experiment] --> c2[Blameless post-mortem] --> c3[Share + improve]
+  end
+  W1 ~~~ W2 ~~~ W3
+  classDef a fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000
+  classDef b fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+  classDef c fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#000
+  class a1,a2,a3,a4 a
+  class b1,b2,b3 b
+  class c1,c2,c3 c

@@ -1,0 +1,8 @@
+{
+  "site": "sandbox",
+  "vlans": [
+    {"id": 10, "name": "users"},
+    {"id": 20, "name": "voice"},
+    {"id": 30, "name": "mgmt"}
+  ]
+}

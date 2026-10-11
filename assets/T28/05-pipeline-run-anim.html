@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T28 pipeline run animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --b:#d1ecf1; --bb:#17a2b8; --g:#d4edda; --gb:#28a745; --y:#fff3cd; --yb:#e0a800;
+          --r:#f8d7da; --rb:#dc3545; --p:#e8dcf7; --pb:#7b4bc4; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1150px; height:560px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:12px; }
+  .zones { display:grid; grid-template-columns: 3fr 3fr; gap:14px; margin-bottom:6px; }
+  .zl { font-size:12px; font-weight:800; text-align:center; padding:3px; border-radius:6px; }
+  .zl.ci { background:var(--b); border:2px solid var(--bb); } .zl.cd { background:var(--g); border:2px solid var(--gb); }
+  .lanes { display:grid; grid-template-columns:repeat(6, 1fr); gap:14px; }
+  .lane { border:2.5px solid #bbb; border-radius:12px; height:210px; padding:9px; background:#fff; position:relative; opacity:.55; }
+  .lane h3 { margin:0 0 2px; font-size:15px; } .lane .where { font-size:11.5px; color:var(--muted); margin-bottom:8px; font-family:Menlo,monospace; }
+  .lane.done { border-color:var(--gb); opacity:1; } .lane.run { border-color:var(--bb); opacity:1; box-shadow:0 0 0 5px rgba(23,162,184,.35); }
+  .lane.fail { border-color:var(--rb); opacity:1; box-shadow:0 0 0 5px rgba(220,53,69,.35); background:#fff7f7; }
+  .lane.wait { border-color:var(--yb); opacity:1; box-shadow:0 0 0 5px rgba(224,168,0,.35); background:#fffdf3; }
+  .lane.skip { opacity:.3; border-style:dashed; }
+  .badge { display:inline-block; font-size:12px; font-weight:800; padding:2px 8px; border-radius:10px; margin-bottom:6px; }
+  .done .badge { background:var(--g); color:#1e7b34; } .run .badge { background:var(--b); color:#0c6372; }
+  .fail .badge { background:var(--r); color:#a12230; } .wait .badge { background:var(--y); color:#8a6500; }
+  .skip .badge, .idle .badge { background:#eee; color:#777; }
+  .out { font-family:Menlo,monospace; font-size:11px; line-height:1.35; background:#f4f4f4; border-radius:6px; padding:5px 6px; white-space:pre-wrap; word-break:break-word; }
+  .art { font-family:Menlo,monospace; font-size:11.5px; border:2px solid var(--pb); background:var(--p); border-radius:7px; padding:4px 6px; margin-top:6px; }
+  .arrowrow { position:relative; height:46px; margin-top:8px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .cmd.bad::before { content:"✗ "; color:#ff8a8a; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T28 · <span class="pill">CI/CD pipeline</span> one commit, start to finish</h1>
+  <div class="sub">Each frame = one stage of <code>bash labs/T28/pipeline.sh</code>. Green = passed, blue = running, yellow = waiting, red = failed.</div>
+  <div class="zones"><div class="zl ci">CI: integrate + verify (every push / MR)</div><div class="zl cd">CD: promote the same artifact through environments</div></div>
+  <div class="lanes" id="lanes"></div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const L = [
+  ["🧹 1 lint", "py_compile"], ["🧪 2 test", "unittest"], ["📦 3 package", "zipapp"],
+  ["🟢 4 dev", "deploy.py --env dev"], ["🟡 5 staging", "--env staging"], ["🚀 6 prod", "--env prod"],
+];
+const BADGE = { idle:"pending", run:"running", done:"passed", fail:"FAILED", wait:"manual ▶", skip:"skipped" };
+const ART = '<div class="art">dist/netinv.pyz<br>(one file)</div>';
+const frames = [
+  { s:["run","idle","idle","idle","idle","idle"], o:["OK syntax\nOK intent/vlans.json: 3 VLANs","","","","",""],
+    cmd:{at:0, t:"git push origin main → pipeline starts"}, txt:"A push to <code>main</code> <b>triggers</b> the pipeline. Stage 1 lints the code <b>and the network intent</b>." },
+  { s:["done","run","idle","idle","idle","idle"], o:["OK","Ran 6 tests\nOK","","","",""],
+    cmd:{at:1, t:"python3 -m unittest discover"}, txt:"Lint passed, so stage 2 runs the <b>unit tests</b>. A stage only starts when the previous one passed." },
+  { s:["done","done","run","idle","idle","idle"], o:["OK","OK","built once"+ART,"","",""],
+    cmd:{at:2, t:"python3 -m zipapp src … -o dist/netinv.pyz"}, txt:"Stage 3 packages the <b>artifact</b>. It is built <b>once</b>; every environment gets this same file." },
+  { s:["done","done","done","run","idle","idle"], o:["OK","OK",ART,"post-deploy check OK\n3 devices","",""],
+    cmd:{at:3, t:"deploy.py --env dev"}, txt:"<b>CI ends here, CD starts.</b> The artifact goes to dev automatically, then a smoke check runs." },
+  { s:["done","done","done","done","run","idle"], o:["OK","OK",ART,"OK","post-deploy check OK\n3 devices",""],
+    cmd:{at:4, t:"deploy.py --env staging"}, txt:"Same artifact to <b>staging</b> (prod-like). Integration tests belong here." },
+  { s:["done","done","done","done","done","wait"], o:["OK","OK",ART,"OK","OK","WAITING: manual approval gate"],
+    cmd:{at:5, t:"when: manual"}, txt:"<b>Continuous delivery:</b> releasable, but prod waits for a human. Remove the gate = <b>continuous deployment</b>." },
+  { s:["done","fail","skip","skip","skip","skip"], o:["OK","FAIL: test_vlan_range\nAssertionError: True is not false","","","",""],
+    cmd:{at:1, t:"MAX_VLAN = 4095 → test fails", bad:true}, txt:"Next commit breaks a test. The pipeline <b>stops the line</b>: no artifact, nothing deployed. The committer is notified." },
+];
+const lanes = document.getElementById("lanes");
+lanes.innerHTML = L.map((l, i) => `<div class="lane" id="l${i}"><h3>${l[0]}</h3><div class="where">${l[1]}</div><span class="badge" id="b${i}"></span><div class="out" id="o${i}"></div></div>`).join("");
+function show(i) {
+  const f = frames[i];
+  f.s.forEach((st, k) => {
+    const el = document.getElementById("l"+k); el.className = "lane " + st;
+    document.getElementById("b"+k).textContent = BADGE[st];
+    const o = document.getElementById("o"+k); o.innerHTML = f.o[k]; o.style.display = f.o[k] ? "block" : "none";
+  });
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.bad ? " bad" : ""); d.textContent = f.cmd.t;
+  a.appendChild(d);
+  const laneW = (1094 - 5*14) / 6;
+  let left = f.cmd.at * (laneW + 14);
+  d.style.left = Math.min(left, 1094 - d.offsetWidth) + "px";
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

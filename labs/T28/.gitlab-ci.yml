@@ -1,0 +1,71 @@
+# T28 reference pipeline (GitLab CI). Same stages as labs/T28/pipeline.sh.
+# GitLab only runs a .gitlab-ci.yml at the repo ROOT, so this copy inside labs/T28/ is never live.
+# To try it: put the contents of labs/T28/ at the root of a GitLab project and push.
+stages:            # stages run in this order; jobs in one stage run in parallel
+  - lint
+  - test
+  - build
+  - deploy
+
+default:
+  image: python:3.12-slim          # every job runs in a fresh container from this image
+
+variables:
+  PYTHONPATH: src
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"   # run on every MR...
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH         # ...and every push to main
+
+lint:
+  stage: lint
+  script:
+    - python3 -m py_compile src/build_inventory.py src/netlib/*.py
+    - python3 ci/validate_intent.py intent/vlans.json
+
+unit-test:
+  stage: test
+  script:
+    - python3 -m unittest discover --start-directory tests
+
+package:
+  stage: build
+  script:
+    - mkdir -p dist
+    - python3 -m zipapp src --main "build_inventory:main" --output dist/netinv.pyz
+  artifacts:                        # saved by GitLab and passed to later stages
+    paths:
+      - dist/netinv.pyz
+    expire_in: 1 week
+
+deploy-dev:
+  stage: deploy
+  script:
+    - python3 ci/deploy.py --env dev --artifact dist/netinv.pyz --out .
+  environment:
+    name: dev
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy-staging:
+  stage: deploy
+  needs: [deploy-dev, package]      # after dev, still in the deploy stage
+  script:
+    - python3 ci/deploy.py --env staging --artifact dist/netinv.pyz --out .
+  environment:
+    name: staging
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+deploy-prod:
+  stage: deploy
+  needs: [deploy-staging, package]
+  script:
+    - python3 ci/deploy.py --env prod --artifact dist/netinv.pyz --out .
+  environment:
+    name: prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual                  # continuous DELIVERY: a human clicks "play"
+                                    # delete this line = continuous DEPLOYMENT

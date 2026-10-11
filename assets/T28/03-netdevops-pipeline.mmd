@@ -1,0 +1,18 @@
+flowchart LR
+  G[(Git: intent<br/>vlans.json, host_vars)] -->|MR| V[Lint + validate<br/>yamllint, schema,<br/>VLAN range]
+  V --> S[Test in simulation<br/>CML lab + pyATS<br/>pre-checks]
+  S --> R[Peer review<br/>+ approval]
+  R --> D[Deploy to devices<br/>Ansible / NSO / Terraform]
+  D --> P[Post-change checks<br/>pyATS diff, ping, BGP up]
+  P -->|pass| OK[Done: Git = what is running]
+  P -->|fail| RB[Roll back:<br/>re-deploy previous commit]
+  classDef src fill:#e8dcf7,stroke:#7b4bc4,stroke-width:2px,color:#000
+  classDef stage fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000
+  classDef gate fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#000
+  classDef good fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+  classDef bad fill:#f8d7da,stroke:#dc3545,stroke-width:2px,color:#000
+  class G src
+  class V,S,D,P stage
+  class R gate
+  class OK good
+  class RB bad

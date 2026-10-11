@@ -1,0 +1,32 @@
+// T28 reference pipeline (Jenkins declarative). Same stages as labs/T28/pipeline.sh. Not run.
+pipeline {
+    agent { docker { image 'python:3.12-slim' } }
+    environment { PYTHONPATH = 'src' }
+    stages {
+        stage('Lint') {
+            steps {
+                sh 'python3 -m py_compile src/build_inventory.py src/netlib/*.py'
+                sh 'python3 ci/validate_intent.py intent/vlans.json'
+            }
+        }
+        stage('Test') {
+            steps { sh 'python3 -m unittest discover --start-directory tests' }
+        }
+        stage('Build') {
+            steps {
+                sh 'mkdir -p dist && python3 -m zipapp src --main "build_inventory:main" --output dist/netinv.pyz'
+                archiveArtifacts artifacts: 'dist/netinv.pyz'
+            }
+        }
+        stage('Deploy dev') {
+            steps { sh 'python3 ci/deploy.py --env dev --artifact dist/netinv.pyz --out .' }
+        }
+        stage('Deploy staging') {
+            steps { sh 'python3 ci/deploy.py --env staging --artifact dist/netinv.pyz --out .' }
+        }
+        stage('Deploy prod') {
+            input { message 'Deploy to prod?' }   // manual gate = continuous delivery
+            steps { sh 'python3 ci/deploy.py --env prod --artifact dist/netinv.pyz --out .' }
+        }
+    }
+}

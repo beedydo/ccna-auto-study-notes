@@ -1,0 +1,90 @@
+# T28 reference pipeline (GitHub Actions). Same stages as labs/T28/pipeline.sh.
+# GitHub only runs workflows stored in .github/workflows/ at the repo root, so this copy is never live.
+# To try it: copy labs/T28/ to the root of a new repo and save this file as .github/workflows/ci.yml.
+name: netinv-ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:                     # jobs run in PARALLEL unless chained with needs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m py_compile src/build_inventory.py src/netlib/*.py
+      - run: PYTHONPATH=src python3 ci/validate_intent.py intent/vlans.json
+
+  unit-test:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: PYTHONPATH=src python3 -m unittest discover --start-directory tests
+
+  package:
+    needs: unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: mkdir -p dist && python3 -m zipapp src --main "build_inventory:main" --output dist/netinv.pyz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: netinv
+          path: dist/netinv.pyz
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main'      # PRs stop after package
+    needs: package
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: netinv
+          path: dist
+      - run: python3 ci/deploy.py --env dev --artifact dist/netinv.pyz --out .
+
+  deploy-staging:
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: netinv
+          path: dist
+      - run: python3 ci/deploy.py --env staging --artifact dist/netinv.pyz --out .
+
+  deploy-prod:
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    environment: prod                         # protect it with Required reviewers = manual gate
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v4
+        with:
+          name: netinv
+          path: dist
+      - run: python3 ci/deploy.py --env prod --artifact dist/netinv.pyz --out .

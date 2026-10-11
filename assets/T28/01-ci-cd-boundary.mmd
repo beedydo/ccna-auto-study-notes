@@ -1,0 +1,24 @@
+flowchart LR
+  A[Commit / MR<br/>to main] --> B[Build] --> C[Unit + lint tests] --> D[Package<br/>artifact]
+  D --> E[Deploy dev] --> F[Deploy staging<br/>+ integration tests]
+  F --> G{Prod gate}
+  G -->|"Continuous DELIVERY:<br/>human approves"| H[Production]
+  G -->|"Continuous DEPLOYMENT:<br/>automatic"| H
+  subgraph CI["CI: integrate + verify every change"]
+    A
+    B
+    C
+    D
+  end
+  subgraph CD["CD: release the SAME artifact through environments"]
+    E
+    F
+    G
+    H
+  end
+  classDef ci fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000
+  classDef cd fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+  classDef gate fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#000
+  class A,B,C,D ci
+  class E,F,H cd
+  class G gate

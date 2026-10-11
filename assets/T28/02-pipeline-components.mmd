@@ -1,0 +1,13 @@
+flowchart LR
+  SCM[(Git repo<br/>app + pipeline file)] -->|push / MR| RUN[CI server<br/>+ runner] --> L[1 lint /<br/>validate] --> T[2 unit<br/>test] --> B[3 build +<br/>package]
+  B -->|upload once| REPO[(Artifact repo<br/>registry / Nexus)]
+  REPO -->|same artifact| DEV[4 dev] --> STG[5 staging] --> GATE{gate} --> PROD[6 prod] --> MON[Monitor +<br/>notify]
+  MON -.->|"feedback: failed stage, alert, MR status"| SCM
+  classDef src fill:#e8dcf7,stroke:#7b4bc4,stroke-width:2px,color:#000
+  classDef stage fill:#d1ecf1,stroke:#17a2b8,stroke-width:2px,color:#000
+  classDef env fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#000
+  classDef gate fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#000
+  class SCM,REPO src
+  class RUN,L,T,B stage
+  class DEV,STG,PROD,MON env
+  class GATE gate

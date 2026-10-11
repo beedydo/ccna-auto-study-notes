@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T28 overview: CI/CD + DevOps principles</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --y: #fff3cd; --yb: #e0a800; --b: #d1ecf1; --bb: #17a2b8; --g: #d4edda; --gb: #28a745;
+    --p: #e8dcf7; --pb: #7b4bc4; --r: #f8d7da; --rb: #dc3545;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1480px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.5px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .lanes { display: grid; grid-template-columns: minmax(0, 0.8fr) 34px minmax(0, 1.25fr) 34px minmax(0, 0.8fr) 34px minmax(0, 1.35fr) 34px minmax(0, 0.85fr); align-items: stretch; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .zone > h2 { margin: 0; padding: 8px 12px; font-size: 16.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--line); }
+  .zone > h2 .ids { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+  .zone .body { padding: 10px 12px; font-size: 13px; line-height: 1.4; flex: 1; }
+  .z-src > h2 { background: var(--p); } .z-ci > h2 { background: var(--b); } .z-art > h2 { background: var(--p); }
+  .z-cd > h2 { background: var(--g); } .z-ops > h2 { background: #e9ecef; }
+  .z-cmp > h2, .z-net > h2, .z-dev > h2, .z-tool > h2 { background: #e9ecef; }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; }
+  .arrow small { font-size: 10px; font-weight: 700; writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 6px; }
+
+  .item { margin: 6px 0; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; margin-top: 8px; font-size: 12.5px; }
+  .trap b { color: var(--trap-ink); }
+  .trap .n { background: var(--trap-ink); }
+  .c { display: block; margin: 2px 0 0 24px; }
+  .st { border: 2px solid var(--bb); background: var(--b); border-radius: 6px; padding: 4px 7px; margin: 5px 0; font-size: 12.5px; }
+  .st.env { border-color: var(--gb); background: var(--g); }
+  .st.gate { border-color: var(--yb); background: var(--y); }
+  .st.fail { border-color: var(--rb); background: var(--r); }
+  .st b { font-size: 12.5px; }
+  .feedback { margin-top: 10px; border: 2px dashed var(--rb); border-radius: 10px; padding: 6px 12px; font-size: 13px; text-align: center; background: #fff; }
+
+  .row2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 0.8fr); gap: 16px; margin-top: 16px; }
+  .vs { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+  .vs th, .vs td { border: 1px solid #bbb; padding: 3px 5px; text-align: left; vertical-align: top; }
+  .vs th { background: #f1f1f1; }
+  .vs .blue { background: #e3f3f7; }
+  .calms { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 4px 0 6px; }
+  .calms div { border: 2px solid var(--gb); background: var(--g); border-radius: 6px; text-align: center; font-size: 10.5px; padding: 3px 2px; }
+  .calms b { display: block; font-size: 17px; }
+
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 2px solid var(--trap-ink); }
+  footer .k3::before { background: #d6d6d6; border: 2px solid #777; }
+  footer .k4::before { background: var(--b); border: 2px solid var(--bb); } footer .k5::before { background: var(--g); border: 2px solid var(--gb); }
+  footer .k6::before { background: var(--y); border: 2px solid var(--yb); } footer .k7::before { background: var(--p); border: 2px solid var(--pb); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T28 · <span class="pill">CI/CD + DevOps</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.4, 4.12, 5.4</b><br>Every T28 concept on one page<br>Code from <code>labs/T28/</code></div>
+  </header>
+
+  <div class="lanes">
+    <div class="zone z-src">
+      <h2>📝 Source <span class="ids">T28.01 · T28.04</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">0</span>Git repo holds app <b>+ pipeline file</b> (pipeline as code)</div>
+        <div class="item">Trigger: push / MR / PR to <code>main</code></div>
+        <div class="item">CI = merge to main <b>at least daily</b>, small changes</div>
+        <div class="item"><code>.gitlab-ci.yml</code><br><code>.github/workflows/*.yml</code><br><code>Jenkinsfile</code></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> CI is a <b>practice</b> (merge often + auto-verify), not a tool.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>trigger</small></div>
+
+    <div class="zone z-ci">
+      <h2>🔧 CI stages <span class="ids">T28.01 · T28.03 · T28.09</span></h2>
+      <div class="body">
+        <div class="st"><span class="n">1</span><b>lint / validate</b> · <code>py_compile</code> + <code>validate_intent.py</code></div>
+        <div class="st"><span class="n">2</span><b>unit test</b> · <code>unittest discover</code> (6 tests)</div>
+        <div class="st"><span class="n">3</span><b>build + package</b> · <code>zipapp</code> → <code>netinv.pyz</code></div>
+        <div class="st fail"><span class="n">✗</span>Any stage fails → <b>pipeline stops</b>, later stages never run</div>
+        <div class="item">Jobs in one stage run in <b>parallel</b>; next stage waits</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> order = <b>source → build → test → deploy</b>. Tests always run <b>before</b> any deploy.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>upload once</small></div>
+
+    <div class="zone z-art">
+      <h2>📦 Artifact <span class="ids">T28.03</span></h2>
+      <div class="body">
+        <div class="item">Versioned build output: image, package, zip</div>
+        <div class="item">Stored in an <b>artifact repo</b>: container registry, Nexus, Artifactory</div>
+        <div class="item"><code>artifacts: paths:</code><br><code>dist/netinv.pyz</code></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> build <b>once</b>, promote the <b>same</b> artifact. Never rebuild per environment.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>promote</small></div>
+
+    <div class="zone z-cd">
+      <h2>🚀 CD: environments <span class="ids">T28.02 · T28.03 · T28.09</span></h2>
+      <div class="body">
+        <div class="st env"><span class="n">4</span><b>dev</b> · auto · post-deploy smoke check</div>
+        <div class="st env"><span class="n">5</span><b>staging</b> · auto · integration / prod-like tests</div>
+        <div class="st gate"><span class="n">6</span><b>prod gate</b> · <code>when: manual</code> · Required reviewers · <code>input</code></div>
+        <table class="vs">
+          <tr><th style="width:32%"></th><th>prod deploy</th></tr>
+          <tr class="blue"><td><b>Delivery</b></td><td>always <b>releasable</b>; human approves</td></tr>
+          <tr><td><b>Deployment</b></td><td><b>automatic</b>, no human</td></tr>
+        </table>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> "manual approval before prod" = continuous <b>delivery</b>. No approval = <b>deployment</b>.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>run</small></div>
+
+    <div class="zone z-ops">
+      <h2>📈 Operate <span class="ids">T28.03 · T28.05</span></h2>
+      <div class="body">
+        <div class="item">Monitoring, logs, alerts</div>
+        <div class="item">Notify: chat, email, MR status ✅/❌</div>
+        <div class="item"><b>Benefits:</b> small frequent releases · fewer manual errors · repeatable · early defects · quick rollback</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> rollback = redeploy the <b>previous artifact</b>, fast because it already exists.</div>
+      </div>
+    </div>
+  </div>
+  <div class="feedback">⬅ <b>Feedback loop</b> (2nd Way): failed stage / alert → committer notified in minutes → fix → new commit → pipeline runs again</div>
+
+  <div class="row2">
+    <div class="zone z-net">
+      <h2>🌐 NetDevOps: infra CI/CD <span class="ids">T28.06</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">1</span><b>Git = source of truth</b> for intent (VLANs, host_vars). <code>intent/vlans.json</code></div>
+        <div class="item"><span class="n">2</span>Lint / validate: YAML, schema, VLAN 1–4094</div>
+        <div class="item"><span class="n">3</span>Test in simulation: CML lab + pyATS pre-checks</div>
+        <div class="item"><span class="n">4</span>Deploy: Ansible · NSO · Terraform</div>
+        <div class="item"><span class="n">5</span>Post-change checks: pyATS diff, ping, neighbours up → else roll back</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> devices are changed by the <b>pipeline</b>, not by hand. Benefit = consistency + audit trail + fewer outages.</div>
+      </div>
+    </div>
+
+    <div class="zone z-dev">
+      <h2>🤝 DevOps = culture + practices <span class="ids">T28.07</span></h2>
+      <div class="body">
+        <div class="item">Joins dev and ops: shared goals, shared ownership</div>
+        <div class="calms"><div><b>C</b>Culture</div><div><b>A</b>Automate</div><div><b>L</b>Lean</div><div><b>M</b>Measure</div><div><b>S</b>Sharing</div></div>
+        <div class="item"><b>Three Ways:</b> <span class="n">1</span>Flow (left → right) <span class="n">2</span>Feedback (right → left) <span class="n">3</span>Continual learning</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> DevOps is not a job title or a tool. Buying Jenkins ≠ DevOps.</div>
+      </div>
+    </div>
+
+    <div class="zone z-dev">
+      <h2>⚙️ Practices → principle <span class="ids">T28.08 · T28.09</span></h2>
+      <div class="body">
+        <table class="vs">
+          <tr><th style="width:56%">scenario</th><th>principle</th></tr>
+          <tr><td>script every repeatable step</td><td>Automation</td></tr>
+          <tr><td>10 small releases, not 1 big one</td><td>Lean / small batches</td></tr>
+          <tr><td>security scan on every MR</td><td>Shift-left</td></tr>
+          <tr><td>post-mortem with no blame</td><td>Culture / learning</td></tr>
+          <tr><td>dashboards, DORA metrics</td><td>Measurement</td></tr>
+          <tr><td>devs carry the pager</td><td>"you build it, you run it"</td></tr>
+        </table>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> shift-left = test/secure <b>earlier</b>, not "push to ops".</div>
+      </div>
+    </div>
+
+    <div class="zone z-tool">
+      <h2>🧰 Tools <span class="ids">T28.04</span></h2>
+      <div class="body">
+        <table class="vs">
+          <tr><th style="width:40%">tool</th><th>file</th></tr>
+          <tr><td>GitLab CI</td><td><code>.gitlab-ci.yml</code></td></tr>
+          <tr><td>GitHub Actions</td><td><code>.github/</code><br><code>workflows/*.yml</code></td></tr>
+          <tr><td>Jenkins</td><td><code>Jenkinsfile</code></td></tr>
+        </table>
+        <div class="item">GitLab: <code>stages:</code> + jobs · GHA: <code>jobs:</code> + <code>needs:</code> · Jenkins: <code>pipeline { stages { stage } }</code></div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> GitHub jobs run in <b>parallel</b> by default; chain with <code>needs:</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = stage order (as in <code>labs/T28/pipeline.sh</code>)</span>
+    <span class="k k4">blue = CI stage</span>
+    <span class="k k5">green = environment</span>
+    <span class="k k6">yellow = approval gate</span>
+    <span class="k k7">purple = stored in a repo</span>
+    <span class="k k2">red = exam trap / failure</span>
+    <span class="k k3">grey chip = exact syntax</span>
+  </footer>
+</div>
+</body>
+</html>
