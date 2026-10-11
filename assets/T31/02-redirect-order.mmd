@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph WRONG["ls /nope 2>&1 > out2.txt · error still on screen"]
+        direction LR
+        W0["start<br/>1 → terminal<br/>2 → terminal"] --> W1["2>&1<br/>1 → terminal<br/>2 → terminal"] --> W2["> out2.txt<br/>1 → out2.txt<br/>2 → terminal"]
+    end
+    subgraph RIGHT["ls /nope > out1.txt 2>&1 · both go to the file"]
+        direction LR
+        R0["start<br/>1 → terminal<br/>2 → terminal"] --> R1["> out1.txt<br/>1 → out1.txt<br/>2 → terminal"] --> R2["2>&1<br/>1 → out1.txt<br/>2 → out1.txt"]
+    end
+    classDef ok fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,color:#1d1d1f
+    classDef plain fill:#ffffff,stroke:#2b2b2b,color:#1d1d1f
+    class R0,R1,W0,W1 plain
+    class R2 ok
+    class W2 bad
+    style RIGHT fill:#f3fbf6,stroke:#28a745
+    style WRONG fill:#fdf4f4,stroke:#b42318

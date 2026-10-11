@@ -1,0 +1,26 @@
+flowchart TD
+    A["./device_report.sh devices.csv missing.csv"] --> B{"[ $# -lt 1 ]<br/>no arguments?"}
+    B -- yes --> U["usage → stderr<br/>exit 2"]
+    B -- no --> H["header row<br/>> report.csv (overwrite)"]
+    H --> L1{"for inventory in &quot;$@&quot;<br/>[ ! -f file ]?"}
+    L1 -- "missing.csv" --> S1["log skip → stderr<br/>continue"]
+    L1 -- "devices.csv" --> G["grep -v comments/blanks<br/>>> WORKFILE"]
+    G --> W{"while IFS=, read -r host ip os<br/>valid_ip?"}
+    W -- "bad1 10.10.20" --> BAD["BAD_IP >> report<br/>failed++"]
+    W -- yes --> C{"get_version: curl --fail<br/>rc=$? is 0?"}
+    C -- "csr1 n9k1 csr2" --> OK["OK + version >> report<br/>ok++"]
+    C -- "edge3 rc=22" --> UN["UNREACHABLE >> report<br/>failed++"]
+    OK --> E
+    UN --> E
+    BAD --> E
+    E["cat report · awk count per OS | sort"] --> X{"[ $failed -gt 0 ]?"}
+    X -- yes --> X1["exit 1"]
+    X -- no --> X0["exit 0"]
+    classDef ok fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#b42318,color:#1d1d1f
+    classDef warn fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef rec fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f
+    class OK,X0 ok
+    class U,BAD,UN,X1 bad
+    class S1 warn
+    class A rec

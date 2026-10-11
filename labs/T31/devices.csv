@@ -1,0 +1,7 @@
+# hostname,mgmt_ip,os
+csr1,10.10.20.48,iosxe
+n9k1,10.10.20.58,nxos
+
+edge3,10.10.20.77,iosxe
+bad1,10.10.20,iosxe
+csr2,10.10.20.49,iosxe

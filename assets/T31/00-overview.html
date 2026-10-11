@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T31 overview: Bash</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 330px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T31 · <span class="pill">Bash</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.11 · 5.9</b><br>Every T31 concept on one page<br>Code from <code>labs/T31/</code></div>
+  </header>
+  <table>
+    <tr>
+      <td class="label"><span class="icon">📁</span><div class="name">NAVIGATE<br>&amp; FILES</div><div class="ids">T31.01 · T31.02</div></td>
+      <td class="what"><span class="sig">cd - · mkdir -p · cp -r · rm -r</span><br>
+        <b>Absolute</b> path starts at <code>/</code>; <b>relative</b> starts at <code>$PWD</code>. <code>mv</code> = move <b>or</b> rename. <code>rmdir</code> only removes <b>empty</b> dirs.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>parents in one go<span class="c"><code>mkdir -p backups/2026/oct</code></span></div>
+        <div class="item"><span class="n">4</span>drop comments + blank lines<span class="c"><code>grep -v -e '^#' -e '^$'</code></span></div>
+        <div class="item"><span class="n">2</span>back to previous dir · home<span class="c"><code>cd -</code> · <code>cd ~</code> · <code>cd ..</code></span></div>
+        <div class="item"><span class="n">5</span>find files by name<span class="c"><code>find . -name "*.cfg"</code></span></div>
+        <div class="item"><span class="n">3</span>hidden files too<span class="c"><code>ls -la</code> · <code>tail -f</code> follows a log</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>cp dir</code> without <code>-r</code> fails; <code>rmdir</code> → "Directory not empty"</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🔐</span><div class="name">PERMIS-<br>SIONS</div><div class="ids">T31.03</div></td>
+      <td class="what"><span class="sig">chmod 755 = rwxr-xr-x</span><br>
+        <code>ls -l</code>: type + <b>user · group · other</b>. r=4 w=2 x=1, one digit per class. <code>chown</code> changes owner; <code>sudo</code> runs as root.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>make a script runnable<span class="c"><code>chmod +x device_report.sh</code></span></div>
+        <div class="item"><span class="n">3</span>change owner and group<span class="c"><code>sudo chown beedy:netops report.csv</code></span></div>
+        <div class="item"><span class="n">2</span>octal vs symbolic<span class="c"><code>chmod 644</code> = <code>chmod u=rw,go=r</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> no <code>x</code> → <code>./s.sh</code> "Permission denied", rc <b>126</b>; <code>bash s.sh</code> still works</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🌐</span><div class="name">ENV VARS</div><div class="ids">T31.04</div></td>
+      <td class="what"><span class="sig">export VAR=value</span><br>
+        Plain <code>VAR=value</code> = <b>shell only</b>. <code>export</code> copies it to <b>child processes</b>. <code>PATH</code> = dirs searched for commands. Persist in <code>~/.bashrc</code>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>default if unset<span class="c"><code>API_BASE="${API_BASE:-</code><br><code>&nbsp;&nbsp;http://127.0.0.1:8131}"</code></span></div>
+        <div class="item"><span class="n">4</span>list · remove<span class="c"><code>env</code> · <code>printenv</code> · <code>unset SITE</code></span></div>
+        <div class="item"><span class="n">2</span>one-off, child only<span class="c"><code>REPORT=/tmp/r.csv</code><br><code>&nbsp;&nbsp;./device_report.sh devices.csv</code></span></div>
+        <div class="item"><span class="n">5</span>reload in <b>this</b> shell<span class="c"><code>source ~/.bashrc</code> (= <code>. ~/.bashrc</code>)</span></div>
+        <div class="item"><span class="n">3</span>add a dir to the search path<span class="c"><code>PATH="$work/bin:$PATH"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> not exported → child sees empty; <code>bash vars.sh</code> can't set vars in <b>your</b> shell</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🔀</span><div class="name">REDIRECT<br>&amp; PIPES</div><div class="ids">T31.05</div></td>
+      <td class="what"><span class="sig">&gt; · &gt;&gt; · &lt; · | · 2&gt; · 2&gt;&amp;1</span><br>
+        fd <b>0</b> stdin, <b>1</b> stdout, <b>2</b> stderr. <code>|</code> pipes <b>stdout only</b>. Redirections apply <b>left to right</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>create / overwrite<span class="c"><code>echo "hostname,mgmt_ip,os,</code><br><code>&nbsp;&nbsp;api,version,status" &gt; "$REPORT"</code></span></div>
+        <div class="item"><span class="n">4</span>pipe chain<span class="c"><code>echo "$json" | grep '"version"'</code><br><code>&nbsp;| cut -d '"' -f 4</code></span></div>
+        <div class="item"><span class="n">2</span>append<span class="c"><code>echo "$host,$ip,$os,$api,$version,OK"</code><br><code>&nbsp;&nbsp;&gt;&gt; "$REPORT"</code></span></div>
+        <div class="item"><span class="n">5</span>log to stderr<span class="c"><code>echo "[$(date -u +%H:%M:%S)] $*" &gt;&amp;2</code><br>split: <code>&gt; out.txt 2&gt; err.txt</code></span></div>
+        <div class="item"><span class="n">3</span>file into a loop<span class="c"><code>done &lt; "$WORKFILE"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>&gt; f 2&gt;&amp;1</code> = both in file; <code>2&gt;&amp;1 &gt; f</code> = error still on screen</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">📜</span><div class="name">SCRIPT<br>ARGS &amp; $?</div><div class="ids">T31.06</div></td>
+      <td class="what"><span class="sig">#!/usr/bin/env bash</span><br>
+        Shebang on <b>line 1</b>. <code>$0</code> name, <code>$1</code>.. args, <code>$#</code> count, <code>"$@"</code> all args kept whole. <code>$?</code> = last command's status: <b>0 = success</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>argument count check<span class="c"><code>if [ $# -lt 1 ]; then</code></span></div>
+        <div class="item"><span class="n">4</span>save <code>$?</code> at once<span class="c"><code>version=$(get_version "$host")</code><br><code>rc=$?</code></span></div>
+        <div class="item"><span class="n">2</span>loop over every argument<span class="c"><code>for inventory in "$@"; do</code></span></div>
+        <div class="item"><span class="n">5</span>signal failure to the caller<span class="c"><code>exit 1</code><br><code>./device_report.sh devices.csv</code><br><code>&nbsp;&nbsp;&amp;&amp; echo "all good"</code></span></div>
+        <div class="item"><span class="n">3</span>status codes<span class="c"><code>0</code> ok · <code>1</code> fail · <code>126</code> not exec · <code>127</code> not found</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> any command (even <code>echo</code>) between call and <code>$?</code> overwrites it · <code>$*</code> joins args</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🔁</span><div class="name">TESTS, LOOPS<br>&amp; QUOTES</div><div class="ids">T31.07</div></td>
+      <td class="what"><span class="sig">if [ -f "$f" ]; then ... fi</span><br>
+        <code>[ ]</code> = test command (spaces required); <code>[[ ]]</code> = Bash keyword, no word splitting, globs + <code>=~</code>. <code>"$x"</code> expands; <code>'$x'</code> is literal. <code>$(cmd)</code> captures output.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>file test, negated<span class="c"><code>if [ ! -f "$inventory" ]; then</code></span></div>
+        <div class="item"><span class="n">5</span>read a CSV line by line<span class="c"><code>while IFS=, read -r host ip os; do</code></span></div>
+        <div class="item"><span class="n">2</span>string compare<span class="c"><code>if [ "$os" == "nxos" ]; then</code></span></div>
+        <div class="item"><span class="n">6</span>regex (Bash only)<span class="c"><code>[[ $1 =~</code><br><code>&nbsp;&nbsp;^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]</code></span></div>
+        <div class="item"><span class="n">3</span>number compare<span class="c"><code>[ "$failed" -gt 0 ]</code> · <code>-eq -ne -lt -le -ge</code></span></div>
+        <div class="item"><span class="n">7</span>arithmetic<span class="c"><code>failed=$((failed + 1))</code></span></div>
+        <div class="item"><span class="n">4</span>capture output<span class="c"><code>WORKFILE="$(mktemp</code><br><code>&nbsp;&nbsp;"${TMPDIR:-/tmp}/devices.XXXXXX")"</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>[ $name == "core sw" ]</code> unquoted → error; <code>[[ 10 &gt; 9 ]]</code> is a <b>string</b> compare → false</div>
+      </div></td>
+    </tr>
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T31.08</div></td>
+      <td class="what"><span class="sig">read script → state output</span><br>
+        Trace top to bottom: args checked → files read → loop per line → branch → <code>&gt;&gt;</code> report → <code>exit</code> code. Or pick the one command for a task.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>report rows for <code>devices.csv</code><span class="c"><code>OK</code> ×3 · <code>UNREACHABLE</code> edge3 · <code>BAD_IP</code> bad1</span></div>
+        <div class="item"><span class="n">3</span>count per OS<span class="c"><code>awk -F, 'NR &gt; 1 &amp;&amp; $6 == "OK"</code><br><code>&nbsp;&nbsp;{ n[$3]++ }</code></span></div>
+        <div class="item"><span class="n">2</span>exit status of the run<span class="c"><code>ok=3 failed=2</code> → <code>exit 1</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> exam assumes Linux GNU tools: <code>sed -i</code> (GNU) vs <code>sed -i ''</code> (macOS BSD)</div>
+      </div></td>
+    </tr>
+  </table>
+  <footer>
+    <span class="k1">numbered = example from the reference program or drills</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Full script + output: <code>labs/T31/</code> · details in each T31.NN section</span>
+  </footer>
+</div>
+</body>
+</html>
