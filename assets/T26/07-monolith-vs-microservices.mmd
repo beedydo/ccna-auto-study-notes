@@ -1,0 +1,19 @@
+flowchart LR
+    subgraph MONO["🧱 Monolith: one deployable unit"]
+        direction TB
+        m["inventory UI + device API + config push + reports<br/>ONE process · ONE database · ONE release"]:::mono
+        m2["need more config-push capacity?<br/>→ scale the WHOLE app ×3"]:::bad
+        m --> m2
+    end
+    subgraph MICRO["🧩 Microservices: small services over APIs"]
+        direction TB
+        g["API gateway"]:::gw --> s1["inventory svc<br/>own DB"]:::svc
+        g --> s2["config-push svc ×3<br/>scaled alone"]:::svc
+        g --> s3["reports svc<br/>own DB"]:::svc
+        s2 -->|"REST / message queue"| s1
+    end
+    MONO ~~~ MICRO
+    classDef mono fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef bad fill:#f8d7da,stroke:#dc3545,color:#1d1d1f
+    classDef svc fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef gw fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f

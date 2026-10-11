@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T26 overview: deployment models + edge computing</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+
+  
+  /* T26 extras */
+  .opts { display: grid; gap: 7px; }
+  .opts.c5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+  .opts.c4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .opts.c3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .opt { border: 2px solid; border-radius: 8px; padding: 6px 8px; font-size: 12.6px; line-height: 1.4; background:#fff; }
+  .opt h4 { margin: 0 0 3px; font-size: 13.5px; }
+  .g { background:#e3f6ee; border-color:#28a745; } .b { background:#e3f1f8; border-color:#17a2b8; }
+  .y { background:#fff6dc; border-color:#e0a800; } .p { background:#efe6fa; border-color:#7b4bc4; }
+  .k { background:#f1f1f1; border-color:#555; } .r { background:#fde8e8; border-color:#dc3545; }
+  .stack { display: grid; grid-template-columns: 110px repeat(4, minmax(0,1fr)); gap: 3px; font-size: 12px; text-align:center; }
+  .stack div { padding: 3px 2px; border-radius: 4px; }
+  .stack .h { font-weight: 800; background: none; font-size: 12.5px; }
+  .stack .l { text-align: right; padding-right: 6px; color: var(--muted); }
+  .stack .u { background:#fff3cd; border:1px solid #e0a800; } .stack .v { background:#d1ecf1; border:1px solid #17a2b8; }
+  .chain { display:flex; align-items:stretch; gap:6px; }
+  .chain .opt { flex:1; }
+  .chain .ar { display:flex; align-items:center; font-weight:800; font-size:12px; color:var(--muted); text-align:center; }
+  table.mx { border: 2px solid var(--line); font-size: 12.6px; }
+  table.mx td, table.mx th { border: 1px solid #999; padding: 3px 6px; text-align: center; }
+  table.mx th { background: #f1f1f1; font-size: 12.8px; }
+  table.mx td:first-child { text-align: left; font-weight: 700; }
+  .best { background:#d1ecf1; font-weight:700; }
+  .span2 { grid-column: span 2; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T26 · <span class="pill">Deployment Models &amp; Edge</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.1–4.3</b><br>Every T26 concept on one page<br>Definitions from NIST SP 800-145 / 500-325</div>
+  </header>
+
+  <table>
+    <tr>
+      <td class="label"><span class="icon">☁️</span><div class="name">CLOUD<br>MODELS</div><div class="ids">T26.01</div></td>
+      <td class="what"><span class="sig">WHO is the infrastructure for?</span><br>
+        NIST names 4 deployment models: private, community, public, hybrid. <b>Multi-cloud</b> is an industry term, not a NIST model.</td>
+      <td class="items">
+        <div class="opts c5">
+          <div class="opt g"><h4>🏢 Private</h4>one org · on <b>or</b> off premises · most control</div>
+          <div class="opt b"><h4>☁️ Public</h4>general public · provider's premises · pay-as-you-go</div>
+          <div class="opt y"><h4>🏛️ Community</h4>orgs with <b>shared concerns</b> (gov, compliance)</div>
+          <div class="opt p"><h4>🔗 Hybrid</h4>2+ distinct clouds <b>bound together</b>; data/apps move</div>
+          <div class="opt k"><h4>🌐 Multi-cloud</h4>2+ <b>public</b> providers · avoid lock-in</div>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> private ≠ on-prem only (can be hosted by a 3rd party). AWS + Azure with no private DC = <b>multi-cloud</b>, not hybrid</div>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🧱</span><div class="name">SERVICE<br>MODELS</div><div class="ids">T26.02</div></td>
+      <td class="what"><span class="sig">IaaS · PaaS · SaaS</span><br>
+        The line moves up: the further right, the more the <b>provider</b> runs. Ask "who patches the OS?"</td>
+      <td class="items">
+        <div class="stack">
+          <div class="h"></div><div class="h">On-prem</div><div class="h">IaaS · EC2</div><div class="h">PaaS · Beanstalk</div><div class="h">SaaS · Webex</div>
+          <div class="l">App + data</div><div class="u">you</div><div class="u">you</div><div class="u">you</div><div class="v">provider</div>
+          <div class="l">Runtime + OS</div><div class="u">you</div><div class="u">you</div><div class="v">provider</div><div class="v">provider</div>
+          <div class="l">Virt + hardware</div><div class="u">you</div><div class="v">provider</div><div class="v">provider</div><div class="v">provider</div>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> IaaS → <b>you</b> patch the guest OS. PaaS → you deploy code only. SaaS → user settings only</div>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">⚙️</span><div class="name">CLOUD<br>TRAITS</div><div class="ids">T26.03</div></td>
+      <td class="what"><span class="sig">NIST: 5 essential characteristics</span><br>
+        Missing one → not "cloud", just hosting or virtualisation.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><b>On-demand self-service</b>: no human at the provider</div>
+        <div class="item"><span class="n">4</span><b>Rapid elasticity</b>: scale out <b>and</b> in with demand</div>
+        <div class="item"><span class="n">2</span><b>Broad network access</b>: any client, standard protocols</div>
+        <div class="item"><span class="n">5</span><b>Measured service</b>: metered, pay per use</div>
+        <div class="item"><span class="n">3</span><b>Resource pooling</b>: multi-tenant, location-independent</div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> a VMware cluster you file tickets for = virtualisation, not cloud (no self-service)</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📡</span><div class="name">EDGE<br>&amp; FOG</div><div class="ids">T26.04</div></td>
+      <td class="what"><span class="sig">compute where data is produced</span><br>
+        Process at the branch / factory / device; send only results to the cloud. Cisco example: <b>IOx</b> apps on routers and switches.</td>
+      <td class="items">
+        <div class="chain">
+          <div class="opt g"><h4>📡 Edge</h4>sensor, camera, PLC</div>
+          <div class="ar">LAN<br>→</div>
+          <div class="opt y"><h4>🔀 Fog</h4>routers, switches, gateways (IOx)</div>
+          <div class="ar">WAN<br>summaries →</div>
+          <div class="opt b"><h4>☁️ Cloud</h4>storage, fleet analytics</div>
+        </div>
+        <div class="grid" style="margin-top:8px">
+          <div class="item"><span class="n">1</span><b>Latency</b> ↓ (ms, no WAN trip) · <b>WAN bandwidth</b> ↓</div>
+          <div class="item"><span class="n">2</span>keeps working if <b>WAN fails</b> · data stays <b>local</b></div>
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> edge doesn't replace the cloud; it <b>complements</b> it. Fog = the layer <b>between</b> edge devices and cloud</div>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📦</span><div class="name">DEPLOY<br>TYPES</div><div class="ids">T26.05 · T26.06<br>T26.07</div></td>
+      <td class="what"><span class="sig">bare metal · VM · container · FaaS</span><br>
+        What sits between the app and the hardware. VM = own <b>kernel</b> per guest; container = <b>shares</b> the host kernel.
+        <div style="margin-top:6px">Type 1 hypervisor on hardware (<code>ESXi</code> <code>KVM</code>); Type 2 on a host OS (<code>VirtualBox</code>).</div></td>
+      <td class="items">
+        <table class="mx">
+          <tr><th></th><th>🖥️ Bare metal</th><th>🧱 VM</th><th>📦 Container</th><th>⚡ Serverless</th></tr>
+          <tr><td>Isolation</td><td class="best">highest</td><td>high (hypervisor)</td><td>process (shared kernel)</td><td>provider-managed</td></tr>
+          <tr><td>Start-up</td><td>hours–days (provision)</td><td>minutes</td><td class="best">seconds</td><td>ms–seconds per event</td></tr>
+          <tr><td>Density</td><td>lowest</td><td>medium</td><td class="best">highest</td><td>n/a (no servers)</td></tr>
+          <tr><td>Portability</td><td>tied to hardware</td><td>image per hypervisor</td><td class="best">same image anywhere</td><td>tied to provider</td></tr>
+          <tr><td>You manage</td><td>everything</td><td>guest OS up</td><td>image + app</td><td class="best">function code</td></tr>
+        </table>
+        <div class="grid" style="margin-top:8px">
+          <div class="item trap span2"><span class="n">!</span><b>Trap:</b> a Linux host can't run a Windows container (shared kernel). Need a different OS → <b>VM</b>. Serverless still has servers; you just don't manage them</div>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🧩</span><div class="name">APP<br>ARCH</div><div class="ids">T26.08</div></td>
+      <td class="what"><span class="sig">monolith vs microservices</span><br>
+        One deployable unit vs many small services talking over APIs.</td>
+      <td class="items"><div class="opts c3">
+        <div class="opt y"><h4>🧱 Monolith</h4>one codebase, one release · simple to start · scale = copy the <b>whole</b> app</div>
+        <div class="opt g"><h4>🧩 Microservices</h4>own process + API each · deploy/scale <b>one</b> service · fits containers</div>
+        <div class="opt r"><h4>! Trap</h4>microservices add network calls, distributed debugging and more moving parts; not "always better"</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">SCENARIO<br>→ ANSWER</div><div class="ids">T26.09</div></td>
+      <td class="what"><span class="sig">find the ONE constraint</span><br>
+        Exam questions are scenarios. Match the keyword to the model.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>IoT sensors, ms latency, flaky WAN → <b>edge</b></div>
+        <div class="item"><span class="n">5</span>fast start, many identical instances → <b>containers</b></div>
+        <div class="item"><span class="n">2</span>sensitive data must stay on-prem → <b>private</b></div>
+        <div class="item"><span class="n">6</span>different OS, strong isolation → <b>VMs</b></div>
+        <div class="item"><span class="n">3</span>keep data on-prem, burst to cloud → <b>hybrid</b></div>
+        <div class="item"><span class="n">7</span>max performance, GPU, HW licence → <b>bare metal</b></div>
+        <div class="item"><span class="n">4</span>no upfront cost, elastic, global → <b>public</b></div>
+        <div class="item"><span class="n">8</span>run code on an event, pay per call → <b>serverless</b></div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = traits / scenario cues</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact names</span>
+    <span style="margin-left:auto">blue cell = best on that criterion · details in each T26.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

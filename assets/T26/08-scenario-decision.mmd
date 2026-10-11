@@ -1,0 +1,12 @@
+flowchart TD
+    Q["Read the scenario: what is the ONE constraint?"] --> L{"ms latency / IoT /<br/>WAN is slow or unreliable?"}
+    L -- yes --> EDGE["Edge (or fog) computing"]:::ans
+    L -- no --> D{"Data must stay on-prem<br/>(regulation, sovereignty)?"}
+    D -- "all of it" --> PRIV["Private cloud"]:::ans
+    D -- "some of it, rest elastic" --> HYB["Hybrid cloud"]:::ans
+    D -- no --> W{"What runs the workload?"}
+    W -- "fast start, many copies, same image everywhere" --> CON["Containers"]:::ans
+    W -- "different OS / full kernel isolation / legacy app" --> VM["Virtual machines"]:::ans
+    W -- "max performance, GPU, licence tied to hardware" --> BM["Bare metal"]:::ans
+    W -- "short event-driven code, no servers to manage" --> FAAS["Serverless / FaaS"]:::ans
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold

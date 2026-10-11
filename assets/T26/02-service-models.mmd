@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph ON["On-prem / bare metal"]
+        direction TB
+        o1["Application"]:::you --> o2["Data"]:::you --> o3["Runtime"]:::you --> o4["OS"]:::you --> o5["Virtualisation"]:::you --> o6["Servers · storage · network"]:::you
+    end
+    subgraph IA["IaaS · EC2"]
+        direction TB
+        i1["Application"]:::you --> i2["Data"]:::you --> i3["Runtime"]:::you --> i4["OS ← you patch it"]:::you --> i5["Virtualisation"]:::prov --> i6["Servers · storage · network"]:::prov
+    end
+    subgraph PA["PaaS · Elastic Beanstalk · App Engine"]
+        direction TB
+        p1["Application"]:::you --> p2["Data"]:::you --> p3["Runtime"]:::prov --> p4["OS"]:::prov --> p5["Virtualisation"]:::prov --> p6["Servers · storage · network"]:::prov
+    end
+    subgraph SA["SaaS · Webex · Microsoft 365"]
+        direction TB
+        s1["Application<br/>(user settings only)"]:::prov --> s2["Data"]:::prov --> s3["Runtime"]:::prov --> s4["OS"]:::prov --> s5["Virtualisation"]:::prov --> s6["Servers · storage · network"]:::prov
+    end
+    ON ~~~ IA ~~~ PA ~~~ SA
+    classDef you fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef prov fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f

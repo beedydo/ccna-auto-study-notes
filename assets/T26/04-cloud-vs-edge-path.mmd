@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant S as 📡 Vibration sensor
+    participant E as 🔀 Edge app (on factory router)
+    participant C as ☁️ Cloud
+    Note over S,C: Cloud-only: every reading crosses the WAN
+    S->>C: 1000 readings per second, all over the WAN
+    C-->>S: "stop motor" after a WAN round trip (tens to hundreds of ms)
+    Note over S,C: Edge: decide locally, send summaries
+    S->>E: 1000 readings per second, LAN only
+    E->>E: threshold check → "stop motor" in a few ms
+    E->>C: 1-minute summary + alerts only
+    Note over E,C: WAN down → edge keeps deciding locally, queues summaries
+    E--xC: summary (WAN outage)
+    E->>C: queued summaries sent when the WAN returns

@@ -1,0 +1,15 @@
+flowchart TB
+    P["🏢 Private<br/>ONE organisation<br/>on-prem OR hosted by a 3rd party"]:::priv
+    U["☁️ Public<br/>general public · provider's premises<br/>AWS · Azure · GCP"]:::pub
+    C["🏛️ Community<br/>several orgs with SHARED concerns<br/>e.g. government, compliance"]:::com
+    H["🔗 Hybrid<br/>2+ distinct clouds BOUND together<br/>data + apps portable (cloud bursting)"]:::hyb
+    M["🌐 Multi-cloud<br/>2+ PUBLIC providers<br/>avoid lock-in"]:::mul
+    P -->|"combine"| H
+    U -->|"combine"| H
+    C -.->|"can join"| H
+    U -->|"AWS + Azure"| M
+    classDef priv fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef pub fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f
+    classDef com fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef hyb fill:#e8dcf7,stroke:#7b4bc4,color:#1d1d1f
+    classDef mul fill:#f1f1f1,stroke:#555,color:#1d1d1f

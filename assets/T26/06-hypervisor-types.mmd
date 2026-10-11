@@ -1,0 +1,16 @@
+flowchart LR
+    subgraph T1["Type 1 · bare-metal / native · servers"]
+        direction TB
+        a1["Guest VM | Guest VM"]:::app --> a2["Hypervisor<br/>ESXi · KVM · Hyper-V · Xen"]:::hyp --> a3["Hardware"]:::hw
+    end
+    subgraph T2["Type 2 · hosted · laptops"]
+        direction TB
+        h1["Guest VM | Guest VM"]:::app --> h2["Hypervisor app<br/>VirtualBox · VMware Workstation / Fusion"]:::hyp --> h3["Host OS<br/>Windows · macOS · Linux"]:::os --> h4["Hardware"]:::hw
+    end
+    T1 ~~~ T2
+    classDef app fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef os fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef hyp fill:#e8dcf7,stroke:#7b4bc4,color:#1d1d1f
+    classDef hw fill:#e6e6e6,stroke:#555,color:#1d1d1f
+    style T1 fill:#e3f1f8,stroke:#17a2b8
+    style T2 fill:#fafafa,stroke:#555

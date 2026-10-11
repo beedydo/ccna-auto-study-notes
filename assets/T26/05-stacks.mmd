@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph BM["🖥️ Bare metal"]
+        direction TB
+        b1["App A"]:::app --> b2["Host OS + kernel"]:::os --> b3["Physical server"]:::hw
+    end
+    subgraph VM["🧱 Virtual machines (Type 1)"]
+        direction TB
+        v1["App A | App B"]:::app --> v2["Guest OS A | Guest OS B<br/>EACH has its own kernel"]:::os --> v3["Hypervisor<br/>ESXi · KVM · Hyper-V"]:::hyp --> v4["Physical server"]:::hw
+    end
+    subgraph CT["📦 Containers"]
+        direction TB
+        c1["App A + libs | App B + libs | App C + libs"]:::app --> c2["Container runtime<br/>Docker Engine · containerd"]:::hyp --> c3["Host OS + ONE shared kernel"]:::os --> c4["Physical server or VM"]:::hw
+    end
+    BM ~~~ VM ~~~ CT
+    classDef app fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef os fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef hyp fill:#e8dcf7,stroke:#7b4bc4,color:#1d1d1f
+    classDef hw fill:#e6e6e6,stroke:#555,color:#1d1d1f

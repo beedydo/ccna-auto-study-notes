@@ -1,0 +1,10 @@
+flowchart LR
+    D["📡 Edge devices<br/>sensors · cameras · PLCs · phones<br/>raw data is produced HERE"]:::edge
+    E["🏭 Edge compute<br/>on/next to the device<br/>filter · act in ms"]:::edge
+    F["🔀 Fog nodes<br/>routers · switches · gateways · local servers<br/>e.g. Cisco IOx apps on an IR1101"]:::fog
+    C["☁️ Cloud / central DC<br/>long-term storage · fleet analytics · ML training"]:::cloud
+    D --> E -->|"LAN"| F -->|"WAN: summaries only<br/>not every raw reading"| C
+    C -.->|"models, config, app updates"| F
+    classDef edge fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef fog fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef cloud fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f
