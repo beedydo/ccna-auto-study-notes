@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant P as Platform (timeout 3 s)
+    participant R as Receiver
+    Note over P,R: A. Receiver answers 500 (crashed): platform retries with backoff
+    P->>R: POST /webhook (msg-0001) attempt 1
+    R-->>P: 500
+    Note over P: retry in 0.5 s
+    P->>R: POST /webhook (msg-0001) attempt 2
+    R-->>P: 500
+    Note over P: retry in 1 s
+    P->>R: POST /webhook (msg-0001) attempt 3
+    R-->>P: 200 delivered
+    Note over P,R: B. Receiver does 4 s of work BEFORE replying
+    P->>R: POST /webhook (msg-0003) attempt 1
+    Note over P,R: receiver still working...
+    Note over P,R: no reply within 3 s → counts as FAILED
+    P->>R: POST /webhook (msg-0003) attempt 2  (same data.id)
+    R-->>P: 200 "duplicate": already handled, no second action
+    Note over P,R: C. Receiver down: Connection refused × N<br/>→ webhook DISABLED (status inactive)

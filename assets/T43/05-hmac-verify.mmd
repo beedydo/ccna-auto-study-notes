@@ -1,0 +1,17 @@
+flowchart LR
+    REG["Shared secret, set once at registration:<br/>s3cr3t-T43-demo"]
+    subgraph PL["Platform (sender)"]
+        PS["HMAC-SHA1(secret, raw body)"] --> HDR["X-Spark-Signature: 23990cf0…"]
+    end
+    subgraph RC["Receiver"]
+        RAW["raw body bytes<br/>(before json.loads)"] --> RS["HMAC-SHA1(secret, raw bytes)"]
+        RS --> CMP{"hmac.compare_digest<br/>(expected, header)"}
+    end
+    REG --> PS
+    REG --> RS
+    HDR -- "body + header over HTTPS" --> RAW
+    CMP -- "equal" --> OK["✅ genuine + unmodified<br/>→ process"]
+    CMP -- "different: wrong secret ·<br/>tampered · re-serialised" --> BAD["❌ 401, ignore payload"]
+    style OK fill:#d4edda,stroke:#28a745
+    style BAD fill:#f8d7da,stroke:#dc3545
+    style CMP fill:#d1ecf1,stroke:#17a2b8

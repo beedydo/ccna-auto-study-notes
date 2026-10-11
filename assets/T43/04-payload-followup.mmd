@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant P as Platform
+    participant R as Receiver (/webhook)
+    participant W as Worker
+    P->>R: POST /webhook · X-Spark-Signature: <hex>
+    Note over P,R: envelope: id, name, resource, event, filter,<br/>actorId, data: {id: msg-0001, roomId, personEmail}<br/>NO message text
+    R->>R: verify HMAC, check data.id not seen
+    R-->>P: 200 OK  (immediately)
+    R->>W: queue event
+    W->>P: GET /v1/messages/msg-0001 · Bearer bot token
+    P-->>W: 200 {"text": "show ip interface brief", ...}
+    W->>W: ACTION: run the command, post the result back

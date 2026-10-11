@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant A as Your app
+    participant P as Platform API
+    Note over A,P: A. Polling: your app is the CLIENT and keeps asking
+    A->>P: GET /v1/messages?roomId=room-poll
+    P-->>A: 200 {"items": []}  (nothing new)
+    A->>P: GET /v1/messages?roomId=room-poll
+    P-->>A: 200 {"items": []}  (nothing new)
+    Note over A,P: event: Alice posts "show version"
+    A->>P: GET /v1/messages?roomId=room-poll
+    P-->>A: 200 {"items": [msg-0004]}  (noticed up to 1 interval late)
+    Note over A,P: B. Webhook: roles flip, the platform is the CLIENT
+    A->>P: POST /v1/webhooks {targetUrl, resource, event, secret}  (once)
+    P-->>A: 200 {"id": "wh-0001", "status": "active"}
+    Note over A,P: event: Alice posts "show ip interface brief"
+    P->>A: POST /webhook  (X-Spark-Signature, data.id=msg-0001)
+    A-->>P: 200 OK

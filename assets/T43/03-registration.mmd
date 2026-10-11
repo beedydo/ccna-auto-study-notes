@@ -1,0 +1,12 @@
+sequenceDiagram
+    participant D as Bot developer (curl / SDK)
+    participant P as Platform API
+    D->>P: POST /v1/webhooks · Authorization: Bearer <token>
+    Note over D,P: {"name": "netops room commands",<br/>"targetUrl": "http://127.0.0.1:8144/webhook",<br/>"resource": "messages", "event": "created",<br/>"filter": "roomId=room-netops",<br/>"secret": "s3cr3t-T43-demo"}
+    P-->>D: 200 {"id": "wh-0001", "status": "active", ...}  (no secret echoed)
+    D->>P: POST /v1/webhooks {"name": "broken", "resource": ..., "event": ...}
+    P-->>D: 400 missing required field(s): targetUrl
+    D->>P: GET /v1/webhooks
+    P-->>D: 200 {"items": [{"id": "wh-0001", "status": "active"}]}
+    D->>P: DELETE /v1/webhooks/wh-0001  (when done)
+    P-->>D: 204 No Content

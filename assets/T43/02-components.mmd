@@ -1,0 +1,20 @@
+flowchart LR
+    subgraph SRC["① Event source (Webex · Meraki · Catalyst Center · GitHub)"]
+        EV["Event happens<br/>message created · alert · issue · push"]
+        DS["Delivery service<br/>signs + POSTs + retries"]
+        EV --> DS
+    end
+    subgraph NET["Internet"]
+        FW["Firewall / NAT<br/>must allow inbound 443"]
+    end
+    subgraph YOU["② Target URL + ③ Receiver app (you host it)"]
+        URL["https://bot.example.com/webhook<br/>public DNS · valid CA cert"]
+        RX["Receiver<br/>verify HMAC → 200 fast → queue"]
+        WK["Worker<br/>follow-up GET → act"]
+        URL --> RX --> WK
+    end
+    DS -- "HTTPS POST (JSON)" --> FW --> URL
+    WK -- "GET /v1/messages/{id}<br/>Bearer token" --> SRC
+    style RX fill:#d1ecf1,stroke:#17a2b8
+    style URL fill:#d1ecf1,stroke:#17a2b8
+    style FW fill:#fff3cd,stroke:#e0a800

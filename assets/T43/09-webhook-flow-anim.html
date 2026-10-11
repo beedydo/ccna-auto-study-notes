@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T43 webhook flow animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns: 0.8fr 1.2fr 1.3fr; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:300px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.al { border-color:#7b4bc4; } .lane.pl { border-color:#e0a800; } .lane.ap { border-color:#17a2b8; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .role { display:inline-block; font-size:11.5px; font-weight:800; padding:2px 8px; border-radius:10px; margin-bottom:8px; }
+  .role.client { background:#1d1d1f; color:#fff; } .role.server { background:#d1ecf1; color:#0c5460; border:1.5px solid #17a2b8; }
+  .role.idle { background:#eee; color:#777; }
+  .req, .res, .note { font-family:Menlo,monospace; font-size:12.5px; line-height:1.55; border:2px solid; border-radius:7px; padding:7px 9px; margin-bottom:8px; }
+  .req { background:#fff3cd; border-color:#e0a800; }
+  .res.ok { background:#d4edda; border-color:#28a745; } .res.err { background:#fde8e8; border-color:#dc3545; }
+  .note { background:#f0f0f0; border-color:#999; border-style:dashed; color:#555; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; font-size:13px; }
+  .info { background:#d1ecf1; border:2px solid #17a2b8; border-radius:7px; padding:7px 9px; font-size:13px; line-height:1.45; margin-bottom:8px; }
+  .req b, .res b { font-size:14px; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T43 · <span class="pill">Webhook</span> register → event → push → 200</h1>
+  <div class="sub">Same run as <code>bash labs/T43/run_lab.sh</code>: platform on 127.0.0.1:8143, your receiver on 127.0.0.1:8144.</div>
+  <div class="lanes">
+    <div class="lane al" id="al"><h3>👩 Alice (a user)</h3><div class="where">makes the event happen</div><div id="al-f"></div></div>
+    <div class="lane pl" id="pl"><h3>☁️ Platform</h3><div class="where">event source · platform.py :8143</div><div id="pl-f"></div></div>
+    <div class="lane ap" id="ap"><h3>🖥️ Your app</h3><div class="where">demo.py (register) · receiver.py :8144</div><div id="ap-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const role = (c, t) => `<span class="role ${c}">${t}</span>`;
+const req = (l) => `<div class="req">${l.join("<br>")}</div>`;
+const res = (c, l) => `<div class="res ${c}">${l.join("<br>")}</div>`;
+const note = (t) => `<div class="note">${t}</div>`;
+const info = (t) => `<div class="info">${t}</div>`;
+const frames = [
+  { active:"ap",
+    al:note("not involved yet"),
+    pl:role("server","SERVER") + res("ok", ["<b>200</b>", '"id": "wh-0001"', '"status": "active"', "(secret stored, not echoed)"]),
+    ap:role("client","CLIENT") + req(["<b>POST</b> /v1/webhooks", '"targetUrl": "…:8144/webhook"', '"resource": "messages"', '"event": "created"', '"filter": "roomId=room-netops"', '"secret": "s3cr3t-T43-demo"']),
+    cmd:{at:2, t:"POST /v1/webhooks"},
+    txt:"<b>Register once.</b> Your app calls the API like any client: where to send events, which events, and a shared secret." },
+  { active:"ap",
+    al:note("typing…"),
+    pl:note("watching for messages/created<br>in room-netops"),
+    ap:role("server","LISTENING") + note("receiver.py waits on :8144<br><br><b>0 requests sent.</b><br>No loop, no GET /messages."),
+    cmd:{at:2, t:"(nothing: just listen)"},
+    txt:"Between events <b>nothing is on the wire</b>. A polling client would be sending <code>GET /v1/messages</code> every second here." },
+  { active:"al",
+    al:req(["<b>POST</b> /v1/messages", '"roomId": "room-netops"', '"text": "show ip interface', ' brief"']),
+    pl:res("ok", ["event: msg-0001 created", "webhook wh-0001 matches:", "messages/created ✓", "roomId=room-netops ✓"]),
+    ap:note("still idle"),
+    cmd:{at:0, t:"Alice posts"},
+    txt:"<b>The event happens</b> on the platform. It checks resource, event and filter against every registered webhook." },
+  { active:"pl",
+    al:note("done, unaware of your app"),
+    pl:role("client","now the CLIENT") + req(["<b>POST</b> :8144/webhook", "X-Spark-Signature: &lt;HMAC-SHA1&gt;", '"resource": "messages",', '"event": "created",', '"data": {"id": "msg-0001",', ' "roomId": "room-netops"}']),
+    ap:role("server","now the SERVER") + note("incoming POST…<br>note: <b>no message text</b> in data"),
+    cmd:{at:1, t:"POST targetUrl"},
+    txt:"<b>Push.</b> The platform POSTs JSON to your <code>targetUrl</code>. Roles flip: it is the HTTP client, your app is the server." },
+  { active:"ap",
+    al:note("idle"),
+    pl:res("ok", ["<b>200 OK</b> received", "→ delivered, no retry"]),
+    ap:role("server","SERVER") + info("① HMAC-SHA1(secret, raw body) == header? ✓<br>② msg-0001 seen before? no<br>③ queue it") + res("ok", ["<b>200 OK</b> (at once)"]),
+    cmd:{at:2, t:"200 OK", back:true},
+    txt:"<b>Verify, then reply 200 fast.</b> Slow reply or non-2xx → the platform retries the same event, so dedupe on <code>data.id</code>." },
+  { active:"ap",
+    al:note("idle"),
+    pl:role("server","SERVER") + res("ok", ["<b>200</b>", '"id": "msg-0001"', '"text": "show ip interface', ' brief"']),
+    ap:role("client","CLIENT again") + req(["<b>GET</b> /v1/messages/msg-0001", "Authorization: Bearer", " bot-token-T43"]),
+    cmd:{at:2, t:"follow-up GET"},
+    txt:"<b>Follow-up GET</b> in the background worker, with your token: the webhook carried only the ID, so fetch the text." },
+  { active:"ap",
+    al:res("ok", ["sees the bot's reply", "in room-netops"]),
+    pl:note("waiting for the next event"),
+    ap:info("ACTION: run 'show ip interface brief'<br>and post the result back to room-netops"),
+    cmd:{at:2, t:"act"},
+    txt:"<b>Act.</b> One event = 1 POST to you + 1 GET by you. <b>Push, not poll</b>: you never asked \"anything new?\"." },
+];
+const pos = [40, 330, 700];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["al","pl","ap"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

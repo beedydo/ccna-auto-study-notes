@@ -1,0 +1,11 @@
+flowchart TD
+    Q["Need to know when something changes"] --> PUB{"Can the platform reach<br/>a public HTTPS URL you host?"}
+    PUB -- "no (no inbound, laptop, strict firewall)" --> POLL["Polling<br/>GET on a timer · simple · wasted calls<br/>delay = interval · rate-limit risk"]
+    PUB -- "yes" --> TWO{"Need a continuous<br/>two-way stream?"}
+    TWO -- "yes (chat UI, live dashboard)" --> WSK["WebSocket<br/>one long-lived connection<br/>both sides send any time"]
+    TWO -- "no, just 'tell me when X happens'" --> WH["Webhook<br/>platform POSTs per event<br/>near real time · no wasted calls"]
+    WH --> RULES["Receiver rules:<br/>verify HMAC · 200 fast · queue work<br/>dedupe on retries · follow-up GET"]
+    style WH fill:#d1ecf1,stroke:#17a2b8
+    style RULES fill:#d1ecf1,stroke:#17a2b8
+    style POLL fill:#fff3cd,stroke:#e0a800
+    style WSK fill:#d4edda,stroke:#28a745

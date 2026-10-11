@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph CLOUD["Internet"]
+        WX["Webex cloud"]
+        NG["ngrok edge<br/>https://&lt;random&gt;.ngrok-free.app"]
+        WS["webhook.site / RequestBin<br/>unique inspect URL, no code"]
+    end
+    subgraph LAPTOP["Your laptop (behind NAT)"]
+        AG["ngrok agent<br/>ngrok http 8144"]
+        APP["receiver.py<br/>127.0.0.1:8144"]
+    end
+    WX -- "POST (targetUrl = ngrok URL)" --> NG
+    NG == "tunnel the agent opened outbound" ==> AG --> APP
+    WX -. "or targetUrl = inspect URL:<br/>just look at headers + JSON" .-> WS
+    style NG fill:#d1ecf1,stroke:#17a2b8
+    style WS fill:#fff3cd,stroke:#e0a800

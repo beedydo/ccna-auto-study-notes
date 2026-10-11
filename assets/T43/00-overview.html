@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T43 overview: Webhooks</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --y: #fff3cd; --yb: #e0a800; --b: #d1ecf1; --bb: #17a2b8; --g: #d4edda; --gb: #28a745;
+    --p: #e8dcf7; --pb: #7b4bc4; --r: #f8d7da; --rb: #dc3545;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1480px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.5px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .actors { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 0; margin-bottom: 6px; font-size: 13px; font-weight: 700; text-align: center; }
+  .actors div { padding: 4px; border-radius: 8px 8px 0 0; }
+  .lanes { display: grid; grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr) 34px minmax(0, 1.15fr) 34px minmax(0, 1.2fr) 34px minmax(0, 1fr); align-items: stretch; }
+  .zone { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .zone > h2 { margin: 0; padding: 8px 12px; font-size: 16.5px; font-weight: 800; display: flex; align-items: center; gap: 8px; border-bottom: 2px solid var(--line); }
+  .zone > h2 .ids { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+  .zone .who { font-size: 11.5px; color: var(--muted); padding: 4px 12px 0; }
+  .zone .body { padding: 6px 12px 10px; font-size: 13px; line-height: 1.4; flex: 1; }
+  .z-you > h2 { background: var(--p); } .z-plat > h2 { background: #e9ecef; } .z-push > h2 { background: var(--y); }
+  .z-rx > h2 { background: var(--b); } .z-wk > h2 { background: var(--g); }
+  .arrow { display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; }
+  .arrow small { font-size: 10px; font-weight: 700; writing-mode: vertical-rl; transform: rotate(180deg); margin-top: 6px; }
+
+  .item { margin: 6px 0; }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; margin-top: 8px; font-size: 12.5px; }
+  .trap b { color: var(--trap-ink); }
+  .c { display: block; margin: 2px 0 0 24px; }
+  .st { border: 2px solid var(--bb); background: var(--b); border-radius: 6px; padding: 4px 7px; margin: 5px 0; font-size: 12.5px; }
+  .st.ok { border-color: var(--gb); background: var(--g); }
+  .st.warn { border-color: var(--yb); background: var(--y); }
+  .st.bad { border-color: var(--rb); background: var(--r); }
+  .json { font-family: Menlo, Consolas, monospace; font-size: 11px; background: var(--code); border-radius: 6px; padding: 5px 7px; line-height: 1.45; margin: 4px 0; }
+  .json .dim { color: #999; }
+
+  .row2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.05fr); gap: 16px; margin-top: 16px; }
+  .vs { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+  .vs th, .vs td { border: 1px solid #bbb; padding: 3px 5px; text-align: left; vertical-align: top; }
+  .vs th { background: #f1f1f1; }
+  .vs .blue { background: #e3f3f7; }
+  .mini { display: flex; align-items: center; gap: 6px; font-size: 11.5px; margin: 4px 0; }
+  .mini .box { border: 2px solid var(--line); border-radius: 6px; padding: 2px 6px; background: #fff; white-space: nowrap; }
+  .mini .box.b { border-color: var(--bb); background: var(--b); }
+
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); align-items: center; }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 2px solid var(--trap-ink); }
+  footer .k3::before { background: #d6d6d6; border: 2px solid #777; }
+  footer .k4::before { background: var(--b); border: 2px solid var(--bb); } footer .k5::before { background: var(--g); border: 2px solid var(--gb); }
+  footer .k6::before { background: var(--y); border: 2px solid var(--yb); } footer .k7::before { background: var(--r); border: 2px solid var(--rb); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T43 · <span class="pill">Webhooks</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.2</b> (not in CBT: this note is the top-up)<br>Every T43 concept on one page<br>Code from <code>labs/T43/</code> · platform :8143 · receiver :8144</div>
+  </header>
+
+  <div class="lanes">
+    <div class="zone z-you">
+      <h2>📝 Register once <span class="ids">T43.04</span></h2>
+      <div class="who">👩‍💻 you are the CLIENT (normal API call)</div>
+      <div class="body">
+        <div class="item"><span class="n">1</span><code>POST /v1/webhooks</code> + Bearer token</div>
+        <div class="json">{"name": "netops room commands",<br>"targetUrl": "https://…/webhook",<br>"resource": "messages",<br>"event": "created",<br>"filter": "roomId=room-netops",<br>"secret": "s3cr3t-T43-demo"}</div>
+        <div class="item">required: <b>name, targetUrl, resource, event</b>; optional: <b>filter, secret</b></div>
+        <div class="item">resource = noun (<code>messages</code> <code>rooms</code> <code>memberships</code>); event = verb (<code>created</code> <code>updated</code> <code>deleted</code>)</div>
+        <div class="trap"><b>Trap:</b> the token is needed only to <b>create</b> it. The registration happens <b>once</b>, not per event.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>later…</small></div>
+
+    <div class="zone z-plat">
+      <h2>⚡ Event happens <span class="ids">T43.01 · T43.03 · T43.08</span></h2>
+      <div class="who">☁️ event source</div>
+      <div class="body">
+        <div class="item"><span class="n">2</span>Alice posts <i>"show ip interface brief"</i></div>
+        <div class="item">Platform checks every webhook: resource + event + <b>filter</b> match?</div>
+        <div class="st">Webex bot · Meraki alert → ticket/chat · Catalyst Center (DNA Center) event · Git push → CI</div>
+        <div class="item">msg in <code>room-random</code> → no match → <b>nothing sent</b></div>
+        <div class="trap"><b>Trap:</b> event-driven = the <b>server</b> decides when to talk ("reverse API"). No event, no traffic.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>HTTPS POST</small></div>
+
+    <div class="zone z-push">
+      <h2>📨 Platform POSTs to you <span class="ids">T43.01 · T43.05</span></h2>
+      <div class="who">☁️ platform is now the CLIENT</div>
+      <div class="body">
+        <div class="item"><span class="n">3</span><code>POST https://…/webhook</code></div>
+        <div class="item"><code>X-Spark-Signature: 23990cf0…</code> (HMAC-SHA1, 40 hex chars)</div>
+        <div class="json">{"id": "wh-0001", "resource": "messages",<br>"event": "created", "actorId": "…",<br>"data": {"id": "msg-0001",<br>&nbsp;"roomId": "room-netops", "personEmail": …}}<br><span class="dim">// no "text": IDs only</span></div>
+        <div class="item">Not 2xx / no reply / refused → <b>retry</b> with backoff → too many fails → webhook <b>disabled</b></div>
+        <div class="trap"><b>Trap:</b> your <code>targetUrl</code> must be <b>publicly reachable HTTPS</b>. <code>127.0.0.1</code> or a private IP never gets a POST.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>verify</small></div>
+
+    <div class="zone z-rx">
+      <h2>🔐 Receiver: verify + ack <span class="ids">T43.03 · T43.05 · T43.06</span></h2>
+      <div class="who">🖥️ you are now the SERVER</div>
+      <div class="body">
+        <div class="item"><span class="n">4</span>HMAC over the <b>raw bytes</b>, before <code>json.loads</code>:</div>
+        <span class="c"><code>hmac.new(SECRET, raw_body,</code></span>
+        <span class="c"><code>hashlib.sha1).hexdigest()</code></span>
+        <span class="c"><code>hmac.compare_digest(</code></span>
+        <span class="c"><code>expected, received or "")</code></span>
+        <div class="st bad">mismatch → <code>401</code>, ignore payload</div>
+        <div class="st warn">seen this <code>data.id</code>? → <code>200</code>, <b>no second action</b> (retries!)</div>
+        <div class="st ok"><span class="n">5</span>new → queue it → <code>200 OK</code> <b>at once</b></div>
+        <div class="trap"><b>Trap:</b> slow work before replying → platform times out → <b>retries</b> → duplicate action.</div>
+      </div>
+    </div>
+    <div class="arrow">➜<small>queue</small></div>
+
+    <div class="zone z-wk">
+      <h2>⚙️ Worker: fetch + act <span class="ids">T43.05 · T43.09</span></h2>
+      <div class="who">🖥️ you are a CLIENT again</div>
+      <div class="body">
+        <div class="item"><span class="n">6</span>Follow-up GET with <b>your</b> token:</div>
+        <span class="c"><code>GET /v1/messages/msg-0001</code></span>
+        <div class="json">{"text": "show ip interface brief", …}</div>
+        <div class="item"><span class="n">7</span>Act: run the command, post the result back</div>
+        <div class="item">Why a GET? Payload is <b>minimal</b> for security; the platform has no token to read encrypted text for you.</div>
+        <div class="trap"><b>Trap:</b> "the bot gets the message ID but not the text" → it's by design: do the <b>follow-up GET</b>.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="zone z-plat">
+      <h2>⚖️ Polling vs webhook vs WebSocket <span class="ids">T43.02 · T43.09</span></h2>
+      <div class="body">
+        <table class="vs">
+          <tr><th style="width:21%"></th><th>Polling</th><th class="blue">Webhook</th><th>WebSocket</th></tr>
+          <tr><td>Who starts</td><td>you, on a timer</td><td class="blue">platform, per event</td><td>you open once; both send</td></tr>
+          <tr><td>Calls</td><td><b>6 GETs / 2 events</b> (lab), 4 empty</td><td class="blue">1 POST per event (+1 GET)</td><td>1 long-lived connection</td></tr>
+          <tr><td>Delay</td><td>up to 1 interval</td><td class="blue">near real time</td><td>real time</td></tr>
+          <tr><td>Needs</td><td>outbound only; works behind NAT</td><td class="blue">public HTTPS listener</td><td>persistent socket (<code>ws://</code> <code>wss://</code>)</td></tr>
+          <tr><td>Risk</td><td>rate limit (<code>429</code>), wasted calls</td><td class="blue">missed/duplicate events, forged POSTs</td><td>connection state</td></tr>
+        </table>
+        <div class="trap"><b>Trap:</b> "reduce API calls / react instantly to change" → <b>webhook</b>. "No inbound access allowed" → polling (or a WebSocket the app opens).</div>
+      </div>
+    </div>
+
+    <div class="zone z-rx">
+      <h2>🧪 Testing tools <span class="ids">T43.07</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">1</span><b>ngrok</b>: public HTTPS URL → tunnel → your laptop</div>
+        <span class="c"><code>ngrok http 8144</code></span>
+        <div class="mini"><span class="box">Webex</span>➜<span class="box b">ngrok URL</span>➜<span class="box">127.0.0.1:8144</span></div>
+        <div class="item"><span class="n">2</span><b>webhook.site / RequestBin</b>: unique URL that just shows headers + JSON. No code.</div>
+        <div class="trap"><b>Trap:</b> ngrok <b>exposes</b> your app; webhook.site only <b>inspects</b> (it doesn't run your logic).</div>
+      </div>
+    </div>
+
+    <div class="zone z-push">
+      <h2>🔁 Retries &amp; idempotency <span class="ids">T43.05 · T43.06</span></h2>
+      <div class="body">
+        <div class="st bad">receiver <code>500</code> → retry 0.5 s, 1 s → <code>200</code></div>
+        <div class="st bad">receiver down → <code>Connection refused</code> ×6 → <b>inactive</b></div>
+        <div class="st warn">reply after 4 s (timeout 3 s) → retry, <b>same</b> <code>data.id</code></div>
+        <div class="st ok">dedupe on <code>data.id</code> → acted <b>once</b></div>
+        <div class="trap"><b>Trap:</b> delivery is <b>at least once</b>: design for duplicates, not "exactly once".</div>
+      </div>
+    </div>
+
+    <div class="zone z-you">
+      <h2>🎯 Scenario → answer <span class="ids">T43.09</span></h2>
+      <div class="body">
+        <div class="item"><span class="n">1</span>Webhook never fires → targetUrl not public / filter wrong / webhook <b>inactive</b></div>
+        <div class="item"><span class="n">2</span>Prove it came from the platform → <b>secret + HMAC</b> (not source IP)</div>
+        <div class="item"><span class="n">3</span>Same alert handled twice → receiver too slow → <b>ack fast, dedupe</b></div>
+        <div class="item"><span class="n">4</span>Need message text → <b>follow-up GET</b> by <code>data.id</code></div>
+        <div class="trap"><b>Trap:</b> verify on the <b>raw body</b>; re-serialised JSON gives a different HMAC.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = order of one event, left to right</span>
+    <span class="k k3">grey chip = exact syntax from <code>labs/T43/</code></span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k4">blue = recommended answer</span>
+    <span class="k k5">green = safe / done</span>
+    <span class="k k6">yellow = partial / retry</span>
+    <span class="k k7">red box = rejected / error</span>
+  </footer>
+</div>
+</body>
+</html>
