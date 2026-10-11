@@ -1,0 +1,10 @@
+flowchart LR
+    C["HTTPS to a device with a<br/><b>self-signed</b> certificate"]
+    C -- "verify=True<br/>(default)" --> A["❌ SSLError<br/>CERTIFICATE_VERIFY_FAILED"]
+    C -- "verify=False" --> B["⚠️ 200 + InsecureRequestWarning<br/>(no check at all)"]
+    B -- "urllib3.disable_warnings()" --> B2["200, warning hidden<br/>still no check"]
+    C -- "verify=&quot;/path/ca.pem&quot;" --> D["✅ 200<br/>cert checked against that CA"]
+    style A fill:#fde8e8,stroke:#dc3545
+    style B fill:#fff3cd,stroke:#e0a800
+    style B2 fill:#fff3cd,stroke:#e0a800
+    style D fill:#d1ecf1,stroke:#17a2b8

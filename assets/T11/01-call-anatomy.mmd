@@ -1,0 +1,16 @@
+flowchart LR
+    M["session.<b>post</b>(...)"] --> RL
+    U["f&quot;{BASE_URL}/devices&quot;"] --> RL
+    P["params={&quot;limit&quot;: 2}"] --> RL
+    H["headers={&quot;X-Auth-Token&quot;: token}"] --> RH
+    J["json=new"] --> RH
+    J --> RB
+    T["timeout=5<br/>verify=CA_CERT"] --> RX
+    RL["<b>Request line</b><br/>POST /api/v1/devices?limit=2 HTTP/1.1"]
+    RH["<b>Headers</b><br/>X-Auth-Token: tok-admin-7f3a<br/>Content-Type: application/json"]
+    RB["<b>Body</b><br/>{&quot;hostname&quot;: &quot;edge3&quot;, ...}"]
+    RX["<b>Not sent</b><br/>client-side settings only"]
+    style RL fill:#d1ecf1,stroke:#17a2b8
+    style RH fill:#fff3cd,stroke:#e0a800
+    style RB fill:#d4edda,stroke:#28a745
+    style RX fill:#eeeeee,stroke:#999,stroke-dasharray: 4 3

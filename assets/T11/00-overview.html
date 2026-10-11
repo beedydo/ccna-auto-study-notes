@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T11 overview: Python requests scripting</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  td { border: 1.5px solid var(--line); vertical-align: top; }
+  td.label { width: 120px; text-align: center; padding: 16px 6px; }
+  td.label .icon { font-size: 40px; line-height: 1; display: block; margin-bottom: 8px; }
+  td.label .name { font-weight: 800; font-size: 17px; letter-spacing: 0.3px; }
+  td.label .ids { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  td.what { width: 340px; padding: 14px 16px; font-size: 14.5px; line-height: 1.45; }
+  td.what .sig { display: inline-block; white-space: nowrap; background: var(--ink); color: #fff; font-family: Menlo, Consolas, monospace;
+                 font-size: 12.5px; padding: 5px 10px; border-radius: 8px; margin-bottom: 10px; max-width: 100%; overflow: hidden; }
+  td.items { padding: 12px 14px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 9px 18px; }
+  .item { font-size: 13.5px; line-height: 1.35; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item code, td.what code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code);
+                             padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .item.trap { background: var(--trap); border-radius: 6px; padding: 4px 6px; }
+  .item.trap .n { background: var(--trap-ink); }
+  .item.trap b { color: var(--trap-ink); }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+
+  
+  .span2 { grid-column: span 2; }
+  .loop { display:flex; flex-wrap:wrap; align-items:center; gap:5px; }
+  .loop .st { font-family: Menlo, Consolas, monospace; font-size:11.8px; border:2px solid var(--line); border-radius:7px; padding:4px 7px; background:#fff3cd; }
+  .loop .st.err { background:#fde8e8; border-color:#dc3545; } .loop .st.info { background:#d1ecf1; border-color:#17a2b8; }
+  .loop .st.ok { background:#d4edda; border-color:#28a745; }
+  .loop .ar { font-weight:800; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T11 · <span class="pill">Python requests</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.9</b><br>Every T11 concept on one page<br>Code from <code>labs/T11/inventory_client.py</code></div>
+  </header>
+
+  <table>
+    <tr>
+      <td class="label"><span class="icon">📤</span><div class="name">CALLS &amp;<br>ARGS</div><div class="ids">T11.01 · T11.02</div></td>
+      <td class="what"><span class="sig">requests.post(url, json=d, timeout=5)</span><br>
+        One function per method, or <code>requests.request("PATCH", url)</code>. Keyword args fill the request: <b>params</b> → query string, <b>headers</b> → headers, <b>json</b> → body + Content-Type. <code>verify</code> / <code>timeout</code> stay on the client.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>Basic auth to the token endpoint<span class="c"><code>auth=(USER, PASSWORD)</code></span></div>
+        <div class="item"><span class="n">4</span>generic form of <code>.patch()</code><span class="c"><code>session.request("PATCH", item, ...)</code></span></div>
+        <div class="item"><span class="n">2</span>query string; <code>None</code> values dropped<span class="c"><code>params = {"limit": 2, "role": role}</code></span></div>
+        <div class="item"><span class="n">5</span>no default timeout: always set one<span class="c"><code>timeout=5</code> · or <code>(connect, read)</code></span></div>
+        <div class="item"><span class="n">3</span>dict → JSON body + header<span class="c"><code>json=new</code> → <code>201</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>data=new</code> → form → <code>415</code>; <code>data=json.dumps(new)</code> → no Content-Type</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">📥</span><div class="name">RESPONSE<br>&amp; OUTPUT</div><div class="ids">T11.03 · T11.08</div></td>
+      <td class="what"><span class="sig">resp.status_code · resp.json()</span><br>
+        Check the code, then parse. <code>ok</code> = code &lt; 400. Headers are case-insensitive. Inspect with <code>json.dumps(..., indent=2)</code>, then loop over the list.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><code>status_code=201</code> (int) · <code>ok=True</code></div>
+        <div class="item"><span class="n">4</span>4xx/5xx → <code>HTTPError</code><span class="c"><code>resp.raise_for_status()</code></span></div>
+        <div class="item"><span class="n">2</span><code>.text</code> = str · <code>.content</code> = bytes<span class="c"><code>resp.headers['location']</code></span></div>
+        <div class="item"><span class="n">5</span>inspect, then extract<span class="c"><code>print(json.dumps(devices[:2],</code> <code>indent=2))</code></span></div>
+        <div class="item"><span class="n">3</span>body → dict / list<span class="c"><code>resp.json()['id']</code> → <code>6</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> no exception on <code>404</code> unless you call <code>raise_for_status()</code>; <code>.json()</code> on <code>204</code> → <code>JSONDecodeError</code>; <code>resp.text["Token"]</code> → <code>TypeError</code></div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔁</span><div class="name">SESSION</div><div class="ids">T11.04</div></td>
+      <td class="what"><span class="sig">session = requests.Session()</span><br>
+        Holds default <b>headers</b>, <b>verify</b>, <b>cookies</b> and a <b>connection pool</b> for every call made through it.</td>
+      <td class="items"><div class="grid">
+        <div class="item span2"><span class="n">1</span>token on every call<span class="c"><code>session.headers.update({"X-Auth-Token": token, ...})</code></span></div>
+        <div class="item"><span class="n">2</span>cert check on every call<span class="c"><code>session.verify = CA_CERT</code></span></div>
+        <div class="item"><span class="n">3</span>reuses TCP<span class="c"><code>Session: 3 calls over</code><br><code>1 TCP connection(s)</code></span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> session headers persist; <code>headers=</code> on one call doesn't</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🧭</span><div class="name">PATTERNS</div><div class="ids">T11.07</div></td>
+      <td class="what"><span class="sig">login → page → retry on 429</span><br>
+        <b>Auth then use</b>: token from the login body into a header. <b>Paginate</b> while there's a next link. <b>429</b>: sleep <code>Retry-After</code>, retry.</td>
+      <td class="items">
+        <div class="loop">
+          <span class="st">POST /auth/token</span><span class="ar">→</span><span class="st">token = resp.json()["Token"]</span><span class="ar">→</span><span class="st">GET page</span><span class="ar">→</span><span class="st err">429</span><span class="ar">→</span><span class="st info">time.sleep(wait)</span><span class="ar">→</span><span class="st ok">retry → 200</span>
+        </div>
+        <div class="grid" style="margin-top:9px">
+        <div class="item span2"><span class="n">1</span>loop while a next link exists<span class="c"><code>url = urljoin(BASE_URL, data["next"]) if data["next"] else None</code></span></div>
+        <div class="item span2"><span class="n">2</span>header value is a string<span class="c"><code>wait = int(resp.headers.get("Retry-After", 1))</code></span></div>
+        <div class="item trap span2"><span class="n">!</span><b>Trap:</b> <code>requests</code> doesn't retry or raise on <code>429</code> by itself; retrying without <code>time.sleep(wait)</code> → <code>429</code> again</div>
+        </div>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🧯</span><div class="name">ERRORS</div><div class="ids">T11.05</div></td>
+      <td class="what"><span class="sig">except requests.exceptions.X as err</span><br>
+        4xx/5xx = a normal response (until <code>raise_for_status()</code>). No answer at all = raised at once. All inherit from <b>RequestException</b>.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span><code>HTTPError</code>: <code>404 Client Error: Not Found</code><span class="c"><code>err.response.json()</code></span></div>
+        <div class="item"><span class="n">3</span><code>ConnectionError</code>: nothing on <code>:8112</code><span class="c"><code>SSLError</code> is a subclass</span></div>
+        <div class="item"><span class="n">2</span><code>Timeout</code> (<code>ReadTimeout</code>): <code>/slow</code><span class="c"><code>timeout=1</code>, server takes 3 s</span></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>except RequestException</code> goes <b>last</b>, or it swallows the rest</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🔐</span><div class="name">TLS</div><div class="ids">T11.06</div></td>
+      <td class="what"><span class="sig">verify=True · False · "/path/ca.pem"</span><br>
+        Lab devices have self-signed certs. Default fails closed; <code>False</code> checks nothing; a CA path checks properly.</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>default → <code>SSLError</code> (self-signed)</div>
+        <div class="item"><span class="n">3</span>hide it (sandbox only)<span class="c"><code>urllib3.disable_warnings(...)</code></span></div>
+        <div class="item"><span class="n">2</span><code>verify=False</code> → <code>200</code> + <code>InsecureRequestWarning</code></div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> the warning is <b>not</b> an error: the call still succeeds</div>
+      </div></td>
+    </tr>
+
+    <tr>
+      <td class="label"><span class="icon">🎯</span><div class="name">EXAM<br>ANGLE</div><div class="ids">T11.09</div></td>
+      <td class="what"><span class="sig">requests.____(url, ____=d)</span><br>
+        Fill the blank in order: <b>method</b> → <b>URL</b> → <b>header</b> → <b>argument</b> → <b>attribute</b>. Predict: raised before a response? which code? <code>raise_for_status()</code> called?</td>
+      <td class="items"><div class="grid">
+        <div class="item"><span class="n">1</span>filter → <code>params=</code> · dict body → <code>json=</code></div>
+        <div class="item"><span class="n">3</span>code is an int<span class="c"><code>== 200</code>, not <code>== "200"</code></span></div>
+        <div class="item"><span class="n">2</span>user/pass → <code>auth=</code> · token → header</div>
+        <div class="item trap"><span class="n">!</span><b>Trap:</b> <code>resp.json</code> (no brackets) is a method, not the data</div>
+      </div></td>
+    </tr>
+  </table>
+
+  <footer>
+    <span class="k1">numbered = line or output from the reference program</span>
+    <span class="k2">red = exam trap</span>
+    <span class="k3">grey = exact syntax</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T11/run_lab.sh</code> · details in each T11.NN section</span>
+  </footer>
+</div>
+</body>
+</html>

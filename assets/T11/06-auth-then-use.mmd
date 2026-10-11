@@ -1,0 +1,10 @@
+sequenceDiagram
+    participant P as inventory_client.py
+    participant A as Mock API :8111
+    P->>A: POST /api/v1/auth/token<br/>auth=(USER, PASSWORD) → Authorization: Basic YWRtaW46...
+    A-->>P: 200 OK {"Token": "tok-admin-7f3a", "expires_in": 3600}
+    Note over P,A: token = resp.json()["Token"]<br/>session.headers.update({"X-Auth-Token": token})
+    P->>A: GET /api/v1/devices  (no token, plain requests.get)
+    A-->>P: 401 Unauthorized
+    P->>A: GET /api/v1/devices  (session adds X-Auth-Token)
+    A-->>P: 200 OK {"response": [...], "total": 5, "next": ...}

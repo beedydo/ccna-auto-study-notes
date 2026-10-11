@@ -1,0 +1,16 @@
+flowchart TD
+    RE["<b>RequestException</b><br/>base class: catch it <b>last</b>"]
+    RE --> HE["HTTPError<br/>only from raise_for_status()<br/>4xx / 5xx"]
+    RE --> CE["ConnectionError<br/>DNS fail, port closed, refused"]
+    RE --> TO["Timeout"]
+    RE --> JE["JSONDecodeError<br/>.json() on a non-JSON body"]
+    RE --> OT["InvalidSchema, MissingSchema,<br/>TooManyRedirects ..."]
+    CE --> SE["SSLError<br/>cert check failed"]
+    CE --> CT["ConnectTimeout"]
+    TO --> CT
+    TO --> RT["ReadTimeout<br/>connected, no reply in time"]
+    style RE fill:#d1ecf1,stroke:#17a2b8
+    style HE fill:#fde8e8,stroke:#dc3545
+    style CE fill:#fff3cd,stroke:#e0a800
+    style TO fill:#fff3cd,stroke:#e0a800
+    style SE fill:#fff3cd,stroke:#e0a800

@@ -1,0 +1,10 @@
+flowchart TD
+    S["url = BASE_URL + &quot;/devices&quot;<br/>params = {&quot;limit&quot;: 2}"] --> G["resp = session.get(url, params=params)"]
+    G --> R["data = resp.json()<br/>devices.extend(data[&quot;response&quot;])"]
+    R --> N{"data[&quot;next&quot;]?"}
+    N -- "yes: /devices?offset=2&amp;limit=2" --> U["url = urljoin(BASE_URL, data[&quot;next&quot;])<br/>params = None"]
+    U --> G
+    N -- "null" --> D["done: 5 devices over 3 pages"]
+    style N fill:#fff3cd,stroke:#e0a800
+    style D fill:#d4edda,stroke:#28a745
+    style U fill:#d1ecf1,stroke:#17a2b8

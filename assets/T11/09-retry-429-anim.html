@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T11 429 retry animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .sub code, .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .lanes { display:grid; grid-template-columns: 1.1fr 1.2fr 1fr; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:290px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.cl { border-color:#e0a800; } .lane.wi { border-color:#17a2b8; } .lane.sv { border-color:#7b4bc4; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12.5px; line-height:1.55; border:2px solid; border-radius:7px; padding:7px 9px; margin-bottom:8px; }
+  .req { background:#fff3cd; border-color:#e0a800; }
+  .ok { background:#d4edda; border-color:#28a745; } .err { background:#fde8e8; border-color:#dc3545; }
+  .info { background:#d1ecf1; border-color:#17a2b8; } .srv { background:#e8dcf7; border-color:#7b4bc4; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .box b { font-size:13.5px; }
+  .meter { display:flex; gap:6px; margin:6px 0 4px; } .meter i { width:34px; height:18px; border-radius:4px; border:2px solid #7b4bc4; background:#fff; }
+  .meter i.used { background:#7b4bc4; } .meter i.over { background:#dc3545; border-color:#dc3545; }
+  .clock { font-size:44px; text-align:center; margin-top:4px; }
+  .arrowrow { height:52px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step.bad .n { background:#dc3545; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T11 · <span class="pill">429 retry loop</span> call → 429 → wait → retry → 200</h1>
+  <div class="sub">Same calls as <code>get_with_retry()</code> in <code>labs/T11/inventory_client.py</code>. The mock allows 2 calls, then answers 429 for 2 s.</div>
+  <div class="lanes">
+    <div class="lane cl" id="cl"><h3>🐍 Script</h3><div class="where">get_with_retry(session, url)</div><div id="cl-f"></div></div>
+    <div class="lane wi" id="wi"><h3>📨 Response</h3><div class="where">status line · headers · body</div><div id="wi-f"></div></div>
+    <div class="lane sv" id="sv"><h3>🗄️ API rate limiter</h3><div class="where">/interfaces/stats · 2 calls, then block</div><div id="sv-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step" id="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const box = (c, l) => `<div class="box ${c}">${l.join("<br>")}</div>`;
+const meter = (used, over) => `<div class="meter">${[0,1].map(j => `<i class="${j < used ? (over ? "over" : "used") : ""}"></i>`).join("")}</div>`;
+const srv = (used, state, over=false) => meter(used, over) + box("srv", state);
+const get = "<b>session.get(url)</b>";
+const frames = [
+  { active:"wi", cl: box("req", [get, "call 1 of loop 1"]),
+    wi: box("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"rx_errors": 0, "tx_errors": 3}']),
+    sv: srv(1, ["calls = 1 / 2"]), cmd:{at:1, t:"200", back:true},
+    txt:"Call 1: <code>200</code>. Not 429, so <code>raise_for_status()</code> and <b>return</b> the response." },
+  { active:"wi", cl: box("req", [get, "call 2"]),
+    wi: box("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"rx_errors": 0, "tx_errors": 3}']),
+    sv: srv(2, ["calls = 2 / 2", "(budget used up)"]), cmd:{at:1, t:"200", back:true},
+    txt:"Call 2: <code>200</code>. The server has now spent its <b>2-call budget</b>." },
+  { active:"wi", cl: box("req", [get, "call 3, try 1"]),
+    wi: box("err", ["<b>HTTP/1.1 429 Too Many Requests</b>", "<b>Retry-After: 2</b>", "", '{"error": "rate limit: 2 requests, then wait"}']),
+    sv: srv(2, ["blocked for 2 s"], true), cmd:{at:1, t:"429 + Retry-After", back:true},
+    txt:"Call 3: <code>429</code>. The wait time is in the <b>Retry-After header</b>, not the body. No exception: <code>requests</code> never raises on a status code by itself." },
+  { active:"cl", cl: box("info", ['wait = int(resp.headers.get(', '    "Retry-After", 1))  # 2', "<b>time.sleep(wait)</b>"]) + '<div class="clock">⏳ 2 s</div>',
+    wi: box("err ghost", ["HTTP/1.1 429 Too Many Requests", "Retry-After: 2"]),
+    sv: srv(2, ["blocked for 2 s", "(window running out)"], true), cmd:{at:0, t:"time.sleep(2)"},
+    txt:"The script <b>sleeps</b> for <code>Retry-After</code> seconds. Header values are <b>strings</b>, hence <code>int(...)</code>." },
+  { active:"wi", cl: box("req", [get, "call 3, try 2"]),
+    wi: box("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"rx_errors": 0, "tx_errors": 3}']),
+    sv: srv(1, ["window reset", "calls = 1 / 2"]), cmd:{at:1, t:"200", back:true},
+    txt:"<b>Same request again</b> after the wait → <code>200</code>. GET is idempotent, so retrying it is safe." },
+  { active:"cl", bad:true, cl: box("err", ["# break it: delete time.sleep(wait)", "try 1 → 429", "try 2 → 429", "try 3 → 429", "try 4 → 429", "<b>RuntimeError: still rate limited</b>"]),
+    wi: box("err", ["<b>HTTP/1.1 429 Too Many Requests</b>", "Retry-After: 2"]),
+    sv: srv(2, ["still blocked", "(4 tries in ~0 s)"], true), cmd:{at:0, t:"retry without waiting"},
+    txt:"Retry <b>without sleeping</b> → every try lands inside the block window → 4 × <code>429</code> and the loop gives up." },
+];
+const pos = [20, 400];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["cl","wi","sv"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; a.appendChild(d);
+  document.getElementById("step").classList.toggle("bad", !!f.bad);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

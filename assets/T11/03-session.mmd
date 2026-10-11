@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph G["requests.get() × 3"]
+        direction TB
+        G1["call 1 → new TCP + TLS"] --> G2["call 2 → new TCP + TLS"] --> G3["call 3 → new TCP + TLS"]
+        GN["headers / verify / cookies<br/>passed on <b>every</b> call"]
+    end
+    subgraph S["s = requests.Session()"]
+        direction TB
+        S0["s.headers.update({&quot;X-Auth-Token&quot;: token})<br/>s.verify = CA_CERT"] --> S1["call 1 → TCP + TLS (pooled)"] --> S2["call 2 → same connection"] --> S3["call 3 → same connection"]
+        SN["defaults + cookies kept<br/>3 calls over 1 connection"]
+    end
+    style G fill:#fff3cd,stroke:#e0a800
+    style S fill:#d1ecf1,stroke:#17a2b8
+    style GN fill:#ffffff,stroke:#e0a800
+    style SN fill:#ffffff,stroke:#17a2b8

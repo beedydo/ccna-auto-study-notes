@@ -1,0 +1,12 @@
+flowchart TD
+    A["attempt = 1"] --> G["resp = session.get(url)"]
+    G --> C{"resp.status_code<br/>== 429?"}
+    C -- "no" --> R["resp.raise_for_status()<br/>return resp"]
+    C -- "yes" --> W["wait = int(resp.headers.get(&quot;Retry-After&quot;, 1))<br/>time.sleep(wait)"]
+    W --> M{"attempt &lt; max_tries?"}
+    M -- "yes: attempt += 1" --> G
+    M -- "no" --> E["raise RuntimeError<br/>still rate limited"]
+    style R fill:#d4edda,stroke:#28a745
+    style W fill:#d1ecf1,stroke:#17a2b8
+    style C fill:#fff3cd,stroke:#e0a800
+    style E fill:#fde8e8,stroke:#dc3545

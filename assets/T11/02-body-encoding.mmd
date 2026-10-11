@@ -1,0 +1,14 @@
+flowchart TD
+    Q{"What do you pass<br/>as the body?"}
+    Q -- "json=dict" --> A["Body: {&quot;hostname&quot;: &quot;edge3&quot;}<br/>Content-Type: application/json<br/><b>set for you</b>"]
+    Q -- "data=dict" --> B["Body: hostname=edge3&amp;role=edge<br/>Content-Type: application/x-www-form-urlencoded"]
+    Q -- "data=json.dumps(dict)" --> C["Body: {&quot;hostname&quot;: &quot;edge3&quot;}<br/>Content-Type: <b>none</b><br/>add headers={&quot;Content-Type&quot;: &quot;application/json&quot;}"]
+    A --> OK["201 Created"]
+    B --> E1["415 Unsupported Media Type"]
+    C --> E2["415, unless you set the header"]
+    style A fill:#d1ecf1,stroke:#17a2b8
+    style OK fill:#d4edda,stroke:#28a745
+    style B fill:#fde8e8,stroke:#dc3545
+    style E1 fill:#fde8e8,stroke:#dc3545
+    style C fill:#fff3cd,stroke:#e0a800
+    style E2 fill:#fff3cd,stroke:#e0a800
