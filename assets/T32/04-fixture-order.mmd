@@ -1,0 +1,13 @@
+%%{init: {"themeVariables": {"fontFamily": "Arial, Helvetica, sans-serif"}, "sequence": {"width": 230, "actorMargin": 160, "noteMargin": 14, "wrap": false}}}%%
+sequenceDiagram
+    participant R as Test runner
+    participant C as TestParseInterfaces
+    R->>C: setUpClass() once: read fixtures/interfaces.xml
+    loop each method whose name starts with test
+        R->>C: setUp(): fresh self.intfs
+        R->>C: test_enabled_is_bool()
+        Note over C: pass "." / AssertionError "F" / other exception "E"
+        R->>C: tearDown(): runs even if the test failed
+    end
+    R->>C: tearDownClass() once
+    Note over R,C: Order inside a class = alphabetical by method name. Never rely on it.

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T32 overview: TDD + Python unit tests</title>
+<style>
+  :root {
+    --green: #28a745; --green-soft: #d4edda; --red: #b42318; --red-soft: #fde8e8;
+    --blue: #1d4ed8; --blue-soft: #dbeafe; --yel: #e0a800; --yel-soft: #fff3cd;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b; --code: #ececec; --bg: #f7f7f5;
+    --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--blue); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--blue); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.2px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .panel { border: 2.5px solid var(--line); background: #fff; border-radius: 14px; padding: 14px 18px 16px; margin-bottom: 14px; position: relative; }
+  .ph { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .ph .num { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 800; font-size: 16px; align-items: center; justify-content: center; flex: none; align-self: center; }
+  .ph h2 { margin: 0; font-size: 20px; font-weight: 800; }
+  .ph .icon { font-size: 22px; }
+  .ph .ids { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 8px; padding: 7px 10px; font-size: 13.2px; line-height: 1.4; border: 1.5px solid var(--trap-ink); }
+  .trap b.t { color: var(--trap-ink); }
+  .trap .n { background: var(--trap-ink); }
+
+  /* Panel 1: loop */
+  .loop { display: grid; grid-template-columns: minmax(0,1fr) 48px minmax(0,1fr) 48px minmax(0,1fr); align-items: stretch; }
+  .stage { border: 2.5px solid; border-radius: 12px; padding: 10px 12px; font-size: 13.2px; line-height: 1.4; }
+  .stage h3 { margin: 0 0 4px; font-size: 17px; }
+  .stage.r { border-color: var(--red); background: var(--red-soft); }
+  .stage.g { border-color: var(--green); background: var(--green-soft); }
+  .stage.b { border-color: var(--blue); background: var(--blue-soft); }
+  .stage .c { display: block; margin-top: 4px; }
+  .arr { display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; }
+  .back { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; font-size: 13px; color: var(--muted); }
+  .back .line { flex: 1; border-top: 2.5px dashed var(--blue); position: relative; }
+  .back .lbl { white-space: nowrap; }
+  .row2 { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 14px; }
+  .ben { font-size: 13.2px; line-height: 1.5; }
+
+  /* Panel 2: test types */
+  .types { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 10px; margin-bottom: 10px; }
+  .ty { border: 2.5px solid; border-radius: 10px; padding: 8px 10px; font-size: 12.8px; line-height: 1.4; }
+  .ty h3 { margin: 0 0 3px; font-size: 15px; }
+  .ty.u { border-color: var(--green); background: var(--green-soft); }
+  .ty.i { border-color: var(--yel); background: var(--yel-soft); }
+  .ty.f { border-color: var(--red); background: var(--red-soft); }
+  .ty.rg { border-color: var(--blue); background: var(--blue-soft); }
+  .ty .c { display: block; margin-top: 4px; }
+  .scale { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); margin: -4px 4px 8px; }
+
+  /* Panel 3: anatomy */
+  .anat { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 16px; }
+  .codebox { background: #1d1d1f; color: #f5f5f5; border-radius: 10px; padding: 10px 12px; font-family: Menlo, Consolas, monospace; font-size: 12px; line-height: 1.65; white-space: pre; overflow: hidden; }
+  .codebox .k { color: #ffb86b; } .codebox .s { color: #9be29b; } .codebox .cm { color: #8b8b8b; }
+  .codebox .b { display: inline-flex; width: 17px; height: 17px; border-radius: 50%; background: #fff; color: #1d1d1f; font-family: -apple-system, Arial, sans-serif; font-size: 10.5px; font-weight: 800; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  table.asserts { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.4px; }
+  table.asserts td { border: 1.5px solid var(--line); padding: 4px 7px; vertical-align: top; }
+  table.asserts td:first-child { width: 47%; }
+  table.asserts tr.h td { background: #f0f0f0; font-weight: 700; }
+  .order { font-size: 12.8px; line-height: 1.5; margin-bottom: 8px; }
+
+  /* Panel 4: output */
+  .outg { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1.1fr); gap: 16px; }
+  .chars { display: grid; grid-template-columns: 56px minmax(0,1fr); gap: 6px 10px; align-items: center; font-size: 13px; }
+  .ch { font-family: Menlo, monospace; font-size: 22px; font-weight: 800; text-align: center; border-radius: 8px; padding: 2px 0; border: 2px solid; }
+  .ch.p { color: var(--green); border-color: var(--green); background: var(--green-soft); }
+  .ch.f { color: var(--red); border-color: var(--red); background: var(--red-soft); }
+  .ch.e { color: #c2410c; border-color: #c2410c; background: #ffedd5; }
+  .ch.s { color: var(--muted); border-color: #999; background: #f4f4f4; }
+  .cmds { font-size: 13px; line-height: 1.55; }
+  .cmds .c { display: block; margin: 2px 0 5px 25px; }
+  .term { background: #1d1d1f; color: #f5f5f5; font-family: Menlo, monospace; font-size: 12px; border-radius: 8px; padding: 6px 10px; margin: 6px 0 8px; white-space: pre; line-height: 1.5; }
+  .term .F { color: #ff7b72; font-weight: 800; } .term .E { color: #ffa657; font-weight: 800; }
+
+  /* Panel 5: mock + pytest */
+  .mp { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); gap: 16px; }
+  .flow { display: grid; grid-template-columns: minmax(0,1.3fr) 14px minmax(0,1fr); gap: 6px; align-items: center; font-size: 12.3px; margin-bottom: 8px; }
+  .box { border: 2px solid; border-radius: 8px; padding: 5px 8px; text-align: center; line-height: 1.3; }
+  .box.t { border-color: var(--blue); background: var(--blue-soft); }
+  .box.m { border-color: var(--yel); background: var(--yel-soft); }
+  .box.r { border-color: var(--green); background: var(--green-soft); }
+  .box.x { border-color: #999; border-style: dashed; color: #888; background: #f4f4f4; }
+  .flow .a { font-weight: 800; }
+  .lst { font-size: 13px; line-height: 1.55; }
+  .lst .c { display: block; margin: 1px 0 4px 25px; }
+  table.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.4px; margin-bottom: 8px; }
+  table.cmp td { border: 1.5px solid var(--line); padding: 4px 7px; vertical-align: top; }
+  table.cmp td:first-child { width: 22%; font-weight: 700; background: #f7f7f7; }
+  table.cmp tr.h td { background: #f0f0f0; font-weight: 800; }
+
+  footer { display: flex; gap: 14px; margin-top: 4px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; }
+  footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--green-soft); border: 1px solid var(--green); }
+  footer .k5::before { background: var(--yel-soft); border: 1px solid var(--yel); }
+  footer .k6::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T32 · <span class="pill">TDD + Python Unit Tests</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 1.3 · 4.5</b><br>Every T32 concept on one page<br>Code from <code>labs/T32/</code></div>
+  </header>
+
+  <!-- 1 LOOP -->
+  <div class="panel">
+    <div class="ph"><span class="num">1</span><span class="icon">🔁</span><h2>The TDD loop: test first, then code, then clean</h2><span class="ids">T32.01</span></div>
+    <div class="loop">
+      <div class="stage r"><h3>🔴 RED</h3>Write <b>one failing test</b> for the next requirement. Run it and <b>see it fail</b>.
+        <span class="c"><code>def test_enabled_is_bool(self):</code></span>
+        <span class="c"><code>FAILED (failures=1, errors=1)</code></span></div>
+      <div class="arr">➜</div>
+      <div class="stage g"><h3>🟢 GREEN</h3>Write the <b>minimum code</b> that passes. Nothing extra.
+        <span class="c"><code>.text == "true"</code> + <code>enabled_names()</code></span>
+        <span class="c"><code>Ran 8 tests</code> · <code>OK</code></span></div>
+      <div class="arr">➜</div>
+      <div class="stage b"><h3>🔵 REFACTOR</h3>Clean the <b>code</b>; tests <b>unchanged</b> and still green.
+        <span class="c"><code>def _text(intf, tag):</code></span>
+        <span class="c">still <code>OK</code></span></div>
+    </div>
+    <div class="back"><span class="lbl">⬅ back to RED</span><div class="line"></div><span class="lbl">next requirement = next failing test</span></div>
+    <div class="row2">
+      <div class="ben"><b>Benefits (1.3):</b> <span class="n">1</span>clear requirements (test = spec) <span class="n">2</span>fewer regressions <span class="n">3</span>safe refactoring <span class="n">4</span>better, testable design <span class="n">5</span>living docs + fast CI feedback</div>
+      <div class="trap"><span class="n">!</span><b class="t">Trap:</b> code first, tests after ≠ TDD. Refactor changes code, never behaviour or the tests. TDD doesn't remove integration tests or guarantee zero bugs.</div>
+    </div>
+  </div>
+
+  <!-- 2 TYPES -->
+  <div class="panel">
+    <div class="ph"><span class="num">2</span><span class="icon">🧱</span><h2>Test types: scope decides the name</h2><span class="ids">T32.02</span></div>
+    <div class="types">
+      <div class="ty u"><h3>🧩 Unit</h3>one function/class <b>in isolation</b>; fakes replace network/DB. Fast, many.<span class="c"><code>iflib.parse_interfaces()</code></span></div>
+      <div class="ty i"><h3>🔗 Integration</h3>components <b>together</b> (app + API).<span class="c"><code>TestAgainstRealDevice</code></span></div>
+      <div class="ty f"><h3>🌐 Functional / E2E</h3><b>whole system</b> vs requirements. Slow, few.<span class="c">workflow → VLAN on switch?</span></div>
+      <div class="ty rg"><h3>🔁 Regression</h3><b>re-run</b> old tests after every change so fixed bugs stay fixed.<span class="c">CI on each commit (T28)</span></div>
+    </div>
+    <div class="trap"><span class="n">!</span><b class="t">Trap:</b> "no network, sample input, one function" → <b>unit</b>. "Real API reply parsed" → <b>integration</b>. Regression is a <b>habit</b> (re-running), not a scope.</div>
+  </div>
+
+  <!-- 3 ANATOMY -->
+  <div class="panel">
+    <div class="ph"><span class="num">3</span><span class="icon">🔧</span><h2>unittest anatomy (stdlib, no install)</h2><span class="ids">T32.03 · T32.04</span></div>
+    <div class="anat">
+<div class="codebox"><span class="b">1</span><span class="k">import</span> unittest
+<span class="b">2</span><span class="k">class</span> TestParseInterfaces(unittest.TestCase):
+    @classmethod
+<span class="b">3</span>    <span class="k">def</span> setUpClass(cls):   <span class="cm"># once per class</span>
+        ...
+<span class="b">4</span>    <span class="k">def</span> setUp(self):        <span class="cm"># before EVERY test</span>
+        self.intfs = iflib.parse_interfaces(self.xml_text)
+<span class="b">5</span>    <span class="k">def</span> test_enabled_is_bool(self):
+        self.assertIs(self.intfs[1][<span class="s">"enabled"</span>], False)
+<span class="b">6</span>    <span class="k">def</span> test_bad_xml_raises(self):
+        <span class="k">with</span> self.assertRaises(ET.ParseError):
+            iflib.parse_interfaces(<span class="s">"&lt;interfaces&gt;&lt;interface&gt;"</span>)
+<span class="b">7</span>    <span class="k">def</span> tearDown(self):     <span class="cm"># after each test, pass or fail</span>
+<span class="b">8</span><span class="k">if</span> __name__ == <span class="s">"__main__"</span>:
+    unittest.main()</div>
+      <div>
+        <div class="order"><b>Run order:</b> <span class="n">3</span>once → for each <code>test*</code> method (alphabetical): <span class="n">4</span>→ test →<span class="n">7</span> → <code>tearDownClass</code> once. Each test independent: fresh <code>self.row</code> per test.</div>
+        <table class="asserts">
+          <tr class="h"><td>Assert (on <code>self</code>)</td><td>Passes when</td></tr>
+          <tr><td><code>assertEqual(a, b)</code> / <code>NotEqual</code></td><td><code>a == b</code> / <code>a != b</code></td></tr>
+          <tr><td><code>assertTrue(x)</code> / <code>assertFalse(x)</code></td><td><code>bool(x)</code> is True / False</td></tr>
+          <tr><td><code>assertIn(a, b)</code></td><td><code>a in b</code> (member first)</td></tr>
+          <tr><td><code>assertIsNone(x)</code> · <code>assertIs(a, b)</code></td><td><code>x is None</code> · same object</td></tr>
+          <tr><td><code>assertIsInstance(x, cls)</code></td><td><code>isinstance(x, cls)</code></td></tr>
+          <tr><td><code>with self.assertRaises(</code><br><code>&nbsp;&nbsp;ValueError) as cm:</code></td><td>block raises it; <code>cm.exception</code> = the error</td></tr>
+        </table>
+        <div class="trap" style="margin-top:8px"><span class="n">!</span><b class="t">Trap:</b> name must start <code>test</code> (else silently skipped) · <code>setUp</code> not <code>setup</code> · <code>assertTrue("false")</code> passes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 RUN + OUTPUT -->
+  <div class="panel">
+    <div class="ph"><span class="num">4</span><span class="icon">📟</span><h2>Run it and read the result</h2><span class="ids">T32.05 · T32.08</span></div>
+    <div class="outg">
+      <div class="cmds">
+        <span class="n">1</span>discover every <code>test*.py</code> in <code>.</code><span class="c"><code>python3 -m unittest</code></span>
+        <span class="n">2</span>verbose: one line per test<span class="c"><code>python3 -m unittest -v test_iflib</code></span>
+        <span class="n">3</span>run the file itself (guard + <code>unittest.main()</code>)<span class="c"><code>python3 test_iflib.py</code></span>
+        <span class="n">4</span>one test / name filter<span class="c"><code>python3 -m unittest test_inventory.TestVlans.test_vlan_range</code></span>
+        <div class="term">...<span class="F">F</span><span class="E">E</span>...
+Ran 8 tests in 0.002s
+FAILED (failures=1, errors=1)</div>
+      </div>
+      <div>
+        <div class="chars">
+          <div class="ch p">.</div><div><b>ok</b>: every assert held</div>
+          <div class="ch f">F</div><div><b>FAIL</b>: an assert was false → <code>AssertionError: 'true' is not True</code></div>
+          <div class="ch e">E</div><div><b>ERROR</b>: any other exception → <code>AttributeError</code>, <code>KeyError</code>, crash in <code>setUp</code>, import fails</div>
+          <div class="ch s">s</div><div><b>skipped</b>: <code>@unittest.skipUnless(...)</code></div>
+        </div>
+        <div class="trap" style="margin-top:10px"><span class="n">!</span><b class="t">Trap:</b> <code>assertRaises(ValueError)</code> + block raises <b>nothing</b> → F (<code>ValueError not raised</code>); raises <b>KeyError</b> → E. Summary: <code>OK</code> or <code>FAILED (failures=N, errors=M)</code></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 MOCK + PYTEST -->
+  <div class="panel">
+    <div class="ph"><span class="num">5</span><span class="icon">🎭</span><h2>Mock the network · pytest for comparison</h2><span class="ids">T32.06 · T32.07</span></div>
+    <div class="mp">
+      <div>
+        <div class="flow">
+          <div class="box t">test<br><code>@patch("netclient.requests.get")</code></div><span class="a">➜</span>
+          <div class="box r">real code<br><code>get_interfaces()</code></div>
+          <div class="box m">MagicMock replaces<br><code>requests.get</code></div><span class="a">✗</span>
+          <div class="box x">RESTCONF device<br>never called</div>
+        </div>
+        <div class="lst">
+          <span class="n">1</span>canned reply<span class="c"><code>mock_get.return_value.text = self.xml_text</code></span>
+          <span class="n">2</span>simulate an error<span class="c"><code>raise_for_status.side_effect = requests.HTTPError(...)</code></span>
+          <span class="n">3</span>prove the request was right<span class="c"><code>mock_get.assert_called_once_with(URL, ...)</code></span>
+        </div>
+        <div class="trap"><span class="n">!</span><b class="t">Trap:</b> patch where the name is <b>looked up</b>: <code>"netclient.requests.get"</code>; <code>"iflib.requests.get"</code> → <code>AttributeError</code> → E</div>
+      </div>
+      <div>
+        <table class="cmp">
+          <tr class="h"><td></td><td>unittest</td><td>pytest</td></tr>
+          <tr><td>Install</td><td>stdlib</td><td><code>pip install pytest</code></td></tr>
+          <tr><td>Test</td><td><code>test_*</code> method in <code>TestCase</code></td><td>plain <code>def test_*():</code></td></tr>
+          <tr><td>Assert</td><td><code>self.assertEqual(a, b)</code></td><td><code>assert a == b</code></td></tr>
+          <tr><td>Setup</td><td><code>setUp</code> / <code>tearDown</code></td><td><code>@pytest.fixture</code></td></tr>
+          <tr><td>Raises</td><td><code>self.assertRaises(E)</code></td><td><code>pytest.raises(E)</code></td></tr>
+        </table>
+        <div class="trap"><span class="n">!</span><b class="t">Trap:</b> pytest <b>runs unittest tests too</b> (<code>17 passed, 1 skipped</code>); unittest does <b>not</b> run pytest-style functions</div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = order / index</span>
+    <span class="k3">grey chip = code from labs/T32</span>
+    <span class="k2">red = exam trap / failing</span>
+    <span class="k4">green = pass / unit</span>
+    <span class="k5">yellow = partial / fake</span>
+    <span class="k6">blue = refactor / recommended</span>
+  </footer>
+</div>
+</body>
+</html>

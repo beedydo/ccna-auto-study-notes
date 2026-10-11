@@ -1,0 +1,13 @@
+flowchart LR
+    R["🔴 <b>1 RED</b><br/>write ONE failing test first<br/><i>test_enabled_is_bool</i><br/>run: FAILED (failures=1, errors=1)"]
+    G["🟢 <b>2 GREEN</b><br/>write the MINIMUM code to pass<br/><i>== &quot;true&quot; · enabled_names()</i><br/>run: OK"]
+    F["🔵 <b>3 REFACTOR</b><br/>clean the code, tests unchanged<br/><i>_text() helper · list comprehension</i><br/>run: still OK"]
+    R -- "make it pass" --> G
+    G -- "make it clean" --> F
+    F -- "next requirement = next failing test" --> R
+    classDef red fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    classDef green fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef blue fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1d1d1f
+    class R red
+    class G green
+    class F blue

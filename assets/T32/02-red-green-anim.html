@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T32 red-green-refactor animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --red:#b42318; --red-s:#fde8e8; --green:#28a745; --green-s:#d4edda; --blue:#1d4ed8; --blue-s:#dbeafe;
+          --yel:#e0a800; --yel-s:#fff3cd; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1300px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { color:#fff; padding:2px 14px; border-radius:20px; }
+  .p-red { background:var(--red); } .p-green { background:var(--green); } .p-blue { background:var(--blue); }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:14px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,0.8fr); gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:345px; padding:10px 12px; background:#fff; position:relative; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:8px; }
+  .lane.active { box-shadow:0 0 0 5px rgba(29,78,216,.30); }
+  .ln { font-family:Menlo,monospace; font-size:11px; border:2px solid #ccc; background:#fafafa; border-radius:6px; padding:4px 7px; margin-bottom:5px; white-space:pre; overflow:hidden; }
+  .ln.new { border-color:var(--blue); background:var(--blue-s); box-shadow:0 0 0 3px rgba(29,78,216,.25); }
+  .ln.same { opacity:.55; border-style:dashed; }
+  .ln.gone { opacity:.3; border-style:dashed; text-decoration:line-through; }
+  .ln.miss { border:2px dashed #bbb; background:#f4f4f4; color:#999; }
+  .tag { font-family:-apple-system,Arial,sans-serif; font-size:10.5px; font-weight:700; color:var(--muted); margin-left:6px; }
+  .dots-out { font-family:Menlo,monospace; font-size:30px; font-weight:800; letter-spacing:6px; margin:6px 0 10px; }
+  .dots-out .f { color:var(--red); } .dots-out .e { color:#c2410c; } .dots-out .ok { color:var(--green); }
+  .res { font-family:Menlo,monospace; font-size:13px; font-weight:700; border-radius:7px; padding:7px 9px; margin-bottom:8px; border:2px solid; }
+  .res.bad { color:var(--red); background:var(--red-s); border-color:var(--red); }
+  .res.good { color:#1e6b34; background:var(--green-s); border-color:var(--green); }
+  .res.none { color:#999; background:#f4f4f4; border-color:#bbb; border-style:dashed; }
+  .why { font-size:12.5px; line-height:1.4; } .why code { font-family:Menlo,monospace; background:var(--code); padding:1px 4px; border-radius:3px; font-size:11.5px; }
+  .why .F { color:var(--red); font-weight:800; } .why .E { color:#c2410c; font-weight:800; }
+  .arrowrow { display:grid; grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr) minmax(0,0.8fr); gap:16px; height:46px; position:relative; margin-top:8px; }
+  .cmd { position:absolute; top:4px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:var(--blue); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T32 · <span class="pill p-red" id="pill">RED</span> one requirement through the TDD loop</h1>
+  <div class="sub">Requirement: <code>enabled</code> must be a real <code>bool</code>, plus <code>enabled_names()</code>. Real runs of <code>python3 -m unittest test_iflib</code> from <code>labs/T32/tdd/run_cycle.sh</code>.</div>
+  <div class="lanes">
+    <div class="lane" id="t"><h3>🧪 Tests</h3><div class="where">test_iflib.py (8 tests)</div><div id="t-f"></div></div>
+    <div class="lane" id="c"><h3>🔧 Code under test</h3><div class="where">iflib.py</div><div id="c-f"></div></div>
+    <div class="lane" id="o"><h3>📟 Runner output</h3><div class="where">python3 -m unittest test_iflib</div><div id="o-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const L = (t, cls = "", tag = "") => `<div class="ln ${cls}">${t}${tag ? `<span class="tag">${tag}</span>` : ""}</div>`;
+const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+const T_OLD = L("6 existing tests: test_returns_list, ...", "same");
+const T1 = (c) => L("def test_enabled_is_bool(self):", c) + L("    self.assertIs(self.intfs[0][\"enabled\"], True)", c) + L("    self.assertIs(self.intfs[1][\"enabled\"], False)", c);
+const T2 = (c) => L("def test_enabled_names(self):", c) + L("    self.assertEqual(iflib.enabled_names(", c) + L("        self.intfs), [\"GigabitEthernet1\"])", c);
+const tests = (c) => T_OLD + T1(c) + T2(c);
+const C_RAW = (c) => L(esc("\"enabled\": intf.find(\"if:enabled\", NS).text,"), c);
+const C_BOOL = (c) => L(esc("\"enabled\": intf.find(\"if:enabled\", NS).text == \"true\","), c);
+const C_EN = (c) => L("def enabled_names(interfaces):", c) + L("    return [i[\"name\"] for i in interfaces if i[\"enabled\"]]", c);
+const C_EN_MISS = L("enabled_names()  ← doesn't exist yet", "miss");
+const C_LOOP = (c) => L("for intf in root.findall(...):", c) + L("    result.append({...})", c);
+const C_HELPER = (c) => L("def _text(intf, tag):", c) + L(esc("    return intf.find(f\"if:{tag}\", NS).text"), c);
+const C_COMP = (c) => L(esc("\"enabled\": _text(intf, \"enabled\") == \"true\","), c) + L("return [ {...} for intf in ...findall(...) ]", c);
+const out = (dots, res, why) => `<div class="dots-out">${dots}</div>${res}<div class="why">${why}</div>`;
+const NONE = out("&nbsp;", `<div class="res none">not run yet</div>`, "");
+const frames = [
+  { pill:["RED","p-red"], active:"t", t: tests("new"), c: C_LOOP("same") + C_RAW("same") + C_EN_MISS, o: NONE,
+    cmd:{at:0, t:"write the tests FIRST"},
+    txt:"Write two new tests for the requirement <b>before</b> touching the code. The code still returns <code>'true'</code> / <code>'false'</code> (strings)." },
+  { pill:["RED","p-red"], active:"o", t: tests(""), c: C_LOOP("same") + C_RAW("same") + C_EN_MISS,
+    o: out(`...<span class="f">F</span><span class="e">E</span>...`, `<div class="res bad">FAILED (failures=1, errors=1)</div>`,
+      `<span class="F">F</span> test_enabled_is_bool: <code>'true' is not True</code> (assert was false)<br><span class="E">E</span> test_enabled_names: <code>AttributeError</code> (crashed before asserting)`),
+    cmd:{at:2, t:"python3 -m unittest"},
+    txt:"<b>Red.</b> Watch the new tests fail. An unseen red proves nothing: the test could be wrong. The 6 old tests still pass." },
+  { pill:["GREEN","p-green"], active:"c", t: tests("same"), c: C_LOOP("same") + C_BOOL("new") + C_EN_MISS,
+    o: out(`....<span class="e">E</span>...`, `<div class="res bad">FAILED (errors=1)</div>`,
+      `test_enabled_is_bool now passes.<br><span class="E">E</span> test_enabled_names: <code>module 'iflib' has no attribute 'enabled_names'</code>`),
+    cmd:{at:1, t:"add == \"true\""},
+    txt:"Fix one thing at a time: <code>== \"true\"</code> turns the text into a bool. One test still errors." },
+  { pill:["GREEN","p-green"], active:"o", t: tests("same"), c: C_LOOP("same") + C_BOOL("") + C_EN("new"),
+    o: out(`<span class="ok">........</span>`, `<div class="res good">Ran 8 tests · OK</div>`, `Minimum code, all 8 green. Not pretty: <code>find(...).text</code> is repeated 3 times.`),
+    cmd:{at:1, t:"add enabled_names()"},
+    txt:"<b>Green.</b> The <b>minimum</b> code to pass: a 2-line <code>enabled_names()</code>. Stop writing code here." },
+  { pill:["REFACTOR","p-blue"], active:"c", t: tests("same"), c: C_LOOP("gone") + C_HELPER("new") + C_COMP("new") + C_EN(""),
+    o: out(`<span class="ok">........</span>`, `<div class="res good">Ran 8 tests · OK</div>`, `Same 8 tests, same result: behaviour unchanged.`),
+    cmd:{at:1, t:"refactor: _text() + comprehension"},
+    txt:"<b>Refactor.</b> Clean the <b>code</b>; the tests stay <b>untouched</b> and green. They are the safety net that makes the rewrite safe." },
+  { pill:["RED","p-red"], active:"t", t: tests("same") + L("def test_next_requirement(self): ...", "new", "next loop"),
+    c: C_HELPER("same") + C_COMP("same") + C_EN("same"), o: NONE,
+    cmd:{at:0, t:"next requirement → new test"},
+    txt:"Loop again: the next requirement starts as the next <b>failing test</b>, never as code. Misconception fixed: tests come <b>first</b>, not after." },
+];
+const pos = [20, 440, 1000];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["t", "c", "o"]) {
+    document.getElementById(k + "-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const p = document.getElementById("pill"); p.textContent = f.pill[0]; p.className = "pill " + f.pill[1];
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  if (f.cmd) { const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t; d.style.left = pos[f.cmd.at] + "px"; a.appendChild(d); }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

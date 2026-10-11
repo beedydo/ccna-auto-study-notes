@@ -1,0 +1,14 @@
+flowchart LR
+    T["test_parses_reply<br/>@patch(&quot;netclient.requests.get&quot;)"] --> N["netclient.get_interfaces()"]
+    N -- "requests.get(url, auth=..., ...)" --> M["MagicMock<br/>.return_value.text = fixture XML"]
+    N -. "real call never made" .-> D["RESTCONF device<br/>https://10.10.20.48"]
+    M -- "resp.text" --> P["iflib.parse_interfaces()<br/>real code, really tested"]
+    T -. "assert_called_once_with(URL, auth=..., headers=..., timeout=10)" .-> M
+    classDef test fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1d1d1f
+    classDef fake fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef real fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef gone fill:#f4f4f4,stroke:#999,stroke-width:2px,stroke-dasharray:5 5,color:#888
+    class T test
+    class M fake
+    class N,P real
+    class D gone

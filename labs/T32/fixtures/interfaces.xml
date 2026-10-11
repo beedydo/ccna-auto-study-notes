@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+  <interface>
+    <name>GigabitEthernet1</name>
+    <description>Uplink to core</description>
+    <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>
+    <enabled>true</enabled>
+  </interface>
+  <interface>
+    <name>GigabitEthernet2</name>
+    <description>Users</description>
+    <type xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type">ianaift:ethernetCsmacd</type>
+    <enabled>false</enabled>
+  </interface>
+</interfaces>

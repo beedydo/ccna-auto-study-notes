@@ -1,0 +1,16 @@
+%%{init: {"flowchart": {"wrappingWidth": 620}}}%%
+flowchart TB
+    E2E["🌐 <b>Functional / system / end-to-end</b>: whole system vs requirements<br/><i>script → real RESTCONF device → is the config really applied?</i><br/>slowest · fewest"]
+    INT["🔗 <b>Integration</b>: components working together<br/><i>netclient.get_interfaces() → real HTTP → iflib.parse_interfaces()</i><br/>TestAgainstRealDevice (skipped unless RESTCONF_HOST is set)"]
+    UNIT["🧩 <b>Unit</b>: one function or class in isolation<br/><i>parse_interfaces() · make_device() · first_free_vlan() · get_interfaces() with requests.get mocked</i><br/>fastest · most · no network"]
+    REG["🔁 <b>Regression</b> is not a layer: re-run ALL the tests after every change, so an old bug can't come back (CI does it on each commit, T28)"]
+    E2E --- INT --- UNIT
+    UNIT -.-> REG
+    classDef e2e fill:#fde8e8,stroke:#b42318,stroke-width:2px,color:#1d1d1f
+    classDef int fill:#fff3cd,stroke:#e0a800,stroke-width:2px,color:#1d1d1f
+    classDef unit fill:#d4edda,stroke:#28a745,stroke-width:2px,color:#1d1d1f
+    classDef reg fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px,color:#1d1d1f
+    class E2E e2e
+    class INT int
+    class UNIT unit
+    class REG reg
