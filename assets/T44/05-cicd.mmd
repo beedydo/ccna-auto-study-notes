@@ -1,0 +1,10 @@
+flowchart LR
+  G["git push<br/>config change"] --> L["lint + unit tests<br/>(T32)"] --> PRE["pyATS job vs CML lab<br/>pre-checks"] --> DEP["deploy change<br/>to CML / staging"] --> POST["pyATS job<br/>post-checks + genie diff"]
+  POST -->|"all PASSED"| PROD["approve → production"]
+  POST -->|"FAILED"| STOP["✘ stop pipeline<br/>archive .zip = evidence"]
+  classDef ok fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef py fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef bad fill:#fde8e8,stroke:#b42318,stroke-width:2px
+  class G,L,DEP,PROD ok
+  class PRE,POST py
+  class STOP bad

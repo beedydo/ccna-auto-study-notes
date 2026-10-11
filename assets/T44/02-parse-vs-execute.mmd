@@ -1,0 +1,13 @@
+flowchart LR
+  CMD["show ip interface brief"] --> EX["dev.execute(cmd)"]
+  CMD --> PA["dev.parse(cmd)"]
+  EX --> RAW["str<br/>Interface  IP-Address  OK? ...<br/>GigabitEthernet3  unassigned ..."]
+  PA --> UNI["Unicon sends the command<br/>(same raw text)"] --> PARSER["Genie parser for<br/>os: iosxe + command"]
+  PARSER --> DICT["dict<br/>['interface']['GigabitEthernet3']['status']<br/>= 'administratively down'"]
+  OFF["saved text file<br/>(no device)"] -->|"dev.parse(cmd, output=text)"| PARSER
+  classDef raw fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  classDef good fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef off fill:#d4edda,stroke:#28a745,stroke-width:2px
+  class RAW raw
+  class DICT good
+  class OFF off

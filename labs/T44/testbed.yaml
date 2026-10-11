@@ -1,0 +1,18 @@
+# Offline testbed: "csr1" is Unicon's mock device (a local process, not a router).
+# CSR1_STATE picks which saved output it serves: csr1_exec (before) or csr1_exec_after.
+testbed:
+  name: t44-offline
+  credentials:
+    default:
+      username: "%ENV{PYATS_USERNAME}"
+      password: "%ENV{PYATS_PASSWORD}"
+
+devices:
+  csr1:
+    os: iosxe
+    type: router
+    connections:
+      defaults:
+        class: unicon.Unicon
+      cli:
+        command: mock_device_cli --os iosxe --mock_data_dir mock --state %ENV{CSR1_STATE} --hostname csr1

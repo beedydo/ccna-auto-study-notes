@@ -1,0 +1,15 @@
+flowchart LR
+  A["1 · genie learn routing<br/>--output before"] --> B["2 · the change<br/>dev.configure(...)"]
+  B --> C["3 · genie learn routing<br/>--output after"]
+  C --> D["4 · genie diff before after"]
+  D --> E{"diff = what you<br/>meant to change?"}
+  E -->|"yes"| OK["✔ close the change"]
+  E -->|"no: extra routes lost,<br/>neighbor down"| RB["✘ roll back"]
+  classDef snap fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef chg fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  classDef dif fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef bad fill:#fde8e8,stroke:#b42318,stroke-width:2px
+  class A,C snap
+  class B chg
+  class D,OK dif
+  class RB bad

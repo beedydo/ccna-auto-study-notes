@@ -1,0 +1,28 @@
+flowchart LR
+  subgraph CS["CommonSetup → common_setup"]
+    direction TB
+    cs1["@aetest.subsection<br/>connect"]
+  end
+  subgraph T1["Testcase InterfacesUp"]
+    direction TB
+    t1a["@aetest.setup<br/>collect"] --> t1b["@aetest.test<br/>addressed_interfaces_up"] --> t1c["@aetest.test<br/>no_admin_down"] --> t1d["@aetest.cleanup<br/>done"]
+  end
+  subgraph T2["Testcase DefaultRoute"]
+    direction TB
+    t2a["@aetest.test<br/>has_default"]
+  end
+  subgraph CC["CommonCleanup → common_cleanup"]
+    direction TB
+    cc1["@aetest.subsection<br/>disconnect"]
+  end
+  CS --> T1 --> T2 --> CC
+  NOTE["If common_setup ERRORS or FAILS:<br/>every Testcase = BLOCKED,<br/>common_cleanup still runs"]
+  CS -.- NOTE
+  classDef s fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef t fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef c fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  classDef bad fill:#fde8e8,stroke:#b42318,stroke-width:2px
+  class cs1 s
+  class t1a,t1b,t1c,t1d,t2a t
+  class cc1 c
+  class NOTE bad

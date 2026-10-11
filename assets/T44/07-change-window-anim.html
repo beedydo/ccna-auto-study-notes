@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T44 change window animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --green:#28a745; --gs:#d4edda; --yel:#e0a800; --ys:#fff3cd; --blue:#1d4ed8; --bs:#dbeafe; --red:#b42318; --rs:#fde8e8; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; height:600px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:var(--blue); color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:300px; padding:10px 12px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.dev { border-color:var(--yel); } .lane.bf { border-color:var(--green); } .lane.af { border-color:var(--green); } .lane.df { border-color:var(--blue); }
+  .lane.active { box-shadow:0 0 0 5px rgba(29,78,216,.30); }
+  .item { font-family:Menlo,monospace; font-size:12.2px; border:2px solid; border-radius:7px; padding:5px 8px; margin-bottom:7px; line-height:1.4; white-space:pre; }
+  .item small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; white-space:normal; }
+  .dev .item { background:var(--ys); border-color:var(--yel); }
+  .bf .item, .af .item { background:var(--gs); border-color:var(--green); }
+  .df .item { background:var(--bs); border-color:var(--blue); }
+  .item.red { background:var(--rs); border-color:var(--red); }
+  .ghost { opacity:.3; border-style:dashed; }
+  .plus { color:#137a2c; font-weight:700; } .minus { color:var(--red); font-weight:700; }
+  .cmdrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:13.5px; font-weight:700; background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::before { content:"➜ "; color:#7ee2b8; }
+  .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:20px; right:28px; display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; } .dots i.on { background:var(--blue); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T44 · <span class="pill">Change window</span> snapshot → change → snapshot → diff</h1>
+  <div class="sub">Real commands and values from <code>labs/T44/</code>. Each frame = one step.</div>
+  <div class="lanes">
+    <div class="lane dev" id="dev"><h3>🌐 Router csr1</h3><div class="where">live state (via Unicon)</div><div id="dev-f"></div></div>
+    <div class="lane bf" id="bf"><h3>📁 before/</h3><div class="where">snapshot files on disk</div><div id="bf-f"></div></div>
+    <div class="lane af" id="af"><h3>📁 after/</h3><div class="where">snapshot files on disk</div><div id="af-f"></div></div>
+    <div class="lane df" id="df"><h3>🔍 diff/</h3><div class="where">genie diff result</div><div id="df-f"></div></div>
+  </div>
+  <div class="cmdrow" id="cmds"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const I = (t, s, cls="") => `<div class="item ${cls}">${t}<small>${s}</small></div>`;
+const devBefore = I("Gi3  unassigned\n     admin down", "show ip interface brief") + I("routes: 0.0.0.0/0\n        10.10.20.0/24 …", "show ip route");
+const devAfter  = I("Gi3  10.30.0.1\n     up / up", "show ip interface brief") + I("routes: + 10.30.0.0/30\n        + 198.51.100.0/24", "show ip route");
+const snapB = I("routing_iosxe_csr1\n_ops.txt", "Ops structure (dict as JSON)") + I("routing_iosxe_csr1\n_console.txt", "raw show output");
+const snapA = I("routing_iosxe_csr1\n_ops.txt", "Ops structure, after") + I("routing_iosxe_csr1\n_console.txt", "raw show output");
+const frames = [
+  { active:"dev", dev:devBefore, bf:"", af:"", df:"", cmd:null,
+    txt:"Before the change: <b>Gi3 is shut</b>, no route to 198.51.100.0/24. Nothing is saved yet." },
+  { active:"bf", dev:devBefore, bf:snapB, af:"", df:"", cmd:{at:0, t:"genie learn routing --testbed-file testbed.yaml --devices csr1 --output before"},
+    txt:"<code>genie learn</code> runs several show commands, parses them, and <b>writes files</b> into <code>before/</code>." },
+  { active:"dev", dev:devAfter.replace(/class="item /g,'class="item red '), bf:snapB, af:"", df:"", cmd:{at:0, t:"dev.configure(CHANGE)   # Gi3 IP + no shutdown + static route"},
+    txt:"The change is pushed. The <b>router</b> changes; <code>before/</code> stays exactly as it was." },
+  { active:"af", dev:devAfter, bf:snapB, af:snapA, df:"", cmd:{at:1, t:"genie learn routing --testbed-file testbed.yaml --devices csr1 --output after"},
+    txt:"Same command, new folder: <code>after/</code> holds the post-change state." },
+  { active:"df", dev:I("(not contacted)", "diff is offline", "ghost"), bf:snapB, af:snapA,
+    df:I('<span class="plus">+ 10.30.0.0/30</span>\n<span class="plus">+ 10.30.0.1/32</span>\n<span class="plus">+ 198.51.100.0/24</span>', "diff_routing_iosxe_csr1_ops.txt"),
+    cmd:{at:2, t:"genie diff before after --output diff"},
+    txt:"<code>genie diff</code> compares the <b>two folders on disk</b>. It never logs in to the router." },
+  { active:"df", dev:I("(not contacted)", "diff is offline", "ghost"), bf:snapB, af:snapB.replace("Ops structure (dict as JSON)","same snapshot"),
+    df:I("Identical", "no key changed"), cmd:{at:2, t:"genie diff before before"},
+    txt:"Same input twice → <code>Identical</code>. An unexpected <code>+</code>/<code>-</code> line means <b>roll back</b>." },
+];
+const left = [0, 280, 560];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["dev","bf","af","df"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const c = document.getElementById("cmds"); c.innerHTML = "";
+  if (f.cmd) { const d = document.createElement("div"); d.className = "cmd"; d.textContent = f.cmd.t; d.style.left = left[f.cmd.at] + "px"; c.appendChild(d); }
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

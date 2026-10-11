@@ -1,0 +1,33 @@
+flowchart LR
+  subgraph YOU["Your code"]
+    S["Python script<br/>change_window.py"]
+    C["genie CLI<br/>genie parse / learn / diff"]
+    J["pyats run job job.py"]
+  end
+  subgraph PYATS["pyATS (framework)"]
+    TB["Testbed loader<br/>testbed.yaml → objects"]
+    AE["AEtest<br/>test harness"]
+    EZ["Easypy<br/>job runner + archive"]
+  end
+  subgraph GENIE["Genie (pyATS Library)"]
+    P["Parsers<br/>show text → dict"]
+    O["Ops / learn<br/>feature model"]
+    D["Diff<br/>before vs after"]
+  end
+  U["Unicon<br/>SSH / Telnet / console<br/>prompts, enable, config mode"]
+  subgraph DEV["Devices"]
+    R1["Physical"]
+    R2["Virtual / CML"]
+    R3["Mock (this lab)"]
+  end
+  S --> TB
+  C --> TB
+  J --> EZ --> AE
+  S --> P & O & D
+  TB --> U --> DEV
+  classDef fw fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef lib fill:#d4edda,stroke:#28a745,stroke-width:2px
+  classDef con fill:#fff3cd,stroke:#e0a800,stroke-width:2px
+  class TB,AE,EZ fw
+  class P,O,D lib
+  class U con

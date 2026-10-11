@@ -1,0 +1,65 @@
+csr1_exec:
+  prompt: '%N#'
+  commands:
+    term length 0: ''
+    term width 0: ''
+    show version: "Cisco IOS XE Software, Version 17.09.04a\nCisco IOS Software [Cupertino], Virtual XE Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 17.9.4a, RELEASE SOFTWARE (fc3)\nTechnical Support: http://www.cisco.com/techsupport\nCopyright (c) 1986-2023 by Cisco Systems, Inc.\nCompiled Fri 20-Oct-23 10:44 by mcpre\n\n\nCisco IOS-XE software, Copyright (c) 2005-2023 by cisco Systems, Inc.\nAll rights reserved.  Certain components of Cisco IOS-XE software are\nlicensed under the GNU General Public License (\"GPL\") Version 2.0.  The\nsoftware code licensed under GPL Version 2.0 is free software that comes\nwith ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such\nGPL code under the terms of GPL Version 2.0.  For more details, see the\ndocumentation or \"License Notice\" file accompanying the IOS-XE software,\nor the applicable URL provided on the flyer accompanying the IOS-XE\nsoftware.\n\n\nROM: IOS-XE ROMMON\n\ncsr1 uptime is 2 days, 3 hours, 14 minutes\nUptime for\
+      \ this control processor is 2 days, 3 hours, 16 minutes\nSystem returned to ROM by reload\nSystem image file is \"bootflash:packages.conf\"\nLast reload reason: reload\n\n\n\nThis product contains cryptographic features and is subject to United\nStates and local country laws governing import, export, transfer and\nuse. Delivery of Cisco cryptographic products does not imply\nthird-party authority to import, export, distribute or use encryption.\nImporters, exporters, distributors and users are responsible for\ncompliance with U.S. and local country laws. By using this product you\nagree to comply with applicable laws and regulations. If you are unable\nto comply with U.S. and local laws, return this product immediately.\n\nA summary of U.S. laws governing Cisco cryptographic products may be found at:\nhttp://www.cisco.com/wwl/export/crypto/tool/stqrg.html\n\nIf you require further assistance please contact us by sending email to\nexport@cisco.com.\n\nLicense Level: \nLicense Type:\
+      \ Perpetual\nNext reload license Level: \n\nSmart Licensing Status: Smart Licensing Using Policy\n\ncisco C8000V (VXE) processor (revision VXE) with 1987872K/3075K bytes of memory.\nProcessor board ID 9ABCDEF1234\nRouter operating mode: Autonomous\n3 Gigabit Ethernet interfaces\n32768K bytes of non-volatile configuration memory.\n3965276K bytes of physical memory.\n11526144K bytes of virtual hard disk at bootflash:.\n\nConfiguration register is 0x2102\n\n"
+    show version | include operating mode: 'Router operating mode: Autonomous'
+    show ip interface brief: "Interface              IP-Address      OK? Method Status                Protocol\nGigabitEthernet1       10.10.20.48     YES NVRAM  up                    up      \nGigabitEthernet2       172.16.12.1     YES NVRAM  up                    up      \nGigabitEthernet3       unassigned      YES NVRAM  administratively down down    \nLoopback0              192.0.2.1       YES NVRAM  up                    up      \n"
+    show ip route: "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\n       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\n       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\n       ia - IS-IS inter area, * - candidate default, U - per-user static route\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\n       o - ODR, P - periodic downloaded static route, l - LISP\n       a - application route\n       + - replicated route, % - next hop override, p - overrides from PfR\n       & - replicated local route overrides by connected\n\nGateway of last resort is 10.10.20.254 to network 0.0.0.0\n\nS*    0.0.0.0/0 [1/0] via 10.10.20.254\n      10.0.0.0/8 is variably subnetted, 2 subnets, 2 masks\nC        10.10.20.0/24\
+      \ is directly connected, GigabitEthernet1\nL        10.10.20.48/32 is directly connected, GigabitEthernet1\n      172.16.0.0/16 is variably subnetted, 2 subnets, 2 masks\nC        172.16.12.0/30 is directly connected, GigabitEthernet2\nL        172.16.12.1/32 is directly connected, GigabitEthernet2\n      192.0.2.0/32 is subnetted, 1 subnets\nC        192.0.2.1 is directly connected, Loopback0\n"
+    show ipv6 route: ''
+    show vrf detail: ''
+    config term:
+      new_state: csr1_config
+csr1_config:
+  prompt: '%N(config)#'
+  commands:
+    no logging console: ''
+    line console 0: ''
+    exec-timeout 0: ''
+    line vty 0 4: ''
+    interface GigabitEthernet3:
+      new_state: csr1_config_if
+    end:
+      new_state: csr1_exec
+csr1_config_if:
+  prompt: '%N(config-if)#'
+  commands:
+    ip address 10.30.0.1 255.255.255.252: ''
+    no shutdown: ''
+    exit:
+      new_state: csr1_config_change
+csr1_config_change:
+  prompt: '%N(config)#'
+  commands:
+    ip route 198.51.100.0 255.255.255.0 10.30.0.2: ''
+    end:
+      new_state: csr1_exec_after
+csr1_exec_after:
+  prompt: '%N#'
+  commands:
+    term length 0: ''
+    term width 0: ''
+    show version: "Cisco IOS XE Software, Version 17.09.04a\nCisco IOS Software [Cupertino], Virtual XE Software (X86_64_LINUX_IOSD-UNIVERSALK9-M), Version 17.9.4a, RELEASE SOFTWARE (fc3)\nTechnical Support: http://www.cisco.com/techsupport\nCopyright (c) 1986-2023 by Cisco Systems, Inc.\nCompiled Fri 20-Oct-23 10:44 by mcpre\n\n\nCisco IOS-XE software, Copyright (c) 2005-2023 by cisco Systems, Inc.\nAll rights reserved.  Certain components of Cisco IOS-XE software are\nlicensed under the GNU General Public License (\"GPL\") Version 2.0.  The\nsoftware code licensed under GPL Version 2.0 is free software that comes\nwith ABSOLUTELY NO WARRANTY.  You can redistribute and/or modify such\nGPL code under the terms of GPL Version 2.0.  For more details, see the\ndocumentation or \"License Notice\" file accompanying the IOS-XE software,\nor the applicable URL provided on the flyer accompanying the IOS-XE\nsoftware.\n\n\nROM: IOS-XE ROMMON\n\ncsr1 uptime is 2 days, 3 hours, 14 minutes\nUptime for\
+      \ this control processor is 2 days, 3 hours, 16 minutes\nSystem returned to ROM by reload\nSystem image file is \"bootflash:packages.conf\"\nLast reload reason: reload\n\n\n\nThis product contains cryptographic features and is subject to United\nStates and local country laws governing import, export, transfer and\nuse. Delivery of Cisco cryptographic products does not imply\nthird-party authority to import, export, distribute or use encryption.\nImporters, exporters, distributors and users are responsible for\ncompliance with U.S. and local country laws. By using this product you\nagree to comply with applicable laws and regulations. If you are unable\nto comply with U.S. and local laws, return this product immediately.\n\nA summary of U.S. laws governing Cisco cryptographic products may be found at:\nhttp://www.cisco.com/wwl/export/crypto/tool/stqrg.html\n\nIf you require further assistance please contact us by sending email to\nexport@cisco.com.\n\nLicense Level: \nLicense Type:\
+      \ Perpetual\nNext reload license Level: \n\nSmart Licensing Status: Smart Licensing Using Policy\n\ncisco C8000V (VXE) processor (revision VXE) with 1987872K/3075K bytes of memory.\nProcessor board ID 9ABCDEF1234\nRouter operating mode: Autonomous\n3 Gigabit Ethernet interfaces\n32768K bytes of non-volatile configuration memory.\n3965276K bytes of physical memory.\n11526144K bytes of virtual hard disk at bootflash:.\n\nConfiguration register is 0x2102\n\n"
+    show version | include operating mode: 'Router operating mode: Autonomous'
+    show ip interface brief: "Interface              IP-Address      OK? Method Status                Protocol\nGigabitEthernet1       10.10.20.48     YES NVRAM  up                    up      \nGigabitEthernet2       172.16.12.1     YES NVRAM  up                    up      \nGigabitEthernet3       10.30.0.1       YES manual up                    up      \nLoopback0              192.0.2.1       YES NVRAM  up                    up      \n"
+    show ip route: "Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP\n       D - EIGRP, EX - EIGRP external, O - OSPF, IA - OSPF inter area \n       N1 - OSPF NSSA external type 1, N2 - OSPF NSSA external type 2\n       E1 - OSPF external type 1, E2 - OSPF external type 2, m - OMP\n       n - NAT, Ni - NAT inside, No - NAT outside, Nd - NAT DIA\n       i - IS-IS, su - IS-IS summary, L1 - IS-IS level-1, L2 - IS-IS level-2\n       ia - IS-IS inter area, * - candidate default, U - per-user static route\n       H - NHRP, G - NHRP registered, g - NHRP registration summary\n       o - ODR, P - periodic downloaded static route, l - LISP\n       a - application route\n       + - replicated route, % - next hop override, p - overrides from PfR\n       & - replicated local route overrides by connected\n\nGateway of last resort is 10.10.20.254 to network 0.0.0.0\n\nS*    0.0.0.0/0 [1/0] via 10.10.20.254\n      10.0.0.0/8 is variably subnetted, 4 subnets, 3 masks\nC        10.10.20.0/24\
+      \ is directly connected, GigabitEthernet1\nL        10.10.20.48/32 is directly connected, GigabitEthernet1\nC        10.30.0.0/30 is directly connected, GigabitEthernet3\nL        10.30.0.1/32 is directly connected, GigabitEthernet3\n      172.16.0.0/16 is variably subnetted, 2 subnets, 2 masks\nC        172.16.12.0/30 is directly connected, GigabitEthernet2\nL        172.16.12.1/32 is directly connected, GigabitEthernet2\n      192.0.2.0/32 is subnetted, 1 subnets\nC        192.0.2.1 is directly connected, Loopback0\nS     198.51.100.0/24 [1/0] via 10.30.0.2\n"
+    show ipv6 route: ''
+    show vrf detail: ''
+    config term:
+      new_state: csr1_config_after
+csr1_config_after:
+  prompt: '%N(config)#'
+  commands:
+    no logging console: ''
+    line console 0: ''
+    exec-timeout 0: ''
+    line vty 0 4: ''
+    end:
+      new_state: csr1_exec_after

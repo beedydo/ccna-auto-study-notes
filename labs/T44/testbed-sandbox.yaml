@@ -1,0 +1,19 @@
+# DevNet Always-On IOS XE sandbox (Catalyst 8000v). NOT run from this repo.
+# Host, port and credentials change: check developer.cisco.com/sandbox first.
+testbed:
+  name: devnet-always-on
+  credentials:
+    default:
+      username: "%ENV{PYATS_USERNAME}"
+      password: "%ENV{PYATS_PASSWORD}"
+
+devices:
+  csr1:                       # must match the device hostname (or set learn_hostname)
+    os: iosxe
+    type: router
+    platform: cat8k
+    connections:
+      cli:
+        protocol: ssh
+        ip: "%ENV{IOSXE_HOST}"
+        port: 22

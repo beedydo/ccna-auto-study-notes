@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T44 overview: pyATS + Genie</title>
+<style>
+  :root {
+    --green: #28a745; --green-soft: #d4edda; --red: #b42318; --red-soft: #fde8e8;
+    --blue: #1d4ed8; --blue-soft: #dbeafe; --yel: #e0a800; --yel-soft: #fff3cd;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b; --code: #ececec; --bg: #f7f7f5;
+    --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1320px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--blue); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--blue); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+
+  .panel { border: 2.5px solid var(--line); background: #fff; border-radius: 14px; padding: 14px 18px 16px; margin-bottom: 14px; }
+  .ph { display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px; }
+  .ph .num { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: #fff; font-weight: 800; font-size: 16px; align-items: center; justify-content: center; flex: none; align-self: center; }
+  .ph h2 { margin: 0; font-size: 20px; font-weight: 800; }
+  .ph .icon { font-size: 22px; }
+  .ph .ids { margin-left: auto; font-size: 11.5px; color: var(--muted); }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; flex: none; }
+  .trap { background: var(--trap); border-radius: 8px; padding: 7px 10px; font-size: 13px; line-height: 1.45; border: 1.5px solid var(--trap-ink); }
+  .trap b.t { color: var(--trap-ink); }
+  .trap .n { background: var(--trap-ink); }
+
+  /* Panel 1: system map */
+  .map { display: grid; grid-template-columns: minmax(0,1.05fr) 34px minmax(0,1.6fr) 34px minmax(0,0.85fr) 34px minmax(0,0.85fr); align-items: stretch; }
+  .zone { border: 2.5px solid; border-radius: 12px; overflow: hidden; background: #fff; }
+  .zone .zh { font-weight: 800; font-size: 14.5px; padding: 5px 10px; color: #fff; }
+  .zone .zb { padding: 8px 10px; font-size: 12.6px; line-height: 1.45; }
+  .zone.you { border-color: #555; } .zone.you .zh { background: #555; }
+  .zone.fw { border-color: var(--blue); } .zone.fw .zh { background: var(--blue); }
+  .zone.con { border-color: var(--yel); } .zone.con .zh { background: #b88a00; }
+  .zone.dev { border-color: var(--green); } .zone.dev .zh { background: var(--green); }
+  .two { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px; }
+  .comp { border: 2px solid; border-radius: 8px; padding: 5px 8px; margin-bottom: 6px; font-size: 12.4px; line-height: 1.4; }
+  .comp b { font-size: 13.2px; }
+  .comp.p { border-color: var(--blue); background: var(--blue-soft); }
+  .comp.g { border-color: var(--green); background: var(--green-soft); }
+  .comp .c { display: block; margin-top: 2px; }
+  .zone .c { display: block; margin-top: 3px; }
+  .arr { display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 800; }
+  .maprow { display: grid; grid-template-columns: minmax(0,1.45fr) minmax(0,1fr); gap: 14px; margin-top: 10px; }
+  .side { font-size: 12.8px; line-height: 1.5; }
+
+  /* rows */
+  .row { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; }
+  .lst { font-size: 13px; line-height: 1.55; }
+  .lst .c { display: block; margin: 1px 0 4px 25px; }
+  .yaml { background: #1d1d1f; color: #f5f5f5; border-radius: 10px; padding: 9px 12px; font-family: Menlo, Consolas, monospace; font-size: 11.6px; line-height: 1.55; white-space: pre; overflow: hidden; }
+  .yaml .k { color: #ffb86b; } .yaml .s { color: #9be29b; } .yaml .cm { color: #8b8b8b; }
+  table.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.4px; margin-bottom: 8px; }
+  table.cmp td { border: 1.5px solid var(--line); padding: 4px 7px; vertical-align: top; }
+  table.cmp td:first-child { width: 30%; font-weight: 700; background: #f7f7f7; }
+  table.cmp tr.h td { background: #f0f0f0; font-weight: 800; }
+  .raw { background: var(--yel-soft); }
+  .dict { background: var(--blue-soft); }
+
+  /* change window strip */
+  .strip { display: grid; grid-template-columns: minmax(0,1fr) 26px minmax(0,1fr) 26px minmax(0,1fr) 26px minmax(0,1.15fr); align-items: stretch; margin-bottom: 10px; }
+  .st { border: 2.5px solid; border-radius: 10px; padding: 7px 9px; font-size: 12.4px; line-height: 1.4; }
+  .st h3 { margin: 0 0 3px; font-size: 14.5px; }
+  .st.s { border-color: var(--green); background: var(--green-soft); }
+  .st.c { border-color: var(--yel); background: var(--yel-soft); }
+  .st.d { border-color: var(--blue); background: var(--blue-soft); }
+  .st .cc { display: block; margin-top: 3px; }
+  .diffbox { background: #1d1d1f; color: #f5f5f5; font-family: Menlo, monospace; font-size: 11.4px; border-radius: 8px; padding: 6px 10px; white-space: pre; line-height: 1.45; }
+  .diffbox .m { color: #ff7b72; } .diffbox .p { color: #7ee787; }
+
+  /* aetest */
+  .ae { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,1fr); gap: 16px; }
+  .seq { display: grid; grid-template-columns: minmax(0,1fr) 20px minmax(0,1.5fr) 20px minmax(0,1fr); align-items: stretch; margin-bottom: 8px; }
+  .sec { border: 2px solid; border-radius: 8px; padding: 5px 7px; font-size: 12px; line-height: 1.4; }
+  .sec h4 { margin: 0 0 2px; font-size: 13.2px; }
+  .sec.a { border-color: var(--blue); background: var(--blue-soft); }
+  .sec.b { border-color: var(--green); background: var(--green-soft); }
+  .sec.e { border-color: var(--yel); background: var(--yel-soft); }
+  .sec .c { display: block; margin-top: 2px; }
+  .res { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 6px; margin-top: 6px; }
+  .rb { border: 2px solid; border-radius: 7px; padding: 3px 6px; font-size: 11.6px; text-align: center; line-height: 1.3; }
+  .rb b { display: block; font-family: Menlo, monospace; font-size: 12.4px; }
+  .rb.ok { border-color: var(--green); background: var(--green-soft); }
+  .rb.f { border-color: var(--red); background: var(--red-soft); }
+  .rb.e { border-color: #c2410c; background: #ffedd5; }
+  .rb.bl { border-color: #777; background: #eee; }
+  .term { background: #1d1d1f; color: #f5f5f5; font-family: Menlo, monospace; font-size: 11.4px; border-radius: 8px; padding: 6px 10px; white-space: pre; line-height: 1.45; margin-bottom: 8px; }
+  .term .F { color: #ff7b72; font-weight: 800; } .term .P { color: #7ee787; }
+
+  /* use cases + exam */
+  .uc { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-bottom: 10px; }
+  .card { border: 2.5px solid; border-radius: 10px; padding: 7px 10px; font-size: 12.6px; line-height: 1.4; }
+  .card h3 { margin: 0 0 3px; font-size: 14.5px; }
+  .card.g { border-color: var(--green); background: var(--green-soft); }
+  .card.b { border-color: var(--blue); background: var(--blue-soft); }
+  .card.y { border-color: var(--yel); background: var(--yel-soft); }
+  .card .c { display: block; margin-top: 3px; }
+  table.pick td:first-child { width: 58%; font-weight: 400; background: #fff; }
+  table.pick td.ans { font-weight: 800; }
+  table.pick td.ans.b { background: var(--blue-soft); }
+
+  footer { display: flex; gap: 14px; margin-top: 4px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; }
+  footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+  footer .k4::before { background: var(--green-soft); border: 1px solid var(--green); }
+  footer .k5::before { background: var(--yel-soft); border: 1px solid var(--yel); }
+  footer .k6::before { background: var(--blue-soft); border: 1px solid var(--blue); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T44 · <span class="pill">pyATS + Genie</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.3</b><br>Every T44 concept on one page<br>Code from <code>labs/T44/</code> (runs offline on a mock router)</div>
+  </header>
+
+  <!-- 1 MAP -->
+  <div class="panel">
+    <div class="ph"><span class="num">1</span><span class="icon">🧱</span><h2>The stack: who does what</h2><span class="ids">T44.01 · T44.06</span></div>
+    <div class="map">
+      <div class="zone you"><div class="zh">🧑‍💻 Your code</div><div class="zb">
+        <span class="n">1</span>Python script<span class="c"><code>change_window.py</code></span>
+        <span class="n">2</span>genie CLI<span class="c"><code>genie parse / learn / diff</code></span>
+        <span class="n">3</span>test job<span class="c"><code>pyats run job job.py</code></span></div></div>
+      <div class="arr">➜</div>
+      <div class="zone fw"><div class="zh">🧪 pyATS framework + 📚 Genie library</div><div class="zb two">
+        <div>
+          <div class="comp p"><b>Testbed loader</b> YAML → objects<span class="c"><code>load("testbed.yaml")</code></span></div>
+          <div class="comp p"><b>AEtest</b> test harness (sections, results)</div>
+          <div class="comp p"><b>Easypy</b> job runner, logs, <code>.zip</code> archive</div>
+        </div>
+        <div>
+          <div class="comp g"><b>Parsers</b> show text → dict<span class="c"><code>dev.parse(...)</code></span></div>
+          <div class="comp g"><b>Ops / learn</b> feature model from many cmds<span class="c"><code>dev.learn("routing")</code></span></div>
+          <div class="comp g"><b>Diff</b> before vs after<span class="c"><code>Diff(pre, post)</code></span></div>
+        </div>
+      </div></div>
+      <div class="arr">➜</div>
+      <div class="zone con"><div class="zh">🔌 Unicon</div><div class="zb">connection library<br>SSH · Telnet · console<br>login, prompts, enable, <code>config term</code>, <code>term length 0</code><span class="c"><code>dev.connect()</code></span></div></div>
+      <div class="arr">➜</div>
+      <div class="zone dev"><div class="zh">🌐 Devices</div><div class="zb">physical<br>virtual (C8000v, NX-OSv)<br><b>CML</b> lab topology (T25)<br>mock (this lab)<span class="c"><code>mock_device_cli</code></span></div></div>
+    </div>
+    <div class="maprow">
+      <div class="side"><b>Free</b> (<code>pip install "pyats[full]"</code>), Python 3, Linux/macOS (no native Windows: use WSL/Docker). Multi-vendor-ish: IOS XE, NX-OS, IOS XR, ASA, Junos… · <b>CML</b> = the virtual network; <b>pyATS</b> = the tests you run against it. 5.3 covers both.</div>
+      <div class="trap"><span class="n">!</span><b class="t">Trap:</b> Genie <b>parses / models / diffs</b>; <b>Unicon</b> connects; <b>pyATS</b> core is the test framework. CML <b>simulates</b> devices: it doesn't test them.</div>
+    </div>
+  </div>
+
+  <!-- 2 TESTBED + WORKFLOW -->
+  <div class="panel">
+    <div class="ph"><span class="num">2</span><span class="icon">📄</span><h2>Testbed YAML → connect → parse vs execute vs configure</h2><span class="ids">T44.02 · T44.03</span></div>
+    <div class="row">
+      <div>
+<div class="yaml"><span class="k">testbed:</span>
+  <span class="k">credentials:</span>
+    <span class="k">default:</span>
+      <span class="k">username:</span> <span class="s">"%ENV{PYATS_USERNAME}"</span>   <span class="cm"># env var, not a secret in git</span>
+      <span class="k">password:</span> <span class="s">"%ENV{PYATS_PASSWORD}"</span>
+<span class="k">devices:</span>
+  <span class="k">csr1:</span>                       <span class="cm"># must match the prompt hostname</span>
+    <span class="k">os:</span> iosxe                  <span class="cm"># picks Unicon plugin + Genie parsers</span>
+    <span class="k">type:</span> router
+    <span class="k">connections:</span>
+      <span class="k">cli:</span>
+        <span class="k">protocol:</span> ssh
+        <span class="k">ip:</span> <span class="s">"%ENV{IOSXE_HOST}"</span>
+        <span class="k">port:</span> 22</div>
+      </div>
+      <div>
+        <div class="lst">
+          <div><span class="n">1</span><code>from genie.testbed import load</code> (or <code>from pyats.topology import loader</code>)</div>
+          <div><span class="n">2</span><code>testbed = load("testbed.yaml")</code> · <code>dev = testbed.devices["csr1"]</code></div>
+          <div><span class="n">3</span><code>dev.connect(log_stdout=False, learn_hostname=True)</code></div>
+        </div>
+        <table class="cmp">
+          <tr class="h"><td>Call</td><td>Returns</td></tr>
+          <tr><td><code>dev.execute(cmd)</code></td><td class="raw"><b>str</b>: raw CLI text, you regex it</td></tr>
+          <tr><td><code>dev.parse(cmd)</code></td><td class="dict"><b>dict</b>: <code>["interface"]["GigabitEthernet3"]["status"]</code></td></tr>
+          <tr><td><code>dev.configure(CHANGE)</code></td><td>wraps in <code>config term</code> … <code>end</code></td></tr>
+          <tr><td><code>parse(cmd, output=text)</code></td><td>parses saved text, <b>no device</b></td></tr>
+        </table>
+        <div class="trap"><span class="n">!</span><b class="t">Trap:</b> <code>execute()</code> = string, <code>parse()</code> = dict. No <code>os:</code> → no Genie parsers. Device keys are case-sensitive: <code>testbed.devices["CSR1"]</code> → <code>KeyError</code>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3 LEARN + DIFF -->
+  <div class="panel">
+    <div class="ph"><span class="num">3</span><span class="icon">🔍</span><h2>Learn + diff: the pre/post change check</h2><span class="ids">T44.04 · T44.07</span></div>
+    <div class="strip">
+      <div class="st s"><h3><span class="n">1</span>Snapshot before</h3><span class="cc"><code>genie learn routing</code></span><span class="cc"><code>--testbed-file testbed.yaml</code></span><span class="cc"><code>--output before</code></span></div>
+      <div class="arr">➜</div>
+      <div class="st c"><h3><span class="n">2</span>Change</h3><span class="cc"><code>dev.configure(CHANGE)</code></span>Gi3 IP + <code>no shutdown</code> + static route</div>
+      <div class="arr">➜</div>
+      <div class="st s"><h3><span class="n">3</span>Snapshot after</h3>same command,<span class="cc"><code>--output after</code></span></div>
+      <div class="arr">➜</div>
+      <div class="st d"><h3><span class="n">4</span>Diff</h3><span class="cc"><code>genie diff before after</code></span>only changed keys; <code>Identical</code> if none</div>
+    </div>
+    <div class="row">
+<div class="diffbox">--- before/routing_iosxe_csr1_ops.txt
++++ after/routing_iosxe_csr1_ops.txt
+      routes:
+<span class="p">+      198.51.100.0/24:</span>
+<span class="p">+          next_hop: 10.30.0.2</span>
+<span class="p">+       source_protocol: static</span></div>
+      <div>
+        <div class="lst"><b>parse vs learn:</b> parse = <b>one command</b>, OS-specific keys · learn = a <b>feature</b> (<code>interface</code>, <code>routing</code>, <code>ospf</code>, <code>bgp</code>…) from <b>several</b> commands, <b>same keys on every OS</b>.</div>
+        <div class="trap"><span class="n">!</span><b class="t">Trap:</b> diff ignores <b>default exclusions</b> (counters, uptime, <code>method</code>…). Add <code>--no-default-exclusion</code> to see them. Order: <b>before</b> then <b>after</b>.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4 AETEST -->
+  <div class="panel">
+    <div class="ph"><span class="num">4</span><span class="icon">🧪</span><h2>AEtest script + <code style="font-size:16px">pyats run job</code></h2><span class="ids">T44.05</span></div>
+    <div class="ae">
+      <div>
+        <div class="seq">
+          <div class="sec a"><h4>CommonSetup</h4><span class="c"><code>@aetest.subsection</code></span>connect</div>
+          <div class="arr" style="font-size:20px">➜</div>
+          <div class="sec b"><h4>Testcase(s), in file order</h4><span class="c"><code>@aetest.setup</code> → <code>@aetest.test</code> ×N</span><span class="c">→ <code>@aetest.cleanup</code></span></div>
+          <div class="arr" style="font-size:20px">➜</div>
+          <div class="sec e"><h4>CommonCleanup</h4><span class="c"><code>@aetest.subsection</code></span>disconnect</div>
+        </div>
+        <div class="lst">
+          <div><span class="n">1</span>results: <code>self.passed()</code> <code>self.failed("why")</code> <code>self.skipped()</code> or bare <code>assert</code></div>
+          <div><span class="n">2</span>run + archive: <code>pyats run job job.py --testbed-file testbed.yaml</code></div>
+          <div><span class="n">3</span>job file: <code>def main(runtime):</code> → <code>run(testscript=..., runtime=runtime, ...)</code></div>
+        </div>
+        <div class="res">
+          <div class="rb ok"><b>PASSED</b>all good</div>
+          <div class="rb f"><b>FAILED</b>assert / self.failed</div>
+          <div class="rb e"><b>ERRORED</b>other exception</div>
+          <div class="rb bl"><b>BLOCKED</b>setup broke first</div>
+        </div>
+      </div>
+      <div>
+<div class="term">-- before the change (real run)
+|-- InterfacesUp                      <span class="F">FAILED</span>
+|   |-- no_admin_down                 <span class="F">FAILED</span>
+|-- DefaultRoute                      <span class="P">PASSED</span>
+-- after the change
+interface_check                       <span class="P">PASSED</span></div>
+        <div class="trap"><span class="n">!</span><b class="t">Trap:</b> CommonSetup error → every Testcase <b>BLOCKED</b> (not FAILED), cleanup <b>still runs</b>. Decorators, not <code>test_</code> names, mark sections (≠ unittest).</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5 USE CASES + EXAM -->
+  <div class="panel">
+    <div class="ph"><span class="num">5</span><span class="icon">🎯</span><h2>Use cases + exam angle</h2><span class="ids">T44.07 · T44.08</span></div>
+    <div class="uc">
+      <div class="card g"><h3><span class="n">1</span>Pre/post change</h3>snapshot → change → snapshot → diff; unexpected diff = roll back<span class="c"><code>genie diff before after</code></span></div>
+      <div class="card b"><h3><span class="n">2</span>CI/CD network tests (T28)</h3>pipeline stage runs the job against CML/staging; FAILED stops the line<span class="c"><code>pyats run job job.py</code></span></div>
+      <div class="card y"><h3><span class="n">3</span>Compliance / state checks</h3>parse → assert on keys (all addressed intfs up, default route present)<span class="c"><code>"0.0.0.0/0" in routes</code></span></div>
+    </div>
+    <div class="row">
+      <table class="cmp pick">
+        <tr class="h"><td>Scenario says…</td><td>Pick</td></tr>
+        <tr><td>verify / test state, before vs after, show → structured data</td><td class="ans b">pyATS + Genie</td></tr>
+        <tr><td>build a virtual topology of routers to try a change</td><td class="ans">CML</td></tr>
+        <tr><td>push config to many devices as one transaction</td><td class="ans">NSO / Ansible</td></tr>
+      </table>
+      <div class="trap"><span class="n">!</span><b class="t">Reading a snippet:</b> <code>load()</code> = read testbed · <code>connect()</code> = Unicon session · <code>parse()</code> = dict · <code>learn()</code> = Ops object (<code>.info</code>) · <code>Diff(a, b).findDiff()</code> = changes. "Validate" / "test" / "compare state" → pyATS; "simulate" / "lab" → CML.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = order / index</span>
+    <span class="k3">grey chip = code from labs/T44</span>
+    <span class="k2">red = exam trap / failed</span>
+    <span class="k4">green = snapshot / device / passed</span>
+    <span class="k5">yellow = raw text / change / connection</span>
+    <span class="k6">blue = framework / recommended answer</span>
+  </footer>
+</div>
+</body>
+</html>

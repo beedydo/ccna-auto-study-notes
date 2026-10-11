@@ -1,0 +1,11 @@
+flowchart TB
+  Q{"What does the<br/>scenario need?"}
+  Q -->|"verify state, test before/after,<br/>parse show output to dicts"| PY["pyATS + Genie"]
+  Q -->|"virtual routers/switches<br/>to build a lab topology"| CML["CML<br/>(Cisco Modeling Labs, T25)"]
+  Q -->|"push config transactionally<br/>across many vendors"| NSO["NSO (T25) / Ansible (T34)"]
+  Q -->|"call a controller REST API"| REQ["requests / SDK (T11)"]
+  CML -. "pyATS tests run against CML devices" .-> PY
+  classDef ans fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+  classDef oth fill:#f4f4f4,stroke:#777,stroke-width:1.5px
+  class PY ans
+  class CML,NSO,REQ oth
