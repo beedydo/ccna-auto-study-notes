@@ -1,0 +1,14 @@
+sequenceDiagram
+    participant C as Client
+    participant CC as Catalyst Center (mock)
+    C->>CC: POST /dna/intent/api/v1/network-device-poller/cli/read-request
+    CC-->>C: 202 Accepted {"response": {"taskId": "…", "url": "/api/v1/task/…"}}
+    Note over C: NOT done. Client is free.
+    loop every 1 s until endTime is present
+        C->>CC: GET /dna/intent/api/v1/task/{taskId}
+        CC-->>C: 200 {"progress": "...", "isError": false}  (no endTime yet)
+    end
+    C->>CC: GET /dna/intent/api/v1/task/{taskId}
+    CC-->>C: 200 {"endTime": …, "isError": false, "progress": "{\"fileId\": \"…\"}"}
+    C->>CC: GET /dna/intent/api/v1/file/{fileId}
+    CC-->>C: 200 [command output]

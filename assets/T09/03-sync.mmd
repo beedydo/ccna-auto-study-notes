@@ -1,0 +1,16 @@
+sequenceDiagram
+    participant C as Client script
+    participant S as Server
+    Note over C,S: Synchronous: one request, client blocked until the full answer
+    C->>S: GET /api/v1/devices/1/config (timeout=5)
+    activate C
+    Note left of C: blocked, can do nothing else
+    Note right of S: works for 1.5 s
+    S-->>C: 200 OK  "hostname csr1"
+    deactivate C
+    Note over C,S: Same call with timeout=0.5
+    C->>S: GET /api/v1/devices/1/config (timeout=0.5)
+    activate C
+    Note left of C: gives up at 0.5 s → TimeoutError
+    deactivate C
+    S--xC: answer at 1.5 s, nobody is listening

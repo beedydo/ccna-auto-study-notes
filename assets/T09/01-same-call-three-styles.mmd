@@ -1,0 +1,14 @@
+flowchart LR
+    C["Client wants<br/>device 1"]
+    C --> R["<b>REST</b><br/>GET /api/v1/devices/1<br/><i>action = HTTP method<br/>target = URI noun</i>"]
+    C --> J["<b>JSON-RPC</b><br/>POST /jsonrpc<br/>{&quot;method&quot;: &quot;getDevice&quot;,<br/>&quot;params&quot;: {&quot;id&quot;: 1}}<br/><i>action = method in body</i>"]
+    C --> S["<b>SOAP</b><br/>POST /soap<br/>SOAPAction: &quot;GetDevice&quot;<br/>&lt;Envelope&gt;&lt;Body&gt;&lt;GetDevice&gt;<br/><i>action = XML operation</i>"]
+    R --> RR["200 + JSON<br/>404 if missing"]
+    J --> JR["HTTP 200 always<br/>result OR error object"]
+    S --> SR["200 Envelope<br/>500 + soap:Fault"]
+    style R fill:#d1ecf1,stroke:#17a2b8
+    style J fill:#fff3cd,stroke:#e0a800
+    style S fill:#e8dcf7,stroke:#7b4bc4
+    style RR fill:#d1ecf1,stroke:#17a2b8
+    style JR fill:#fff3cd,stroke:#e0a800
+    style SR fill:#e8dcf7,stroke:#7b4bc4

@@ -1,0 +1,13 @@
+flowchart TB
+    E["<b>soapenv:Envelope</b> (mandatory root)<br/>xmlns:soapenv=http://schemas.xmlsoap.org/soap/envelope/"]
+    E --> H["<b>soapenv:Header</b> (optional)<br/>WS-Security token, transaction id"]
+    E --> B["<b>soapenv:Body</b> (mandatory)"]
+    B --> OK["Success: operation element<br/>&lt;GetDeviceResponse&gt;…"]
+    B --> F["Error: <b>soapenv:Fault</b><br/>faultcode + faultstring<br/>(HTTP 500)"]
+    W["<b>WSDL</b> file (separate)<br/>operations, types, endpoint URL<br/>= the strict contract"] -.describes.-> B
+    style E fill:#e8dcf7,stroke:#7b4bc4
+    style H fill:#fff3cd,stroke:#e0a800
+    style B fill:#d4edda,stroke:#28a745
+    style OK fill:#d4edda,stroke:#28a745
+    style F fill:#f8d7da,stroke:#dc3545
+    style W fill:#d1ecf1,stroke:#17a2b8

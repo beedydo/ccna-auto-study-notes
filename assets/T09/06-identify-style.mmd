@@ -1,0 +1,16 @@
+flowchart LR
+    A{"Body is XML with<br/>&lt;soap:Envelope&gt; / &lt;soapenv:Envelope&gt;?"}
+    A -- yes --> SOAP["<b>SOAP</b><br/>e.g. CUCM AXL"]
+    A -- no --> B{"Body is &lt;rpc&gt; … &lt;/rpc&gt;<br/>over SSH :830?"}
+    B -- yes --> NC["<b>NETCONF</b> (RPC style)"]
+    B -- no --> C{"JSON with &quot;jsonrpc&quot;: &quot;2.0&quot;<br/>+ &quot;method&quot;?"}
+    C -- yes --> JR["<b>JSON-RPC</b><br/>e.g. NX-API JSON-RPC, NSO"]
+    C -- no --> D{"Verb in the URL?<br/>/getDevice, /runCommand"}
+    D -- yes --> RPC["<b>RPC over HTTP</b><br/>(not RESTful)"]
+    D -- no --> E{"Noun URI + method<br/>GET /devices/1"}
+    E -- yes --> REST["<b>REST</b><br/>Meraki, Catalyst Center,<br/>Webex, RESTCONF"]
+    style SOAP fill:#e8dcf7,stroke:#7b4bc4
+    style NC fill:#fff3cd,stroke:#e0a800
+    style JR fill:#fff3cd,stroke:#e0a800
+    style RPC fill:#fff3cd,stroke:#e0a800
+    style REST fill:#d1ecf1,stroke:#17a2b8

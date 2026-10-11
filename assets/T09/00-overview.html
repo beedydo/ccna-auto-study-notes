@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T09 overview: API styles, REST vs RPC, sync vs async</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --rest: #d1ecf1; --rest-b: #17a2b8; --rpc: #fff3cd; --rpc-b: #e0a800; --soap: #e8dcf7; --soap-b: #7b4bc4;
+    --ok: #d4edda; --ok-b: #28a745;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  h2 { font-size: 18px; margin: 18px 0 8px; display: flex; align-items: center; gap: 10px; }
+  h2 .ids { font-size: 11.5px; color: var(--muted); font-weight: 400; }
+
+  table { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  th, td { border: 1.5px solid var(--line); vertical-align: top; padding: 9px 10px; font-size: 13.2px; line-height: 1.42; }
+  th { background: var(--ink); color: #fff; text-align: left; font-size: 13px; letter-spacing: 0.3px; }
+  td.style { width: 120px; text-align: center; font-weight: 800; font-size: 17px; }
+  td.style .icon { font-size: 34px; display: block; margin-bottom: 4px; }
+  td.style .ids { font-size: 11px; color: var(--muted); font-weight: 400; margin-top: 3px; }
+  tr.rest td.style { background: var(--rest); } tr.rpc td.style { background: var(--rpc); } tr.soap td.style { background: var(--soap); }
+  .wire { font-family: Menlo, Consolas, monospace; font-size: 11.3px; line-height: 1.5; border: 2px solid; border-radius: 7px; padding: 6px 8px; white-space: pre; overflow: hidden; }
+  tr.rest .wire { background: var(--rest); border-color: var(--rest-b); }
+  tr.rpc .wire { background: var(--rpc); border-color: var(--rpc-b); }
+  tr.soap .wire { background: var(--soap); border-color: var(--soap-b); }
+  .trap { background: var(--trap); border-radius: 6px; padding: 4px 7px; margin-top: 6px; font-size: 12.6px; }
+  .trap b { color: var(--trap-ink); }
+  .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 11.5px;
+       font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; flex: none; }
+  .trap .n { background: var(--trap-ink); }
+
+  .two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr); gap: 16px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 10px; background: #fff; padding: 12px 14px; }
+  .panel h3 { margin: 0 0 8px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel h3 .ids { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: auto; }
+  .lanes { display: grid; grid-template-columns: 90px minmax(0, 1fr) 90px; gap: 0; font-size: 12.5px; }
+  .lane-h { font-weight: 800; text-align: center; padding: 4px; border-bottom: 2px solid var(--line); }
+  .row { display: contents; }
+  .row > div { padding: 5px 2px; }
+  .arrow { text-align: center; border-bottom: 1px dashed #bbb; }
+  .arrow.req::after { content: " ➜"; } .arrow.res::before { content: "⬅ "; }
+  .blocked { background: repeating-linear-gradient(45deg, #fde8e8, #fde8e8 6px, #fff 6px, #fff 12px); text-align: center; font-weight: 700; color: var(--trap-ink); }
+  .free { background: var(--ok); text-align: center; font-weight: 700; color: #1e6b33; }
+  .steps { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .step { display: flex; align-items: flex-start; gap: 4px; font-size: 13px; line-height: 1.4; }
+  .step .c { display: block; margin-top: 2px; }
+  .pick { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 8px; font-size: 12.8px; }
+  .pick div { border: 2px solid; border-radius: 8px; padding: 6px 8px; }
+  .pick .s { background: var(--ok); border-color: var(--ok-b); } .pick .a { background: var(--rest); border-color: var(--rest-b); }
+  footer { display: flex; gap: 22px; margin-top: 14px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T09 · <span class="pill">API Styles</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.8</b><br>Every T09 concept on one page<br>Code from <code>labs/T09/</code></div>
+  </header>
+
+  <h2>🧭 REST vs RPC vs SOAP: where does the verb live? <span class="ids">T09.01 · T09.02 · T09.03 · T09.04 · T09.09</span></h2>
+  <table>
+    <colgroup><col style="width:120px"><col style="width:250px"><col style="width:220px"><col></colgroup>
+    <tr><th>Style</th><th>What / verb lives in</th><th>Errors · format · Cisco APIs</th><th>Spot it on the wire (same lookup: device 1)</th></tr>
+    <tr class="rest">
+      <td class="style"><span class="icon">🌐</span>REST<div class="ids">T09.01</div></td>
+      <td><b>Resource-centric</b> style. URI = <b>noun</b>, HTTP <b>method</b> = verb. Many URIs, stateless, cacheable (GET).</td>
+      <td><b>HTTP status code</b> (<code>404</code>). Any format, mostly JSON.<br>Meraki · Catalyst Center · Webex · <b>RESTCONF</b></td>
+      <td><div class="wire">GET /api/v1/devices/1
+Accept: application/json</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> JSON over HTTP ≠ REST. <code>POST /api/runCommand</code> = RPC style</div></td>
+    </tr>
+    <tr class="rpc">
+      <td class="style"><span class="icon">📞</span>RPC<div class="ids">T09.02</div></td>
+      <td><b>Action-centric</b>. Verb = <b>named function</b> in body/URL. Usually <b>POST to one endpoint</b>.<br>JSON-RPC · XML-RPC · gRPC (HTTP/2 + protobuf)</td>
+      <td>Error <b>in the body</b>, often HTTP <code>200</code> (<code>-32601</code>).<br><b>NETCONF</b> <code>&lt;rpc&gt;</code> SSH 830 · NX-API JSON-RPC</td>
+      <td><div class="wire">POST /jsonrpc
+{"jsonrpc": "2.0", "method": "getDevice", "params": {"id": 1}, "id": 1}</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> <code>200 OK</code> + <code>"error"</code> = failed. No <code>id</code> = notification, no reply</div></td>
+    </tr>
+    <tr class="soap">
+      <td class="style"><span class="icon">🧼</span>SOAP<div class="ids">T09.03</div></td>
+      <td>W3C <b>protocol</b>, <b>XML only</b>. Envelope &gt; Header? &gt; Body (&gt; Fault). <b>WSDL</b> = strict contract. WS-Security.</td>
+      <td><code>500</code> + <code>soapenv:Fault</code> in Body.<br>HTTP POST, <code>SOAPAction</code> header.<br><b>CUCM AXL</b></td>
+      <td><div class="wire">POST /soap   SOAPAction: "GetDevice"
+&lt;soapenv:Envelope …&gt;&lt;soapenv:Body&gt;
+  &lt;GetDevice&gt;&lt;id&gt;1&lt;/id&gt;&lt;/GetDevice&gt;</div>
+        <div class="trap"><span class="n">!</span><b>Trap:</b> Header is <b>optional</b>; Envelope + Body are mandatory; Fault sits <b>inside</b> Body</div></td>
+    </tr>
+  </table>
+
+  <h2>⏱️ Synchronous vs asynchronous <span class="ids">T09.05 · T09.06 · T09.07 · T09.08</span></h2>
+  <div class="two">
+    <div class="panel">
+      <h3>⏳ Sync vs ⚡ Async <span class="ids">T09.05 · T09.06 · T09.08</span></h3>
+      <div class="lanes">
+        <div class="lane-h">Client</div><div class="lane-h">SYNC: <code>GET /api/v1/devices/1/config</code></div><div class="lane-h">Server</div>
+        <div class="row"><div></div><div class="arrow req">request</div><div></div></div>
+        <div class="row"><div class="blocked">blocked</div><div style="text-align:center;color:#666">1.5 s of work</div><div>working</div></div>
+        <div class="row"><div></div><div class="arrow res">200 + full answer</div><div></div></div>
+        <div class="lane-h" style="margin-top:6px">Client</div><div class="lane-h" style="margin-top:6px">ASYNC: <code>POST</code> a job</div><div class="lane-h" style="margin-top:6px">Server</div>
+        <div class="row"><div></div><div class="arrow req">request</div><div></div></div>
+        <div class="row"><div></div><div class="arrow res"><code>202</code> + taskId (instant)</div><div></div></div>
+        <div class="row"><div class="free">free</div><div style="text-align:center;color:#666">poll status URL · or webhook (T43)</div><div>working</div></div>
+      </div>
+      <div class="pick">
+        <div class="s"><b>Sync:</b> quick lookups, small changes, need the answer now</div>
+        <div class="a"><b>Async:</b> provisioning, image upgrades, many devices, beat timeouts</div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> client <code>timeout=0.5</code> &lt; 1.5 s work → client gets nothing. <code>asyncio</code> = client-side concurrency (<code>asyncio.gather</code>: 3.0 s → 1.5 s), not an API style</div>
+    </div>
+    <div class="panel">
+      <h3>🛰️ Catalyst Center taskId pattern <span class="ids">T09.07</span></h3>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>Submit the job<span class="c"><code>POST /dna/intent/api/v1/network-device-poller/cli/read-request</code></span></div></div>
+        <div class="step"><span class="n">2</span><div><code>202 Accepted</code> → read <code>response.taskId</code> (+ <code>url</code>). <b>Not done.</b></div></div>
+        <div class="step"><span class="n">3</span><div>Poll until <code>endTime</code> is present; <code>isError</code> = failed?<span class="c"><code>GET /dna/intent/api/v1/task/{taskId}</code></span></div></div>
+        <div class="step"><span class="n">4</span><div>Result pointer in <code>progress</code> (a JSON string)<span class="c"><code>json.loads(task["progress"])["fileId"]</code></span></div></div>
+        <div class="step"><span class="n">5</span><div>Fetch the output<span class="c"><code>GET /dna/intent/api/v1/file/{fileId}</code></span></div></div>
+      </div>
+      <div class="trap"><span class="n">!</span><b>Trap:</b> <code>202</code> ≠ done, and the task URL's <code>200</code> ≠ done either. Don't resend the POST (duplicate job). Same flow in T47 sequence diagrams</div>
+      <h3 style="margin-top:12px">🎯 Exam angle <span class="ids">T09.09</span></h3>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div>Identify the style: <b>body first</b> (<code>&lt;soapenv:Envelope&gt;</code> · <code>&lt;rpc&gt;</code> · <code>"jsonrpc"</code>), then URL + method</div></div>
+        <div class="step"><span class="n">2</span><div>"Why 202?" → job queued; poll the task / status URL, or wait for the webhook</div></div>
+        <div class="step"><span class="n">3</span><div>NETCONF = RPC · RESTCONF = REST · AXL = SOAP · Meraki = REST</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k1">numbered = steps in order</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span>blue REST · yellow RPC · purple SOAP</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T09/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>

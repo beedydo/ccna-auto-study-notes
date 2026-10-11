@@ -1,0 +1,11 @@
+flowchart LR
+    Q{"Does the work finish<br/>in well under the<br/>client/proxy timeout?"}
+    Q -- "yes: lookup, small change<br/>GET one device, PATCH a VLAN" --> SY["<b>Synchronous</b><br/>request → wait → 200/201"]
+    Q -- "no: provisioning, image upgrade,<br/>CLI on 500 devices, discovery" --> AS["<b>Asynchronous</b><br/>202 + taskId"]
+    AS --> HOW{"How does the client<br/>learn it finished?"}
+    HOW -- "client asks again" --> P["<b>Poll</b> GET /task/{taskId}<br/>until endTime / isError"]
+    HOW -- "server tells the client" --> WH["<b>Callback / webhook</b><br/>server POSTs to your URL (T43)"]
+    style SY fill:#d4edda,stroke:#28a745
+    style AS fill:#d1ecf1,stroke:#17a2b8
+    style P fill:#d1ecf1,stroke:#17a2b8
+    style WH fill:#d1ecf1,stroke:#17a2b8

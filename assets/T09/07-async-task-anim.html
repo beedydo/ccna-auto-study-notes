@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T09 async taskId animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:16px; }
+  .lanes { display:grid; grid-template-columns: 1.25fr 1.25fr 0.9fr; gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:290px; padding:10px; background:#fff; overflow:hidden; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; }
+  .lane.req-l { border-color:#e0a800; } .lane.res-l { border-color:#17a2b8; } .lane.job-l { border-color:#7b4bc4; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .req, .res { font-family:Menlo,monospace; font-size:12px; line-height:1.55; border:2px solid; border-radius:7px; padding:7px 9px; word-break:break-all; }
+  .req { background:#fff3cd; border-color:#e0a800; }
+  .res.ok { background:#d4edda; border-color:#28a745; } .res.info { background:#d1ecf1; border-color:#17a2b8; }
+  .res.wait { background:#fff3cd; border-color:#e0a800; }
+  .job { font-size:13px; border:2px solid #7b4bc4; background:#e8dcf7; border-radius:7px; padding:8px; margin-bottom:8px; }
+  .job.done { background:#d4edda; border-color:#28a745; }
+  .job.ghost { opacity:.3; border-style:dashed; }
+  .bar { height:12px; border-radius:6px; background:#ddd; margin-top:6px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#7b4bc4; }
+  .job.done .bar i { background:#28a745; }
+  .client { font-size:13px; margin-top:8px; padding:6px 8px; border-radius:7px; font-weight:700; text-align:center; }
+  .client.free { background:#d4edda; color:#1e6b33; } .client.idle { background:#eee; color:#666; }
+  .arrowrow { height:52px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:" ➜"; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T09 · <span class="pill">Async taskId</span> 202 is not "done"</h1>
+  <div class="sub">Same calls as <code>async_run_command()</code> in <code>labs/T09/api_styles.py</code> (Catalyst Center Command Runner + Task API shape).</div>
+  <div class="lanes">
+    <div class="lane req-l" id="rq"><h3>📤 Request</h3><div class="where">what the client sends</div><div id="rq-f"></div></div>
+    <div class="lane res-l" id="rs"><h3>📥 Response</h3><div class="where">what comes back</div><div id="rs-f"></div></div>
+    <div class="lane job-l" id="jb"><h3>⚙️ Job on the server</h3><div class="where">taskId 6c5e886e…</div><div id="jb-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const req = (l) => `<div class="req">${l.join("<br>")}</div>`;
+const res = (c, l) => `<div class="res ${c}">${l.join("<br>")}</div>`;
+const job = (cls, label, pct, client) => `<div class="job ${cls}"><b>${label}</b><div class="bar"><i style="width:${pct}%"></i></div></div>` +
+  (client ? `<div class="client ${client === "free" ? "free" : "idle"}">client: ${client}</div>` : "");
+const TASK = "6c5e886e-fc97-45d1-a328-0ccf39fb74f1";
+const FILE = "b8f95fe2-5fb4-4966-bdb9-a61a8ad3260a";
+const frames = [
+  { active:"rq",
+    rq:req(["<b>POST</b> /dna/intent/api/v1/network-device-poller/cli/read-request", "Content-Type: application/json", "", '{"commands": ["show version"], "deviceUuids": ["csr1"]}']),
+    rs:"", jb:job("ghost", "no job yet", 0), cmd:{at:30, t:"POST job"},
+    txt:"<b>Submit.</b> POST the long-running job to the intent API." },
+  { active:"rs",
+    rq:req(["<b>POST</b> …/cli/read-request"]),
+    rs:res("info", ["<b>HTTP/1.1 202 Accepted</b>", "", `{"response": {"taskId": "${TASK}", "url": "/api/v1/task/${TASK}"}}`]),
+    jb:job("", "queued / running", 15, "free"), cmd:{at:400, t:"202 + taskId", back:true},
+    txt:"<code>202 Accepted</code> in milliseconds. The job has <b>only started</b>; keep the <code>taskId</code>. The client is free." },
+  { active:"rs",
+    rq:req(["<b>GET</b> /dna/intent/api/v1/task/" + TASK]),
+    rs:res("wait", ["<b>HTTP/1.1 200 OK</b>", "", '{"response": {"isError": false,', ' "progress": "CLI Runner request creation"}}', "", "<i>no endTime</i>"]),
+    jb:job("", "running", 55, "free"), cmd:{at:30, t:"GET task (poll 1)"},
+    txt:"Poll 1: the task lookup returns <code>200</code>, but there is <b>no <code>endTime</code></b>, so the job is still running." },
+  { active:"jb",
+    rq:req(["<b>GET</b> /dna/intent/api/v1/task/" + TASK]),
+    rs:res("ok", ["<b>HTTP/1.1 200 OK</b>", "", '{"response": {"isError": false,', ` "progress": "{\\"fileId\\": \\"${FILE}\\"}",`, ' "endTime": 1791632412846}}']),
+    jb:job("done", "finished", 100, "free"), cmd:{at:30, t:"GET task (poll 2)"},
+    txt:"Poll 2: <b><code>endTime</code> is set</b> and <code>isError</code> is false, so it's done. The <code>fileId</code> is inside <code>progress</code> (a JSON string)." },
+  { active:"rq",
+    rq:req(["<b>GET</b> /dna/intent/api/v1/file/" + FILE]),
+    rs:"", jb:job("done", "finished", 100), cmd:{at:30, t:"GET file"},
+    txt:"<b>Fetch the result.</b> <code>json.loads(task[\"progress\"])[\"fileId\"]</code> → GET the file." },
+  { active:"rs",
+    rq:req(["<b>GET</b> /dna/intent/api/v1/file/" + FILE]),
+    rs:res("ok", ["<b>HTTP/1.1 200 OK</b>", "", '[{"deviceUuid": "csr1", "commandResponses":', ' {"SUCCESS": {"show version":', '  "show version\\ncsr1 uptime is 4 weeks"}}}]']),
+    jb:job("done", "finished", 100), cmd:{at:400, t:"200 + output", back:true},
+    txt:"The command output. <b>Four calls</b>: submit → poll → poll → fetch. Resending the POST would have started a <b>second</b> job." },
+];
+function show(i) {
+  const f = frames[i];
+  for (const k of ["rq","rs","jb"]) {
+    document.getElementById(k+"-f").innerHTML = f[k];
+    document.getElementById(k).classList.toggle("active", f.active === k);
+  }
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = f.cmd.at + "px"; a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>
