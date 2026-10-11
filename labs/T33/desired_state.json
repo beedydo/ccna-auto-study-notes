@@ -1,0 +1,4 @@
+{
+  "sw1": {"hostname": "branch1-sw1", "vlans": {"10": "USERS", "20": "VOICE"}, "ntp_servers": ["10.0.0.1"]},
+  "sw2": {"hostname": "branch1-sw2", "vlans": {"10": "USERS", "20": "VOICE"}, "ntp_servers": ["10.0.0.1"]}
+}

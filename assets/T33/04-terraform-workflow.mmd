@@ -1,0 +1,10 @@
+flowchart LR
+    W["write *.tf<br/>(HCL)"] --> I["terraform init<br/>download providers"]
+    I --> P["terraform plan<br/>refresh + diff"]:::ans
+    P --> A["terraform apply<br/>call provider APIs"]:::good
+    A --> S[("terraform.tfstate<br/>what TF manages")]
+    S -. "read on next plan" .-> P
+    A --> D["terraform destroy<br/>delete everything in state"]:::bad
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold

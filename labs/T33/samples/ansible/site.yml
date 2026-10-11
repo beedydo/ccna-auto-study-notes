@@ -1,0 +1,29 @@
+---
+# Ansible: YAML playbook, tasks run top to bottom (procedural order),
+# but each resource module is state-based: state: merged only changes what differs.
+- name: Branch switch baseline
+  hosts: branch_switches
+  gather_facts: false
+
+  tasks:
+    - name: Set hostname
+      cisco.ios.ios_hostname:
+        config:
+          hostname: "branch1-{{ inventory_hostname }}"
+        state: merged
+
+    - name: VLANs 10 and 20
+      cisco.ios.ios_vlans:
+        config:
+          - vlan_id: 10
+            name: USERS
+          - vlan_id: 20
+            name: VOICE
+        state: merged
+
+    - name: NTP server
+      cisco.ios.ios_ntp_global:
+        config:
+          servers:
+            - server: 10.0.0.1
+        state: merged

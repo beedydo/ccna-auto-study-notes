@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T33 drift and idempotency animation</title>
+<style>
+  :root { --ink:#1d1d1f; --muted:#666; --line:#2b2b2b; --code:#ececec;
+          --g:#e3f6ee; --g-b:#28a745; --y:#fff6dc; --y-b:#e0a800; --r:#fde8e8; --r-b:#dc3545; --b:#d1ecf1; --b-b:#17a2b8; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:#f7f7f5; font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1100px; height:580px; padding:22px 28px; position:relative; }
+  h1 { margin:0 0 4px; font-size:26px; font-weight:800; }
+  h1 .pill { background:#2fb380; color:#fff; padding:2px 14px; border-radius:20px; }
+  .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+  .sub code { font-family:Menlo,monospace; background:var(--code); padding:1px 5px; border-radius:4px; font-size:12.5px; }
+  .lanes { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:18px; }
+  .lane { border:2.5px solid var(--line); border-radius:12px; height:262px; padding:10px; background:#fff; }
+  .lane h3 { margin:0 0 2px; font-size:16px; } .lane .where { font-size:12px; color:var(--muted); margin-bottom:10px; font-family:Menlo,monospace; }
+  .lane.active { box-shadow:0 0 0 5px rgba(47,179,128,.35); }
+  .box { font-family:Menlo,monospace; font-size:12.5px; border:2px solid; border-radius:7px; padding:6px 8px; margin-bottom:7px; line-height:1.45; }
+  .box small { display:block; font-family:-apple-system,Arial,sans-serif; color:var(--muted); font-size:11px; }
+  .ok { background:var(--g); border-color:var(--g-b); } .warn { background:var(--y); border-color:var(--y-b); }
+  .bad { background:var(--r); border-color:var(--r-b); } .info { background:var(--b); border-color:var(--b-b); }
+  .plain { background:#fff; border-color:#999; }
+  .ghost { opacity:.3; border-style:dashed; }
+  .arrowrow { height:58px; position:relative; margin-top:10px; }
+  .cmd { position:absolute; top:6px; font-family:Menlo,monospace; font-size:14px; font-weight:700;
+         background:var(--ink); color:#fff; padding:6px 12px; border-radius:8px; white-space:nowrap; }
+  .cmd::after { content:"➜"; margin-left:8px; color:#7ee2b8; }
+  .cmd.back::after { content:""; } .cmd.back::before { content:"⬅ "; color:#ffd36b; }
+  .step { position:absolute; left:28px; bottom:22px; right:28px; display:flex; align-items:center; gap:12px;
+          background:#fff; border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:15px; }
+  .step .n { flex:none; width:30px; height:30px; border-radius:50%; background:var(--ink); color:#fff; font-weight:800;
+             display:flex; align-items:center; justify-content:center; }
+  .step code { font-family:Menlo,monospace; background:var(--code); padding:1px 6px; border-radius:4px; font-size:13.5px; }
+  .dots { margin-left:auto; display:flex; gap:5px; flex:none; } .dots i { width:9px; height:9px; border-radius:50%; background:#ccc; }
+  .dots i.on { background:#2fb380; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T33 · <span class="pill">Desired state, drift, idempotency</span> one loop</h1>
+  <div class="sub">Real output from <code>labs/T33/run_demo.sh</code>. Each frame = one command. The push tool only acts when you run it.</div>
+  <div class="lanes">
+    <div class="lane" id="git"><h3>📄 Git: desired state</h3><div class="where">desired_state.json</div><div id="git-f"></div></div>
+    <div class="lane" id="ctl"><h3>🧠 Controller</h3><div class="where">iac.tfstate.json</div><div id="ctl-f"></div></div>
+    <div class="lane" id="sw1"><h3>🔀 sw1</h3><div class="where">device config</div><div id="sw1-f"></div></div>
+    <div class="lane" id="sw2"><h3>🔀 sw2</h3><div class="where">device config</div><div id="sw2-f"></div></div>
+  </div>
+  <div class="arrowrow" id="arrows"></div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const B = (t, s, cls) => `<div class="box ${cls}">${t}${s ? `<small>${s}</small>` : ""}</div>`;
+const WANT = B("hostname branch1-swN<br>vlan 10 USERS<br>vlan 20 VOICE<br>ntp 10.0.0.1", "reviewed, version-controlled", "info");
+const FACT = B("hostname Switch<br>vlan 1 default<br>ntp (none)", "factory default", "plain");
+const GOOD = n => B(`hostname branch1-${n}<br>vlan 10 USERS<br>vlan 20 VOICE<br>ntp 10.0.0.1`, "matches desired", "ok");
+const DRIFT = B("hostname branch1-sw2<br>vlan 10 USERS<br>vlan 20 <b>TEMP-FIX</b><br>ntp <b>192.0.2.99</b>", "changed by hand on the CLI", "bad");
+const frames = [
+  { active:"ctl", ctl:B("Plan: 8 change(s).", "+ vlan 10, + vlan 20, ~ hostname, ~ ntp × 2 devices", "warn"), sw1:FACT, sw2:FACT,
+    cmd:{left:240, t:"python3 iac_demo.py plan"}, txt:"<code>plan</code> reads each device and diffs it against Git. <b>Nothing is changed yet.</b>" },
+  { active:"sw1", ctl:B("serial 1", "Apply complete: 2 changed, 0 ok", "ok"), sw1:GOOD("sw1"), sw2:GOOD("sw2"),
+    cmd:{left:470, t:"python3 iac_demo.py apply"}, txt:"<code>apply</code> <b>pushes</b> only the delta to both switches and records what it applied in the state file." },
+  { active:"ctl", ctl:B("serial 1", "Apply complete: 0 changed, 2 ok", "ok"), sw1:GOOD("sw1"), sw2:GOOD("sw2"),
+    cmd:{left:470, t:"python3 iac_demo.py apply"}, txt:"Run <code>apply</code> again: <b>0 changed</b>. That is idempotency: same input, same end state, no extra changes." },
+  { active:"sw2", ctl:B("serial 1", "doesn't know yet", "plain ghost"), sw1:GOOD("sw1"), sw2:DRIFT,
+    cmd:{left:700, t:"python3 iac_demo.py drift sw2", back:true}, txt:"Someone edits sw2 by hand. <b>A push tool doesn't notice</b> until the next run. That gap is configuration drift." },
+  { active:"ctl", ctl:B("DRIFT detected on sw2", "~ vlan 20 TEMP-FIX → VOICE<br>~ ntp 192.0.2.99 → 10.0.0.1<br>Plan: 2 change(s).", "bad"), sw1:GOOD("sw1"), sw2:DRIFT,
+    cmd:{left:240, t:"python3 iac_demo.py plan"}, txt:"<code>plan</code> compares device vs Git (and vs last apply) and reports the drift as a 2-change diff." },
+  { active:"sw2", ctl:B("serial 2", "Apply complete: 1 changed, 1 ok", "ok"), sw1:GOOD("sw1"), sw2:GOOD("sw2"),
+    cmd:{left:700, t:"python3 iac_demo.py apply"}, txt:"<code>apply</code> fixes <b>only sw2</b>; sw1 is left alone. Git stays the single source of truth." },
+];
+function show(i) {
+  const f = frames[i];
+  document.getElementById("git-f").innerHTML = WANT;
+  for (const k of ["ctl","sw1","sw2"]) document.getElementById(k+"-f").innerHTML = f[k];
+  for (const k of ["git","ctl","sw1","sw2"]) document.getElementById(k).classList.toggle("active", f.active === k);
+  const a = document.getElementById("arrows"); a.innerHTML = "";
+  const d = document.createElement("div"); d.className = "cmd" + (f.cmd.back ? " back" : "");
+  d.textContent = f.cmd.t; d.style.left = f.cmd.left + "px"; a.appendChild(d);
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+}
+window.FRAME_COUNT = frames.length; window.show = show;
+show(Number(new URLSearchParams(location.search).get("f") || 0));
+</script>
+</body>
+</html>

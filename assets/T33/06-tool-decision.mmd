@@ -1,0 +1,12 @@
+flowchart TD
+    Q["Scenario: key requirement?"] --> T{"multivendor service,<br/>all-or-nothing?"}
+    T -- yes --> NSO["Cisco NSO"]:::ans
+    T -- no --> P{"provision resources,<br/>track in state file?"}
+    P -- yes --> TF["Terraform"]:::ans
+    P -- no --> A{"no agent on devices,<br/>push over SSH/API?"}
+    A -- yes --> ANS["Ansible"]:::ans
+    A -- no --> G{"agent pulls config<br/>on a schedule?"}
+    G -- "Puppet DSL manifests" --> PUP["Puppet"]:::ans
+    G -- "Ruby recipes" --> CHEF["Chef"]:::ans
+    G -- "event bus, YAML states" --> SALT["Salt"]:::ans
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold

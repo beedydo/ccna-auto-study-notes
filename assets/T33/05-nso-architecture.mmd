@@ -1,0 +1,17 @@
+flowchart TB
+    NB["Northbound APIs<br/>CLI · Web UI · NETCONF · RESTCONF<br/>JSON-RPC · Python / Java"]:::ans
+    subgraph NSO["Cisco NSO"]
+        direction LR
+        SM["Service Manager<br/>YANG service models"] --> DM["Device Manager"]
+        CDB[("CDB<br/>config database")]
+        SM <--> CDB
+        DM <--> CDB
+    end
+    NB --> SM
+    DM --> N1["NED: Cisco IOS XE<br/>(CLI)"] --> D1["IOS XE router"]
+    DM --> N2["NED: IOS XR<br/>(NETCONF)"] --> D2["IOS XR PE"]
+    DM --> N3["NED: Juniper<br/>(NETCONF)"] --> D3["Junos PE"]
+    T["one transaction: all devices commit, or all roll back"]:::good
+    DM -.- T
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold

@@ -1,0 +1,22 @@
+<!-- NSO: you create ONE service instance (fields defined by a YANG service model).
+     NSO maps it to device config on every node, pushes it through NEDs in one
+     transaction, and rolls back on all devices if any device fails.
+     Load with: ncs_cli -C, then: config / load merge l3vpn-service.xml / commit dry-run / commit -->
+<config xmlns="http://tail-f.com/ns/config/1.0">
+  <l3vpn xmlns="http://example.com/l3vpn">
+    <name>ACME</name>
+    <as-number>65101</as-number>
+    <endpoint>
+      <id>branch1</id>
+      <device>pe1-iosxr</device>
+      <interface>GigabitEthernet0/0/0/1</interface>
+      <ip-network>172.16.1.0/30</ip-network>
+    </endpoint>
+    <endpoint>
+      <id>branch2</id>
+      <device>pe2-junos</device>
+      <interface>ge-0/0/1</interface>
+      <ip-network>172.16.2.0/30</ip-network>
+    </endpoint>
+  </l3vpn>
+</config>

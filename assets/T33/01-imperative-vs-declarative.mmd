@@ -1,0 +1,18 @@
+flowchart LR
+    subgraph IMP["Imperative / procedural: HOW"]
+        direction TB
+        I1["step 1: set hostname"] --> I2["step 2: create vlan 10"] --> I3["step 3: create vlan 20"] --> I4["step 4: add ntp 10.0.0.1"]
+        I4 --> IR["Run again:<br/>409 VLAN exists<br/>NTP added twice"]:::bad
+    end
+    subgraph DEC["Declarative: WHAT"]
+        direction TB
+        D0["desired_state.json<br/>(in Git)"]:::good --> D1["read actual device"]
+        D1 --> D2{"diff desired<br/>vs actual"}
+        D2 -- "delta" --> D3["change only the delta"]:::good
+        D2 -- "empty" --> D4["No changes<br/>(idempotent)"]:::ans
+        D3 --> D1
+    end
+    IMP ~~~ DEC
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold

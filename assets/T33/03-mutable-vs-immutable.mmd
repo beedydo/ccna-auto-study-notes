@@ -1,0 +1,14 @@
+flowchart LR
+    subgraph MUT["Mutable: change in place"]
+        direction LR
+        M1["sw1-v1<br/>IOS 17.12"] -- "patch / upgrade /<br/>edit config" --> M2["sw1-v1<br/>IOS 17.15<br/>(same box, history of edits)"]:::part
+    end
+    subgraph IMM["Immutable: replace"]
+        direction LR
+        N1["web-v1<br/>image 1.0"]:::bad -. "destroy" .-> X["gone"]:::bad
+        IMG["new image 1.1<br/>(built + tested once)"]:::good --> N2["web-v2<br/>image 1.1"]:::good
+    end
+    MUT ~~~ IMM
+    classDef part fill:#fff6dc,stroke:#e0a800,color:#1d1d1f
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f

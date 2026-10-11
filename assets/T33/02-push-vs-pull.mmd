@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph PUSH["PUSH: controller starts the connection"]
+        direction TB
+        C["Control node<br/>(Ansible / Terraform / NSO / Salt master)"]:::ans
+        C -- "SSH / NETCONF / HTTPS" --> R1["router"]
+        C -- "SSH / NETCONF / HTTPS" --> R2["switch"]
+        C -- "API" --> R3["cloud / controller"]
+    end
+    subgraph PULL["PULL: agent on the node starts the connection"]
+        direction TB
+        S["Puppet primary server<br/>Chef Infra Server"]:::good
+        A1["node + Puppet agent"] -- "every 30 min:<br/>fetch catalog" --> S
+        A2["node + Chef Infra Client"] -- "periodically:<br/>fetch cookbooks" --> S
+    end
+    PUSH ~~~ PULL
+    classDef good fill:#e3f6ee,stroke:#28a745,color:#1d1d1f
+    classDef ans fill:#d1ecf1,stroke:#17a2b8,color:#1d1d1f,font-weight:bold
