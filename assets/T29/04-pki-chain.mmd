@@ -1,0 +1,14 @@
+flowchart TB
+    R["Root CA<br/>self-signed<br/>in the client trust store"] -->|"signs"| I["Intermediate CA"]
+    I -->|"signs"| L["Server cert<br/>CN/SAN = localhost<br/>+ server public key"]
+    L --> Q{"client:<br/>chain ends at a<br/>trusted root?"}
+    Q -->|"yes + hostname matches"| OK["200 OK<br/>verify=True"]
+    Q -->|"no (lab CA / self-signed)"| ERR["SSLError<br/>CERTIFICATE_VERIFY_FAILED"]
+    ERR -->|"fix: verify='ca.pem'"| OK
+    ERR -->|"shortcut: verify=False"| MITM["works, but no identity check<br/>→ man-in-the-middle"]
+    classDef good fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f
+    classDef rec fill:#dbe9ff,stroke:#2563eb,color:#1d1d1f
+    class R,I,L rec
+    class OK good
+    class ERR,MITM bad

@@ -1,0 +1,12 @@
+flowchart TB
+    Q{"What do you need?"}
+    Q -->|"store a user's password<br/>(only check it later)"| H["salted slow hash<br/>Argon2id / scrypt / bcrypt / PBKDF2"]
+    Q -->|"store an API key the script<br/>must SEND later"| V["vault / secrets manager<br/>or env var → encrypted at rest"]
+    Q -->|"prove a file wasn't changed"| S["SHA-256 checksum<br/>(anyone can compute)"]
+    Q -->|"prove WHO sent a message"| M["HMAC (shared secret)<br/>or digital signature (private key)"]
+    Q -->|"move data over a network"| T["TLS / SSH (in transit)"]
+    Q -->|"fit binary into text/JSON/header"| E["base64 = encoding only<br/>NOT security"]
+    classDef rec fill:#dbe9ff,stroke:#2563eb,color:#1d1d1f
+    classDef partial fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    class H,V,S,M,T rec
+    class E partial

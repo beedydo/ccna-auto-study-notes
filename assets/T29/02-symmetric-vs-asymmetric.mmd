@@ -1,0 +1,18 @@
+flowchart TB
+    subgraph SYM["Symmetric (AES, Fernet): ONE shared key"]
+        direction LR
+        A1["plaintext"] -->|"encrypt · key K"| A2["ciphertext"] -->|"decrypt · same key K"| A3["plaintext"]
+        A3 ~~~ A4["⚠ fast, but how do both<br/>sides get K safely?"]
+    end
+    subgraph ASY["Asymmetric (RSA, ECC): key PAIR"]
+        direction LR
+        B1["plaintext"] -->|"encrypt · PUBLIC key"| B2["ciphertext"] -->|"decrypt · PRIVATE key"| B3["plaintext"]
+        C1["config"] -->|"sign · PRIVATE key"| C2["signature"] -->|"verify · PUBLIC key"| C3["OK / InvalidSignature"]
+    end
+    SYM ~~~ ASY
+    classDef good fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef warn fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef rec fill:#dbe9ff,stroke:#2563eb,color:#1d1d1f
+    class A1,A2,A3 good
+    class A4 warn
+    class B1,B2,B3,C1,C2,C3 rec

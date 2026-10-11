@@ -1,0 +1,15 @@
+flowchart LR
+    P["admin:C1sco12345"]
+    P -->|"base64 encode<br/>no key"| E["YWRtaW46QzFzY28xMjM0NQ=="]
+    E -->|"base64 decode<br/>anyone can"| P2["admin:C1sco12345"]
+    P -->|"SHA-256<br/>no key"| H["a 64-hex-char digest<br/>always 256 bits"]
+    H -.->|"no way back"| X["✖ cannot recover input"]
+    P -->|"encrypt<br/>WITH key"| C["gAAAAAB... ciphertext"]
+    C -->|"decrypt<br/>SAME key (symmetric)"| P3["admin:C1sco12345"]
+    classDef bad fill:#fde8e8,stroke:#dc3545,color:#1d1d1f
+    classDef partial fill:#fff3cd,stroke:#e0a800,color:#1d1d1f
+    classDef good fill:#d4edda,stroke:#28a745,color:#1d1d1f
+    classDef rec fill:#dbe9ff,stroke:#2563eb,color:#1d1d1f
+    class E,P2 bad
+    class H,X partial
+    class C,P3 good

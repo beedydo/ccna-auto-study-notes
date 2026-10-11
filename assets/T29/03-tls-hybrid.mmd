@@ -1,0 +1,16 @@
+sequenceDiagram
+    autonumber
+    participant C as Client (requests)
+    participant S as Server (https://localhost:8129)
+    rect rgb(219, 233, 255)
+    Note over C,S: Handshake = ASYMMETRIC crypto (done once)
+    C->>S: ClientHello (versions, cipher suites, key share)
+    S-->>C: ServerHello (key share) + Certificate<br/>+ CertificateVerify (signed with server PRIVATE key)
+    Note over C,S: client checks: chain to a trusted root CA?<br/>hostname matches SAN?<br/>signature valid with the cert PUBLIC key?
+    Note over C,S: both sides derive the same<br/>SYMMETRIC session keys
+    end
+    rect rgb(212, 237, 218)
+    Note over C,S: Application data = SYMMETRIC (AEAD, fast)
+    C->>S: GET / (encrypted with session key)
+    S-->>C: 200 hello over TLS (encrypted)
+    end

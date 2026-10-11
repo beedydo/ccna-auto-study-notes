@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T29 overview: secrets, encryption, data handling</title>
+<style>
+  :root {
+    --green: #2fb380; --green-soft: #e3f6ee; --blue: #2563eb; --blue-soft: #dbe9ff;
+    --yellow: #e0a800; --yellow-soft: #fff3cd; --red: #dc3545;
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1180px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12.3px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  h2 { font-size: 17px; margin: 18px 0 8px; display: flex; align-items: center; gap: 8px; }
+  h2 .ids { font-size: 11px; color: var(--muted); font-weight: 400; }
+
+  table.cmp { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  table.cmp th, table.cmp td { border: 1.5px solid var(--line); padding: 8px 10px; font-size: 13.5px; line-height: 1.35; vertical-align: top; text-align: left; }
+  table.cmp th { background: #f0f0ee; font-size: 13px; }
+  table.cmp td.name { font-weight: 800; font-size: 15px; }
+  table.cmp td.name small { display: block; font-weight: 400; font-size: 11px; color: var(--muted); }
+  .r-enc { background: var(--yellow-soft); } .r-hash { background: #fff; } .r-sym { background: var(--green-soft); } .r-asym { background: var(--blue-soft); }
+  .ok { color: #157347; font-weight: 700; } .no { color: var(--trap-ink); font-weight: 700; }
+
+  .grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 12px 14px; }
+  .panel h3 { margin: 0 0 2px; font-size: 16px; } .panel .ids { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+  .item { font-size: 13px; line-height: 1.38; margin-bottom: 6px; }
+  .item .n { display: inline-flex; width: 19px; height: 19px; border-radius: 50%; background: var(--ink); color: #fff;
+             font-size: 11.5px; font-weight: 700; align-items: center; justify-content: center; margin-right: 6px; vertical-align: 1px; }
+  .item .c { display: block; margin: 3px 0 0 25px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 5px 7px; font-size: 13px; line-height: 1.38; margin-top: 6px; }
+  .trap b { color: var(--trap-ink); }
+  .flow { display: flex; align-items: center; gap: 6px; margin: 4px 0 8px; font-size: 12px; flex-wrap: wrap; }
+  .flow .b { border: 2px solid; border-radius: 6px; padding: 3px 7px; background: #fff; }
+  .flow .b.g { border-color: var(--green); background: var(--green-soft); } .flow .b.bl { border-color: var(--blue); background: var(--blue-soft); }
+  .flow .b.r { border-color: var(--red); background: var(--trap); } .flow .b.y { border-color: var(--yellow); background: var(--yellow-soft); }
+  .flow .a { color: var(--muted); font-weight: 700; }
+  footer { display: flex; gap: 16px; margin-top: 14px; font-size: 12.5px; color: var(--muted); flex-wrap: wrap; }
+  footer span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--green-soft); border: 1px solid var(--green); }
+  footer .k5::before { background: var(--blue-soft); border: 1px solid var(--blue); } footer .k6::before { background: var(--yellow-soft); border: 1px solid var(--yellow); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T29 · <span class="pill">Secrets, Encryption, Data</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 4.8</b><br>Every T29 concept on one page<br>Code from <code>labs/T29/secure_data_tour.py</code></div>
+  </header>
+
+  <h2>🔐 Four ways to transform data: which one, and is it security? <span class="ids">T29.03 · T29.05 · T29.08</span></h2>
+  <table class="cmp">
+    <colgroup><col style="width:122px"><col style="width:100px"><col style="width:104px"><col style="width:150px"><col style="width:420px"><col></colgroup>
+    <tr><th>Transform</th><th>Key?</th><th>Reversible?</th><th>Used for</th><th>Python in the lab</th><th>Trap</th></tr>
+    <tr class="r-enc"><td class="name">Encoding<small>base64</small></td><td><span class="no">none</span></td><td>yes, by <b>anyone</b></td>
+      <td>binary → text (Basic header, JSON, PEM)</td><td><code>base64.b64encode(data)</code></td>
+      <td><b class="no">Not security.</b> <code>YWRtaW46...</code> → <code>admin:C1sco12345</code></td></tr>
+    <tr class="r-hash"><td class="name">Hashing<small>SHA-256 · HMAC · PBKDF2</small></td><td>none (HMAC: shared secret)</td><td><span class="no">no</span>, one-way</td>
+      <td>integrity, checksums, password storage</td><td><code>hashlib.sha256(b"hostname R1").hexdigest()</code><br><code>hashlib.pbkdf2_hmac("sha256", password.encode(),</code><br><code>&nbsp;&nbsp;salt, ITERATIONS)</code></td>
+      <td>fixed 256 bits for any input · plain SHA-256 is <b>too fast</b> for passwords</td></tr>
+    <tr class="r-sym"><td class="name">Symmetric<small>AES · Fernet</small></td><td><b>one</b> shared key</td><td>yes, with the <b>same</b> key</td>
+      <td>bulk data, at rest, TLS session data</td><td><code>Fernet(key).encrypt(data)</code><br><code>Fernet(key).decrypt(token)</code></td>
+      <td>fast, but <b>key distribution</b> is the problem</td></tr>
+    <tr class="r-asym"><td class="name">Asymmetric<small>RSA · ECC</small></td><td><b>pair</b>: public + private</td><td>yes, with the <b>other</b> key</td>
+      <td>key exchange, signatures, certificates</td><td><code>public_key.encrypt(session_key, oaep)</code><br><code>private_key.sign(config, pss, hashes.SHA256())</code></td>
+      <td>encrypt → <b>public</b>, decrypt → private · sign → <b>private</b>, verify → public</td></tr>
+  </table>
+
+  <h2>🧱 Where and how <span class="ids">T29.01 · T29.02 · T29.04 · T29.05</span></h2>
+  <div class="grid">
+    <div class="panel">
+      <h3>🔑 Secrets</h3><div class="ids">T29.01</div>
+      <div class="flow"><span class="b r">hardcoded</span><span class="a">→</span><span class="b y">env / .env (ignored)</span><span class="a">→</span><span class="b bl">vault</span></div>
+      <div class="item"><span class="n">1</span>read from env, fail fast<span class="c"><code>require_env("LAB_DEVICE_PASS")</code></span></div>
+      <div class="item"><span class="n">2</span>ignore the file<span class="c"><code>.env</code> in <code>.gitignore</code></span></div>
+      <div class="item"><span class="n">3</span>tokens from <code>secrets</code>, not <code>random</code><span class="c"><code>secrets.token_urlsafe(16)</code></span></div>
+      <div class="item"><span class="n">4</span>rotate keys · least privilege per service account</div>
+      <div class="trap"><b>Trap:</b> <code>git rm .env</code> does not remove it from <b>history</b> → revoke + rotate first</div>
+    </div>
+    <div class="panel">
+      <h3>🌐 In transit vs at rest</h3><div class="ids">T29.02 · T29.03</div>
+      <div class="flow"><span class="b bl">script</span><span class="a">⇄ TLS / SSH / IPsec ⇄</span><span class="b bl">API</span><span class="a">→</span><span class="b g">encrypted disk / DB</span></div>
+      <div class="item"><span class="n">1</span><b>in transit</b>: HTTPS, SSH, NETCONF over SSH, IPsec</div>
+      <div class="item"><span class="n">2</span><b>at rest</b>: disk, volume, DB, backup encryption + KMS</div>
+      <div class="item"><span class="n">3</span>TLS = <b>hybrid</b>: asymmetric handshake → symmetric session key</div>
+      <div class="item"><span class="n">4</span>sensitive data needs <b>both</b></div>
+      <div class="trap"><b>Trap:</b> HTTPS does nothing for data once it is stored, logged or committed</div>
+    </div>
+    <div class="panel">
+      <h3>📜 PKI + passwords</h3><div class="ids">T29.04 · T29.05</div>
+      <div class="flow"><span class="b bl">root CA</span><span class="a">signs →</span><span class="b bl">server cert</span><span class="a">→</span><span class="b g">verify=True</span></div>
+      <div class="item"><span class="n">1</span>cert = public key + identity, signed by a CA</div>
+      <div class="item"><span class="n">2</span>lab CA: <code>verify=ca_pem</code> → <code>200</code></div>
+      <div class="item"><span class="n">3</span>self-signed / unknown CA → <code>SSLError</code></div>
+      <div class="item"><span class="n">4</span>passwords: random salt + slow KDF<span class="c"><code>pbkdf2_sha256$600000$salt$hash</code></span></div>
+      <div class="trap"><b>Trap:</b> <code>verify=False</code> still encrypts, but skips identity → <b>MITM</b></div>
+    </div>
+  </div>
+
+  <h2>🧹 Data in and out <span class="ids">T29.06 · T29.07 · T29.08</span></h2>
+  <div class="grid">
+    <div class="panel">
+      <h3>🪪 Data handling (PII)</h3><div class="ids">T29.06</div>
+      <div class="item"><span class="n">1</span>classify: public · internal · PII · secret</div>
+      <div class="item"><span class="n">2</span>minimise: collect / keep only what is needed<span class="c"><code>{'hostname': 'R1',</code> <code>'mgmt_ip': '10.10.20.48'}</code></span></div>
+      <div class="item"><span class="n">3</span>mask in logs<span class="c"><code>password=****</code> · <code>we***@***</code></span></div>
+      <div class="trap"><b>Trap:</b> logs + backups are data <b>at rest</b>: same rules as the DB</div>
+    </div>
+    <div class="panel">
+      <h3>🚧 Input handling</h3><div class="ids">T29.07</div>
+      <div class="item"><span class="n">1</span>treat all input as untrusted</div>
+      <div class="item"><span class="n">2</span>allow-list: type, length, format<span class="c"><code>^[A-Za-z0-9][A-Za-z0-9-]{0,62}$</code></span></div>
+      <div class="item"><span class="n">3</span>parameterise, don't concatenate<span class="c"><code>"SELECT * FROM devices</code><br><code>&nbsp;WHERE hostname = ?", (evil,)</code></span></div>
+      <div class="trap"><b>Trap:</b> deny-lists miss things; f-string SQL → injection (T30)</div>
+    </div>
+    <div class="panel">
+      <h3>🎯 Pick the secure option</h3><div class="ids">T29.08</div>
+      <div class="item"><span class="n">1</span>user password → <b>salted slow hash</b></div>
+      <div class="item"><span class="n">2</span>API key the script must send → <b>vault / env</b>, encrypted at rest</div>
+      <div class="item"><span class="n">3</span>file unchanged? → <b>SHA-256</b> · who sent it? → <b>HMAC / signature</b></div>
+      <div class="item"><span class="n">4</span>over the network → <b>TLS / SSH</b>, never Telnet / HTTP</div>
+      <div class="trap"><b>Trap:</b> "encrypt the passwords" is the <b>wrong</b> answer for password storage</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k1">numbered = index</span><span class="k3">grey chip = exact lab code / output</span>
+    <span class="k2">red = trap / unsafe</span><span class="k6">yellow = not security</span>
+    <span class="k4">green = safe / kept</span><span class="k5">blue = recommended</span>
+  </footer>
+</div>
+</body>
+</html>
