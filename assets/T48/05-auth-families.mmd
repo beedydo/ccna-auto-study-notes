@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant S as Your script
+  participant P as Platform
+  Note over S,P: 1. Basic on every call (IOS XE, NX-API CLI, NSO, ISE, AXL)
+  S->>P: GET with Authorization: Basic
+  P-->>S: 200
+  Note over S,P: 2. Login, then token header (FMC, Catalyst Center)
+  S->>P: POST login with Basic
+  P-->>S: token in a response header
+  S->>P: GET with X-auth-access-token or X-Auth-Token
+  P-->>S: 200 (FMC 201: deploy next, CC 202: task)
+  Note over S,P: 3. Login, then cookie (ACI, SD-WAN, UCSM)
+  S->>P: POST login with JSON, form or XML
+  P-->>S: Set-Cookie (SD-WAN: also GET client/token)
+  S->>P: GET with Cookie (SD-WAN adds X-XSRF-TOKEN)
+  P-->>S: 200 even on failure for SD-WAN and UCSM

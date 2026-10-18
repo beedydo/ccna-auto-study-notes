@@ -1071,3 +1071,24 @@ T47,Beedy,T47.06,Reading,"• Map each arrow to an HTTP method, URL and expected
 • Spot the missing or out-of-order step (e.g. call before auth)"
 T47,Beedy,T47.07,Exam angle,"• Order the calls in a flow
 • Say what happens or what is returned at a given arrow"
+T48,Bob,T48.01,Platform map,"• Say what each Cisco platform manages and where its API lives (controller, cloud, one device, one app)
+• Tell a controller API from a device API from a library
+• Give the old name once: Catalyst Center (DNA Center), SD-WAN Manager (vManage), Secure Endpoint (AMP), Malware Analytics (Threat Grid)"
+T48,Bob,T48.02,Auth families,"• Name the five login styles: Basic on every call, static key, login then token header, login then cookie, signed request
+• Place each platform in one family
+• Know the odd ones: Malware Analytics api_key parameter, UCSM cookie in the XML body, SD-WAN cookie plus X-XSRF-TOKEN"
+T48,Bob,T48.03,API style and payload,"• Match each platform to REST/JSON, RESTCONF, NETCONF, SOAP/XML, XML over HTTP, CLI-in-JSON
+• Give the Content-Type or Accept value that goes with each style
+• Say which are single-endpoint (NX-API /ins, UCSM /nuova, AXL /axl/)"
+T48,Bob,T48.04,Addressing objects,"• Know how each platform names a thing: UUID, serial, DN/class, YANG path, SEP name, organizationId
+• Say what the first call is to find the ID you need"
+T48,Bob,T48.05,Token and session lifetimes,"• Quote the lifetime and refresh rule per platform (FMC 30 min / 3 refreshes, XDR 600 s, Secure Connect 3600 s, APIC cookie, Catalyst Center token)
+• Say which have no lifetime because nothing is stored (Basic, static key, signed)"
+T48,Bob,T48.06,Success is not success,"• Spot HTTP 200 with a failure inside (SD-WAN login, UCSM, ACI missing DN)
+• Spot 'accepted, not done' (Catalyst Center 202 task, FMC deploy, NSO commit)
+• Spot analysers that do not enforce (XDR, Malware Analytics)"
+T48,Bob,T48.07,Python entry points,"• Match platform to its SDK or library: meraki, requests, ncclient, pyATS, Intersight SDK
+• Know that a login helper (Session) belongs in a script for cookie and token platforms, not for Basic or static key"
+T48,Bob,T48.08,Exam angle: pick the platform,"• From a scenario, pick the platform
+• From a header or URL, name the platform
+• Order login, use and refresh calls for a given family"

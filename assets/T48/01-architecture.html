@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T48 architecture: where each Cisco API lives</title>
+<link rel="stylesheet" href="../_arch/arch.css">
+<style>
+  .client { width: 470px; margin: 0 auto; }
+  .tiers { display: flex; gap: 14px; align-items: stretch; }
+  .tiers > .zone { min-width: 0; }
+  .tiers .zb { flex-wrap: wrap; justify-content: center; gap: 22px 10px; padding: 18px 8px; }
+  .tiers .node.n { width: 100px; }
+  .notes { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+  .notes .note { max-width: 380px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T48 · <span class="pill">Cisco platforms</span> architecture</h1>
+    <div class="meta"><b>200-901 blueprint 3.1 to 3.6, 3.9</b><br>Cloud, controller, device: one script, three doors<br>Tags as in <code>labs/T48/auth_side_by_side.py</code></div>
+  </header>
+
+  <div class="canvas">
+    <div class="zone client">
+      <div class="zh">Automation client</div>
+      <div class="zb">
+        <div class="node" id="script" data-icon="script"><div class="nm">Your script</div><div class="sub"><code>requests.Session()</code> or an SDK</div></div>
+      </div>
+    </div>
+
+    <div class="gap l"></div>
+
+    <div class="tiers">
+      <div class="zone cloud" id="cloud" style="flex: 482">
+        <div class="zh">Cloud APIs <small>nothing to install</small></div>
+        <div class="zb">
+          <div class="node n" id="meraki" data-icon="cloud"><div class="nm">Meraki</div><span class="tag">Bearer key</span></div>
+          <div class="node n" id="intersight" data-icon="cloud"><div class="nm">Intersight</div><span class="tag">Signature</span></div>
+          <div class="node n" id="webex" data-icon="cloud"><div class="nm">Webex</div><span class="tag">Bearer token</span></div>
+          <div class="node n" id="xdr" data-icon="cloud"><div class="nm">XDR</div><span class="tag">Bearer 600 s</span></div>
+          <div class="node n" id="sma" data-icon="cloud"><div class="nm">Malware Analytics</div><span class="tag">api_key</span></div>
+          <div class="node n" id="se" data-icon="cloud"><div class="nm">Secure Endpoint</div><span class="tag">Basic</span></div>
+        </div>
+      </div>
+
+      <div class="zone ctrl" id="ctrl" style="flex: 600">
+        <div class="zh">Controllers and appliances <small>you host them</small></div>
+        <div class="zb">
+          <div class="node n" id="fmc" data-icon="controller"><div class="nm">FMC</div><span class="tag">X-auth-access-token</span></div>
+          <div class="node n hl" id="catc" data-icon="controller"><div class="nm">Catalyst Center</div><span class="tag">X-Auth-Token</span></div>
+          <div class="node n" id="sdwan" data-icon="controller"><div class="nm">SD-WAN Manager</div><span class="tag">JSESSIONID + XSRF</span></div>
+          <div class="node n" id="apic" data-icon="controller"><div class="nm">ACI APIC</div><span class="tag">APIC-cookie</span></div>
+          <div class="node n" id="ucsm" data-icon="chassis"><div class="nm">UCS Manager</div><span class="tag">cookie in XML</span></div>
+          <div class="node n" id="nso" data-icon="server"><div class="nm">NSO</div><span class="tag">Basic</span></div>
+          <div class="node n" id="ise" data-icon="server"><div class="nm">ISE</div><span class="tag">Basic :9060</span></div>
+          <div class="node n" id="cucm" data-icon="phonesvc"><div class="nm">CUCM</div><span class="tag">Basic :8443</span></div>
+          <div class="node n" id="cml" data-icon="server"><div class="nm">CML</div><span class="tag">Bearer</span></div>
+        </div>
+      </div>
+
+      <div class="zone site" id="dev" style="flex: 246">
+        <div class="zh">Devices <small>one box each</small></div>
+        <div class="zb">
+          <div class="node n" id="iosxe" data-icon="router"><div class="nm">IOS XE</div><span class="tag">RESTCONF Basic</span></div>
+          <div class="node n" id="nxos" data-icon="switch"><div class="nm">NX-OS</div><span class="tag">/ins Basic</span></div>
+          <div class="node n" id="ftd" data-icon="firewall"><div class="nm">FDM on FTD</div><span class="tag">Bearer</span></div>
+          <div class="node n" id="room" data-icon="roomdevice"><div class="nm">Webex device</div><span class="tag">/putxml Basic</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notes">
+      <div class="note"><b>Pick the door first.</b> Cloud: a key or token and a URL. Controller: log in once, then name objects. Device: Basic on every call.</div>
+      <div class="note trap"><b>Trap:</b> FMC manages many FTDs, FDM lives on one. A controller call is not a device call: Catalyst Center answers <code>202</code> before the device is changed.</div>
+      <div class="note"><b>Not on the map:</b> NETCONF <code>:830</code> and pyATS go straight to a device over SSH, with no HTTP API.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span><i class="sw api"></i>API call (you → platform)</span>
+    <span style="margin-left:auto">Blue glow = the controller most questions use</span>
+  </footer>
+</div>
+<script>
+window.LINKS = [
+  { a: "script", b: "cloud", k: "api", s: "b-t", bo: -465 },
+  { a: "script", b: "ctrl", k: "api", s: "b-t", bo: 124, label: "HTTPS: key, login or Basic", t: 0.5 },
+  { a: "script", b: "dev", k: "api", s: "b-t", bo: 589 },
+];
+</script>
+<script src="../_arch/arch.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+flowchart TD
+  Q([Clue in the question]) --> H{Is it HTTP?}
+  H -- "no: SSH :830 or testbed" --> NC[NETCONF / pyATS]
+  H -- yes --> T{How is the request proven?}
+  T -- "Signature + Digest headers" --> INT[Intersight]
+  T -- "api_key in the URL" --> SMA[Malware Analytics]
+  T -- "Cookie" --> CK{Which cookie?}
+  CK -- "APIC-cookie" --> ACI[ACI / NX-API REST]
+  CK -- "JSESSIONID + X-XSRF-TOKEN" --> SDW[SD-WAN Manager]
+  CK -- "cookie inside XML body" --> UCS[UCS Manager]
+  T -- "token in a custom header" --> HD{Which header?}
+  HD -- "X-auth-access-token" --> FMC[FMC]
+  HD -- "X-Auth-Token" --> CC[Catalyst Center]
+  T -- "Authorization: Bearer" --> BR{Where did the token come from?}
+  BR -- "copied from a portal" --> MW[Meraki / Webex]
+  BR -- "POST login first" --> OA[FDM / CML / XDR / Secure Connect]
+  T -- "Authorization: Basic" --> BA{What is the body?}
+  BA -- "SOAP + SOAPAction" --> AXL[CUCM AXL]
+  BA -- "POST /ins" --> NX[NX-API CLI]
+  BA -- "RESTCONF YANG path" --> RC[IOS XE / NSO]
+  BA -- "/ers :9060" --> ISE[ISE]
+  classDef rec fill:#cfe2ff,stroke:#0d6efd,stroke-width:2px,color:#1d1d1f
+  class NC,INT,SMA,ACI,SDW,UCS,FMC,CC,MW,OA,AXL,NX,RC,ISE rec
