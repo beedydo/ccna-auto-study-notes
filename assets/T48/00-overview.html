@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T48 overview: Cisco platforms side by side</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.6px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: #e8f0ff; font-weight: 400; margin-left: 6px; }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 4px 7px; font-size: 12px; line-height: 1.35; }
+  .trap b { color: var(--trap-ink); }
+  .chips code { display: inline-block; margin: 0 3px 3px 0; }
+
+  /* matrix: one row per login family */
+  .matrix { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .matrix h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; background: var(--ink); }
+  table.m { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.5px; line-height: 1.38; }
+  table.m th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 5px 8px; border-bottom: 2px solid var(--line); background: #fafafa; }
+  table.m td { padding: 6px 8px; vertical-align: top; border-bottom: 1px solid #ddd; }
+  table.m tr:last-child td { border-bottom: 0; }
+  td.fam { color: #fff; font-weight: 800; font-size: 13.5px; line-height: 1.25; }
+  td.fam small { display: block; font-weight: 400; font-size: 11px; opacity: .92; margin-top: 3px; }
+  .f-a { background: #198754; } .f-b { background: #0d6efd; } .f-c { background: #d9480f; } .f-d { background: #6f42c1; }
+  .f-e { background: #0f766e; } .f-f { background: #b45309; } .f-g { background: #495057; }
+  .hl { background: var(--blue); border: 1.5px solid var(--blue-b); border-radius: 5px; padding: 0 5px; font-weight: 700; white-space: nowrap; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; }
+  .card .body { padding: 9px 12px 11px; font-size: 12.5px; line-height: 1.4; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .c1 h3 { background: #7c3aed; } .c2 h3 { background: #0e7490; } .c3 h3 { background: #15803d; }
+  table.s { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+  table.s td { border-bottom: 1px solid #ddd; padding: 3px 2px; vertical-align: top; }
+  table.s td:first-child { width: 112px; font-weight: 700; }
+  table.s tr:last-child td { border-bottom: 0; }
+
+  .wide { margin-top: 14px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .wide h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; background: #343a40; }
+  .wide .body { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 16px; padding: 11px 14px; }
+  .map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px 12px; font-size: 12.5px; }
+  .map div { line-height: 1.3; }
+  .map b { display: inline-block; background: var(--blue); border: 2px solid var(--blue-b); border-radius: 6px; padding: 0 6px; margin-top: 2px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T48 · <span class="pill">Cisco platforms side by side</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 3.1 to 3.6, 3.9</b><br>Every T48 concept on one page<br>Code from <code>labs/T48/auth_side_by_side.py</code> (builds requests, sends none)</div>
+  </header>
+
+  <div class="matrix"><h3>🔐 Five login styles plus two odd ones: find the platform, read across <span class="ids">T48.02 · T48.05 · T48.06</span></h3>
+    <table class="m">
+      <colgroup><col style="width:150px"><col style="width:300px"><col style="width:230px"><col style="width:250px"><col></colgroup>
+      <tr><th>Style</th><th>Platforms</th><th>Send</th><th>Lifetime</th><th>Trap</th></tr>
+      <tr><td class="fam f-a"><span class="n">1</span>Basic on every call<small>no login step</small></td>
+        <td class="chips">IOS XE RESTCONF <code>/restconf</code> · NX-API CLI <code>/ins</code> · NSO <code>:8080</code> · ISE ERS <code>:9060</code> · Secure Endpoint · CUCM AXL/UDS <code>:8443</code> · xAPI <code>/putxml</code></td>
+        <td><code>Authorization: Basic</code> on all calls</td><td>none: nothing stored</td>
+        <td><div class="trap"><b>Trap:</b> ISE needs ERS Admin; AXL needs an application user; UDS needs the end user's own login</div></td></tr>
+      <tr><td class="fam f-b"><span class="n">2</span>Static key<small>no login step</small></td>
+        <td class="chips">Meraki <code>/api/v1</code> · Webex <code>webexapis.com/v1</code></td>
+        <td><code>Authorization: Bearer</code> <code>&lt;key&gt;</code></td><td>Meraki: until revoked · Webex personal <b>12 h</b>, bot long-lived, integration ~14 d</td>
+        <td><div class="trap"><b>Trap:</b> yesterday's Webex personal token is a <code>401</code> today</div></td></tr>
+      <tr><td class="fam f-c"><span class="n">3</span>Login, then token in a header<small>login = <code style="color:#1d1d1f">POST</code></small></td>
+        <td class="chips"><span class="hl">FMC</span> <code>X-auth-access-token</code> <span class="hl">Catalyst Center</span> <code>X-Auth-Token</code> · FDM, CML, XDR, Secure Connect: <code>Bearer</code></td>
+        <td>FMC <code>generatetoken</code> · Catalyst Center <code>auth/token</code> (Basic) · XDR + Secure Connect: <code>client_credentials</code></td>
+        <td>FMC 30 min, 3 refreshes · Catalyst Center 60 min · XDR 600 s · Secure Connect 3600 s</td>
+        <td><div class="trap"><b>Trap:</b> FMC and Catalyst Center are <b>not</b> Bearer. FMC <code>201</code> changes nothing until deploy; Catalyst Center <code>202</code> is not done</div></td></tr>
+      <tr><td class="fam f-d"><span class="n">4</span>Login, then cookie<small>sometimes plus a token</small></td>
+        <td class="chips">ACI + NX-API REST <code>APIC-cookie</code> · SD-WAN <code>JSESSIONID</code> + <code>X-XSRF-TOKEN</code> · UCSM <code>/nuova</code> cookie in the <b>XML body</b></td>
+        <td><code>aaaLogin.json</code> · <code>j_security_check</code> then <code>client/token</code> · <code>aaaLogin</code></td>
+        <td>APIC + UCSM <code>600</code> s idle ⚠ · ends on <code>aaaLogout</code></td>
+        <td><div class="trap"><b>Trap:</b> SD-WAN and UCSM answer <code>200</code> on failure; ACI missing DN = <code>200</code> + <code>totalCount 0</code>; use <code>Session()</code></div></td></tr>
+      <tr><td class="fam f-e"><span class="n">5</span>Sign every request<small>no login step</small></td>
+        <td class="chips">Intersight <code>/api/v1</code></td>
+        <td><code>Date</code> <code>Digest</code> <code>Authorization: Signature</code></td><td>none: each request carries its own proof</td>
+        <td><div class="trap"><b>Trap:</b> no token to steal or refresh; a bad signature is <code>401</code></div></td></tr>
+      <tr><td class="fam f-f"><span class="n">6</span>Key as a parameter</td>
+        <td class="chips">Malware Analytics <code>panacea.threatgrid.com</code></td>
+        <td><code>?api_key=</code></td><td>none</td>
+        <td><div class="trap"><b>Trap:</b> it analyses, never blocks; poll <code>state</code> until <code>succ</code></div></td></tr>
+      <tr><td class="fam f-g"><span class="n">7</span>Not HTTP</td>
+        <td class="chips">NETCONF <code>ssh -p 830</code> <code>-s netconf</code> · pyATS / Genie</td>
+        <td>SSH login, then <code>&lt;hello&gt;</code> · <code>device.connect()</code></td><td>SSH session</td>
+        <td><div class="trap"><b>Trap:</b> NETCONF edit is not live until <code>&lt;commit&gt;</code></div></td></tr>
+    </table>
+  </div>
+
+  <div class="cards">
+    <div class="card c1"><h3>🧭 Who manages what <span class="ids">T48.01</span></h3><div class="body">
+      <table class="s">
+        <tr><td>Controller</td><td>Catalyst Center (DNA Center) · SD-WAN Manager (vManage) · ACI APIC · FMC · NSO · UCSM · CML</td></tr>
+        <tr><td>Cloud</td><td>Meraki · Intersight · Webex · XDR · Secure Connect · Secure Endpoint (AMP) · Malware Analytics (Threat Grid)</td></tr>
+        <tr><td>One box</td><td>IOS XE · NX-OS · FDM · Webex device (xAPI)</td></tr>
+        <tr><td>App server</td><td>ISE · CUCM</td></tr>
+        <tr><td>Library</td><td>ncclient · pyATS</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> FDM = 1 firewall. FMC = many. Same FTD, never both</div>
+    </div></div>
+
+    <div class="card c2"><h3>📦 Style and how you name a thing <span class="ids">T48.03 · T48.04</span></h3><div class="body">
+      <table class="s">
+        <tr><td>RESTCONF</td><td><code>application/yang-data+json</code> · YANG path <code>&lt;module&gt;:&lt;container&gt;</code></td></tr>
+        <tr><td>NETCONF</td><td>XML over SSH · <code>&lt;get-config&gt;</code> + YANG subtree</td></tr>
+        <tr><td>NX-API CLI</td><td><code>/ins</code> (POST) even for <code>show</code></td></tr>
+        <tr><td>ACI / NX-API REST</td><td>class or <b>DN</b>: <code>/api/mo/&lt;dn&gt;.json</code></td></tr>
+        <tr><td>UCSM</td><td>XML to <code>/nuova</code> · class or DN</td></tr>
+        <tr><td>AXL</td><td>SOAP/XML · <code>SOAPAction</code> header</td></tr>
+        <tr><td>Meraki</td><td><code>organizationId</code> → <code>networkId</code> → <b>serial</b></td></tr>
+        <tr><td>FMC</td><td><code>DOMAIN_UUID</code> in every path</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> PUT replaces the whole RESTCONF resource; a missing leaf is deleted</div>
+    </div></div>
+
+    <div class="card c3"><h3>🐍 Python entry point <span class="ids">T48.07</span></h3><div class="body">
+      <table class="s">
+        <tr><td>Meraki</td><td><code>meraki.DashboardAPI(key)</code></td></tr>
+        <tr><td>Catalyst Center</td><td><code>DNACenterAPI</code> (<code>dnacentersdk</code>)</td></tr>
+        <tr><td>UCSM</td><td><code>UcsHandle(...).login()</code> (<code>ucsmsdk</code>)</td></tr>
+        <tr><td>Intersight</td><td>pip <code>intersight</code> signs for you</td></tr>
+        <tr><td>NETCONF</td><td><code>ncclient.manager.connect()</code></td></tr>
+        <tr><td>CML</td><td><code>virl2_client</code></td></tr>
+        <tr><td>Webex</td><td><code>webexpythonsdk</code></td></tr>
+        <tr><td>The rest</td><td><code>requests</code>; <code>Session()</code> for cookie and token logins</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> Meraki SDK returns page 1 only unless <code>total_pages="all"</code></div>
+    </div></div>
+  </div>
+
+  <div class="wide"><h3>🎯 Exam angle: match the clue to the platform <span class="ids">T48.08</span></h3><div class="body">
+    <div class="map">
+      <div><span class="n">1</span><code>X-auth-access-token</code><br><b>FMC</b></div>
+      <div><span class="n">2</span><code>X-Auth-Token</code> + <code>202</code> task<br><b>Catalyst Center</b></div>
+      <div><span class="n">3</span><code>APIC-cookie</code>, DN<br><b>ACI</b></div>
+      <div><span class="n">4</span><code>X-XSRF-TOKEN</code><br><b>SD-WAN Manager</b></div>
+      <div><span class="n">5</span>signed <code>Digest</code> header<br><b>Intersight</b></div>
+      <div><span class="n">6</span><code>/nuova</code>, <code>outCookie</code><br><b>UCS Manager</b></div>
+      <div><span class="n">7</span><code>SOAPAction</code>, WSDL<br><b>CUCM AXL</b></div>
+      <div><span class="n">8</span><code>api_key</code> parameter<br><b>Malware Analytics</b></div>
+    </div>
+    <div class="trap" style="align-self:start"><b>Traps:</b> "Bearer" alone names no platform: 6 of 24 use it. "Cookie" is ACI, SD-WAN or UCSM; "key in a URL" is Malware Analytics. Names: vManage = SD-WAN Manager, DNA Center = Catalyst Center</div>
+  </div></div>
+
+  <footer>
+    <span class="k k1">number = login style / clue → answer</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the platform to pick</span>
+    <span style="margin-left:auto">Run it: <code>bash labs/T48/run_lab.sh</code></span>
+  </footer>
+</div>
+</body>
+</html>
