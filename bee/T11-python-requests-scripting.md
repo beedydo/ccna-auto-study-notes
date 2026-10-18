@@ -814,6 +814,23 @@ for d in ________:
 `for d in data["response"]:` and `print(d["hostname"])`. The list is under the `"response"` key, and each item is a dict. `print(json.dumps(data, indent=2))` first shows you that structure. (T11.08)
 </details>
 
+<details><summary>Answer key (all 8): open only after answering every question</summary>
+
+| Q | Answer | Why | Reread |
+|---|---|---|---|
+| 1 | **B** | `json=` serialises the dict and sets `Content-Type: application/json`. `data=` would send a form (`415` from a JSON API), `params=` would put it in the query string, and `body=` isn't a `requests` argument (`TypeError`). | [T11.02](#t1102--arguments) |
+| 2 | **B** | `requests` doesn't raise on 4xx/5xx unless you call `raise_for_status()`. `status_code` is an `int`, and `ok` is False because 404 ≥ 400. | [T11.03](#t1103--response) |
+| 3 | **B** | A `Session` keeps default headers and pools connections. There's no module-level `requests.headers`, `auth=token` (a string) isn't the Basic tuple, and env vars aren't sent as headers. | [T11.04](#t1104--sessions) |
+| 4 | `resp = s.get(url, timeout=5)` → `if resp.status_code == 429:` → `wait = int(resp.headers["Retry-After"])` → `time.sleep(wait)` → `resp = s.get(url, timeout=5)`. Call, check, read the header (a string, so `int()`), wait, then retry the same request. |  | [T11.07](#t1107--patterns) |
+| 5 | **B** | `verify=False` skips the check, so the call works, and urllib3 emits `InsecureRequestWarning` (a warning, not an exception). Without `verify=False` you'd get `SSLError` (A). To get D you'd also call `urllib3.disable_warnings()`. | [T11.06](#t1106--tls-warnings) |
+| 6 | **Line 3** | `resp.text` is a `str`, so `["Token"]` is a string index. Use `resp.json()["Token"]`. | [T11.03](#t1103--response), [T11.09](#t1109--exam-angle) |
+| 7 | **B** | Python runs the first matching `except`. Put specific exceptions first and `RequestException` last. | [T11.05](#t1105--errors) |
+| 8 | `for d in data["response"]:` and `print(d["hostname"])`. The list is under the `"response"` key, and each item is a dict. `print(json.dumps(data, indent=2))` first shows you that structure. |  | [T11.08](#t1108--output) |
+
+Count only the ones you answered before looking. For each miss, reread the linked concept.
+
+</details>
+
 ## Study aids
 
 | Aid | Type | Title | Est. min | Resource |

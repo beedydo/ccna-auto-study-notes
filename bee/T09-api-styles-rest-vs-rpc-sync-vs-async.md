@@ -853,6 +853,23 @@ A. The job runs longer than a typical HTTP client or proxy timeout  B. Async res
 `POST …/auth/token` → `POST …/cli/read-request` (202 + taskId) → `GET …/task/{taskId}` until `endTime` → `GET …/file/{fileId}`. Token first, then submit, poll, fetch. The same order appears in sequence-diagram questions (T47). (T09.07)
 </details>
 
+<details><summary>Answer key (all 8): open only after answering every question</summary>
+
+| Q | Answer | Why | Reread |
+|---|---|---|---|
+| 1 | **C** | The action is a named function in the body (`"method"`), POSTed to one endpoint. That's JSON-RPC. REST would be something like `GET /devices/edge1/interfaces`. | [T09.02](#t0902--rpc), [T09.04](#t0904--comparison) |
+| 2 | **C** | 202 = accepted, not finished. Poll the task until `endTime` is set and `isError` is false, then fetch the result. Resending the POST would queue another job. | [T09.06](#t0906--asynchronous), [T09.07](#t0907--async-example) |
+| 3 | **B, D** | Envelope (root) and Body are mandatory. Header is optional, Fault appears only on errors (inside the Body), and the WSDL is a separate contract file. | [T09.03](#t0903--soap) |
+| 4 | CUCM AXL → **SOAP**. NETCONF → **RPC** (`<rpc>` operations over SSH 830). Meraki Dashboard API → **REST**. RESTCONF → **REST**. |  | [T09.09](#t0909--exam-angle) |
+| 5 | **`"endTime" in task`** | (or `task.get("endTime")`). The task lookup returns 200 the whole time; `endTime` appears only when the job is finished. | [T09.07](#t0907--async-example) |
+| 6 | **C** | JSON-RPC carries its own error object; the HTTP layer usually still says 200. Check for `error` in the reply, not just the status code. | [T09.02](#t0902--rpc) |
+| 7 | **A, C** | Long jobs would hit timeouts on a synchronous call, and async frees the client between status checks. Auth and format are unrelated to sync vs async. | [T09.05](#t0905--synchronous), [T09.08](#t0908--choosing) |
+| 8 | `POST …/auth/token` → `POST …/cli/read-request` (202 + taskId) → `GET …/task/{taskId}` until `endTime` → `GET …/file/{fileId}`. Token first, then submit, poll, fetch. The same order appears in sequence-diagram questions (T47). |  | [T09.07](#t0907--async-example) |
+
+Count only the ones you answered before looking. For each miss, reread the linked concept.
+
+</details>
+
 ## Study aids
 
 | Aid | Type | Title | Est. min | Resource |

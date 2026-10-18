@@ -640,6 +640,10 @@ if __name__ == "__main__":
   6. Expect `201` + `Location`. Anything else → read the error body.
 - Real Cisco docs (developer.cisco.com) list the same things: base URL, path, method, headers, body schema with required fields, and a response-codes table.
 
+**Exam-sim gap (practice test review):**
+- **Tools to build and try a request before you code it:** **Postman** (GUI: pick method, URL, headers, body, auth; save as collections; generate code snippets), plus `curl` (CLI, T07.12) and an API's built-in "Try it" docs page (Swagger/OpenAPI UI, DevNet docs).
+- Exam cue: "which tool constructs and sends an API request" → **Postman**. Distractors are tools for other jobs: traceroute (network path), Ansible (config automation), chat apps.
+
 ### T07.12 · curl
 
 **Must cover:**
@@ -725,6 +729,7 @@ if __name__ == "__main__":
 - **Where is it?** Code → status line. `Location`/`Retry-After`/`ETag`/`Content-Type` → headers. Data and error message → body.
 - **Stateless** = the server keeps no client **session**, not "the server stores no data". The token goes on **every** request.
 - **Code on demand** is the only **optional** REST constraint.
+- **Building a request by hand:** Postman (GUI) or curl (CLI). Postman can also export the request as Python/curl code.
 
 ## Examples
 
@@ -989,6 +994,23 @@ A. Cacheable  B. Layered system  C. Stateless  D. Uniform interface
 <details><summary>Answer</summary>
 
 **C.** Stateless. The server still stores data; it just doesn't remember the client between requests. (T07.02)
+</details>
+
+<details><summary>Answer key (all 8): open only after answering every question</summary>
+
+| Q | Answer | Why | Reread |
+|---|---|---|---|
+| 1 | **B** Device 77 doesn't exist | Same URL, method and token work for id 12, so id 77 is the problem. An expired token gives 401; overload gives 503/429. | [T07.10](#t0710--troubleshooting) |
+| 2 | **C** `POST` | A body sent to the collection (`/vlans`) that returns `201` is a create. PUT would target an item, like `/vlans/30`. | [T07.03](#t0703--http-methods) |
+| 3 | **`Content-Type: application/json`** | Without it, `--data` sends form data and a JSON API answers `415`. | [T07.12](#t0712--curl), [T07.13](#t0713--media-types) |
+| 4 | **C, D** PUT and DELETE | They change state, but repeating them leaves the same end state. GET is safe; POST and PATCH aren't idempotent. | [T07.04](#t0704--http-methods) |
+| 5 | **B** GET the URI in `Location` | `202` means queued, not finished, so poll the job URI. Retrying the POST could queue a duplicate job. | [T07.07](#t0707--response-parts), [T07.09](#t0709--key-codes) |
+| 6 | **C** Use an account whose role allows deletes | 403 means you're logged in but not allowed. A new token fixes 401, not 403. | [T07.10](#t0710--troubleshooting) |
+| 7 | `HTTP/1.1 201 Created` → `Location: …` → `Content-Type: …` → blank line → body | Status line first, then headers (any order), then a blank line, then the body. | [T07.07](#t0707--response-parts) |
+| 8 | **C** Stateless | The server keeps no client session, so the token goes with every request. It still stores data. | [T07.02](#t0702--rest-constraints) |
+
+Count only the ones you answered before looking. For each miss, reread the linked concept.
+
 </details>
 
 ## Study aids

@@ -96,6 +96,8 @@ def main(argv):
     paths = [Path(a) for a in argv if a != "--check"]
     stale = []
     for p in paths:
+        if not re.match(r"T\d{2}-", p.name):
+            continue  # not a topic note (e.g. bee/TODO.md)
         text = p.read_text(encoding="utf-8")
         new = insert_or_refresh(text)
         if new != text:

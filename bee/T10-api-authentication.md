@@ -848,6 +848,23 @@ A. Pass it as `?api_key=` so it's not in the headers  B. Read it from an environ
 **B, D.** Query strings end up in logs, base64 is reversible, and private repos still leak (forks, clones, CI logs). (T10.04, T10.08)
 </details>
 
+<details><summary>Answer key (all 8): open only after answering every question</summary>
+
+| Q | Answer | Why | Reread |
+|---|---|---|---|
+| 1 | **C** | `auth=(user, password)` makes `requests` send `Authorization: Basic <base64 user:pass>` on this call. There's no token or key. | [T10.02](#t1002--basic-auth), [T10.07](#t1007--python) |
+| 2 | **B** | Base64 is a reversible encoding with no key. It decodes to `netops:Pa55word!`. Only TLS (HTTPS) protects it in transit. | [T10.02](#t1002--basic-auth), [T10.09](#t1009--exam-angle) |
+| 3 | **B** | Catalyst Center expects the token in its custom `X-Auth-Token` header. A fresh token in the wrong header is still unauthenticated (break-it edit 1). A role problem would give `403`. | [T10.03](#t1003--custom-token) |
+| 4 | Meraki → static key from the dashboard. APIC → cookie set by `aaaLogin` (`APIC-cookie`). Webex bot → long-lived bearer token. Catalyst Center → `X-Auth-Token` from `/auth/token`. |  | [T10.09](#t1009--exam-angle) |
+| 5 | **4 → 2 → 5 → 1 → 3** | The app never sees the password (step 2 is at the authorization server), and the code is swapped for the token on the back channel. | [T10.06](#t1006--oauth-20-awareness) |
+| 6 | **B** | 403 = authorisation. Refreshing returns a token with the **same** scope, so the app must ask the user to grant a write scope. | [T10.01](#t1001--concepts), [T10.06](#t1006--oauth-20-awareness) |
+| 7 | `requests.Session()` and `s.headers.update(...)`. The Session's cookie jar keeps `JSESSIONID`, and session headers apply to every later call. Per-call `headers=` would apply only once. |  | [T10.05](#t1005--sessioncookie), [T10.07](#t1007--python) |
+| 8 | **B, D** | Query strings end up in logs, base64 is reversible, and private repos still leak (forks, clones, CI logs). | [T10.04](#t1004--api-key), [T10.08](#t1008--credential-handling) |
+
+Count only the ones you answered before looking. For each miss, reread the linked concept.
+
+</details>
+
 ## Study aids
 
 | Aid | Type | Title | Est. min | Resource |
