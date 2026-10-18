@@ -2,6 +2,8 @@
 # Start the T08 mock API, wait until it answers, run a client, then stop the API.
 # Usage:  bash labs/T08/run_lab.sh                      (runs consume_api.py)
 #         bash labs/T08/run_lab.sh labs/T08/curl_drill.sh
+#         bash labs/T08/run_lab.sh labs/T08/resume_paging.py
+#         PYTHON=/path/to/venv/bin/python bash labs/T08/run_lab.sh   (if requests lives in a venv)
 set -u
 HERE="$(cd "$(dirname "$0")" && pwd)"
 CLIENT="${1:-$HERE/consume_api.py}"
@@ -16,6 +18,6 @@ for _ in $(seq 1 40); do
 done
 
 case "$CLIENT" in
-  *.py) python3 "$CLIENT" ;;
+  *.py) "${PYTHON:-python3}" "$CLIENT" ;;
   *)    bash "$CLIENT" ;;
 esac

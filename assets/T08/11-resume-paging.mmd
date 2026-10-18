@@ -1,0 +1,19 @@
+flowchart LR
+    S(["Start script"]) --> B{"Bookmark file<br/>exists?"}
+    B -- No --> F["url = page 1"]
+    B -- Yes --> R["url = saved bookmark<br/>(startingAfter=c020)"]
+    F --> G["GET url"]
+    R --> G
+    G --> OK{"200?"}
+    OK -- "429 / timeout" --> W["wait, retry<br/>the SAME url"] --> G
+    OK -- Yes --> D["1. save page data"] --> N["2. url = Link rel=next<br/>save it as bookmark"]
+    N --> M{"next exists?"}
+    M -- Yes --> G
+    M -- No --> E(["Done: delete bookmark"])
+    G -. "crash here" .-> X["bookmark still points at<br/>the page not yet saved"]
+    style R fill:#d1ecf1,stroke:#17a2b8
+    style D fill:#d4edda,stroke:#28a745
+    style N fill:#d4edda,stroke:#28a745
+    style W fill:#fff3cd,stroke:#ffc107
+    style X fill:#f8d7da,stroke:#dc3545
+    style E fill:#d4edda,stroke:#28a745

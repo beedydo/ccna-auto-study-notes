@@ -518,6 +518,56 @@ if __name__ == "__main__":
 
 *Exam scenario "the script only reports some devices": the cause is a missing paging loop (red), and the fix is to loop on the "more?" signal (green).*
 
+#### Page size, jumping to a page, cursors and resuming
+
+- **Who decides how big a page is?** The **API** sets a default and a maximum, written in its docs. **You** choose a size within that limit with a query parameter (`limit`, `per_page`, `perPage`).
+  - Real run: `/events?per_page=4` gives `total_pages: 3`. Ask for `per_page=6` and the same 9 events come back as `total_pages: 2`.
+  - Over the maximum → most APIs answer `400`, or quietly cap it to the maximum ⚠ verify per API.
+  - Fewer, bigger pages = fewer calls against your rate limit (T08.01), but each response is slower and heavier. Pick a size near the maximum unless responses time out (T08.05).
+- **What's on page n?** There's no index; it's arithmetic on the **page size**:
+  - Offset/limit: items `offset` to `offset + limit − 1`. Page 3 at `limit=5` is `offset=10`.
+  - Page number: page *n* holds items `(n − 1) × per_page + 1` to `n × per_page`. Page 3 at `per_page=4` is items 9–12.
+  - Real run: `GET /events?page=3&per_page=4` went **straight to page 3** and returned `[9]`, the last item. No earlier pages needed.
+  - This only works if the list is always **sorted the same way** (by id or time). "Page 2" at size 4 and at size 6 hold different items.
+- **A cursor is a bookmark.** It marks the last item you saw; the next request means "continue after this one".
+  - Meraki style: `startingAfter=c010` = "after client c010". The server builds the next URL into `Link: <…&startingAfter=c010>; rel="next"`, so you never make up a cursor yourself.
+  - **Why cursors exist:** if items are added or deleted while you page, page numbers and offsets shift, so you skip or repeat items. A cursor is tied to a real item, so it doesn't shift.
+  - **Trade-off:** no jumping to "page 7". You can only follow `next` (sometimes `prev`, `first`, `last`).
+  - Some APIs use an opaque token instead (e.g. `nextPageToken=eyJ…`): same idea, you just pass it back unchanged.
+
+| Style | Who builds the next request | Jump to a page? | Stable if data changes? | Typical "more?" signal |
+|---|---|---|---|---|
+| Offset / limit | you: `offset += limit` | ✅ | ❌ | body `total` |
+| Page number | you: `page += 1` | ✅ | ❌ | body `total_pages` |
+| Cursor / `Link` | the server: `rel="next"` | ❌ (next only) | ✅ | `Link` header `rel="next"` |
+
+- **It fails halfway: restart or resume?** The API **doesn't remember** where you stopped: REST is stateless ([T07.02](T07-rest-fundamentals-http-codes.md#t0702--rest-constraints)). **Your script** decides.
+  - No bookmark saved → it starts again at page 1 and fetches everything twice (wasted calls, maybe another `429`).
+  - Bookmark saved after each page → it resumes from the first page it hadn't got yet.
+  - Order matters: **save the page's data first, then move the bookmark.** If it crashes between the two, the worst case is fetching that one page again, so make saving an item twice harmless (dedupe on the item's id).
+  - On `429` or a timeout, retry the **same** URL (T08.02). Only a successful page moves the bookmark.
+  - Cursors can **expire** ⚠ verify per API. If resuming gives `400`/`410`, start again from page 1.
+
+![Resume a paged fetch from a saved bookmark](../assets/T08/11-resume-paging.png)
+
+*Each page: save data (1), then save the next URL as the bookmark (2). A crash leaves the bookmark pointing at the first page not yet saved, so a restart resumes there instead of at page 1.*
+
+- **Real run** (`bash labs/T08/run_lab.sh labs/T08/resume_paging.py`): run 1 saves 2 pages and then "crashes"; run 2 reads the bookmark and fetches only the rest.
+
+```
+== Run 1 (crashes after 2 pages)
+  no bookmark: starting from page 1
+  page 1: c001..c010 saved
+  page 2: c011..c020 saved
+  !! simulated crash (network dropped). Bookmark kept: True
+
+== Run 2 (same script, started again)
+  resuming from bookmark: .../networks/N_100/clients?perPage=10&startingAfter=c020
+  page 1: c021..c025 saved
+
+Saved 25 clients (c001..c025), duplicates: 0, bookmark left behind: False
+```
+
 ### T08.04 · Payload limits
 
 **Must cover:**
@@ -670,6 +720,9 @@ if __name__ == "__main__":
 - **Retrying instantly makes it worse:** each extra call extends the throttle. Always sleep; cap the backoff; cap the retries.
 - **Don't retry other 4xx:** 400/401/403/404/413 mean the request is wrong. Retrying unchanged can't succeed. (401-expired is the exception: get a new token first.)
 - **Missing records, no error → pagination.** The status is `200` on every page; "more data" is only in the body (`total`, `total_pages`) or the `Link` header.
+- **Who sets the page size?** The API sets the default and maximum (in its docs); the client picks a size up to that maximum with `limit` / `per_page` / `perPage`.
+- **Cursor ≠ page number.** A cursor (`startingAfter`, `nextPageToken`) is a bookmark the **server** gives you: you can only go to `next`, not jump to page 7, but it doesn't skip or repeat items when data changes.
+- **The API won't resume for you.** A paged fetch that dies halfway restarts from page 1 unless **your script** saved the next cursor/offset. Save the page data first, then the bookmark.
 - **Where's the next page?** Meraki: in the **`Link` response header**, `rel="next"`, not in the body. Don't build `startingAfter` yourself; follow the URL. `r.links["next"]["url"]` in `requests`.
 - **Meraki SDK `total_pages` defaults to 1**, so only the first page unless you pass `total_pages="all"` (or `-1`).
 - **413 name:** "Payload Too Large" (RFC 7231, older) = "Content Too Large" (RFC 9110, current). Same code, both may appear. 414 = URI too long.
@@ -996,6 +1049,41 @@ A. Send the body with `Content-Type: text/plain`  B. Split the serials into seve
 **B.** 413 = the request body is larger than the server accepts. Waiting (C) doesn't shrink it. Split it into batches that fit both the size and the items-per-call limits. (T08.04)
 </details>
 
+**Q9.** A script pages through 40,000 Meraki clients with `perPage=1000`. It crashes on page 23 with a timeout. The developer wants the restart to continue from page 23, not page 1. What must the script have done before the crash?
+A. Set `total_pages=-1`  B. Saved the `Link` header's `rel="next"` URL after each successful page  C. Increased `perPage` to 5000  D. Re-authenticated before every page
+
+<details><summary>Answer</summary>
+
+**B.** The API keeps no record of how far a client got (stateless). The script must store the next cursor URL itself and start from it next time. (T08.03)
+</details>
+
+**Q10.** Which statement about cursor-based pagination is correct?
+A. The client can request page 7 directly  B. The client computes the cursor from the page size  C. The server supplies the cursor, and the client follows it page by page  D. The cursor is the total number of items
+
+<details><summary>Answer</summary>
+
+**C.** The server gives the next cursor (e.g. in `Link: rel="next"`). You can't jump to an arbitrary page, but pages don't shift when items are added or deleted. (T08.03)
+</details>
+
+<details><summary>Answer key (all 10): open only after answering every question</summary>
+
+| Q | Answer | Why | Reread |
+|---|---|---|---|
+| 1 | **B** | 429 = too many requests in the window. The request itself is fine, so wait the advertised time, retry, and slow the loop down. A new key (A) or a bigger timeout (D) doesn't change the call rate. | [T08.01](#t0801--rate-limiting), [T08.02](#t0802--rate-limiting) |
+| 2 | **B** | A `rel=next` link means more pages exist. Only page 1 (10 clients) was read. Missing permissions would give `403`, and an expired token `401`. | [T08.03](#t0803--pagination) |
+| 3 | **`r.links.get("next", {}).get("url")`** | . `requests` parses the `Link` header into `r.links`. On the last page there's no `next`, so this returns `None` and the loop ends. `r.links["next"]["url"]` would raise `KeyError` on the last page. (T08.03, `all_by_link_header()`) | [T08.03](#t0803--pagination) |
+| 4 | receive `429` → read the `Retry-After` header (if there's none, wait 1, 2, 4… seconds instead) → sleep that many seconds → send the same request again. Backoff is the fallback for a missing header, not an extra step. (T08.02, retry-decision diagram) |  | [T08.02](#t0802--rate-limiting) |
+| 5 | **C** | A conditional GET (`If-None-Match: <etag>`) gets `304` with no body if the resource hasn't changed. `204` is "success, no body" for e.g. DELETE, and has nothing to do with caching. | [T08.08](#t0808--caching) |
+| 6 | **B** | The token's lifetime ran out. A new token fixes it; retrying with the old one (A) never will. More privileges (D) is the fix for `403`, not `401`. | [T08.06](#t0806--auth-limits) |
+| 7 | **B, C** | There's **no** default timeout (A is false). A client timeout is an exception with no response object. `504` comes from a gateway, not from your own timeout. | [T08.05](#t0805--timeouts) |
+| 8 | **B** | 413 = the request body is larger than the server accepts. Waiting (C) doesn't shrink it. Split it into batches that fit both the size and the items-per-call limits. | [T08.04](#t0804--payload-limits) |
+| 9 | **B** | The API keeps no record of how far a client got (stateless). The script must store the next cursor URL itself and start from it next time. | [T08.03](#t0803--pagination) |
+| 10 | **C** | The server gives the next cursor (e.g. in `Link: rel="next"`). You can't jump to an arbitrary page, but pages don't shift when items are added or deleted. | [T08.03](#t0803--pagination) |
+
+Count only the ones you answered before looking. For each miss, reread the linked concept.
+
+</details>
+
 ## Study aids
 
 | Aid | Type | Title | Est. min | Resource |
@@ -1007,6 +1095,7 @@ A. Send the body with `Content-Type: text/plain`  B. Split the serials into seve
 
 ## Sources
 
+- Resume drill: `labs/T08/resume_paging.py` (run with `bash labs/T08/run_lab.sh labs/T08/resume_paging.py`). Diagram: `assets/T08/11-resume-paging.mmd`.
 - Overview image: HTML source `assets/T08/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T08/*.mmd`. Animation: `assets/T08/10-rate-limit-retry-anim.html` → `.gif`.
 - RFC 6585, 429 Too Many Requests (MAY include `Retry-After`; MUST NOT be cached) and 431: https://www.rfc-editor.org/rfc/rfc6585
 - RFC 9110, HTTP Semantics: `Retry-After` both forms (§10.2.3), `413 Content Too Large` (+ `Retry-After` if temporary), `202`, `304`, `If-None-Match`, `ETag`: https://www.rfc-editor.org/rfc/rfc9110
@@ -1024,6 +1113,7 @@ A. Send the body with `Content-Type: text/plain`  B. Split the serials into seve
 
 ## To verify
 
+- ⚠ Page-size limits and cursor expiry vary per API: whether an over-maximum `perPage` returns `400` or is silently capped, and how long a cursor stays valid. Check each platform's docs (Meraki, Catalyst Center).
 - ⚠ **Meraki rate limit (~10 req/s per org).** Taken from the Meraki Python SDK 4.6.0 source (`smart_flow.py`: "default 10 req/s"; config `SMART_FLOW_ORG_RATE = 9`). developer.cisco.com failed a TLS check this session, so not confirmed against the Meraki rate-limit docs. Also confirm whether there's a per-IP limit and what Meraki returns in `Retry-After`.
 - ⚠ **Meraki SDK defaults** (`wait_on_rate_limit=True`, `maximum_retries=5`, `nginx_429_retry_wait_time=60`, `single_request_timeout=60`, smart flow on by default, `total_pages=1` default, `perPage` ranges, max 20 actions per synchronous action batch). Read from SDK 4.6.0 source on 10 Oct 2026; they can change between SDK versions.
 - ⚠ **Meraki auth header** in Example 6: `Authorization: Bearer <key>` vs the older `X-Cisco-Meraki-API-Key`. Not confirmed this session. Example 6 wasn't run (no API key).
