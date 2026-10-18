@@ -508,6 +508,14 @@ if __name__ == "__main__":
 - **Why both:** TLS protects only the trip. Once the API writes the record to disk, TLS has done its job. A stolen backup or disk snapshot is exposed unless it's encrypted at rest. Equally, an encrypted DB doesn't help if the app sends the data over plain HTTP.
 - **Exam pattern:** "data is encrypted in the database, but an attacker on the network captured it" → missing **in transit** (TLS). "A backup tape was stolen" → missing **at rest**.
 
+**Exam-sim gap (practice test review):**
+- **Know which choices are weak for data in transit:**
+  - **RC4** stream cipher: broken, prohibited in TLS since RFC 7465 → the least secure option.
+  - **HTTP Basic** over plain HTTP: credentials only base64-encoded (T10); fine only inside TLS.
+  - **Old protocols:** Telnet, FTP, SSLv3, TLS 1.0/1.1 (deprecated by RFC 8996).
+  - **Good:** TLS 1.2/1.3 with AEAD ciphers (AES-GCM, ChaCha20-Poly1305), SSH with keys.
+- Exam cue: "least secure for protecting data in transit" → the **broken cipher** (RC4) beats "weak auth scheme" as the answer.
+
 ### T29.03 · Crypto basics
 
 **Must cover:**
@@ -715,6 +723,7 @@ if __name__ == "__main__":
 - **Checksum vs HMAC vs signature:** a SHA-256 checksum proves "unchanged" (anyone can compute it). HMAC proves "someone with the shared secret sent it". A digital signature proves "the private-key holder sent it", and anyone can verify that with the public key.
 - **`random` vs `secrets`:** tokens and passwords come from `secrets` (or `os.urandom`), never `random`.
 - **Allow-list > deny-list,** and parameterise rather than escape by hand.
+- **Broken crypto:** RC4 (RFC 7465) and SSLv3/TLS 1.0–1.1 (RFC 8996) are deprecated. Basic auth is an auth scheme, not a cipher; it's only weak without TLS.
 
 ## Examples
 
@@ -1004,6 +1013,7 @@ return ______(candidate.hex(), digest_hex)
 
 ## Sources
 
+- RFC 7465, prohibiting RC4 cipher suites in TLS: https://www.rfc-editor.org/rfc/rfc7465 · RFC 8996, deprecating TLS 1.0 and 1.1: https://www.rfc-editor.org/rfc/rfc8996
 - Overview image: HTML source `assets/T29/00-overview.html`, rendered to PNG (see `assets/README.md`). Diagrams: Mermaid sources in `assets/T29/*.mmd`.
 - Python `hashlib` (SHA-256 digest size, `pbkdf2_hmac` signature, salt ≥ 16 bytes from `os.urandom`, "hundreds of thousands of iterations", SHA-256 not suitable for passwords, MD5/SHA-1 collision weakness): https://docs.python.org/3/library/hashlib.html
 - Python `secrets` (CSPRNG vs `random`, `token_hex`/`token_urlsafe`, `compare_digest`): https://docs.python.org/3/library/secrets.html

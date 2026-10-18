@@ -126,6 +126,11 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - `\ No newline at end of file` = marker, not content. Means last line has no trailing newline.
 - Don't confuse the prefix with the content: ` name CAMERAS` (IOS indent) shows as `+ name CAMERAS`. First char is the prefix; rest is the line.
 
+**Exam-sim gap (practice test review):**
+- **Spotting a big deletion:** a long **run of consecutive `-` lines** (and few or no `+`) means a block was removed. A run of `+` lines means a block was added.
+- In `@@ -40,30 +40,2 @@`, old has 30 lines and new has 2 → **about 28 lines deleted** in that hunk.
+- Exam cue: "how do you recognise a large deleted block in unified diff output" → **many consecutive lines starting with `-`**.
+
 ### T05.04 · Context
 
 **Must cover:**
@@ -196,6 +201,7 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - **`diff` vs `diff -u`:** only `-u` produces unified format (`---`/`+++`/`@@`). Plain `diff` = normal format (`<`/`>`).
 - **`@@@` (three @)** = combined diff of a merge commit (two parents). Not a normal two-file diff.
 - **Which `git diff`:** unstaged = `git diff`; staged = `git diff --staged`; one commit = `git show <sha>`.
+- **Big deletion = a run of `-` lines,** usually with a hunk header where oldCount ≫ newCount (`-40,30 +40,2`).
 
 ## Examples
 

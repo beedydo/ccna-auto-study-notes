@@ -752,6 +752,7 @@ A. It needs a controller to translate intent  B. The script itself must handle l
 
 ## To verify
 
+- ⚠ (from Beedy, exam-sim review) Q88, gap G06: "YANG model for individual device config" → **device data model** (service models span devices). Check T12 covers device vs service models.
 - ⚠ **Not run against live devices or a live controller.** Everything ran against `labs/T12/mock_network.py`. The `/ctrl/api/v1/...` intent and task paths are invented for teaching. Real controller paths are in T18–T22.
 - ⚠ **OpenConfig on IOS XE and NX-OS:** both platforms ship `openconfig-interfaces`, but leaf coverage and RESTCONF support vary by release. On NX-OS, RESTCONF and the OpenConfig models must be enabled (`feature restconf`, OpenConfig RPMs). Check against the platform's YANG list on GitHub (YangModels/yang, vendor/cisco) for your release.
 - ⚠ **RESTCONF behaviour on real IOS XE:** the exact status for an unencoded `/` in a key (the mock returns 404), and whether `Content-Type: application/json` is refused (the mock returns 415). Both should be checked on the DevNet IOS XE sandbox.

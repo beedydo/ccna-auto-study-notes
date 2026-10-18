@@ -920,6 +920,7 @@ D. Nothing; APs and WLCs must be in the same VLAN
 
 ## To verify
 
+- ⚠ (from Beedy, exam-sim review) Q59, gap G16: "star topology: central component" → **switch** (or hub). Check the topology section names the central device explicitly.
 - ⚠ Icon descriptions in T38.01 (router puck, switch box, multilayer switch, firewall brick wall) are from general familiarity with the Cisco icon set. Check against the icon PDF on the Cisco Network Topology Icons page.
 - ⚠ The program is a teaching model, not a simulator: no NAT/PAT on fw1, no ARP/MAC learning, no STP/FHRP (HSRP), no ECMP, and the LB always picks the first healthy member (real LBs use round robin, least connections and so on, and one-arm LBs usually SNAT the source too).
 - ⚠ MAC addresses in the GIF are illustrative, not taken from the program.

@@ -765,6 +765,7 @@ A. CUCM crashed; retry later  B. The phone name already exists  C. The SOAPActio
 
 ## To verify
 
+- ⚠ (from Beedy, exam-sim review) Q31, gap G21: "CUCM API for access permissions" (users, roles, permissions) → **AXL** (SOAP admin API). Check the AXL vs UDS split makes this explicit.
 - ⚠ **Not run against a live CUCM.** There's no always-on DevNet CUCM; the Collaboration sandbox needs a reservation and VPN. All output comes from `labs/T21/mock_cucm.py`. Re-run `cucm_lab.py` against a reserved sandbox when possible.
 - ⚠ The Docker lab command wasn't run (no Docker on the drafting host). `run_lab.sh` needs the `openssl` CLI inside `python:3.12-slim`; if it's missing, add `openssl` to the `apt-get install` line in `labs/Dockerfile`. Run locally, it was tested with Python 3.10, requests 2.34 and curl 7.81.
 - ⚠ Mock shapes are trimmed: real `addPhone` needs more mandatory tags (for example `phoneTemplateName`, `primaryPhoneName`, `builtInBridgeStatus`, `packetCaptureMode`, `certificateOperation`, `deviceMobilityMode`; check the 14.0 schema). Real `getPhone` and RisPort70 responses have many more fields.

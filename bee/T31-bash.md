@@ -205,6 +205,12 @@ device_report.sh exit status: 1
 - Relative paths broke an early version of `run_lab.sh`: it did `cd` into a temp dir before calling the script, so `labs/T31/devices.csv` no longer existed relative to the new `$PWD`. The fix in the final version is to not `cd`, and send the report to a temp path through `REPORT=` instead.
 - `./script.sh` needs the `./` because the current directory isn't in `$PATH` (see T31.04).
 
+**Exam-sim gap (practice test review):**
+- **`pushd` / `popd` = a directory stack.** `pushd /etc/ansible` saves where you are and jumps there; `popd` jumps back. Nest them to visit several directories and return in order. `dirs -v` shows the stack.
+- Handy in scripts that must work somewhere else and then come back: `pushd "$WORKDIR" > /dev/null … popd > /dev/null`.
+- Compare: `cd -` only toggles between the **last two** directories; `pushd`/`popd` remember a whole stack.
+- Exam cue: "temporarily change directory and return later" → **`pushd`** (then `popd`).
+
 ### T31.02 · File management
 
 **Must cover:**
@@ -460,6 +466,7 @@ device_report.sh exit status: 1
 - **`sudo echo x > /root/f` fails**: the redirection runs as you. Use `echo x | sudo tee /root/f`.
 - **`rmdir` only removes empty dirs**; `rm -r` removes trees. `cp` on a directory needs `-r`. `mkdir a/b/c` needs `-p` if `a` doesn't exist.
 - **`cd -`** = previous directory, not "up one" (that's `cd ..`).
+- **`pushd` vs `cd -`:** `pushd` saves the current dir on a stack and `popd` returns; `cd -` only swaps the last two dirs.
 
 ## Examples
 

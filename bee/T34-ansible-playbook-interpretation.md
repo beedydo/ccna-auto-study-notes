@@ -621,6 +621,10 @@ playbook: site.yml
 - **`template` vs `ios_config src:`:** `template` writes a file (build.yml makes `sw1.cfg`, `sw2.cfg`). `ios_config src:` pushes the rendered lines to the device. They use the same `.j2` file.
 - **`debug`** prints `msg:` (a string/expression) or `var:` (a variable name, **no** `{{ }}`).
 
+**Exam-sim gap (practice test review):**
+- **Package modules (server side, not network):** `ansible.builtin.yum` / `ansible.builtin.dnf` for RPM hosts (RHEL, CentOS), `ansible.builtin.apt` for Debian/Ubuntu, `ansible.builtin.package` as the OS-agnostic wrapper.
+- Exam cue: "Ansible module that installs packages" → **yum** (or **apt** for Debian, **package** for either).
+
 ### T34.04 · Variables
 
 **Must cover:**
@@ -764,6 +768,10 @@ ios_baseline/vars
   - Ansible ignores `./ansible.cfg` in a world-writable directory.
   - `ansible-config dump --only-changed` showed `DEFAULT_HOST_LIST(.../labs/T34/ansible.cfg) = [.../inventory.yml]`.
 
+**Exam-sim gap (practice test review):**
+- **Start a project in its own directory.** One folder per Ansible project holding `ansible.cfg`, the inventory, `group_vars/`, `host_vars/`, playbooks and `roles/`, all under Git. `ansible-galaxy role init <name>` creates a role skeleton inside it.
+- Exam cue: "first step when starting an Ansible project" → **create a dedicated project directory**.
+
 ### T34.08 · Exam angle
 
 **Must cover:**
@@ -807,6 +815,7 @@ ios_baseline/vars
 - **`ok` means "no change needed"**, not "test passed". `changed=0` on the second run = idempotent.
 - **`--check`** = dry run (reports, changes nothing). **`--syntax-check`** = parse only, no connection. **`--limit`** narrows `hosts:`, it can't add hosts outside it. **`-e`** beats every other variable source.
 - **host_vars beat group_vars, and lists replace.** sw2's `vlans` list replaces the `all` list entirely, so sw2 never gets VLAN 20.
+- **Packages:** `yum`/`dnf` (RPM), `apt` (Debian), `package` (generic). Project hygiene: one directory per project with `ansible.cfg`, inventory, vars, roles.
 
 ## Examples
 

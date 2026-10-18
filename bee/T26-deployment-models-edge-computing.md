@@ -171,6 +171,10 @@ The note hangs on two pictures: **where** the workload runs (cloud model, edge) 
 - Edge **complements** the cloud, it doesn't replace it. Fleet-wide analytics, long-term storage and ML training stay central.
 - Downsides worth one line: many distributed boxes to patch and secure, limited CPU/RAM per node, physical exposure.
 
+**Exam-sim gap (practice test review):**
+- **IOx only runs trusted apps.** IOx supports **application signing**: apps are signed and the device verifies the signature before it runs them, so only approved code executes on a router or switch ⚠ verify the exact signing workflow in the IOx docs.
+- Exam cue: "Cisco framework that hosts only signed, verified applications on network devices" → **IOx** (not Intersight, not Meraki dashboard).
+
 ### T26.05 · Deployment types
 
 **Must cover:**
@@ -322,6 +326,7 @@ The note hangs on two pictures: **where** the workload runs (cloud model, edge) 
 - **Isolation order:** bare metal > VM > container. **Start-up / density order** is the reverse.
 - **Serverless still has servers.** It also doesn't suit long-running or stateful jobs (cold starts, max duration).
 - **Microservices ≠ always better.** They trade independent scaling and deploys for network calls and operational complexity.
+- **IOx + signed apps:** IOx is the Cisco app-hosting framework that can enforce signed, verified app packages on routers/switches.
 
 ## Examples
 

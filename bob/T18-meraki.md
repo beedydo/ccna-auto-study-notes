@@ -838,6 +838,7 @@ A. A Meraki network needs an on-prem controller VM to push configuration  B. MR 
 
 ## To verify
 
+- ⚠ (from Beedy, exam-sim review) Q85, gap G19 (blueprint 3.1): practice test asks what to create **before using an SDK** → an RPM build directory structure (`rpmbuild` BUILD/RPMS/SOURCES/SPECS/SRPMS). Looks like low-priority trivia; your call whether to add it.
 - ⚠ **Not run against a live Meraki org.** api.meraki.com was reachable, but no valid key was available this session. Everything ran against `labs/T18/mock_meraki.py`, whose bodies follow the API reference examples. Run Example 1's "own org" block once with a real key.
 - ⚠ **`X-Cisco-Meraki-API-Key` on v1:** the current authorization page shows only `Authorization: Bearer` for v1 and calls `X-Cisco-Meraki-API-Key` the v0 header. Older v1 material and many exam prep sources still use it. The mock accepts both. Confirm against the live API that v1 still accepts the legacy header.
 - ⚠ **Rate-limit numbers** (10/s per org + 10 burst, 100/s per IP) are from the current rate-limit page. They have changed before.

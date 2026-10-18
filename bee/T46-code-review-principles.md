@@ -304,6 +304,10 @@ ERRORS  GigabitEthernet4
 - Google's guide puts the senior principle as: approve once the change **definitely improves overall code health**, even if not perfect. Seek continuous improvement, not perfection.
 - Wrong answers to spot: "makes code execute faster", "replaces unit tests", "removes the need for CI", "lets one senior engineer own each module".
 
+**Exam-sim gap (practice test review):**
+- **Collaborative review is also a learning tool:** juniors learn the codebase and standards, seniors spread knowledge, and the team converges on shared conventions. That's a benefit on top of catching defects.
+- Exam cue: "benefit of collaborative code review" → **a supportive environment for learning / knowledge sharing**, not "removes the need for testing".
+
 ### T46.02 · Process
 
 **Must cover:**
@@ -424,6 +428,14 @@ ERRORS  GigabitEthernet4
 - **Author side:** reply to every comment, push fixes, don't take it personally. If the reviewer asks "what does this do?", the right fix is clearer code, not an explanation only in the PR thread.
 - Disagreements: facts and data beat opinions; if stuck, talk live, then escalate to the tech lead. Record the outcome in the PR.
 
+**Exam-sim gap (practice test review):**
+- **Review best practices from industry studies** (often quoted on exams):
+  - **Set goals and measure:** inspection rate (LOC/hour), defect rate, defects found per review.
+  - **Keep it small and slow:** review a few hundred lines at a time, under about 500 LOC an hour, and stop after about 60–90 minutes ⚠ verify the exact figures (they come from the SmartBear/Cisco study, not a standard).
+  - **Author annotates the change first** (explains intent, points to risky parts).
+  - **Assign reviewers by expertise, not seniority;** use a checklist.
+- Exam cue: "best practice for code review" → **set review goals and collect metrics**.
+
 ### T46.05 · Exam angle
 
 **Must cover:**
@@ -453,6 +465,7 @@ ERRORS  GigabitEthernet4
 - **`py_compile` / "it runs" is not a review.** PR #42 compiles, passes its old test and prints output, yet has a logic bug.
 - **Benefit distractors:** "faster execution", "replaces testing", "single owner per module" are never benefits.
 - **Approve vs Request changes vs Comment:** only **Request changes** blocks; **Comment** is neutral.
+- **Review metrics + learning:** best practice = set goals and track metrics (inspection rate, defect rate); a key benefit = knowledge sharing in a supportive environment.
 
 ## Examples
 

@@ -1249,6 +1249,7 @@ D. YANG data can only be encoded as XML
 
 ## To verify
 
+- ⚠ (from Beedy, exam-sim review) Q71/Q88, gap G06: practice test asks the purpose of **native operational YANG models** (runtime state: counters, interface status, vs config models) and which model type covers **one device's config** (device data model vs service model). Worth one line each in T14 if not already explicit.
 - ⚠ **Not run against a live device.** The always-on IOS XE sandboxes issue per-user credentials, and none were available this session. The host `devnetsandboxiosxec8k.cisco.com` answered `401` (so it's reachable). Section 6 of the program and the Examples §2 commands weren't run, and `sample-data/gi1-restconf.json` is a mock.
 - ⚠ **IOS XE state location:** the mock reply follows RFC 8343, with `oper-status` and `statistics` inside `interfaces/interface`. A Cisco blog example of IOS XE returned only config leaves under `ietf-interfaces:interfaces`. Check whether the version you use returns state there, or only under the deprecated `ietf-interfaces:interfaces-state` (or `Cisco-IOS-XE-interfaces-oper`).
 - ⚠ **List entry as array vs object:** RFC 7951/8040 encode a list entry as an array (`"ietf-interfaces:interface": [{…}]`). The Cisco blog shows some IOS XE releases returning a single object. Bob's round-1 note had the object form, which I changed to the RFC form here.

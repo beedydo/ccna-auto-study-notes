@@ -400,6 +400,11 @@ From first principles:
 - **Benefits for infra:** consistency (every device from the same template), **audit trail** (`git log` = who changed what, when, why), peer review, tested before prod, **fewer outages**, fast rollback.
 - `labs/T28` simulates step 1 and the deploy pattern only; it doesn't touch a device. ⚠ verify: the stage list above is the common NetDevOps pattern from Cisco DevNet learning material; the exact wording the exam uses for blueprint 5.4 should be checked in the PDF.
 
+**Exam-sim gap (practice test review):**
+- **CI/CD for NSO (or any network change) works only if the pipeline is the *only* path to production.** If engineers can still push changes by hand, devices drift from what's in Git and nothing is repeatable or auditable.
+- **Plan the work in a tracking system too.** Features and changes start as tickets (e.g. **Jira**), each linked to the branch/MR that implements it. Ticket → branch → pipeline → deploy gives traceability from request to change.
+- Exam cues: "best practice for CI/CD with NSO" → single pipeline to prod, no manual side doors · "what else does the setup need" → issue/feature tracking (Jira) alongside Git and the CI server.
+
 ### T28.07 · DevOps
 
 **Must cover:**
@@ -430,6 +435,10 @@ From first principles:
   2. **Amplify feedback loops:** fast information **right to left**: failing tests, monitoring, alerts, MR status. Fix where the problem is found.
   3. **Continual experimentation and learning:** take risks, learn from failure (blameless post-mortems), practise, share.
 - **DORA metrics** (Measurement, awareness): change lead time, deployment frequency, failed deployment recovery time, change fail rate (DORA now also lists deployment rework rate).
+
+**Exam-sim gap (practice test review):**
+- **Learning culture = continuous improvement.** Blameless post-mortems, sharing what broke and why, and small experiments let the team improve the process after each failure (the DevOps "Third Way": continual learning).
+- Exam cue: "why a learning culture matters in DevOps" → **continuous improvement**, not "fewer meetings" or "less testing".
 
 ### T28.08 · DevOps practices
 
@@ -486,6 +495,7 @@ From first principles:
 - **DevOps is culture + practices**, not a team name or a tool. "Buy Jenkins" ≠ DevOps.
 - **NetDevOps source of truth = Git**, not the running config on the device. A manual CLI change on a device = drift the pipeline will overwrite.
 - **Blameless post-mortem** asks what in the system failed, not who.
+- **CI/CD discipline:** the pipeline must be the only route to prod, changes start as tracked tickets (Jira), and a learning culture = continuous improvement.
 
 ## Examples
 

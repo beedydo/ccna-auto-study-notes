@@ -271,6 +271,11 @@ cross_study: 2026-10-20
   - `root.findall("{urn:ietf:params:xml:ns:yang:ietf-interfaces}interface")`.
 - `xml.dom.minidom` = older DOM API (`parseString`, `getElementsByTagName`, `.firstChild.nodeValue`). Mostly used for `minidom.parseString(x).toprettyxml()` to pretty-print NETCONF replies.
 
+**Exam-sim gap (practice test review):**
+- **Untrusted XML is risky to parse.** The format allows tricks like *external entities* (XXE: the file asks the parser to read `/etc/passwd` or a URL) and *entity expansion bombs* ("billion laughs": a tiny file that expands to gigabytes).
+- **Python's answer: `defusedxml`.** A drop-in replacement that refuses those features: `from defusedxml.ElementTree import fromstring` instead of `xml.etree.ElementTree`. (The Python `xml` docs list these attacks; recent docs say modern Expat blocks some of them, but `defusedxml` is still the exam answer ⚠ verify.)
+- Exam cue: "safely parse XML from an untrusted source" → **defusedxml**. Same idea as `yaml.safe_load` for YAML (T06.08).
+
 ### T06.11 · Navigating data
 
 **Must cover:**
@@ -334,6 +339,7 @@ cross_study: 2026-10-20
 - **`ET.parse` returns an ElementTree** (call `.getroot()`), while `ET.fromstring` returns an Element.
 - **Format → protocol:** NETCONF = XML only. RESTCONF = XML **or** JSON (`application/yang-data+json` / `+xml`). Ansible = YAML.
 - **XML well-formed:** one root, case-sensitive matching tags, quoted attributes, `&lt;`/`&amp;` escapes.
+- **Safe XML parsing:** untrusted XML → `defusedxml` (blocks XXE and entity bombs), just as untrusted YAML → `yaml.safe_load`.
 
 ## Examples
 
@@ -636,6 +642,7 @@ A. `<intf><name>Gi1</Name></intf>`  B. `<intf><name>Gi1</intf></name>`  C. `<int
 
 ## Sources
 
+- Python `xml` package, XML vulnerabilities (billion laughs, quadratic blowup): https://docs.python.org/3/library/xml.html · defusedxml: https://pypi.org/project/defusedxml/
 - Python `json` module (conversion table, `load`/`loads`, `JSONDecodeError`): https://docs.python.org/3/library/json.html
 - Python `xml.etree.ElementTree` (`fromstring`, `find`/`findall`/`iter`, namespaces): https://docs.python.org/3/library/xml.etree.elementtree.html
 - Python `xml.dom.minidom`: https://docs.python.org/3/library/xml.dom.minidom.html

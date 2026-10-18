@@ -327,6 +327,14 @@ if __name__ == "__main__":
 
 *Four participants, time running down. Solid = request, dashed = response; the open arrowhead to the switch is async (the sender doesn't wait). The grey bars are activation.*
 
+**Exam-sim gap (practice test review):**
+- **Practice tests may show telecom-style time-sequence diagrams** (OSI/ITU service primitives), not just API calls:
+  - **The vertical lines are the endpoints:** the service user and service provider on each side of an interface.
+  - Messages between them are labelled with primitives such as request, indication, response and confirm.
+  - Timers and checks (e.g. a timer-check function) mark completion or error events.
+  - These are less likely on the real 200-901 exam than API diagrams ⚠ verify.
+- Same reading rule as API diagrams: **lifelines = participants**, **time runs down**, an arrow = a message between two of them.
+
 ### T47.02 · Notation
 
 **Must cover:**
@@ -543,6 +551,7 @@ if __name__ == "__main__":
 - **Open vs filled arrowhead:** open = async message (sender doesn't wait); filled = sync call. A `202` response is still drawn as a **dashed** reply, though.
 - **Activation bar = busy, not alive.** The lifeline is "exists"; the thin bar is "processing right now".
 - **One HTTP call = two arrows.** "How many API calls?" → count the **solid** arrows only (Flow 2: 6 arrows, 3 calls).
+- **Vertical lines = participants/endpoints** in any sequence diagram (API client/server, or service user/provider in telecom-style diagrams). Time runs down.
 
 ## Examples
 
