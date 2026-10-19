@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 count a hunk animation</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .sheet { width: 1150px; height: 640px; padding: 22px 28px; position: relative; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 800; }
+  h1 .pill { background: var(--green); color: #fff; padding: 2px 14px; border-radius: 20px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 18px; }
+  .doc { font-family: Menlo, monospace; font-size: 13.5px; line-height: 1.62; background: #fff; border: 2.5px solid var(--line); border-radius: 12px; padding: 8px 0; white-space: pre; height: 418px; }
+  .doc span { display: block; padding: 0 12px; }
+  .doc .a { background: var(--add-soft); color: #1b5e20; } .doc .d { background: var(--del-soft); color: #8a1c1c; }
+  .doc .h { background: var(--hunk-soft); color: var(--hunk); font-weight: 700; }
+  .doc .dim { opacity: .28; }
+  .doc .cur { outline: 3px solid var(--warn); outline-offset: -2px; }
+  .right { display: flex; flex-direction: column; gap: 12px; }
+  .ctr { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ctr div { border: 2.5px solid; border-radius: 12px; padding: 10px; text-align: center; background: #fff; }
+  .ctr .o { border-color: var(--del); } .ctr .nn { border-color: var(--add); }
+  .ctr b { display: block; font-size: 40px; line-height: 1.1; }
+  .ctr .o b { color: var(--del); } .ctr .nn b { color: var(--add); }
+  .ctr small { font-size: 13px; color: var(--muted); }
+  .card { background: #fff; border: 2.5px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 15px; line-height: 1.5; min-height: 92px; }
+  .card h3 { margin: 0 0 4px; font-size: 14px; color: var(--muted); }
+  .hdr { font-family: Menlo, monospace; font-size: 22px; font-weight: 800; text-align: center; padding: 8px; background: var(--hunk-soft); border: 2.5px solid var(--hunk); border-radius: 12px; color: var(--hunk); }
+  .hdr .o { color: var(--del); } .hdr .nn { color: var(--add); }
+  .step { position: absolute; left: 28px; bottom: 18px; right: 28px; display: flex; align-items: center; gap: 12px;
+          background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 15px; }
+  .step .n { width: 30px; height: 30px; font-size: 14px; margin: 0; }
+  .dots { margin-left: auto; display: flex; gap: 5px; } .dots i { width: 9px; height: 9px; border-radius: 50%; background: #ccc; }
+  .dots i.on { background: var(--green); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T05 · <span class="pill">Count the hunk</span> context counts on both sides</h1>
+  <div class="sub">Walk the real <code>--unified=1</code> hunks from drill T05.1, keeping two tallies: old side and new side</div>
+  <div class="cols">
+    <div class="doc" id="doc"></div>
+    <div class="right">
+      <div class="hdr" id="hdr"></div>
+      <div class="ctr"><div class="o"><small>old count</small><b id="oc">0</b><small id="ol"></small></div><div class="nn"><small>new count</small><b id="nc">0</b><small id="nl"></small></div></div>
+      <div class="card"><h3>This line</h3><div id="why"></div></div>
+    </div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+const L = [
+  ["h", "@@ -6,2 +6,4 @@ vlan 20"],
+  ["c", "  name VOICE"],
+  ["a", "+vlan 30"],
+  ["a", "+ name CAMERAS"],
+  ["c", " !"],
+  ["h", "@@ -12,3 +14,3 @@ interface GigabitEthernet1/0/1"],
+  ["c", " interface GigabitEthernet1/0/2"],
+  ["d", "- switchport access vlan 10"],
+  ["a", "+ switchport access vlan 30"],
+  ["c", " !"],
+];
+const H1 = `@@ <span class="o">-6,?</span> <span class="nn">+6,?</span> @@`;
+const H1f = `@@ <span class="o">-6,2</span> <span class="nn">+6,4</span> @@`;
+const H2f = `@@ <span class="o">-12,3</span> <span class="nn">+14,3</span> @@`;
+const frames = [
+  { cur:0, upto:0, oc:0, nc:0, hdr:H1, ol:"starts at old line 6", nl:"starts at new line 6",
+    why:`Hunk header: <b>start</b> numbers are given. The <b>counts</b> are what we'll check.`,
+    txt:`Two tallies start at 0. Every line below adds to one side, the other, or <b>both</b>.` },
+  { cur:1, upto:1, oc:1, nc:1, hdr:H1, ol:"line 6", nl:"line 6",
+    why:`<b>Space</b> prefix = context. Exists in <b>both</b> files → +1 old, +1 new.`,
+    txt:`Context counts on both sides. That's why counts are never "lines added".` },
+  { cur:2, upto:2, oc:1, nc:2, hdr:H1, ol:"", nl:"line 7",
+    why:`<code>+</code> = only in the <b>new</b> file → +1 new only.`,
+    txt:`Added line: new side grows, old side doesn't.` },
+  { cur:3, upto:3, oc:1, nc:3, hdr:H1, ol:"", nl:"line 8",
+    why:`<code>+ name CAMERAS</code>: prefix is just the <code>+</code>; the content is <code>␣name CAMERAS</code>.`,
+    txt:`Second added line. Still new side only.` },
+  { cur:4, upto:4, oc:2, nc:4, hdr:H1f, ol:"line 7", nl:"line 9",
+    why:`Context <code> !</code> → +1 both. Totals now match the header: <b>-6,2 +6,4</b>.`,
+    txt:`Hunk 1 done: 2 old, 4 new → <b>net +2</b>. Not "4 added": 2 of the 4 are context.` },
+  { cur:5, upto:5, oc:0, nc:0, hdr:H2f, ol:"starts at old 12", nl:"starts at new 14",
+    why:`Next hunk. Old <b>12</b> but new <b>14</b>: the +2 from hunk 1 pushed everything down.`,
+    txt:`newStart − oldStart = 14 − 12 = <b>+2</b> = net change of all earlier hunks.` },
+  { cur:6, upto:6, oc:1, nc:1, hdr:H2f, ol:"line 12", nl:"line 14",
+    why:`Context → +1 both.`,
+    txt:`Same rule in every hunk.` },
+  { cur:7, upto:7, oc:2, nc:1, hdr:H2f, ol:"line 13", nl:"",
+    why:`<code>-</code> = only in the <b>old</b> file → +1 old only.`,
+    txt:`Removed line: old side grows, new side doesn't.` },
+  { cur:8, upto:8, oc:2, nc:2, hdr:H2f, ol:"", nl:"line 15",
+    why:`<code>-</code> followed by <code>+</code> on the same setting = one <b>modified</b> line (10 → 30).`,
+    txt:`There's no "changed" symbol: a change is a <code>-</code>/<code>+</code> pair.` },
+  { cur:9, upto:9, oc:3, nc:3, hdr:H2f, ol:"line 14", nl:"line 16",
+    why:`Context → +1 both. Totals: <b>-12,3 +14,3</b>. Net 0, yet one line changed.`,
+    txt:`Same counts ≠ no change. Read the lines, not just the numbers.` },
+];
+window.FRAME_COUNT = frames.length;
+window.show = (i) => {
+  const f = frames[i];
+  document.getElementById("doc").innerHTML = L.map(([k, t], j) =>
+    `<span class="${k} ${j > f.upto ? "dim" : ""} ${j === f.cur ? "cur" : ""}">${t.replace(/</g, "&lt;") || " "}</span>`).join("");
+  document.getElementById("hdr").innerHTML = f.hdr;
+  document.getElementById("oc").textContent = f.oc;
+  document.getElementById("nc").textContent = f.nc;
+  document.getElementById("ol").textContent = f.ol;
+  document.getElementById("nl").textContent = f.nl;
+  document.getElementById("why").innerHTML = f.why;
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+};
+show(0);
+</script>
+</body>
+</html>

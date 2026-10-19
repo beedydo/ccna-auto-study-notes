@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 file header cases</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+  .card h2 { margin: 0; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .card h2 .ids { margin-left: auto; font-weight: 400; }
+  .card pre.diff { font-size: 12px; }
+  .card .why { font-size: 13px; line-height: 1.45; }
+  .card .cue { font-size: 12.5px; background: #fafaf8; border: 1.5px dashed var(--line); border-radius: 6px; padding: 4px 8px; }
+  .card.new { border-color: var(--add); } .card.del { border-color: var(--del); }
+  .card.ren { border-color: var(--hunk); } .card.mode { border-color: var(--warn); }
+  .card.nonl { border-color: #868e96; } .card.cc { border-color: var(--yaml); }
+  .fmt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr); gap: 14px; margin-top: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .panel pre.diff { font-size: 12px; }
+  .panel table.grid td { font-size: 12.8px; padding: 5px 8px; }
+  .panel table.grid td code { white-space: normal; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T05 · <span class="pill">Read the header first</span> created, deleted, renamed…</h1>
+    <div class="meta"><b>T05.01 · T05.05</b><br>The lines between <code>diff --git</code> and <code>@@</code> tell you what happened to the file<br>All real Git 2.54 / BSD diff output</div>
+  </header>
+
+  <div class="cards">
+    <div class="card new"><h2>🆕 File created <span class="ids">T05.01</span></h2>
+<pre class="diff"><span class="f">diff --git a/banner.cfg b/banner.cfg</span><span class="m">new file mode 100644</span><span class="f">index 0000000..57fc3dc</span><span class="f">--- /dev/null</span><span class="f">+++ b/banner.cfg</span><span class="h">@@ -0,0 +1 @@</span><span class="a">+banner motd ^Authorised only^</span></pre>
+      <div class="why"><code>--- /dev/null</code> = <b>nothing before</b>. Old side <code>-0,0</code>, new side 1 line. Hash starts <code>0000000</code>.</div>
+      <div class="cue"><code>--name-status</code> → <code>A banner.cfg</code></div></div>
+
+    <div class="card del"><h2>🗑️ File deleted <span class="ids">T05.01</span></h2>
+<pre class="diff"><span class="f">diff --git a/legacy.txt b/legacy.txt</span><span class="m">deleted file mode 100644</span><span class="f">index 3367afd..0000000</span><span class="f">--- a/legacy.txt</span><span class="f">+++ /dev/null</span><span class="h">@@ -1 +0,0 @@</span><span class="d">-old</span></pre>
+      <div class="why"><code>+++ /dev/null</code> = <b>nothing after</b>. <code>-1</code> = 1 line (count omitted), <code>+0,0</code> = empty.</div>
+      <div class="cue"><code>--name-status</code> → <code>D legacy.txt</code></div></div>
+
+    <div class="card ren"><h2>🔀 Renamed (+ edited) <span class="ids">T05.01</span></h2>
+<pre class="diff"><span class="f">diff --git a/motd.cfg b/banner.cfg</span><span class="m">similarity index 61%</span><span class="m">rename from motd.cfg</span><span class="m">rename to banner.cfg</span><span class="f">index 57fc3dc..4ab6296 100644</span><span class="f">--- a/motd.cfg</span><span class="f">+++ b/banner.cfg</span><span class="h">@@ -1 +1,2 @@</span><span class="c"> banner motd ^Authorised only^</span><span class="a">+banner login ^Lab^</span></pre>
+      <div class="why">Different names on <code>a/</code> and <code>b/</code>. Pure rename = <code>similarity index 100%</code> and <b>no hunk</b> at all.</div></div>
+
+    <div class="card mode"><h2>🔐 Permissions only <span class="ids">T05.01</span></h2>
+<pre class="diff"><span class="f">diff --git a/banner.cfg b/banner.cfg</span><span class="m">old mode 100644</span><span class="m">new mode 100755</span></pre>
+      <div class="why">File made <b>executable</b> (<code>chmod +x</code>). No <code>---</code>/<code>+++</code>/<code>@@</code>: content unchanged.</div>
+      <div class="cue"><code>100644</code> = normal file · <code>100755</code> = executable</div></div>
+
+    <div class="card nonl"><h2>↩️ No newline at end <span class="ids">T05.03</span></h2>
+<pre class="diff"><span class="f">--- a/nonl.cfg</span><span class="f">+++ b/nonl.cfg</span><span class="h">@@ -1 +1 @@</span><span class="d">-end</span><span class="m">\ No newline at end of file</span><span class="a">+end</span></pre>
+      <div class="why">Text looks identical: the only change is the <b>trailing newline</b> was added. The <code>\</code> line is a marker, not content.</div></div>
+
+    <div class="card cc"><h2>🔗 Merge commit: combined diff <span class="ids">T05.02</span></h2>
+<pre class="diff"><span class="f">diff --cc switch.cfg</span><span class="f">index 714e8fb,fe05a2c..e7f4872</span><span class="h">@@@ -1,4 -1,4 +1,4 @@@</span><span class="d">- hostname SW1-MAIN</span><span class="d"> -hostname SW1-FEAT</span><span class="a">++hostname SW1-CORE</span><span class="c">  !</span></pre>
+      <div class="why"><b>3 <code>@</code></b> and <b>2 prefix columns</b>, one per parent. <code>++</code> = new vs <b>both</b> parents (conflict resolved by hand).</div></div>
+  </div>
+
+  <div class="fmt">
+    <div class="panel">
+      <h2>📄 Plain <code>diff</code> (normal format): <b>not</b> unified</h2>
+<pre class="diff"><span class="m">6a7,8</span><span class="a">&gt; vlan 30</span><span class="a">&gt;  name CAMERAS</span><span class="m">13c15</span><span class="d">&lt;  switchport access vlan 10</span><span class="c">---</span><span class="a">&gt;  switchport access vlan 30</span><span class="m">17c19</span><span class="d">&lt; snmp-server community public RO</span><span class="c">---</span><span class="a">&gt; snmp-server community N3tOps RO</span></pre>
+      <div class="trap" style="margin-top:6px"><b>Trap:</b> <code>&lt;</code> / <code>&gt;</code> and <code>6a7,8</code> (a=add, c=change, d=delete) = <b>normal</b> format. No context, no <code>@@</code>.</div>
+    </div>
+    <div class="panel">
+      <h2>📑 <code>diff -u</code> outside Git: unified</h2>
+<pre class="diff"><span class="f">--- ../old.cfg	2026-10-19 16:01:54</span><span class="f">+++ ../new.cfg	2026-10-19 16:01:54</span><span class="h">@@ -4,15 +4,17 @@</span><span class="c">  name USERS</span><span class="c"> vlan 20</span><span class="c">  name VOICE</span><span class="a">+vlan 30</span><span class="a">+ name CAMERAS</span><span class="c">  …</span></pre>
+      <div class="tip" style="margin-top:6px"><b>vs Git:</b> no <code>diff --git</code> / <code>index</code> lines, <b>timestamps</b> after the names, no <code>a/</code> <code>b/</code>, no section label after <code>@@</code>.</div>
+    </div>
+    <div class="panel">
+      <h2>🧭 What the header tells you</h2>
+      <table class="grid">
+        <tr><th>Line</th><th>Means</th></tr>
+        <tr><td><code>new file mode</code></td><td>created</td></tr>
+        <tr><td><code>deleted file mode</code></td><td>deleted</td></tr>
+        <tr><td><code>rename from/to</code></td><td>renamed</td></tr>
+        <tr><td><code>old/new mode</code></td><td>permissions</td></tr>
+        <tr><td><code>Binary files … differ</code></td><td>binary: no lines shown</td></tr>
+        <tr><td><code>diff --cc</code> · <code>@@@</code></td><td>merge commit</td></tr>
+        <tr><td>timestamps on <code>---</code></td><td>made by <code>diff -u</code>, not Git</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-del">old side</span><span class="k k-add">new side</span><span class="k k-hunk">hunk header</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Hashes, dates and similarity % vary per run</span>
+  </footer>
+</div>
+</body>
+</html>

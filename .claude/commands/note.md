@@ -166,6 +166,11 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
 - `## TL;DR (teach-back card)`: 3 key points + 1 trap, written last.
 - `## Sources`: the URLs actually used. If diagrams exist, add a line pointing at `assets/$ARGUMENTS/*.mmd`. `## To verify`: every `⚠ verify` item.
 - Cross-link related notes with relative links instead of repeating their content, e.g. `[T04.07](T04-git-version-control.md#t0407--commands-inspect)`.
+- **Syntax drill (syntax-heavy topics only: T02, T04, T05, T06, T11, T27, T31, T32, T34):** never a separate cheat-sheet file. Two files per topic only (full note + essentials).
+  - Add a `## Syntax drill` section at the **end** of the essentials file (`bee-essentials/` or `bob-essentials/`), after "Cheat lines". Each part goes inside a collapsed `<details><summary><b>N. Area</b></summary>` block: valid vs invalid syntax, each command or call with its **real** output, and the errors you get when it's wrong.
+  - Grow the essentials **Quick self-check** to 8–10 questions instead of adding a second self-test.
+  - Add the topic's "question wording → answer" table to the owner's section of the root `cheatsheet.md` (`### TXX Name` under `## Beedy · question wording → answer`, or Bob's equivalent).
+  - Conceptual topics get no drill: essentials + images only.
 - **Contents block (last step of writing):** run `python3 scripts/toc.py <note_path>`. It writes a `**Contents**` list between `<!-- toc:start -->` and `<!-- toc:end -->`, directly under the overview image and its caption:
   - one link per `##` section, in order
   - under `## Concepts`, one line with a link to every `### TXX.NN` concept

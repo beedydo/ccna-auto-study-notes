@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 read a diff like the exam</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .r1 { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+  .r2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .panel h2 .ids { margin-left: auto; font-weight: 400; }
+  .panel pre.diff { font-size: 12.2px; }
+  .steps { display: grid; gap: 6px; margin-top: 8px; }
+  .steps div { border: 2px solid var(--line); border-radius: 8px; padding: 5px 9px; font-size: 13px; line-height: 1.4; background: #fafaf8; }
+  .ans { background: var(--hunk-soft); border: 2px solid var(--hunk); border-radius: 8px; padding: 6px 10px; font-size: 13.2px; line-height: 1.45; margin-top: 8px; }
+  .ans b:first-child { color: var(--hunk); }
+  .rebuild { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .rebuild h3 { margin: 0 0 4px; font-size: 13.5px; }
+  .rebuild pre.diff { font-size: 11.6px; }
+  .rebuild .x { text-decoration: line-through; opacity: .35; }
+  table.grid td { font-size: 12.8px; padding: 5px 8px; }
+  table.grid td code { white-space: normal; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T05 · <span class="pill">Read it like the exam</span> what changed, in words</h1>
+    <div class="meta"><b>T05.03 · T05.06</b><br>Config diffs (blueprint 5.12) and code-review diffs (T46)<br>Real Git 2.54 output</div>
+  </header>
+
+  <div class="row r1">
+    <div class="panel">
+      <h2>🐍 Code-review diff: three steps <span class="ids">T05.06</span></h2>
+<pre class="diff"><span class="f">--- a/api.py</span><span class="f">+++ b/api.py</span><span class="h">@@ -4,12 +4,12 @@ import requests</span><span class="c"> def get_devices(host, token):</span><span class="c">     url = f"https://{host}/api/v1/devices"</span><span class="c">     headers = {"X-Auth-Token": token}</span><span class="d">-    response = requests.get(url, headers=headers, verify=False)</span><span class="a">+    response = requests.get(url, headers=headers, verify=True)</span><span class="c">     return response.json()</span><span class="c">&nbsp;</span><span class="c">&nbsp;</span><span class="c"> def get_interfaces(host, token):</span><span class="d">-    url = f"https://{host}/api/v1/interfaces"</span><span class="a">+    url = f"https://{host}/api/v2/interfaces"</span><span class="c">     headers = {"X-Auth-Token": token}</span><span class="d">-    response = requests.get(url, headers=headers, verify=False)</span><span class="a">+    response = requests.get(url, headers=headers, verify=True)</span><span class="c">     return response.json()</span></pre>
+      <div class="steps">
+        <div><span class="n">1</span><b>Header:</b> <code>a/api.py</code> → <code>b/api.py</code>: same file, modified (no <code>/dev/null</code>).</div>
+        <div><span class="n">2</span><b>@@:</b> 12 → 12 = <b>net 0</b>, but that does <b>not</b> mean "no change". Label <code>import requests</code> is just the nearest column-0 line above.</div>
+        <div><span class="n">3</span><b>Pairs:</b> 3 <code>-</code>/<code>+</code> pairs = 3 modified lines (3 insertions, 3 deletions).</div>
+      </div>
+      <div class="ans"><b>Answer:</b> TLS certificate verification turned <b>on</b> in both functions (<code>verify=False</code> → <code>verify=True</code>); the interfaces endpoint moved from <b>v1 to v2</b>. <code>get_devices</code> still calls v1.</div>
+    </div>
+
+    <div class="panel">
+      <h2>🧱 Rebuild the old and new file <span class="ids">T05.06</span></h2>
+      <div class="rebuild">
+        <div><h3 style="color:var(--del)">OLD = space + <code>-</code> lines</h3>
+<pre class="diff"><span class="c"> interface Gi1/0/2</span><span class="d">- switchport access vlan 10</span><span class="a x">+ switchport access vlan 30</span><span class="c"> !</span><span class="c"> logging host 10.0.0.50</span><span class="d">-snmp-server community public RO</span><span class="a x">+snmp-server community N3tOps RO</span><span class="c"> end</span></pre></div>
+        <div><h3 style="color:var(--add)">NEW = space + <code>+</code> lines</h3>
+<pre class="diff"><span class="c"> interface Gi1/0/2</span><span class="d x">- switchport access vlan 10</span><span class="a">+ switchport access vlan 30</span><span class="c"> !</span><span class="c"> logging host 10.0.0.50</span><span class="d x">-snmp-server community public RO</span><span class="a">+snmp-server community N3tOps RO</span><span class="c"> end</span></pre></div>
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap · the prefix is ONE character:</b> <code>+ name CAMERAS</code> = an added line whose content is <code>␣name CAMERAS</code> (IOS indent). <code>␣␣name VOICE</code> = context (prefix space + indent space).</div>
+      <div class="tip" style="margin-top:8px"><b>Strip the prefix, keep the rest.</b> The new file contains <code> switchport access vlan 30</code> with its leading space.</div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="panel">
+      <h2>📝 Pattern → plain-English answer</h2>
+      <table class="grid">
+        <tr><th>You see</th><th>Say</th></tr>
+        <tr><td>lone <code>+</code> block</td><td>"X was <b>added</b>"</td></tr>
+        <tr><td>lone <code>-</code> block</td><td>"X was <b>removed</b>"</td></tr>
+        <tr><td><code>-</code> then <code>+</code>, same keyword</td><td>"X <b>changed</b> from A to B"</td></tr>
+        <tr><td><code>--- /dev/null</code></td><td>"file <b>created</b>"</td></tr>
+        <tr><td><code>+++ /dev/null</code></td><td>"file <b>deleted</b>"</td></tr>
+        <tr><td><code>-40,30 +40,2</code></td><td>"≈28 lines deleted"</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>🎯 Typical config answers</h2>
+      <table class="grid">
+        <tr><th>Diff shows</th><th>Answer</th></tr>
+        <tr><td><code>+vlan 30</code> · <code>+ name CAMERAS</code></td><td>VLAN 30 added, named CAMERAS</td></tr>
+        <tr><td><code>- … vlan 10</code> / <code>+ … vlan 30</code></td><td>access port moved VLAN 10 → 30</td></tr>
+        <tr><td><code>- ip address 192.0.2.1 …</code> / <code>+ ip address 198.51.100.1 …</code></td><td>interface IP changed</td></tr>
+        <tr><td><code>-snmp-server community public</code> / <code>+… N3tOps</code></td><td>SNMP community changed</td></tr>
+        <tr><td><code>-("admin", "C1sco12345")</code> / <code>+(os.environ[…])</code></td><td>hard-coded creds → env vars</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>⚠️ Exam traps</h2>
+      <div class="trap" style="margin-bottom:6px"><b>Trap:</b> <code>-</code> is not "minus from the new file". It's a line that exists only in the <b>old</b> file.</div>
+      <div class="trap" style="margin-bottom:6px"><b>Trap:</b> the label after <code>@@</code> (<code>def connect():</code>, <code>vlan 10</code>) was <b>not</b> added or changed.</div>
+      <div class="trap" style="margin-bottom:6px"><b>Trap:</b> same counts (<code>-4,12 +4,12</code>) can still hide modified lines.</div>
+      <div class="trap"><b>Trap:</b> <code>@@ -1 +1 @@</code> = 1 line each side, not 0.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-del">old only</span><span class="k k-add">new only</span><span class="k k-hunk">hunk header</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Python diff from drill T05.1 (api.py) · config diff from switch.cfg</span>
+  </footer>
+</div>
+</body>
+</html>

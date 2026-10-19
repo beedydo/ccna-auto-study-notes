@@ -11,7 +11,7 @@ Plain-English summaries of every one of your topics: one picture, the big idea, 
 | T02 Functions, classes, modules | [essentials](T02-functions-classes-modules.md) | [full note](../bee/T02-functions-classes-modules.md) |
 | T04 Git + version control | [essentials](T04-git-version-control.md) | [full note](../bee/T04-git-version-control.md) |
 | T05 Unified diffs | [essentials](T05-unified-diffs.md) | [full note](../bee/T05-unified-diffs.md) |
-| T06 Data formats + parsing | [essentials](T06-data-formats-parsing.md) · [syntax cheat sheet](T06-syntax-cheatsheet.md) | [full note](../bee/T06-data-formats-parsing.md) |
+| T06 Data formats + parsing | [essentials](T06-data-formats-parsing.md) | [full note](../bee/T06-data-formats-parsing.md) |
 
 ## Cycle 2 · teach-back 2026-10-18
 

@@ -14,7 +14,7 @@ cross_study: 2026-10-20
 
 # T06 · Data formats + parsing
 
-> Owner: **Beedy** · Blueprint: **1.1, 1.2** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11 · Syntax drill: [T06 cheat sheet](../bee-essentials/T06-syntax-cheatsheet.md)
+> Owner: **Beedy** · Blueprint: **1.1, 1.2** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11 · Syntax drill: [in the essentials](../bee-essentials/T06-data-formats-parsing.md#syntax-drill)
 
 ![T06 at a glance: XML vs JSON vs YAML on every criterion, with parsers and traps](../assets/T06/00-overview.png)
 

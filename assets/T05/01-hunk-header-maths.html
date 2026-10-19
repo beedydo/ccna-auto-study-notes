@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 hunk header maths</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .r1 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .r2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16.5px; display: flex; gap: 8px; align-items: center; }
+  .panel h2 .ids { margin-left: auto; font-weight: 400; }
+  .count { display: grid; grid-template-columns: minmax(0, 1fr) 54px 54px; }
+  .count pre.diff { border-radius: 8px 0 0 8px; border-right: none; font-size: 12.4px; }
+  .count .col { border: 2px solid var(--line); border-left: 1px dashed #bbb; background: #fff; padding: 8px 0; font-family: Menlo, monospace; font-size: 12.4px; line-height: 1.55; text-align: center; }
+  .count .col:last-child { border-radius: 0 8px 8px 0; }
+  .count .col div { height: 19.22px; }
+  .count .col .hd { font-weight: 800; }
+  .count .o { color: var(--del); } .count .nn { color: var(--add); }
+  .sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+  .sum div { border-radius: 8px; padding: 6px 8px; font-size: 13px; text-align: center; border: 1.5px solid var(--line); }
+  .sum .o { background: var(--del-soft); border-color: var(--del); } .sum .nn { background: var(--add-soft); border-color: var(--add); } .sum .t { background: var(--hunk-soft); border-color: var(--hunk); }
+  table.rules { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.rules td, table.rules th { border: 1.5px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+  table.rules th { background: #f0f0ee; }
+  .mini pre.diff { font-size: 12px; }
+  .mini p { margin: 6px 0 0; font-size: 12.8px; line-height: 1.45; }
+  .shift { display: grid; grid-template-columns: 80px minmax(0, 1fr); gap: 0; font-size: 13px; margin-top: 8px; border: 2px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .shift div { padding: 4px 8px; border-bottom: 1px dashed #ccc; }
+  .shift .k { background: #fafaf8; font-weight: 700; border-right: 1.5px solid var(--line); }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T05 · <span class="pill">The @@ line</span> count it, don't guess</h1>
+    <div class="meta"><b>T05.02 · T05.04</b><br>@@ -oldStart,oldCount +newStart,newCount @@ [label]<br>All hunks from the real drill (Git 2.54)</div>
+  </header>
+
+  <div class="row r1">
+    <div class="panel">
+      <h2>🧮 Count every line of one hunk <span class="ids">T05.02</span></h2>
+      <div class="count">
+<pre class="diff"><span class="h">@@ -4,15 +4,17 @@ vlan 10</span><span class="c">  name USERS</span><span class="c"> vlan 20</span><span class="c">  name VOICE</span><span class="a">+vlan 30</span><span class="a">+ name CAMERAS</span><span class="c"> !</span><span class="c"> interface GigabitEthernet1/0/1</span><span class="c">  description Uplink</span><span class="c">  switchport mode trunk</span><span class="c"> !</span><span class="c"> interface GigabitEthernet1/0/2</span><span class="d">- switchport access vlan 10</span><span class="a">+ switchport access vlan 30</span><span class="c"> !</span><span class="c"> ntp server 10.0.0.1</span><span class="c"> logging host 10.0.0.50</span><span class="d">-snmp-server community public RO</span><span class="a">+snmp-server community N3tOps RO</span><span class="c"> end</span></pre>
+        <div class="col o"><div class="hd">old</div><div>4</div><div>5</div><div>6</div><div></div><div></div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div><div>13</div><div></div><div>14</div><div>15</div><div>16</div><div>17</div><div></div><div>18</div></div>
+        <div class="col nn"><div class="hd">new</div><div>4</div><div>5</div><div>6</div><div>7</div><div>8</div><div>9</div><div>10</div><div>11</div><div>12</div><div>13</div><div>14</div><div></div><div>15</div><div>16</div><div>17</div><div>18</div><div></div><div>19</div><div>20</div></div>
+      </div>
+      <div class="sum">
+        <div class="o"><b>old</b> = 13 context + 2 <code>-</code> = <b>15</b><br>lines 4 → 18</div>
+        <div class="nn"><b>new</b> = 13 context + 4 <code>+</code> = <b>17</b><br>lines 4 → 20</div>
+        <div class="t"><b>net</b> = 17 − 15 = <b>+2</b><br>= 4 <code>+</code> − 2 <code>-</code> ✔</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>📐 The rules <span class="ids">T05.02</span></h2>
+      <table class="rules">
+        <tr><th style="width:36%">You see</th><th>It means</th></tr>
+        <tr><td><code>-4,15</code></td><td><b>old</b> file: starts at line 4, hunk spans 15 lines</td></tr>
+        <tr><td><code>+4,17</code></td><td><b>new</b> file: starts at line 4, hunk spans 17 lines</td></tr>
+        <tr><td>count</td><td><b>context + changed</b> lines on that side. Never "lines added"</td></tr>
+        <tr><td><code>@@ -1 +1 @@</code></td><td>count left out → <b>1</b> (not 0)</td></tr>
+        <tr><td><code>-0,0</code> / <code>+0,0</code></td><td>nothing on that side: file <b>created</b> / <b>emptied or deleted</b></td></tr>
+        <tr><td><code>-6,0 +7,2</code> (with <code>-U0</code>)</td><td>start with count 0 = insert <b>after</b> old line 6</td></tr>
+        <tr><td><code>@@ … @@ vlan 10</code></td><td>label = nearest earlier line starting in column 0. <b>Not</b> a change</td></tr>
+        <tr><td><code>@@@ -1,4 -1,4 +1,4 @@@</code></td><td>3 <code>@</code> = <b>combined</b> diff of a merge (2 parents)</td></tr>
+      </table>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> <code>@@ -10,7 +10,8 @@</code> → "8 lines added"? <b>No.</b> 8 − 7 = <b>net +1</b>. For example 7 context + 1 <code>+</code>, or 6 context + 1 <code>-</code> + 2 <code>+</code>.</div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="panel mini">
+      <h2>✂️ Same edit, <code>--unified=1</code> → 3 hunks <span class="ids">T05.04</span></h2>
+<pre class="diff"><span class="h">@@ -6,2 +6,4 @@ vlan 20</span><span class="c">  name VOICE</span><span class="a">+vlan 30</span><span class="a">+ name CAMERAS</span><span class="c"> !</span><span class="h">@@ -12,3 +14,3 @@ interface GigabitEthernet1/0/1</span><span class="c"> interface GigabitEthernet1/0/2</span><span class="d">- switchport access vlan 10</span><span class="a">+ switchport access vlan 30</span><span class="c"> !</span><span class="h">@@ -16,3 +18,3 @@ ntp server 10.0.0.1</span><span class="c"> logging host 10.0.0.50</span><span class="d">-snmp-server community public RO</span><span class="a">+snmp-server community N3tOps RO</span><span class="c"> end</span></pre>
+      <div class="shift">
+        <div class="k">hunk 1</div><div><code>-6,2 +6,4</code>: 2 ctx + 2 <code>+</code> → net <b>+2</b></div>
+        <div class="k">hunk 2</div><div><code>-12 → +14</code>: shifted <b>+2</b> by hunk 1 · itself net 0</div>
+        <div class="k" style="border-bottom:none">hunk 3</div><div style="border-bottom:none"><code>-16 → +18</code>: still <b>+2</b> · net 0</div>
+      </div>
+    </div>
+
+    <div class="panel mini">
+      <h2>🔬 Context size changes the header <span class="ids">T05.04</span></h2>
+      <table class="rules">
+        <tr><th>Flag</th><th>Hunks</th><th>Headers</th></tr>
+        <tr><td>default (<code>-U3</code>)</td><td>1</td><td><code>-4,15 +4,17</code></td></tr>
+        <tr><td><code>--unified=1</code></td><td>3</td><td><code>-6,2 +6,4</code> · <code>-12,3 +14,3</code> · <code>-16,3 +18,3</code></td></tr>
+        <tr><td><code>--unified=0</code></td><td>3</td><td><code>-6,0 +7,2</code> · <code>-13 +15</code> · <code>-17 +19</code></td></tr>
+      </table>
+      <p>Hunks <b>merge</b> when the gap between changes ≤ 2 × context. With 3 lines of context, changes 6 apart stay in one hunk.</p>
+      <p><b>Same change, different numbers:</b> the net (+2) never changes; only start and count do.</p>
+      <div class="tip" style="margin-top:8px"><b>Shortcut:</b> <code>newStart − oldStart</code> of a later hunk = net lines added by all <b>earlier</b> hunks in that file.</div>
+    </div>
+
+    <div class="panel mini">
+      <h2>🗑️ Spot a big deletion <span class="ids">T05.03</span></h2>
+<pre class="diff"><span class="h">@@ -1,10 +1,2 @@</span><span class="c"> hostname R1</span><span class="d">-ip access-list extended BLOCK1</span><span class="d">-ip access-list extended BLOCK2</span><span class="d">-ip access-list extended BLOCK3</span><span class="d">-ip access-list extended BLOCK4</span><span class="d">-ip access-list extended BLOCK5</span><span class="d">-ip access-list extended BLOCK6</span><span class="d">-ip access-list extended BLOCK7</span><span class="d">-ip access-list extended BLOCK8</span><span class="c"> end</span></pre>
+      <p>oldCount 10 ≫ newCount 2 → <b>8 lines removed</b>. A run of <code>-</code> with no <code>+</code> = block <b>deleted</b>.</p>
+      <div class="trap" style="margin-top:6px"><b>Exam cue:</b> "recognise a large deleted block" → many consecutive lines starting with <code>-</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-del">old side</span><span class="k k-add">new side</span><span class="k k-hunk">hunk header</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Line numbers counted from the real <code>switch.cfg</code> in drill T05.1</span>
+  </footer>
+</div>
+</body>
+</html>

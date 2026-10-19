@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 overview: unified diffs</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .grid2 { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 16px; }
+  .anno { display: grid; grid-template-columns: minmax(0, 1fr) 36px; }
+  .anno pre.diff { border-radius: 8px 0 0 8px; border-right: none; }
+  .tags { border: 2px solid var(--line); border-left: none; border-radius: 0 8px 8px 0; background: #fff; padding: 8px 0; }
+  .tags div { height: 19.84px; display: flex; align-items: center; justify-content: center; }
+  .side { display: flex; flex-direction: column; gap: 10px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 9px 13px; font-size: 13.4px; line-height: 1.45; }
+  .card h3 { margin: 0 0 5px; font-size: 15px; display: flex; gap: 6px; align-items: center; }
+  .card h3 .ids { margin-left: auto; font-weight: 400; }
+  .hk { font-family: Menlo, monospace; font-size: 20px; font-weight: 800; text-align: center; padding: 6px 0 4px; letter-spacing: .5px; }
+  .hk .o { color: var(--del); } .hk .nn { color: var(--add); } .hk .s { color: var(--muted); font-size: 15px; font-weight: 500; }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 4px; }
+  .split div { border-radius: 8px; padding: 5px 8px; font-size: 12.8px; }
+  .split .o { background: var(--del-soft); border: 1.5px solid var(--del); }
+  .split .nn { background: var(--add-soft); border: 1.5px solid var(--add); }
+  table.px { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.px td { border: 1.5px solid var(--line); padding: 4px 8px; }
+  .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+  .strip > div { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 7px 10px; font-size: 13px; line-height: 1.42; }
+  .strip h3 { margin: 0 0 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T05 · <span class="pill">Unified Diffs</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 5.12</b><br>Every T05 concept on one page<br>Real <code>git diff --staged</code> output, drill T05.1 (Git 2.54)</div>
+  </header>
+
+  <div class="grid2">
+    <div>
+      <div class="anno">
+<pre class="diff"><span class="f">diff --git a/switch.cfg b/switch.cfg</span><span class="f">index de65e08..76a0304 100644</span><span class="f">--- a/switch.cfg</span><span class="f">+++ b/switch.cfg</span><span class="h">@@ -4,15 +4,17 @@ vlan 10</span><span class="c">  name USERS</span><span class="c"> vlan 20</span><span class="c">  name VOICE</span><span class="a">+vlan 30</span><span class="a">+ name CAMERAS</span><span class="c"> !</span><span class="c"> interface GigabitEthernet1/0/1</span><span class="c">  description Uplink</span><span class="c">  switchport mode trunk</span><span class="c"> !</span><span class="c"> interface GigabitEthernet1/0/2</span><span class="d">- switchport access vlan 10</span><span class="a">+ switchport access vlan 30</span><span class="c"> !</span><span class="c"> ntp server 10.0.0.1</span><span class="c"> logging host 10.0.0.50</span><span class="d">-snmp-server community public RO</span><span class="a">+snmp-server community N3tOps RO</span><span class="c"> end</span></pre>
+        <div class="tags">
+          <div><span class="n">1</span></div><div><span class="n">2</span></div><div><span class="n">3</span></div><div><span class="n">3</span></div><div><span class="n">4</span></div>
+          <div><span class="n">5</span></div><div></div><div></div><div><span class="n">6</span></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div>
+          <div><span class="n">7</span></div><div></div><div></div><div></div><div></div><div><span class="n">7</span></div><div></div><div></div>
+        </div>
+      </div>
+      <div class="tip" style="margin-top:10px"><b>Read it as:</b> VLAN 30 (CAMERAS) <b>added</b> · Gi1/0/2 access VLAN <b>10 → 30</b> · SNMP community <b>public → N3tOps</b>. Net <b>+2</b> lines (4 <code>+</code>, 2 <code>-</code>).</div>
+    </div>
+
+    <div class="side">
+      <div class="card"><h3><span class="n">1</span><span class="n">2</span>File header <span class="ids">T05.01</span></h3>
+        <code>diff --git a/X b/X</code> = which file · <code>a/</code> old, <code>b/</code> new. <code>index old..new mode</code> = blob hashes: <b>ignore</b>.</div>
+      <div class="card"><h3><span class="n">3</span>Old vs new <span class="ids">T05.01</span></h3>
+        <code>---</code> / <code>a/</code> / <code>-</code> = <b>before</b> · <code>+++</code> / <code>b/</code> / <code>+</code> = <b>after</b>.
+        <code>--- /dev/null</code> = file <b>created</b> · <code>+++ /dev/null</code> = file <b>deleted</b>.</div>
+      <div class="card"><h3><span class="n">4</span>Hunk header <span class="ids">T05.02</span></h3>
+        <div class="hk">@@ <span class="o">-4,15</span> <span class="nn">+4,17</span> @@ <span class="s">vlan 10</span></div>
+        <div class="split"><div class="o"><b>old</b>: 15 lines, from line 4 (4–18)</div><div class="nn"><b>new</b>: 17 lines, from line 4 (4–20)</div></div>
+        <div style="margin-top:6px">Net = 17 − 15 = <b>+2</b>. Counts <b>include context</b>. No count = <b>1</b>. Text after <code>@@</code> = section <b>label</b> only.</div></div>
+      <div class="card"><h3><span class="n">5</span><span class="n">6</span><span class="n">7</span>Line prefixes <span class="ids">T05.03 · T05.04</span></h3>
+        <table class="px">
+          <tr><td><span class="chip c">␣</span> space</td><td>context, unchanged</td><td>counts <b>old + new</b></td></tr>
+          <tr><td><span class="chip d">-</span></td><td>only in <b>old</b> (removed)</td><td>old count</td></tr>
+          <tr><td><span class="chip a">+</span></td><td>only in <b>new</b> (added)</td><td>new count</td></tr>
+          <tr><td><span class="chip d">-</span> then <span class="chip a">+</span></td><td><b>modified</b> line (no "changed" symbol)</td><td>1 each side</td></tr>
+        </table>
+        <div style="margin-top:5px">Default <b>3</b> context lines; changes ≤ 6 lines apart merge into one hunk.</div></div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div><h3>🛠️ Produce it <span class="ids">T05.05</span></h3><code>git diff</code> unstaged · <code>git diff --staged</code> · <code>git diff c1 c2</code> · <code>git show &lt;sha&gt;</code> · <code>diff -u old new</code> (outside Git)</div>
+    <div><h3>🎯 3-step read <span class="ids">T05.06</span></h3><span class="n">1</span><code>---</code>/<code>+++</code>: which file, which side · <span class="n">2</span><code>@@</code>: where, net change · <span class="n">3</span>pair <code>-</code> with <code>+</code> → "X became Y"</div>
+    <div><h3>🧱 Rebuild a side</h3><b>New</b> = keep <code>␣</code> + <code>+</code>, drop <code>-</code>. <b>Old</b> = keep <code>␣</code> + <code>-</code>, drop <code>+</code>.</div>
+    <div class="trap" style="border-radius:10px"><b>Trap:</b> <code>@@ -10,7 +10,8 @@</code> is <b>net +1</b>, not "8 added". A long run of <code>-</code> with oldCount ≫ newCount = <b>block deleted</b>.</div>
+  </div>
+
+  <footer>
+    <span class="k k-del">removed (old only)</span><span class="k k-add">added (new only)</span><span class="k k-hunk">hunk header</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Detail sheets 01–04 + animation in <code>assets/T05/</code></span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T05 producing diffs</title>
+<link rel="stylesheet" href="t05.css">
+<style>
+  .row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .r1 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .r2 { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; display: flex; gap: 8px; align-items: center; }
+  .panel h2 .ids { margin-left: auto; font-weight: 400; }
+  .areas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; align-items: stretch; margin: 6px 0 4px; }
+  .area { border: 2.5px solid var(--line); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 13px; font-weight: 700; margin: 0 14px; background: #fafaf8; }
+  .area small { display: block; font-weight: 400; color: var(--muted); font-size: 11.5px; }
+  .arcs { position: relative; height: 128px; margin: 0 14px; }
+  .arc { position: absolute; height: 28px; border: 2.5px solid; border-top: none; border-radius: 0 0 12px 12px; display: flex; align-items: flex-end; justify-content: center; }
+  .arc code { transform: translateY(18px); background: #fff; border: 1.5px solid; font-size: 12px; font-weight: 700; padding: 1px 7px; }
+  table.grid td { font-size: 13px; padding: 6px 9px; }
+  table.grid td code { white-space: normal; }
+  .panel pre.diff { font-size: 12.2px; }
+  .out { font-family: Menlo, monospace; font-size: 12.4px; line-height: 1.55; background: #fff; border: 2px solid var(--line); border-radius: 8px; padding: 8px 12px; white-space: pre; }
+  .out .a { color: var(--add); font-weight: 700; } .out .d { color: var(--del); font-weight: 700; }
+  .mini { font-size: 12.8px; line-height: 1.45; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T05 · <span class="pill">Which command, which diff</span> producing and summarising</h1>
+    <div class="meta"><b>T05.05</b><br>Same drill repo, different views of the same change<br>Real Git 2.54 output</div>
+  </header>
+
+  <div class="row r1">
+    <div class="panel">
+      <h2>🧭 What each <code>git diff</code> compares <span class="ids">T05.05 · T04.07</span></h2>
+      <div class="areas">
+        <div class="area">Working tree<small>files on disk</small></div>
+        <div class="area">Staging area<small>index · after <code>git add</code></small></div>
+        <div class="area">HEAD<small>last commit</small></div>
+        <div class="area">Older commit<small><code>c1</code> · <code>HEAD~1</code></small></div>
+      </div>
+      <div class="arcs">
+        <div class="arc" style="left:9%;width:25%;top:0;border-color:var(--del)"><code style="border-color:var(--del);color:var(--del)">git diff</code></div>
+        <div class="arc" style="left:34%;width:25%;top:0;border-color:var(--add)"><code style="border-color:var(--add);color:var(--add)">git diff --staged</code></div>
+        <div class="arc" style="left:9%;width:50%;top:48px;height:30px;border-color:var(--hunk)"><code style="border-color:var(--hunk);color:var(--hunk)">git diff HEAD</code></div>
+        <div class="arc" style="left:59%;width:25%;top:0;border-color:var(--yaml)"><code style="border-color:var(--yaml);color:var(--yaml)">git show HEAD</code></div>
+        <div class="arc" style="left:59%;width:25%;top:52px;height:30px;border-color:#868e96"><code style="border-color:#868e96;color:#555">git diff c1 c2</code></div>
+      </div>
+      <table class="grid">
+        <tr><th style="width:36%">Command</th><th>Shows</th></tr>
+        <tr><td><code>git diff</code></td><td>edits <b>not yet staged</b> (working tree vs index)</td></tr>
+        <tr><td><code>git diff --staged</code> (= <code>--cached</code>)</td><td>what the <b>next commit</b> will contain (index vs HEAD)</td></tr>
+        <tr><td><code>git diff HEAD</code></td><td>all uncommitted changes, staged + unstaged</td></tr>
+        <tr><td><code>git diff c1 c2 -- file</code></td><td>between two commits, optionally one file</td></tr>
+        <tr><td><code>git show &lt;sha&gt;</code></td><td>commit message + its diff vs parent</td></tr>
+        <tr><td><code>diff -u old new</code></td><td>two files, no Git needed</td></tr>
+      </table>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> you ran <code>git add</code> and <code>git diff</code> now prints <b>nothing</b>. Not lost: it's staged. Use <code>git diff --staged</code>.</div>
+    </div>
+
+    <div class="panel">
+      <h2>📊 Summaries instead of full hunks <span class="ids">T05.05 · T05.06</span></h2>
+      <div style="font-size:13px;margin-bottom:4px"><code>git diff --staged --stat</code></div>
+<div class="out"> banner.cfg | 1 <span class="a">+</span>
+ legacy.txt | 1 <span class="d">-</span>
+ switch.cfg | 6 <span class="a">++++</span><span class="d">--</span>
+ 3 files changed, 5 insertions(+), 3 deletions(-)</div>
+      <div style="font-size:13px;margin:8px 0 4px"><code>git diff --staged --numstat</code> (added · deleted · file)</div>
+<div class="out">1	0	banner.cfg
+0	1	legacy.txt
+4	2	switch.cfg</div>
+      <div style="font-size:13px;margin:8px 0 4px"><code>git diff --staged --name-status</code></div>
+<div class="out">A	banner.cfg       <span style="color:#888"># Added</span>
+D	legacy.txt       <span style="color:#888"># Deleted</span>
+M	switch.cfg       <span style="color:#888"># Modified (R = renamed)</span></div>
+      <div class="mini"><b>switch.cfg: 6 = 4 + 2.</b> 2 new VLAN lines (2 <code>+</code>) + 2 modified lines, and <b>each</b> modified line counts as 1 insertion <b>and</b> 1 deletion (2 <code>+</code>, 2 <code>-</code>) → 4 <code>+</code>, 2 <code>-</code>.</div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="panel">
+      <h2>🎚️ Context flags</h2>
+      <table class="grid">
+        <tr><th>Flag</th><th>Effect</th></tr>
+        <tr><td>(none)</td><td>3 lines of context</td></tr>
+        <tr><td><code>-U1</code> / <code>--unified=1</code></td><td>1 line → more, smaller hunks</td></tr>
+        <tr><td><code>-U0</code></td><td>only changed lines</td></tr>
+        <tr><td><code>git config diff.context 5</code></td><td>new default</td></tr>
+        <tr><td><code>-M</code></td><td>detect renames (on by default in <code>git diff</code>)</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <h2>🔤 <code>--word-diff</code>: change inside a line</h2>
+<pre class="diff"><span class="c"> interface GigabitEthernet1/0/2</span><span class="c">  switchport access vlan <b style="color:var(--del)">[-10-]</b><b style="color:var(--add)">{+30+}</b></span><span class="c"> !</span></pre>
+      <div class="mini"><code>[-…-]</code> removed · <code>{+…+}</code> added. Same change as the <code>-</code>/<code>+</code> pair, shown on one line. Not unified format.</div>
+    </div>
+    <div class="panel">
+      <h2>🧾 <code>git show &lt;sha&gt;</code></h2>
+<pre class="diff"><span class="f">commit 8011681ced72…</span><span class="c">Author: Beedy &lt;beedy@example.com&gt;</span><span class="c">Date:   Mon Oct 19 16:00:46 2026 +0800</span><span class="c">&nbsp;</span><span class="c">    Add VLAN 30</span><span class="c">&nbsp;</span><span class="f">diff --git a/switch.cfg b/switch.cfg</span><span class="f">index de65e08..76a0304 100644</span><span class="h">@@ -4,15 +4,17 @@ vlan 10</span></pre>
+      <div class="mini">Metadata first, then the same unified diff vs the parent commit.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-del">removed</span><span class="k k-add">added</span><span class="k k-hunk">hunk header</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Areas model from T04 (Git) · same drill repo as sheets 00–02</span>
+  </footer>
+</div>
+</body>
+</html>

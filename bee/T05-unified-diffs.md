@@ -14,7 +14,11 @@ cross_study: 2026-10-20
 
 # T05 · Unified diffs
 
-> Owner: **Beedy** · Blueprint: **5.12** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Beedy** · Blueprint: **5.12** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11 · Syntax drill: [in the essentials](../bee-essentials/T05-unified-diffs.md#syntax-drill)
+
+![T05 at a glance: a real annotated git diff with file header, hunk header and line prefixes](../assets/T05/00-overview.png)
+
+*Every T05 concept on one page. Left: a real `git diff --staged` with numbered parts; right: what each part means. Bottom: how to produce diffs, the 3-step read, rebuilding a side, and the main trap.*
 
 <!-- toc:start -->
 
@@ -68,6 +72,10 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - `/dev/null` = "nothing on this side". Only on the `---`/`+++` lines; `diff --git a/x b/x` keeps the real name.
 - Plain `diff -u` (no Git) has no `diff --git`/`index` lines. `---`/`+++` show filename **plus timestamp**.
 
+![File header cases: created, deleted, renamed, permissions, no newline, merge commit, and non-unified formats](../assets/T05/02-file-header-cases.png)
+
+*Read the lines between `diff --git` and `@@` first: they say whether the file was created, deleted, renamed or only had its mode changed. Bottom: plain `diff` (normal format) vs `diff -u`, so you can tell them apart.*
+
 ### T05.02 · Hunk header
 
 **Must cover:**
@@ -97,6 +105,14 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - Text after the second `@@` = the **enclosing function/section**, for orientation only (not part of the change).
   - Git finds it by searching **upwards** from the hunk for a line starting at column 0 (letter, `_`, `$`). Config file → nearest `vlan 10`/`interface …` line; Python without a diff driver → may show `import requests`, not the function. ⚠ verify per language driver.
 - Exam shortcut: **new start − old start** = net lines added/removed by **earlier** hunks in the same file.
+
+![How to count a hunk header: every line numbered on the old and new side, the rules, multiple hunks and a big deletion](../assets/T05/01-hunk-header-maths.png)
+
+*Top left: every line of the real hunk numbered on both sides, so you can see why it's -4,15 +4,17. Top right: every header shape and what it means. Bottom: the same edit split into 3 hunks, how context size changes the numbers, and how to spot a deleted block.*
+
+![Animated: counting a hunk line by line with old and new tallies, showing context counts on both sides and the +2 shift into the next hunk](../assets/T05/10-count-hunk.gif)
+
+*Steps: walk each line of two real hunks keeping an old and a new tally; context adds to both, `+` to new only, `-` to old only. The second hunk starts 2 lower because the first one added 2. Fixes the misconception that the count after `+` is the number of added lines.*
 
 ### T05.03 · Line prefixes
 
@@ -171,6 +187,11 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - Outside Git: `diff -u old.cfg new.cfg` → same unified format, no `diff --git`/`index` lines. Plain `diff` (no `-u`) = **normal** format (`4a5`, `<`/`>`), not unified.
 - `git diff --unified=0` → no context, just the changes.
 
+
+![Which git diff command compares which areas, plus --stat, --numstat, --name-status, word diff and git show](../assets/T05/03-producing-diffs.png)
+
+*Top left: what each `git diff` variant compares (working tree, staging area, HEAD, older commit). Top right: the three summary formats for the same change. Bottom: context flags, `--word-diff` and `git show`.*
+
 ### T05.06 · Exam angle
 
 **Must cover:**
@@ -188,6 +209,10 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 - Rebuild **new** file: keep ` ` and `+` lines, drop `-` lines. Rebuild **old**: keep ` ` and `-`, drop `+`.
 - Typical answers: "VLAN 30 added", "access port moved from VLAN 10 to 30", "SNMP community changed", "TLS verification turned on (`verify=False` → `verify=True`)", "API path moved v1 → v2".
 - Count: `+` lines = insertions, `-` lines = deletions (what `--stat` reports). A modification = 1 insertion + 1 deletion.
+
+![Reading a diff like the exam: a code-review diff in three steps, rebuilding old and new, and pattern-to-answer tables](../assets/T05/04-read-like-the-exam.png)
+
+*Left: the real `api.py` code-review diff read in three steps, with the answer in words. Right: rebuilding the old and new file by keeping or dropping lines. Bottom: diff patterns mapped to plain-English answers, and the traps.*
 
 ## Exam traps
 
@@ -507,3 +532,4 @@ A. Git renumbers hunks randomly  B. The first hunk added a net 3 lines, which sh
 - ⚠ Open flag (HANDOVER §6): it's unconfirmed whether the CBT Git Diff video teaches reading `@@` hunk headers. Use drill T05.1 and this note regardless.
 - ⚠ Text after the second `@@`: without a language diff driver, Git uses the nearest earlier line starting at column 0. That's why the Python example shows `import requests` instead of the function name. Setting `*.py diff=python` in `.gitattributes` changes it. For the exam, treat it as an orientation label only.
 - The drill output in **Examples** came from a real run on Git 2.54. Your blob hashes and timestamps will differ.
+- Images in `assets/T05/` come from a real re-run of drill T05.1 on Git 2.54, plus a rename, mode change, missing newline, binary file and merge commit added for sheet 02.
