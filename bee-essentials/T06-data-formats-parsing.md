@@ -13,7 +13,10 @@
 *Same colour = same piece of data. Read across to see how each format writes the root, the model name, a list and a boolean; read the green panel to see that JSON and YAML parse to the identical dict while xmltodict gives strings and drops the module prefix.*
 
 ## The big idea
-XML, JSON and YAML are three ways to write the same nested data, like the same shopping list written as a formal form (XML), a compact note (JSON) or an indented bullet list (YAML). Network APIs send you one of these, and your script turns it into Python dicts and lists so it can pull values out. On the exam you will be asked to spot an invalid snippet, match a format to its protocol, pick the right parser, and write the expression that extracts a value. JSON and YAML are home turf, so those sections are traps only; XML gets a gentler walk-through because NETCONF depends on it.
+- XML, JSON and YAML are three ways to write the same nested data, like the same shopping list written as a formal form (XML), a compact note (JSON) or an indented bullet list (YAML). 
+- Network APIs send you one of these, and your script turns it into Python dicts and lists so it can pull values out. 
+- On the exam you will be asked to spot an invalid snippet, match a format to its protocol, pick the right parser, and write the expression that extracts a value. 
+- JSON and YAML are home turf, so those sections are traps only; XML gets a gentler walk-through because NETCONF depends on it.
 
 ## What you need to know
 
