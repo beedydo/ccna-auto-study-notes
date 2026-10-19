@@ -1,6 +1,6 @@
 # T06 · Data formats + parsing: essentials
 
-> Blueprint 1.1, 1.2 · Full note: [bee/T06-data-formats-parsing.md](../bee/T06-data-formats-parsing.md) · Teach-back 2026-10-11
+> Blueprint 1.1, 1.2 · Full note: [bee/T06-data-formats-parsing.md](../bee/T06-data-formats-parsing.md) · Teach-back 2026-10-11 · **Syntax drill: [T06 cheat sheet](T06-syntax-cheatsheet.md)**
 
 ## In one picture
 
