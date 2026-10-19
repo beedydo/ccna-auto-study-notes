@@ -1,165 +1,182 @@
 # T10 · API authentication: essentials
 
-> Blueprint 2.7 · Full note: [bee/T10-api-authentication.md](../bee/T10-api-authentication.md) · Teach-back 2026-10-18
+> Blueprint 2.7: auth mechanisms (basic, custom token, API key) · Full note: [bee/T10-api-authentication.md](../bee/T10-api-authentication.md) · Teach-back 2026-10-18
 
-## In one picture
 ![T10 at a glance: every API auth method as one card](../assets/T10/00-overview.png)
-*Each card is one auth method, and every card has the same parts: how you get the credential, what goes on the wire, which Cisco platforms use it, and a red trap. The bottom strip covers 401 vs 403 and how to handle credentials.*
+
+*Each card is one auth method, with the same parts: how you get the credential, what goes on the wire, which Cisco platforms use it, and a red trap. The bottom strip covers 401 vs 403 and credential handling.*
 
 ## The big idea
-- Every API call has to prove who is calling. The method decides **what you show** and **how often you show it**.
-- Think of a building:
-  - **Basic auth** is showing your ID card at every door.
-  - A **token** is a day visitor badge you collect once at reception.
-  - An **API key** is a permanent staff pass made in the office portal.
-  - A **cookie** is a wristband the building gives you after you sign in.
-  - **OAuth** is a valet key. It lets an app do limited things for you without ever seeing your real key.
-- On the exam, you will mostly read a header or a code snippet and name the method. You will also match each Cisco platform to its method, and tell 401 apart from 403.
+- Every API call has to prove **who is calling**. Each auth method answers one question differently: **what do you show, and how often do you show it?**
+- **Analogy: getting into an office building.**
+  - **Basic auth** = showing your **ID card at every door**. The same proof (username + password) goes with every single request.
+  - **Custom token** = a **day visitor badge**. You show your ID **once** at reception (a login call), get a badge (the token), and wear the badge to every door. The badge expires at the end of the day.
+  - **API key** = a **permanent staff pass** made in the HR portal. No reception desk: you just tap it at every door, for months, until someone cancels it.
+  - **Cookie** = a **wristband** the building puts on you after sign-in; your browser shows it automatically.
+  - **OAuth** = a **valet key**: it lets an app do limited things for you without ever seeing your real key.
+- **What the exam asks:** read a header or a code snippet and name the method; match Cisco platforms to their method; tell 401 from 403. The blueprint names three methods (Basic, custom token, API key), so those are the core.
 
-## What you need to know
+## 🟥 Must know
 
-### 1. Who you are vs what you may do (401 vs 403)
-- **Authentication** (**AuthN**) is the server checking **who** you are, using a password, token, key, cookie or certificate.
-- **Authorisation** (**AuthZ**) is the server checking **what** that identity may do, based on a role (admin vs read-only) or an OAuth scope.
-- Authentication always comes first, because the server can't decide what you may do until it knows who you are.
+### 1. Basic auth: username and password on every request
+- **Recipe:**
+  1. Join the username, a colon and the password: `admin:C1sco12345`.
+  2. Base64-encode it: `YWRtaW46QzFzY28xMjM0NQ==`.
+  3. Send it in the header on every call:
 
-| Code | Meaning | What fixes it |
-|---|---|---|
-| `401 Unauthorized` | The credential is missing, wrong or expired. Despite its name, 401 is really about **authentication**. | Send the credential, or get a new one |
-| `403 Forbidden` | The server knows who you are, but the action is not allowed | A different account, role or scope. A fresh token for the same user won't help |
+```http
+GET /restconf/data/ietf-interfaces:interfaces HTTP/1.1
+Host: sandbox-iosxe.cisco.com
+Authorization: Basic YWRtaW46QzFzY28xMjM0NQ==
+```
 
-- A `401` response includes a `WWW-Authenticate` header that names the scheme the server wants, for example `Basic realm="mock"` or `Bearer error="invalid_token"`.
+- **Base64 is encoding, not encryption.** There's no key or secret: anyone who sees the header can decode it straight back to `admin:C1sco12345`. That's why Basic auth is **only safe over HTTPS**, which encrypts the whole request including headers.
+- **In Python** you never encode by hand; `requests` does it:
 
-![Authentication vs authorisation](../assets/T10/01-authn-vs-authz.png)
-*If you fail the first check you get 401. If you pass it but fail the second, you get 403. Only passing both gets a 2xx.*
+```python
+requests.get(url, auth=("admin", "C1sco12345"))   # builds the Authorization: Basic header for you
+```
 
-### 2. Basic auth: username and password on the request
-- The recipe (RFC 7617):
-  1. Join the username, a colon and the password: `user:password`.
-  2. Base64-encode the result.
-  3. Send it as `Authorization: Basic <result>`.
-- The username can't contain a colon, because the first colon splits the user from the password.
-- **Base64 is encoding, not encryption.** There is no key, so anyone who sees the header can decode it. For example, `YWRtaW46QzFzY28xMjM0NQ==` decodes straight back to `admin:C1sco12345`. Basic auth is only safe over **HTTPS**, which encrypts the whole request, headers included.
-- Basic auth is used in two ways:
-  - **On every request.** IOS XE RESTCONF and NX-API work this way.
-  - **Once, to get a token.** Catalyst Center (DNA Center) does this with `POST /dna/system/api/v1/auth/token` ⚠ verify, and FMC does it with `generatetoken`.
+- **Two ways Cisco uses Basic:**
+  - **On every request:** IOS XE RESTCONF, NX-API.
+  - **Once, just to get a token:** Catalyst Center (DNA Center) and FMC (see section 2).
 
-### 3. Tokens and API keys: something other than the password
-- **Custom token.** You log in once (often with Basic auth), receive a short-lived token, and then send that token on every call instead of the password. A token can expire or be revoked without changing the password.
-- Where each platform puts the token (⚠ verify every row against the docs):
+![Basic auth on every request](../assets/T10/02-basic-auth.png)
 
-| Platform | Login call | Token comes back in | Send it as |
+*The same Base64 string goes out on every call, and the server checks the password each time.*
+
+### 2. Custom token: log in once, then send the token
+- **Why:** the password crosses the wire **once**. After that, every call carries a short-lived token instead. A token can expire or be cancelled without changing the password.
+- **The three steps** (Catalyst Center example):
+
+```python
+# 1. Log in once with Basic auth to the token endpoint
+r = requests.post("https://dnac/dna/system/api/v1/auth/token", auth=(user, pw))
+token = r.json()["Token"]                       # the token comes back in the body
+
+# 2. Send the token on every later call, in Catalyst Center's custom header
+headers = {"X-Auth-Token": token}
+devices = requests.get("https://dnac/dna/intent/api/v1/network-device", headers=headers)
+
+# 3. When the token expires, calls return 401 → log in again (step 1)
+```
+
+- **Where each platform puts the token** (⚠ verify each row against current docs):
+
+| Platform | Login call | Token comes back in | Send it on later calls as |
 |---|---|---|---|
-| Catalyst Center (DNA Center) | `POST /dna/system/api/v1/auth/token` + Basic | body `{"Token": "…"}` | `X-Auth-Token: <token>` |
-| Secure Firewall Management Center (FMC) | `POST /api/fmc_platform/v1/auth/generatetoken` + Basic | **response headers** `X-auth-access-token`, `X-auth-refresh-token` | `X-auth-access-token: <token>` |
-| Webex | no login call (token from the portal or OAuth) | n/a | `Authorization: Bearer <token>` |
+| Catalyst Center (DNA Center) | `POST /dna/system/api/v1/auth/token` with Basic | the **body**: `{"Token": "…"}` | **`X-Auth-Token: <token>`** |
+| Secure Firewall Management Center (FMC) | `POST /api/fmc_platform/v1/auth/generatetoken` with Basic | the **response headers**: `X-auth-access-token` | `X-auth-access-token: <token>` |
+| Webex | no login call (token from the developer portal or OAuth) | n/a | `Authorization: Bearer <token>` |
 
-- `Authorization: Bearer <token>` is the **standard** header (RFC 6750). `X-Auth-Token` and `X-auth-access-token` are vendor-specific headers. If you see any of them, the answer is "token auth".
-- **Tokens expire.** On a `401`, either log in again or use a refresh call if the API has one.
-  - FMC's SDK assumes the token lasts about 30 min and allows 3 refreshes ⚠ verify.
-  - Catalyst Center tokens are often quoted as lasting 60 min ⚠ verify.
+- **Standard vs custom header:**
+  - `Authorization: Bearer <token>` is the **standard** way to send a token.
+  - `X-Auth-Token` and `X-auth-access-token` are **vendor-specific** (custom) names.
+  - Any of them in a snippet → the answer is "**token** auth".
 
 ![Custom token flow](../assets/T10/03-token-flow.png)
-*Yellow is the one Basic call. Green is the token replacing the password on every call. Red is expiry, which gives a 401 so you log in again.*
 
-- **API key.** A person generates a long random string once in a web portal, and it is tied to their account. There is **no login call**: the key itself is the credential on every request.
-- **Meraki** API keys:
-  - The official SDK sends the key as `Authorization: Bearer <key>`.
-  - The older header `X-Cisco-Meraki-API-Key: <key>` is still common in docs and exam material ⚠ verify which one is current. Learn to recognise both.
-- You can send a key in a header or in the query string (`?api_key=…`).
-  - Both work.
-  - The query-string version is copied in full into server access logs, proxy logs and browser history, so prefer the header.
-- An API key is long-lived and usually has the account's full rights. If it leaks, rotate it and store it like a password.
-- **Key vs token:**
-  - A key is created by a person in a portal and lasts for months.
-  - A token is created by a login call and lasts for minutes or hours.
+*Yellow = the one Basic login call. Green = the token replaces the password on every call. Red = the token expires, you get 401, you log in again.*
 
-### 4. Cookies: the server remembers your session
-- After you log in, the server sends `Set-Cookie: name=value`. The client sends it back as `Cookie: name=value` on every later call, and the server uses it to look up your session.
-- **ACI APIC:**
-  - Log in with `POST /api/aaaLogin.json` and the body `{"aaaUser": {"attributes": {"name": …, "pwd": …}}}`.
-  - The reply contains a token, and the same token comes back as the cookie **`APIC-cookie`**.
-- **SD-WAN Manager (vManage)** (⚠ verify the paths):
-  1. `POST /j_security_check` with the form fields `j_username` and `j_password`. This returns the cookie `JSESSIONID`.
-  2. `GET /dataservice/client/token`. The body of the reply is the XSRF token.
-  3. Writes (POST/PUT/DELETE) need the cookie **plus** the header `X-XSRF-TOKEN: <token>`. If the header is missing, you get a `403`.
-- **Why the XSRF header exists:** a browser sends cookies automatically, so a malicious web page could trigger a write using your cookie. That attack is called cross-site request forgery. The attacker can't set the extra header, so it blocks them.
+### 3. API key: a long-lived key from a portal, no login
+- An **API key** is a long random string a **person generates once in a web portal** (e.g. the Meraki dashboard). It's tied to their account.
+- **There is no login call.** The key itself is the credential, sent on every request:
 
-![SD-WAN Manager style cookie + XSRF session](../assets/T10/05-cookie-session.png)
-*Steps 1–2: logging in sets the cookie. Steps 3–4: the Session sends it back automatically. Steps 5–8: writes also need the XSRF header.*
+```python
+headers = {"Authorization": f"Bearer {meraki_key}"}        # what the official Meraki SDK sends
+# or, the older header still shown in many docs and exam questions:
+headers = {"X-Cisco-Meraki-API-Key": meraki_key}
+requests.get("https://api.meraki.com/api/v1/organizations", headers=headers)
+```
 
-### 5. OAuth 2.0: an app acting for a user (awareness)
-- OAuth lets an app act **on behalf of a user**, for example to read their Webex rooms, without ever seeing the user's password. This is called **delegated access**.
-- There are four roles:
-  - the **resource owner**, which is the user
-  - the **client**, which is the app
-  - the **authorization server**, which logs the user in and issues tokens
-  - the **resource server**, which is the API
-- The **authorization-code grant** works like this:
-  1. The app sends the user's browser to the authorization server's `/authorize` page.
-  2. The user logs in **there**, not in the app.
-  3. The browser is redirected back to the app with a one-time `code` and a `state` value.
-  4. The app swaps the code, plus its `client_secret`, for tokens.
-  5. The app calls the API with `Authorization: Bearer <access_token>`.
+  - Recognise both Meraki headers (⚠ verify which one Cisco treats as current).
+- **Header vs query string:** a key can also go in the URL (`?api_key=…`). Both work, but the URL version gets **copied in full into server logs, proxy logs and browser history**. Prefer the header.
+- **Risk:** a key lives for months and usually has the account's full rights. If it leaks, it keeps working until someone revokes it. Rotate it and store it like a password.
 
-| Piece | What it is |
-|---|---|
-| `code` | Single use, short-lived (≤ 10 min). Reusing it gives `400 invalid_grant`. It is **not** the token. |
-| `state` | An anti-CSRF value. The app checks that it comes back unchanged. |
-| access token | Short-lived and sent as a Bearer token |
-| refresh token | Long-lived. It gets a new access token **without the user logging in again**. |
-| scope | Limits what the token may do. A missing scope gives `403 insufficient_scope`. |
+| | API key | Token |
+|---|---|---|
+| Created by | a **person**, in a **portal** | a **login call** |
+| Lives for | months, until rotated | minutes to hours |
+| Login step? | **no** | **yes**, once |
 
-![Animated OAuth 2.0 authorization-code flow](../assets/T10/08-oauth-code-flow.gif)
-*The app never collects the password, and the code is swapped for the token behind the scenes.*
+### 4. 401 vs 403: who you are vs what you may do
+- **Authentication (AuthN)** = the server checks **who** you are (password, token, key).
+- **Authorisation (AuthZ)** = the server checks **what** that identity may do (admin vs read-only role).
+- AuthN always happens first: the server can't decide what you may do until it knows who you are.
 
-- **Webex** (⚠ verify the lifetimes):
-  - An **integration** is an OAuth app that acts for a user. Its access tokens are often quoted at 14 days and refresh tokens at 90 days.
-  - A **bot** has its own long-lived **bot token** from the portal, with no OAuth flow.
-  - A **personal access token** is for testing and is often quoted at 12 h.
+| Code | What it really means | What fixes it |
+|---|---|---|
+| `401 Unauthorized` | "**Who are you?**" The credential is missing, wrong or expired. (Despite the name, it's about authentication.) | send the credential, or get a fresh token |
+| `403 Forbidden` | "**I know who you are, but no.**" Your role doesn't allow this action. | a different account or role. A fresh token for the same user **won't** help. |
 
-### 6. Python and safe credential handling
-- These are the `requests` lines to recognise:
+- Example: a read-only user's valid token works for `GET /devices` (`200`) but gets `403` on `POST /devices`.
 
-| Method | Code |
-|---|---|
-| Basic | `requests.get(url, auth=(user, pw))`, or the identical `auth=HTTPBasicAuth(user, pw)` |
-| Custom token | `headers={"X-Auth-Token": token}` |
-| Bearer token / key | `headers={"Authorization": f"Bearer {token}"}` |
-| Form login | `s.post(url, data={...})`. Use `json=` for a JSON login such as APIC. |
-| Remember for every call | `s = requests.Session()` then `s.headers.update({...})` |
+### 5. Platform cheat table
 
-- `auth=` already does the base64 encoding for you, so don't encode it by hand.
-- A `Session` keeps cookies, `s.headers` and `s.auth` across calls. A plain `requests.get()` remembers nothing, and per-call `headers=` apply to that one call only.
-- Never hardcode secrets in a script or commit them to Git.
-  - Read them from environment variables or a vault.
-  - `os.environ["X"]` fails loudly (`KeyError`) if the variable is missing. `os.environ.get("X")` quietly returns `None`, so the failure shows up later.
-  - Keep real values in a git-ignored `labs/.env` file and load them with `set -a && source labs/.env && set +a`.
-- HTTPS protects credentials **in transit only**. It doesn't stop a key in a query string from landing in a log. `verify=False` turns off certificate checks, which counts as a weakness in a code-review question.
+| Platform | Method | What you send |
+|---|---|---|
+| IOS XE RESTCONF · NX-API | Basic, every call | `Authorization: Basic …` |
+| Catalyst Center (DNA Center) | Basic login → token | `X-Auth-Token: <token>` |
+| FMC | Basic login → token (in response headers) | `X-auth-access-token: <token>` |
+| Meraki | API key | `Authorization: Bearer <key>` or `X-Cisco-Meraki-API-Key: <key>` |
+| Webex | Bearer token | `Authorization: Bearer <token>` |
+| ACI (APIC) | login → cookie | `Cookie: APIC-cookie=…` (see Should know) |
+
+### 6. Handle credentials safely
+- **Never hardcode** a password, token or key in a script, and never commit one to Git.
+- Read them from **environment variables** instead:
+
+```python
+import os
+user = os.environ["DNAC_USER"]       # fails loudly (KeyError) if the variable isn't set
+pw   = os.environ["DNAC_PASS"]
+```
+
+- `requests.Session()` remembers cookies and headers you set on it across calls; a plain `requests.get()` remembers nothing.
+- `verify=False` turns off TLS certificate checks. In a code-review question it counts as a weakness.
 
 ![Identify the auth method from a snippet](../assets/T10/07-identify-method.png)
-*Ask "is it Basic?" first. Then ask where the credential came from: a login call, a redirect plus code, or a portal.*
 
-## Exam traps (the ones that catch people)
-- 401 and 403 both look like "access denied". But **401 means the server doesn't know who you are**, so log in again. **403 means it knows you, but you aren't allowed**, so you need a different role or scope.
-- Basic auth looks scrambled, but base64 is only encoding. Anyone can decode it, so HTTPS is required.
-- Catalyst Center looks like it should use Bearer, but it uses **`X-Auth-Token`**. If you send a fresh token in the wrong header, you still get 401.
-- FMC's token looks like it should be in the body, but it comes back in the **response headers** (`X-auth-access-token`).
-- An SD-WAN Manager POST with a valid cookie can still fail. The cause is a missing `X-XSRF-TOKEN`, and the error is **403**, not 401.
-- In OAuth, the code looks like a token, but it is a single-use code that is swapped for the token. The app never sees the user's password.
-- A refresh looks like it should fix a 403 scope error, but a refreshed token has the **same scope**. You must ask the user for the wider scope.
-- A Webex bot and an integration both send Bearer tokens. A bot uses its own long-lived token with no OAuth. An integration uses OAuth and acts for a user.
+*Ask "is it Basic?" first. Then ask where the credential came from: a login call (token), a portal (key), or a redirect and code (OAuth).*
+
+## Exam traps
+- **401 ≠ 403.** 401 = log in again. 403 = you're known but not allowed; a fresh token won't fix it.
+- **Base64 looks scrambled but isn't secret.** Anyone can decode it, so Basic needs HTTPS.
+- **Catalyst Center uses `X-Auth-Token`, not Bearer.** A valid token in the wrong header still gets 401.
+- **FMC's token comes back in the response headers**, not the body.
+- **Key vs token:** a key has **no login call** and lasts months; a token comes from a login call and expires.
+
+<details><summary><b>🟨 Should know (second pass)</b></summary>
+
+- **Cookie sessions:** after login the server sends `Set-Cookie: name=value`; the client sends `Cookie: name=value` on every later call, and the server uses it to find your session. `requests.Session()` stores and replays cookies automatically.
+  - **ACI APIC:** `POST /api/aaaLogin.json` with `{"aaaUser": {"attributes": {"name": "admin", "pwd": "…"}}}`. The token comes back in the body **and** as the cookie `APIC-cookie`.
+  - **SD-WAN Manager (vManage):** `POST /j_security_check` with form fields `j_username` / `j_password` → cookie `JSESSIONID`. Writes also need an `X-XSRF-TOKEN` header (fetched from `GET /dataservice/client/token`). Cookie without the header → **403**. ⚠ verify paths.
+  - Why the extra header: browsers send cookies automatically, so a malicious web page could trigger a write with your cookie (cross-site request forgery). The attacker can't add the header.
+- **OAuth 2.0 (awareness):** lets an **app act for a user** without seeing the user's password.
+  1. The app sends the user to the authorization server's login page.
+  2. The user logs in **there**, not in the app.
+  3. The app receives a one-time `code`.
+  4. The app swaps the code for an **access token**.
+  5. The app calls the API with `Authorization: Bearer <access_token>`.
+- **Webex identities:** a **bot** has its own long-lived token, no OAuth. An **integration** uses OAuth and acts for a user. A **personal access token** is for quick testing.
+
+![Animated OAuth 2.0 authorization-code flow](../assets/T10/08-oauth-code-flow.gif)
+
+</details>
+
+> **Recognise only, details in the full note:** OAuth roles, `state`, scopes and refresh tokens, the `WWW-Authenticate` header, token lifetimes (⚠ verify), `HTTPBasicAuth()` (same as `auth=(u, p)`), `os.environ["X"]` vs `.get("X")`.
 
 ## Quick self-check
-<details><summary>Q1. `requests.get(url, auth=("developer", pw))`: which method is this?</summary>HTTP Basic. `requests` builds `Authorization: Basic <base64>` for you.</details>
-<details><summary>Q2. Someone sniffs `Authorization: Basic …` over plain HTTP. What do they get?</summary>The username and password, because base64 decodes without any key.</details>
-<details><summary>Q3. Which header carries a Catalyst Center token?</summary>`X-Auth-Token`, not `Authorization: Bearer`.</details>
-<details><summary>Q4. An OAuth token with scope `devices:read` gets 403 on a POST. What is the fix?</summary>Re-run the authorization flow and ask for a write scope. Refreshing only gives the same scope.</details>
-<details><summary>Q5. Which two `requests` pieces keep the SD-WAN Manager cookie and XSRF header on every call?</summary>`requests.Session()` (its cookie jar keeps the cookie) and `s.headers.update({"X-XSRF-TOKEN": xsrf})`.</details>
+<details><summary>Q1. <code>requests.get(url, auth=("developer", pw))</code>: which method?</summary>HTTP Basic. <code>requests</code> builds <code>Authorization: Basic &lt;base64&gt;</code> for you.</details>
+<details><summary>Q2. Someone sniffs <code>Authorization: Basic …</code> over plain HTTP. What do they get?</summary>The username and password, because base64 decodes without any key.</details>
+<details><summary>Q3. Which header carries a Catalyst Center token?</summary><code>X-Auth-Token</code>, not <code>Authorization: Bearer</code>.</details>
+<details><summary>Q4. A valid user gets <code>403</code> on a POST. Will logging in again fix it?</summary>No. 403 means the identity is known but not allowed. It needs a different role.</details>
+<details><summary>Q5. A string generated once in the Meraki dashboard, sent on every call with no login: which method?</summary>API key.</details>
+<details><summary>Q6. A script POSTs to <code>/auth/token</code> with Basic, then sends <code>X-Auth-Token</code> on later calls. Which method?</summary>Custom token. Basic is used only once, to log in.</details>
+<details><summary>Q7. Why prefer a header over <code>?api_key=</code> in the URL?</summary>The URL, including the key, is copied into server and proxy logs and browser history.</details>
 
-## Cheat lines to say out loud
+## Say it out loud
+- "Basic shows the password every time; a token logs in once; a key never logs in."
 - "401 means who are you; 403 means I know you, but no."
 - "Base64 is a costume, not a lock."
-- "Meraki uses a key, Catalyst Center uses X-Auth-Token, Webex uses Bearer, APIC uses a cookie, and SD-WAN Manager uses a cookie plus XSRF."
-- "In OAuth the password goes to the auth server, the code gets swapped for the token, and the refresh token skips the user."
-- "Session remembers; plain requests forgets."
+- "Meraki uses a key, Catalyst Center uses X-Auth-Token, Webex uses Bearer."

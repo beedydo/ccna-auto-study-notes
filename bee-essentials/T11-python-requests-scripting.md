@@ -1,184 +1,312 @@
 # T11 · Python requests scripting: essentials
 
-> Blueprint 2.9 · Full note: [bee/T11-python-requests-scripting.md](../bee/T11-python-requests-scripting.md) · Teach-back 2026-10-18
+> Blueprint 2.9: Python script calling a REST API with requests · Full note: [bee/T11-python-requests-scripting.md](../bee/T11-python-requests-scripting.md) · Teach-back 2026-10-18
 
-## In one picture
 ![T11 at a glance: every requests concept on one page](../assets/T11/00-overview.png)
+
 *Each row is one group of concepts. The numbered items are lines from the lab's `inventory_client.py`, and the red boxes are exam traps.*
 
 ## The big idea
-- `requests` is the Python library you use to talk to REST APIs. Think of it as `curl` with Python objects.
-  - You describe the request with keyword arguments.
-  - You get back a `Response` object to read.
-- A useful analogy is posting a parcel:
+- `requests` is the Python library you use to talk to REST APIs. Think of it as **`curl` with Python objects**. The topic answers two questions:
+  - **How do I describe the request?** With keyword arguments: `headers=`, `params=`, `json=`, `auth=`, `verify=`, `timeout=`.
+  - **How do I read what came back?** From a `Response` object: `.status_code`, `.headers`, `.json()`, `.text`, and `raise_for_status()`.
+- **Analogy: posting a parcel.**
   - The **URL** is the address.
   - The **headers** are the labels on the box.
   - `json=` is packing the contents **and** writing "contents: JSON" on the label for you.
-  - The **response** is the delivery receipt, which you must read yourself.
-- The exam loves "complete the code" and "what does this print?" questions. Most marks come from a handful of small details: `json=` vs `data=`, `.json()` vs `.text`, `raise_for_status()`, and `verify=`.
+  - The **response** is the delivery receipt, which you must read yourself: the post office won't shout if the parcel was refused (no exception on a 404).
+- **What the exam asks:** "complete the code" and "what does this print?". Most marks come from a handful of small details: `json=` vs `data=`, `.json()` vs `.text`, `raise_for_status()`, and `verify=`.
 
-## What you need to know
+## 🟥 Must know
 
 ### 1. Making a call: method + URL + keyword arguments
-- `requests` is a third-party package (`pip install requests`), not part of the standard library.
-- There is one function per HTTP method: `requests.get`, `requests.post`, `requests.put`, `requests.patch` and `requests.delete`. Each one takes a URL and returns a `Response`.
-- The generic form `requests.request("PATCH", url, ...)` does the same job. It is handy when the method is stored in a variable. `requests.get(url)` is literally `requests.request("GET", url)`.
-- Each keyword argument fills one part of the HTTP request:
+- `requests` is a **third-party** package (`pip install requests`), not part of the standard library.
+- **One function per HTTP method:** `requests.get`, `requests.post`, `requests.put`, `requests.patch`, `requests.delete`. Each takes a URL and returns a `Response`.
+- **Each keyword argument fills one part of the HTTP request.** A real call from the full note's lab, annotated:
+
+```python
+resp = requests.get(
+    "https://127.0.0.1:8111/api/v1/devices",        # URL: base URL + endpoint path
+    params={"limit": 2, "role": None},               # query string → ?limit=2 (a None value is DROPPED)
+    headers={"X-Auth-Token": token,                  # request headers
+             "Accept": "application/json"},
+    verify=CA_CERT,                                  # client-side: check the TLS cert against this CA file
+    timeout=5,                                       # client-side: give up after 5 s (NO default timeout)
+)
+```
+
+  - `verify` and `timeout` are **never sent** to the server; they only change how the client behaves.
+  - **There's no timeout by default**, so a call to a dead host can hang for a long time. Set `timeout=` on every call.
+- **`auth=(user, pass)` = HTTP Basic auth.** `requests` builds `Authorization: Basic <base64>` for you:
+
+```python
+resp = requests.post(f"{BASE_URL}/auth/token", auth=("admin", "C1sco12345"), verify=CA_CERT, timeout=5)
+# sends: Authorization: Basic YWRtaW46QzFzY28xMjM0NQ==
+```
+
+![Python call to HTTP request](../assets/T11/01-call-anatomy.png)
+
+*Method, URL and params make the request line. Headers and `json` make the headers, and `json` also makes the body. `timeout` and `verify` stay on the client.*
+
+- **Summary:**
 
 | Argument | What it does |
 |---|---|
-| `headers={...}` | Adds request headers, such as `Accept` or `X-Auth-Token` |
-| `params={...}` | Builds the query string, for example `?role=edge&limit=2`. A value of `None` is **dropped**. |
-| `json=dict` | Turns the dict into a JSON body **and** sets `Content-Type: application/json` |
-| `data=dict` | Sends a **form** (`a=1&b=2`) with `Content-Type: application/x-www-form-urlencoded` |
-| `data="string"` | Sends the string as-is, with **no** Content-Type added |
-| `auth=(user, pass)` | Adds HTTP Basic auth: `Authorization: Basic <base64>` |
-| `verify=` | Controls the TLS certificate check: `True` (the default), `False`, or a path to a CA file |
-| `timeout=` | How many seconds to wait. **There is no timeout by default**, so set one on every call. |
+| `headers={...}` | adds request headers, such as `Accept` or `X-Auth-Token` |
+| `params={...}` | builds the query string, e.g. `?role=edge&limit=2`; `None` values are dropped |
+| `json=dict` | JSON body **+** `Content-Type: application/json` (section 2) |
+| `data=` | form or raw body (section 2) |
+| `auth=(user, pass)` | HTTP Basic auth |
+| `verify=` | TLS check: `True` (default), `False`, or a path to a CA file |
+| `timeout=` | seconds to wait; no default |
 
-- `verify` and `timeout` are never sent to the server. They only change how the client behaves.
-- `json=` is ignored if you also pass `data=`.
-- `auth=` takes priority over an `Authorization` header you set by hand.
+### 2. Sending a body: `json=` vs `data=`
+- **This is the most tested detail in the topic.** Three ways to send the same dict, and only one "just works" against a JSON API.
+- **Analogy:** `json=` packs the parcel **and** labels it. `data=dict` repacks it as a different kind of parcel (a form). `data=json.dumps(d)` packs it correctly but **forgets the label**.
+- What each one actually sends (from the full note's `prepare()` drill, no server needed):
 
-![Python call to HTTP request](../assets/T11/01-call-anatomy.png)
-*Method, URL and params make the request line. Headers and `json` make the headers, and `json` also makes the body. `timeout` and `verify` stay on the client.*
+```python
+body = {"hostname": "edge3", "role": "edge"}
+
+requests.post(url, json=body)              # Content-Type: application/json
+                                           # body: b'{"hostname": "edge3", "role": "edge"}'   ✔ works
+
+requests.post(url, data=body)              # Content-Type: application/x-www-form-urlencoded
+                                           # body: 'hostname=edge3&role=edge'               ✘ 415 (a form)
+
+requests.post(url, data=json.dumps(body))  # Content-Type: None
+                                           # body: '{"hostname": "edge3", "role": "edge"}'  ✘ 415 (no label)
+```
+
+  - A JSON API answers the last two with **`415 Unsupported Media Type`** (T07).
+  - `json=` is ignored if you also pass `data=`.
 
 ![json= vs data=](../assets/T11/02-body-encoding.png)
+
 *Only `json=` both converts the dict and labels it. `data=dict` sends a form, and `data=json.dumps(d)` sends the right bytes with no label. A JSON API answers the last two with `415`.*
 
-### 2. Reading the response
-- Read a response in this order: status first, then headers, then body.
+### 3. Reading the response, and `raise_for_status()`
+- **Read a response in this order:** status first, then headers, then body.
+- **Analogy: the delivery receipt.** First the stamp (delivered or refused), then the small print, then the attached sheet.
+- From the full note's lab, after a successful `POST /devices` with `json=`:
+
+```python
+resp.status_code        # 201                  ← an int: compare with == 201, not == "201"
+resp.ok                 # True                 ← True for ANY code below 400 (so 204 and 3xx too)
+resp.headers["location"]# '/api/v1/devices/6'  ← header names are case-insensitive (server sent "Location")
+resp.text               # '{"id": 6, "hostname": "edge3", ...}'   ← str
+resp.content            # b'{"id": 6, "hostname": "edge3",...'    ← bytes (note the b)
+resp.json()["id"]       # 6                    ← parsed into a dict/list; .json() is a METHOD, needs ()
+```
+
+- **The bracket traps:**
+  - `resp.json["id"]` → `TypeError: 'method' object is not subscriptable` (no brackets on `.json`).
+  - `resp.text["Token"]` → `TypeError: string indices must be integers` (`.text` is a plain string).
+- **Empty body:** `.json()` on a `204 No Content` (e.g. after a DELETE) raises `requests.exceptions.JSONDecodeError`.
+- **Error responses have JSON bodies too**, e.g. `{"error": "device 99 not found"}`. A successful `.json()` doesn't mean the request worked: check the code first.
+- **`requests` never raises an exception on a 4xx/5xx by itself.**
+
+```python
+resp = requests.get(f"{BASE_URL}/devices/99", headers=headers, timeout=5)
+print(resp.status_code, resp.ok)    # 404 False   ← no exception: the script carries on silently
+resp.raise_for_status()             # NOW it raises:
+# requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://127.0.0.1:8111/api/v1/devices/99
+```
+
+  - `raise_for_status()` does **nothing** if the code is below 400, and raises **`HTTPError`** on 4xx or 5xx.
+  - Call it straight after each request, so a bad status stops the script instead of crashing three lines later.
+- **Summary:**
 
 | Attribute | Type | What it gives you |
 |---|---|---|
-| `resp.status_code` | `int` | For example `201`. Compare it with `== 201`, not `== "201"`. |
-| `resp.ok` | `bool` | True for **any code below 400**, so `204` and `3xx` count as ok too |
-| `resp.headers` | dict-like | Header names are **case-insensitive**: `resp.headers["location"]` finds `Location` |
-| `resp.text` | `str` | The body as text |
-| `resp.content` | `bytes` | The raw body (it shows a `b'...'` prefix) |
-| `resp.json()` | `dict` / `list` | The body parsed from JSON |
+| `resp.status_code` | `int` | the code, e.g. `201` |
+| `resp.ok` | `bool` | True if code < 400 |
+| `resp.headers` | dict-like, case-insensitive | response headers |
+| `resp.text` | `str` | body as text |
+| `resp.content` | `bytes` | raw body |
+| `resp.json()` | `dict` / `list` | body parsed from JSON |
 
-- `.json()` is a **method**, so it needs the brackets.
-  - `resp.json["id"]` gives `TypeError: 'method' object is not subscriptable`.
-  - `resp.text["Token"]` gives `TypeError: string indices must be integers`, because `.text` is a plain string.
-- Calling `.json()` on an empty body, such as a `204 No Content` after a DELETE, raises `requests.exceptions.JSONDecodeError`.
-- Error responses also have JSON bodies, for example `{"error": "device 99 not found"}`. A successful `.json()` does not mean the request worked, so check the status code first.
-- **`requests` never raises an exception on a 4xx/5xx by itself.** Call `resp.raise_for_status()`.
-  - It does nothing if the code is below 400.
-  - It raises `HTTPError` on a 4xx or 5xx.
-
-### 3. Sessions: remember settings and reuse the connection
-- `s = requests.Session()` creates a client object that holds **defaults** for every call made through it: headers, auth, verify and cookies. It also keeps a connection pool.
-- `s.headers.update({"X-Auth-Token": token, "Accept": "application/json"})` means every later `s.get(...)` or `s.post(...)` sends those headers.
-  - In the lab, a plain `requests.get()` without the token gets `401`, while `session.get()` gets `200`.
-- Arguments you pass on a single call are **merged in for that call only** and are not remembered.
-- Cookies from `Set-Cookie` are stored in `s.cookies` and sent back automatically. That is how cookie logins stay logged in.
-- A Session **reuses the TCP connection**. In the lab, 3 calls through a Session used 1 TCP connection, while 3 plain `requests.get()` calls used 3. One handshake instead of three is why sessions are faster.
-- `with requests.Session() as s:` closes the connections at the end of the block.
-
-![Session vs plain calls](../assets/T11/03-session.png)
-*A Session keeps headers, verify and cookies, and reuses one pooled connection. Plain `requests.get()` rebuilds everything each time.*
-
-### 4. Errors and TLS warnings
-- There are two different kinds of failure.
-  - **The server answered with a 4xx or 5xx.** You still get a normal `Response`, and nothing is raised until you call `raise_for_status()`, which raises `HTTPError`.
-  - **There was no usable answer**, for example the host is down, the port is closed, TLS failed, or the server was too slow. In this case `requests` raises at once, and there is no `resp` to look at.
-
-| What happened | Exception |
-|---|---|
-| A 404 followed by `raise_for_status()` | `HTTPError` (`err.response` still holds the error body) |
-| The server was slower than `timeout=` | `Timeout` (here, `ReadTimeout`) |
-| Nothing was listening on the port | `ConnectionError` |
-| The URL had no `https://` | `InvalidSchema`, a kind of `RequestException` |
-
-- Every one of these inherits from **`RequestException`**, so put `except RequestException` **last**. Python runs the first `except` that matches, so a base class placed first would catch everything.
-
-![requests exception tree](../assets/T11/04-exceptions.png)
-*Everything inherits from RequestException. SSLError is a kind of ConnectionError.*
-
-- Lab devices usually have **self-signed certificates**, which no public CA vouches for. Here is what each setting does:
-
-| Call | Result |
-|---|---|
-| Default (`verify=True`) | `SSLError`, and no response at all |
-| `verify=False` | `200` plus an **`InsecureRequestWarning`**. This is a warning, not an error, so the call still works. |
-| After `urllib3.disable_warnings()` (or `requests.packages.urllib3.disable_warnings()`) | `200` with the warning hidden. It still checks nothing. |
-| `verify="/path/to/ca.pem"` | `200` with no warning. This is the real fix. |
-
-- `verify=False` and `disable_warnings()` are for sandboxes only. Real scripts should verify certificates, using a CA file path or the `REQUESTS_CA_BUNDLE` environment variable.
-
-### 5. The three script patterns
-- **Log in, then use the token.** This is the Catalyst Center (DNA Center) shape:
-  1. `POST` the login with `auth=(user, pass)`.
-  2. Read `token = resp.json()["Token"]`.
-  3. Put the token in a session header: `s.headers.update({"X-Auth-Token": token})`.
-
-![Auth then use](../assets/T11/06-auth-then-use.png)
-*The token comes back in the body of the login reply. The script copies it into a session header, so every later call carries it.*
-
-- **Pagination.** The API returns one page plus a pointer to the next one, so keep calling while `data["next"]` is set.
-  - In the lab, 3 GETs collected 5 devices.
-  - `urljoin(BASE_URL, data["next"])` turns the relative link into a full URL.
-  - After the first page, set `params = None`, because the next link already contains the query string.
-  - Some APIs use a `Link` header instead, which `requests` exposes as `resp.links["next"]["url"]`.
-- **Rate limit (429).** When you get `429 Too Many Requests`:
-  1. Read the `Retry-After` header.
-  2. Sleep for that many seconds.
-  3. Retry the same request.
-  - Cap the number of tries so a stuck API can't loop forever.
+### 4. Log in, then use the token with a Session
+- **The Catalyst Center (DNA Center) shape:** Basic auth **once** to get a token, then send the token in a header on **every** call (REST is stateless).
+- **`requests.Session()`** is a client object that holds **defaults** for every call made through it: headers, auth, verify and cookies. It also keeps a **connection pool**.
+- **Analogy: a visitor badge on a lanyard.** You collect it once at reception, clip it on, and every door sees it without you digging it out each time.
+- The full pattern from the full note's lab, annotated:
 
 ```python
-if resp.status_code == 429:
-    time.sleep(int(resp.headers["Retry-After"]))   # header values are strings, so int()
+# 1. Log in once with Basic auth; the token comes back in the JSON BODY
+resp = requests.post(f"{BASE_URL}/auth/token", auth=(USER, PASSWORD), verify=CA_CERT, timeout=5)
+resp.raise_for_status()
+token = resp.json()["Token"]
+
+# 2. Put the token in a Session header: every later call through the session sends it
+session = requests.Session()
+session.headers.update({"X-Auth-Token": token, "Accept": "application/json"})
+session.verify = CA_CERT                                   # every session call checks the cert
+
+# 3. Use the session
+requests.get(f"{BASE_URL}/devices", verify=CA_CERT, timeout=5)   # → 401 (plain call: no token)
+session.get(f"{BASE_URL}/devices", timeout=5)                    # → 200 (token from the session)
 ```
 
-![Animated 429 retry loop](../assets/T11/09-retry-429.gif)
-*The flow is: call, 200, call, 200, call, 429 + `Retry-After: 2`, sleep 2, then the same call gets 200. Retrying without sleeping just gets 429 four times.*
+- **Session headers persist; per-call headers don't.** `session.get(url, headers={"X-Debug": "1"})` adds `X-Debug` to **that call only**.
+- **`auth=(u, p)` is for the token endpoint.** It's Basic auth, not how you send the token afterwards; that's a header.
+- **Connection reuse:** in the lab, 3 calls through a Session used **1 TCP connection**; 3 plain `requests.get()` calls used **3**. One handshake instead of three is why sessions are faster.
 
-- `requests` does not retry by itself. A built-in alternative exists (`urllib3.util.Retry` with `HTTPAdapter`), but the exam pattern is the manual loop.
-- `resp.headers.get("Retry-After", 1)` gives a default value if the header is missing. `resp.headers["Retry-After"]` raises `KeyError` instead.
+![Auth then use](../assets/T11/06-auth-then-use.png)
 
-### 6. Looking at the data, then pulling out fields
-- **Step 1, inspect:** run `print(json.dumps(data, indent=2))` to pretty-print the structure, so you can see the keys and how they nest.
-- **Step 2, extract:** if the body is `{"response": [ {...}, {...} ]}`:
-  - `data["response"]` is a list.
-  - `data["response"][0]` is the first device, which is a dict.
-  - `data["response"][0]["hostname"]` is `"csr1"`.
+*The token comes back in the body of the login reply. The script copies it into a session header, so every later call carries it.*
+
+![Session vs plain calls](../assets/T11/03-session.png)
+
+*A Session keeps headers, verify and cookies, and reuses one pooled connection. Plain `requests.get()` rebuilds everything each time.*
+
+### 5. Exceptions, and `verify=` on self-signed certs
+- **Two different kinds of failure:**
+  - **The server answered with 4xx/5xx.** You get a normal `Response`; nothing is raised until `raise_for_status()` raises `HTTPError`.
+  - **There was no usable answer** (host down, port closed, TLS failed, server too slow). `requests` raises **at once**, and there is **no `resp`** to look at.
+- **Analogy:** a refused parcel still comes back with a receipt (`HTTPError` holds the response). A lost van brings nothing back at all (`ConnectionError`, `Timeout`).
+- The full note's `safe_get()`, with the order that matters:
 
 ```python
-for d in data["response"]:
+try:
+    resp = session.get(url, timeout=timeout)
+    resp.raise_for_status()                              # 4xx/5xx → HTTPError
+    return resp.json()
+except requests.exceptions.HTTPError as err:             # the server said no; err.response has the error body
+    print(err.response.json())                           # {'error': 'device 99 not found'}
+except requests.exceptions.Timeout:                      # server slower than timeout= (ReadTimeout)
+    ...
+except requests.exceptions.ConnectionError:              # nothing listening on the port
+    ...
+except requests.exceptions.RequestException as err:      # base class of ALL the above: must go LAST
+    ...                                                  # e.g. InvalidSchema: URL had no https://
+```
+
+  - **`except RequestException` goes last.** Python runs the **first** matching `except`; the base class first would swallow everything.
+
+![requests exception tree](../assets/T11/04-exceptions.png)
+
+*Everything inherits from RequestException. SSLError is a kind of ConnectionError.*
+
+- **`verify=` and self-signed lab certs.** Lab devices usually have **self-signed certificates**, which no public CA vouches for:
+
+```python
+requests.get(url, timeout=5)                     # verify=True (default) → SSLError, no response at all
+requests.get(url, verify=False, timeout=5)       # 200 + InsecureRequestWarning (a WARNING, call still works)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+requests.get(url, verify=False, timeout=5)       # 200, warning hidden, STILL checks nothing
+requests.get(url, verify="/path/to/ca.pem", timeout=5)   # 200, no warning: the real fix
+```
+
+  - `requests.packages.urllib3.disable_warnings()` is the same call, spelled the other way.
+  - `verify=False` and `disable_warnings()` are for **sandboxes only**. Real scripts verify, with a CA file path or the `REQUESTS_CA_BUNDLE` environment variable.
+
+![verify= outcomes](../assets/T11/05-tls-verify.png)
+
+*Default = fail closed. `verify=False` works but checks nothing, and hiding the warning doesn't change that. Pointing `verify=` at the CA cert is the real fix.*
+
+### 6. Inspect the data, then pull out fields
+- **Step 1, inspect:** `print(json.dumps(data, indent=2))` pretty-prints the structure, so you can see the keys and how they nest.
+- **Step 2, extract:** walk the path one level at a time. If the body is `{"response": [ {...}, {...} ]}`:
+
+```python
+data = resp.json()
+data["response"]                  # a list of devices
+data["response"][0]               # the first device: a dict
+data["response"][0]["hostname"]   # 'csr1'
+
+for d in data["response"]:        # every device
     print(d["hostname"])
 ```
 
+- **Analogy: a filing cabinet.** `["response"]` opens the drawer, `[0]` takes the first folder, `["hostname"]` reads one line on it.
 - Catalyst Center wraps its results in `"response"`, while Meraki returns a bare list ⚠ verify per platform.
-- `json.dumps` turns Python into a JSON string, and `json.loads` turns a JSON string into Python. `resp.json()` is simply `json.loads(resp.text)` done for you.
-- **To fill a blank in complete-the-code questions, pick by clue:**
-  - A filter goes in `params`.
-  - A dict body goes in `json`.
-  - A username and password go in `auth`.
-  - The integer code is `.status_code`.
-  - The parsed body is `.json()`.
+- **`json.dumps`** = Python → JSON string. **`json.loads`** = JSON string → Python. `resp.json()` is `json.loads(resp.text)` done for you.
+- **Complete-the-code: pick the blank by its clue:**
+  - a filter or page → `params=`
+  - a dict body → `json=`
+  - a username and password → `auth=`
+  - the integer code → `.status_code`
+  - the parsed body → `.json()`
 
-## Exam traps (the ones that catch people)
-- `data=dict` looks like it sends JSON, but it actually sends a **form**. `data=json.dumps(d)` sends JSON bytes with **no Content-Type**. A JSON API answers both with `415`. Use `json=d`.
-- A 404 looks like it should raise an exception, but `requests` returns quietly with `status_code == 404`. Only `raise_for_status()` raises `HTTPError`.
-- `resp.ok` sounds like "is 200", but it is True for **anything below 400**, including 204 and 3xx.
-- `status_code` looks like `"200"`, but it is an **int**, so `== "200"` is always False.
-- `verify=False` looks like it would fail, but the call succeeds with an `InsecureRequestWarning`. `disable_warnings()` only hides the message.
-- `except RequestException` looks like a safe first handler, but because it is the base class it swallows every specific handler below it. Put it last.
-- `auth=(u, p)` looks like the way to send a token, but it is Basic auth. Use it for the token endpoint, then send the token itself in a header.
-- Per-call `headers=` look like they persist, but they apply to one call only. `s.headers.update()` is what persists.
+## Exam traps
+- **`data=dict` sends a form; `data=json.dumps(d)` sends no Content-Type.** A JSON API answers both with `415`. Use `json=d`.
+- **A 404 doesn't raise.** `requests` returns quietly with `status_code == 404`; only `raise_for_status()` raises `HTTPError`. And `resp.ok` is True for **anything below 400**, not just 200.
+- **`.json()` needs brackets; `.text` is a string.** `resp.json["id"]` and `resp.text["Token"]` both give `TypeError`. `status_code` is an **int**: `== "200"` is always False.
+- **`verify=False` is a warning, not an error.** The call succeeds with `InsecureRequestWarning`; `disable_warnings()` only hides it. Default `verify=True` on a self-signed cert → `SSLError`, no response.
+- **`except RequestException` goes last**, or it swallows the specific handlers below it.
+- **Session headers persist; per-call headers don't.** `s.headers.update()` is what persists. `auth=(u, p)` is Basic auth for the login, not how you send the token.
+
+<details><summary><b>🟨 Should know (second pass)</b></summary>
+
+- **The generic form:** `requests.request("PATCH", url, json={"role": "core"}, timeout=5)` does the same job as `requests.patch(...)`. Handy when the method is stored in a variable. `requests.get(url)` is literally `requests.request("GET", url)`. Sessions have the same methods (`session.get`, `session.request`, …).
+- **`data="string"`** sends the string as-is with **no** Content-Type added. **`auth=`** takes priority over an `Authorization` header you set by hand in `headers=`.
+- **Pagination:** the API returns one page plus a pointer to the next, so keep calling while it's set (T08 covers paging styles in depth):
+
+```python
+devices, url = [], f"{BASE_URL}/devices"
+params = {"limit": 2}
+while url:
+    resp = session.get(url, params=params, timeout=5)
+    resp.raise_for_status()
+    data = resp.json()
+    devices.extend(data["response"])
+    url = urljoin(BASE_URL, data["next"]) if data["next"] else None   # relative link → full URL
+    params = None                         # the next link already carries the query string
+```
+
+  - Lab result: 3 GETs (`limit=2`, `offset=2`, `offset=4`) collected 5 devices.
+  - Some APIs use a `Link` header instead, which `requests` exposes as `resp.links["next"]["url"]`.
+
+![Pagination loop](../assets/T11/07-pagination.png)
+
+- **Rate limit (429):** read `Retry-After`, sleep that long, retry the **same** request, and cap the tries:
+
+```python
+for attempt in range(1, max_tries + 1):
+    resp = session.get(url, timeout=5)
+    if resp.status_code != 429:
+        resp.raise_for_status()
+        return resp
+    time.sleep(int(resp.headers.get("Retry-After", 1)))   # header values are strings, so int()
+raise RuntimeError(f"still rate limited after {max_tries} tries")
+```
+
+  - `resp.headers.get("Retry-After", 1)` gives a default if the header is missing; `resp.headers["Retry-After"]` raises `KeyError` instead.
+  - `time.sleep("2")` → `TypeError`: header values are strings.
+  - `requests` does not retry by itself, and doesn't raise on a 429: you check `status_code`.
+
+![Animated 429 retry loop](../assets/T11/09-retry-429.gif)
+
+*The flow is: call, 200, call, 200, call, 429 + `Retry-After: 2`, sleep 2, then the same call gets 200. Retrying without sleeping just gets 429 four times.*
+
+- **Cookies:** a `Set-Cookie` from the server is stored in `s.cookies` and sent back automatically. That's how cookie logins stay logged in (T10).
+- **`with requests.Session() as s:`** closes the session's connections at the end of the block.
+- **Exception table:**
+
+| What happened | Exception |
+|---|---|
+| A 404, then `raise_for_status()` | `HTTPError` (`err.response` still holds the error body) |
+| The server was slower than `timeout=` | `Timeout` (here, `ReadTimeout`) |
+| Nothing listening on the port | `ConnectionError` |
+| The URL had no `https://` | `InvalidSchema`, a kind of `RequestException` |
+
+</details>
+
+> **Recognise only, details in the full note:** `urllib3.util.Retry` with `HTTPAdapter(max_retries=...)`, `REQUESTS_CA_BUNDLE` overriding `session.verify` (⚠ verify), `resp.reason` / `resp.request` / `resp.url`, `ConnectTimeout` / `MissingSchema` / `TooManyRedirects`, `Request(...).prepare()`, `requests` default headers (`User-Agent: python-requests/…`, `Accept: */*`), `json=` ignored with `files=`.
 
 ## Quick self-check
-<details><summary>Q1. Which argument sends a dict as JSON and sets the Content-Type?</summary>`json=`. `data=` sends a form, and `params=` builds the query string.</details>
-<details><summary>Q2. `resp = requests.get(url_of_missing_device)`, then `print(resp.status_code, resp.ok)`. What prints?</summary>`404 False`. No exception is raised, because nothing called `raise_for_status()`.</details>
-<details><summary>Q3. How do you send the token on 50 calls and reuse one connection?</summary>`s = requests.Session()`, then `s.headers.update({"X-Auth-Token": token})`, then call `s.get(...)`.</details>
-<details><summary>Q4. `token = resp.text["Token"]` raises what, and what is the fix?</summary>`TypeError: string indices must be integers`. Use `resp.json()["Token"]`.</details>
-<details><summary>Q5. You get a 429. What are the next two lines?</summary>`time.sleep(int(resp.headers["Retry-After"]))`, then send the same request again.</details>
+<details><summary>Q1. Which argument sends a dict as JSON and sets the Content-Type?</summary><code>json=</code>. <code>data=</code> sends a form, and <code>params=</code> builds the query string.</details>
+<details><summary>Q2. <code>resp = requests.get(url_of_missing_device)</code>, then <code>print(resp.status_code, resp.ok)</code>. What prints?</summary><code>404 False</code>. No exception is raised, because nothing called <code>raise_for_status()</code>.</details>
+<details><summary>Q3. How do you send the token on 50 calls and reuse one connection?</summary><code>s = requests.Session()</code>, then <code>s.headers.update({"X-Auth-Token": token})</code>, then call <code>s.get(...)</code>.</details>
+<details><summary>Q4. <code>token = resp.text["Token"]</code> raises what, and what is the fix?</summary><code>TypeError: string indices must be integers</code>. Use <code>resp.json()["Token"]</code>.</details>
+<details><summary>Q5. You get a 429. What are the next two lines?</summary><code>time.sleep(int(resp.headers["Retry-After"]))</code>, then send the same request again.</details>
+<details><summary>Q6. <code>requests.post(url, data=json.dumps(body))</code> returns <code>415</code>. Why?</summary>The bytes are JSON but no <code>Content-Type</code> is set. Use <code>json=body</code>, which serialises and labels it.</details>
+<details><summary>Q7. <code>requests.get("https://127.0.0.1:8111/api/v1/health", timeout=5)</code> against the lab's self-signed cert: what happens, and what's the real fix?</summary>It raises <code>SSLError</code> (default <code>verify=True</code>) with no response. The real fix is <code>verify="/path/to/ca.pem"</code>; <code>verify=False</code> works but checks nothing and warns.</details>
 
-## Cheat lines to say out loud
+## Say it out loud
 - "json= packs it and labels it; data= sends a form."
 - "requests never raises on a 404 unless you call raise_for_status()."
 - "Remember the brackets: .json() gives you a dict, and .text is just a string."
 - "verify=False means a warning, not an error, and nothing gets checked."
-- "On a 429, read Retry-After, int() it, sleep, and try again."
+- "Log in once with auth=, then the token rides in the Session headers."

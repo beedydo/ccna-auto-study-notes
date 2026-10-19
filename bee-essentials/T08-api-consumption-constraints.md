@@ -1,103 +1,283 @@
 # T08 · API consumption constraints: essentials
 
-> Blueprint 2.3 · Full note: [bee/T08-api-consumption-constraints.md](../bee/T08-api-consumption-constraints.md) · Teach-back 2026-10-18
-
-## In one picture
+> Blueprint 2.3: constraints when consuming APIs (rate limits, pagination, payload size) · Full note: [bee/T08-api-consumption-constraints.md](../bee/T08-api-consumption-constraints.md) · Teach-back 2026-10-18
 
 ![T08 at a glance: every API consumption limit, its signal, the fix and the trap](../assets/T08/00-overview.png)
 
 *Each row is one limit: read left to right from what the server sends, to what your code should do (blue), to the exam trap (red).*
 
 ## The big idea
+- An API is a **shared service**, so the provider limits how each consumer uses it. This topic asks, for each limit: **what signal does the server send, and what should my script do about it?**
+  - **How fast** may I call? → rate limit.
+  - **How much** comes back at once? → pagination.
+  - **How big** may one request be? → payload size.
+  - **How long** will anyone wait? → timeouts and async jobs.
+  - **How long** does my login last? → token expiry.
+- **None of these mean your code is broken.** Each limit has a recognisable signal (a status code or a header), and a well-behaved script reacts to it.
+- **Analogy: a busy library.**
+  - You may borrow only a few books **per visit** (rate limit).
+  - A long catalogue is printed **one page at a time** (pagination).
+  - The returns slot only takes **so many books at once** (payload size).
+  - Your **library card expires** (token expiry).
+- **What the exam asks:** a scenario ("the script starts getting 429", "records are missing but there's no error", "bulk update returns 413") and "what's the cause / what should the script do?". CBT doesn't cover blueprint 2.3, so these questions come straight from this material.
 
-- An API is a shared service, so the provider puts limits on how each consumer uses it: how fast you may call, how much comes back at once, how big a request may be, how long a token lasts and how long an old version keeps working. Think of a busy library: you may borrow only a few books per visit, a long list is printed one page at a time, and your library card eventually expires.
-- None of these limits mean your code is broken. Each one sends a recognisable signal (a status code or a header), and a well-behaved script reacts to it. CBT doesn't cover blueprint 2.3, so the exam's "what should the script do?" questions come straight from this material.
+## 🟥 Must know
 
-## What you need to know
+### 1. Rate limits: `429` means "slow down", not "you're wrong"
+- **A rate limit** is the most requests the server accepts from **one caller** in **one time window**.
+  - The "caller" is whatever the server counts by: an API key, a token, a user, an org or an IP address.
+  - The full note's mock API allows **3 requests per 2 seconds per token**.
+  - **Meraki** enforces its limit per **organization**, about **10 requests per second** according to the Meraki SDK source ⚠ verify.
+  - Why: to protect the backend from bursts and share capacity fairly between customers.
+- **Analogy:** a turnstile that lets 3 people through every 2 seconds. Person 4 isn't banned; they just wait for the next gap.
+- **Going over the limit returns `429 Too Many Requests`.** It's a 4xx, but the request itself is **fine**. It was only sent **too soon**.
+- What it looks like on the wire (from the full note's lab run):
 
-### 1. Rate limits: "slow down", not "you're wrong"
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 2                        ← wait 2 seconds, then send the SAME request again
+X-RateLimit-Limit: 3                  ← quota per window
+X-RateLimit-Remaining: 0              ← calls left in this window (0 = you're out)
+X-RateLimit-Reset: 2                  ← seconds until the window resets
 
-- A **rate limit** is the most requests the server accepts from one caller in one **time window**. The "caller" is whatever the server counts by: an API key, a token, a user, an org or an IP address.
-  - The note's mock API allows 3 requests per 2 seconds per token. Meraki enforces its limit per **organization**, about 10 requests per second according to the Meraki SDK source ⚠ verify.
-  - Servers do this to protect the backend from bursts and to share capacity fairly.
-- Going over the limit returns **`429 Too Many Requests`**. It is a 4xx, but the request itself is fine; it was only sent **too soon**.
-- The **`Retry-After`** header says how long to wait, in one of two forms: a number of seconds (`Retry-After: 2`) or an HTTP date (`Retry-After: Fri, 31 Dec 1999 23:59:59 GMT`). It can also appear on `503` and on a temporary `413`.
-- Many APIs also send **`X-RateLimit-*`** headers. These are a common **convention, not a standard**, so names vary.
+{"error": "rate limit: 3 requests per 2 s"}
+```
 
-| Header | Meaning |
-|---|---|
-| `X-RateLimit-Limit: 3` | the quota per window |
-| `X-RateLimit-Remaining: 0` | calls left in this window; 0 means the next call gets `429` |
-| `X-RateLimit-Reset: 2` | seconds until the window resets (some APIs send a Unix time instead) |
+- **`Retry-After`** says how long to wait, in **one of two forms**:
+  - a number of seconds: `Retry-After: 2`
+  - an HTTP date: `Retry-After: Fri, 31 Dec 1999 23:59:59 GMT`
+  - It can also appear on `503` (maintenance) and on a temporary `413`.
+- **`X-RateLimit-*` headers** are a common **convention, not a standard**, so names vary between APIs. `X-RateLimit-Remaining: 0` warns you **before** the 429 arrives.
+  - `X-RateLimit-Reset` is seconds in the mock; some APIs send a Unix time instead.
 
 ![Animated rate-limit window: quota drains, 429, sleep Retry-After, retry succeeds](../assets/T08/10-rate-limit-retry.gif)
 
 *The quota counts down to zero, call 4 gets `429` with `Retry-After: 2`, the client waits, and the very same call then succeeds. A 429 is a pause, not lost data.*
 
 ### 2. How a polite script retries, and how to make fewer calls
+- **On `429`:** sleep for exactly the `Retry-After` value, then send the **same** request again. Don't change the URL, the body or the token.
+- **No `Retry-After`? Use exponential backoff:** wait 1, 2, 4, 8 seconds, doubling each time, up to a **cap**.
+  - Doubling gives a struggling server breathing room fast; the cap stops waits growing to minutes.
+  - Real clients add random **jitter** so a thousand scripts don't all retry on the same second.
+- **Analogy: a busy phone line.** You don't redial instantly a hundred times; you wait a bit longer after each busy tone.
+- The retry logic from the full note's reference program, annotated:
 
-- On `429`, sleep for exactly the `Retry-After` value, then send the **same** request again. Don't change the URL, the body or the token.
-- If there is no `Retry-After` header, use **exponential backoff**: wait 1, 2, 4, 8 seconds, doubling each time up to a **cap**. Real clients also add random **jitter** so a thousand scripts don't all retry at the same second.
-- Only retry "come back later" codes: `429`, `502`, `503` and `504`. Other 4xx codes (`400`, `401`, `403`, `404`, `413`) mean the request is wrong, so sending it again unchanged can't work. The one exception is an expired-token `401`: get a new token first, then retry.
-- Cap the number of retries too. Never retry forever, and never retry instantly, because each extra call extends the throttle.
+```python
+for attempt in range(MAX_RETRIES + 1):                     # cap the retries: never retry forever
+    r = self.session.request(method, url, **kwargs)
+    if r.status_code == 429:                               # rate limited: obey the server
+        wait = int(r.headers.get("Retry-After", min(2 ** attempt, BACKOFF_CAP)))  # header if sent, else backoff
+        time.sleep(wait)
+        continue                                           # send the SAME request again
+    if r.status_code in (502, 503, 504) and "Retry-After" not in r.headers:
+        wait = min(2 ** attempt, BACKOFF_CAP)              # 1, 2, 4, 8, 8 ... (BACKOFF_CAP = 8)
+        time.sleep(wait)
+        continue
+    return r                                               # any other code: hand it back, don't retry
+```
+
+  - Lab run: `503` → sleep 1 s → `503` → sleep 2 s → `200`.
+  - `int(...)` here is fine for the mock, but **crashes on the HTTP-date form** of `Retry-After` (see Exam traps).
+- **Which codes to retry:**
+  - **Retry:** `429`, `502`, `503`, `504` ("come back later").
+  - **Don't retry:** `400`, `401`, `403`, `404`, `413`. The request is wrong, so sending it again unchanged can't work.
+  - **One exception:** an **expired-token `401`**: get a new token first, then retry (section 6).
+- **Never retry instantly:** each extra call extends the throttle.
+- **Libraries that do this for you:**
+  - Meraki SDK: `wait_on_rate_limit=True` makes it sleep on 429, with `maximum_retries=5` (SDK 4.6.0 defaults ⚠ verify).
+  - curl: `--retry 3` retries on 408, 429, 500, 502, 503 and 504 and obeys `Retry-After`.
 
 ![Retry decision: which codes to retry, how long to wait, which never to retry](../assets/T08/02-retry-decision.png)
 
 *Blue codes are worth retrying (obey `Retry-After`, else back off); red codes mean fix the request instead.*
 
-- The Meraki SDK behaves this way out of the box: `wait_on_rate_limit=True` makes it sleep on 429, with `maximum_retries=5` (SDK 4.6.0 defaults ⚠ verify). curl's `--retry 3` also retries on 408, 429, 500, 502, 503 and 504 and obeys `Retry-After`.
-- The best fix is to make fewer calls, since a call you don't make can't be throttled:
+- **The best fix is to make fewer calls**, because a call you don't make can't be throttled:
 
 | Technique | How it helps |
 |---|---|
-| **Cache** | Keep results you already have and revalidate them with `ETag` (section 6). |
-| **Batch** | One call carrying many items instead of many calls (Meraki "action batches" ⚠ verify limits). |
-| **Webhooks instead of polling** | The platform pushes a notification to you when something changes (T43). |
-| **Bigger pages** | `perPage=1000` instead of 10 means fewer paging calls. |
-| **Spread over time** | Pace yourself below the limit (for example a short sleep between calls) instead of bursting. |
+| **Cache** | keep results you already have; revalidate with `ETag` (Should know) |
+| **Batch** | one call carrying many items instead of many calls (Meraki "action batches" ⚠ verify limits) |
+| **Webhooks instead of polling** | the platform pushes a notification to you when something changes (T43) |
+| **Bigger pages** | `perPage=1000` instead of 10 means fewer paging calls |
+| **Spread over time** | pace yourself below the limit (e.g. a short sleep between calls) instead of bursting |
 
-### 3. Pagination: getting the whole list, not just page one
+### 3. Pagination: get the whole list, not just page one
+- **Pagination** = the server returns a big collection in **pages**, one page per request, so no single response is huge.
+- **Every page is a normal `200 OK`.** The status code never tells you there's more; you must check the **body** or the **headers**.
+- **Analogy: a search engine's results.** Page 1 shows 10 results and a "Next" link. If you only read page 1, you never see result 11, and nothing tells you anything went wrong.
+- **Three styles:**
+  - **Offset / limit:** `?offset=5&limit=5` = skip 5, take 5. The body says `"total": 12`; you add `limit` to `offset` and stop when `offset >= total`.
+  - **Page number:** `?page=2&per_page=4`. The body says `"total_pages": 3`; you add 1 to `page` and stop when `page >= total_pages`.
+  - **Cursor / `Link` header (Meraki):** the server hands you the **ready-made next URL** in a response header. Stop when there's no `rel="next"`.
+- **Meraki's `Link` header**, from the full note's lab:
 
-- **Pagination** means the server returns a big collection in **pages**, one page per request. Every page is a normal `200 OK`, so the status code never tells you there is more. You must check the body or the headers.
-- There are three styles:
+```http
+HTTP/1.1 200 OK
+Link: <…/networks/N_100/clients?perPage=10>; rel="first", <…/networks/N_100/clients?perPage=10&startingAfter=c010>; rel="next"
+```
 
-| Style | Example request | "Is there more?" signal | Who builds the next request | Jump to a page? | Stable if data changes? |
-|---|---|---|---|---|---|
-| **Offset / limit** | `?offset=5&limit=5` (skip 5, take 5) | body `total`; stop when `offset >= total` | you: `offset += limit` | yes | no |
-| **Page number** | `?page=2&per_page=4` | body `total_pages`; stop when `page >= total_pages` | you: `page += 1` | yes | no |
-| **Cursor / `Link` header** | `?perPage=10&startingAfter=c010` | `Link` header has `rel="next"`; stop when it is gone | the server | no, next only | yes |
+  - `rel="next"` = the URL of the next page. `startingAfter=c010` is the **cursor**: "continue after client c010".
+  - Possible `rel` values include `first`, `prev`, `next` and `last`. The **last page has no `next`**.
+  - **Never build `startingAfter` yourself**; the server sets it and you just follow the URL.
+- **The paging loop in Python** (`requests` parses the `Link` header into `r.links`):
+
+```python
+url = f"{BASE_URL}/networks/N_100/clients?perPage=10"
+items = []
+while url:                                         # stops when url becomes None
+    r = api.call("GET", url)
+    items += r.json()                              # collect this page
+    url = r.links.get("next", {}).get("url")       # next page URL, or None on the last page
+```
+
+  - Lab result: 3 pages, **25 clients**. `.get("next", {})` avoids a `KeyError` on the last page.
+- **Meraki SDK trap:** `total_pages` defaults to **1**, so you get **only the first page** unless you pass `total_pages="all"` (or `-1`).
 
 ![Three pagination styles side by side, each ending with its stop condition](../assets/T08/03-pagination-styles.png)
 
 *Offset and page number read a count from the body; the cursor style reads the next URL from a header, which is the Meraki way.*
 
-- **Meraki uses cursors.** The next-page URL arrives ready-made in the **`Link` response header**, for example `Link: <https://...?perPage=10&startingAfter=c010>; rel="next"`. Possible `rel` values include `first`, `prev`, `next` and `last`, and the last page has no `next`.
-  - Never build `startingAfter` yourself; the server sets it and you just follow the URL.
-  - In Python, `requests` parses the header for you: `r.links.get("next", {}).get("url")` returns the next URL, or `None` on the last page, which ends a `while url:` loop.
-- **Meraki SDK trap:** `total_pages` defaults to 1, so you get only the first page unless you pass `total_pages="all"` (or `-1`).
-- **The classic bug:** the script does one GET and stops. It reports 5 of 12 devices, with no error and no exception, just missing data. If a question says "records missing, no error", the answer is pagination.
+- **The classic bug:** the script does **one GET** and stops. The lab's `first_page_only()` reports **5 of 12** devices, with **no error and no exception**, just missing data.
+  - Exam cue: "records missing, no error" → the answer is **pagination**.
 
 ![First-page-only bug vs the paging loop](../assets/T08/04-first-page-bug.png)
 
 *Missing paging loop in red; the fix in green is to loop on the "more?" signal.*
 
-### 4. Page size, jumping to a page, cursors and resuming a failed fetch
+- **Summary:**
 
-- **Page size:** the **API** sets a default and a maximum in its docs, and **you** pick a size up to that maximum with `limit`, `per_page` or `perPage`.
+| Style | Example request | "Is there more?" signal | Who builds the next request |
+|---|---|---|---|
+| **Offset / limit** | `?offset=5&limit=5` | body `total`; stop when `offset >= total` | you: `offset += limit` |
+| **Page number** | `?page=2&per_page=4` | body `total_pages`; stop when `page >= total_pages` | you: `page += 1` |
+| **Cursor / `Link`** | `?perPage=10&startingAfter=c010` | `Link` header has `rel="next"`; stop when it's gone | the server |
+
+### 4. Payload size: `413` means "too big", so split it
+- Servers cap what **one request** may carry, in two ways:
+  - **Bytes:** the whole body. The mock caps it at 512 bytes.
+  - **Items:** entries per call. The mock allows at most 10 serials. Meraki's synchronous action batches allow at most **20 actions** ⚠ verify.
+- **Analogy: a post-office counter.** One parcel can't weigh more than the limit, and you can only hand over so many parcels in one go. Send several trips instead.
+- **Too many bytes → `413`.** Old name "Payload Too Large", current name (RFC 9110) "Content Too Large". Same code.
+- **Too many items** often comes back as a plain **`400`** with the reason in the body. Read the error body.
+- From the lab, posting 40 serials:
+
+```
+POST /api/v1/devices/claim  {40 serials}  → 413 Content Too Large   {"error": "body is 533 bytes; limit is 512"}
+POST /api/v1/devices/claim  {15 serials}  → 400 Bad Request         {"error": "15 serials; max 10 per request"}
+4 × POST with 10 serials each             → 200 {'claimed': 10}  (×4)
+```
+
+- **The fix is to split** into batches that fit under **both** caps:
+
+```python
+def chunks(items, size):
+    for i in range(0, len(items), size):
+        yield items[i:i + size]                    # slices of at most `size` items
+
+for batch in chunks(serials, 10):                  # 40 serials → 4 calls of 10
+    r = api.call("POST", "/devices/claim", json={"serials": batch})
+```
+
+- **Waiting doesn't help a `413`:** the body is still too big. Splitting raises the call count, so keep the rate limit in mind.
+
+![Payload limits: 413 on bytes, 400 on item count, then chunks of 10 succeed](../assets/T08/05-payload-split.png)
+
+*Both limits lead to the same fix (blue): split into batches that fit under both caps.*
+
+### 5. Timeouts and async jobs
+- **The Python `requests` library has no default timeout.** Without one, a call can hang for minutes or more.
+- **Analogy: a phone call on hold.** Without a timeout you'd hold forever. With one, you hang up after 10 seconds and decide what to do.
+- **Setting a timeout:**
+
+```python
+requests.get(url, timeout=10)          # 10 s for connecting AND 10 s for reading
+requests.get(url, timeout=(3.05, 5))   # (connect, read): 3.05 s to connect, 5 s max gap between bytes
+```
+
+  - The **read** timeout is the longest gap **between bytes**, not the total download time.
+- **Hitting the timeout raises an exception**, `requests.exceptions.ConnectTimeout` or `requests.exceptions.ReadTimeout`. There's **no HTTP response and no status code at all**.
+  - curl's equivalents: `--connect-timeout` and `--max-time`; a timeout exits with code 28.
+- **`504 Gateway Timeout` is different:** a proxy, load balancer or gateway **in the middle** gave up waiting for the backend, and it **does** send you a real HTTP response.
+- **Async jobs:** for work longer than any sensible timeout (reports, firmware upgrades, backups), the API answers **`202 Accepted`** at once, with a job URI in `Location`. You **poll** that URI until it says complete.
+
+```
+POST /api/v1/reports                → 202 Accepted, Location: /api/v1/jobs/1   ← queued, NOT done
+GET  /api/v1/jobs/1                 → running
+GET  /api/v1/jobs/1                 → running
+GET  /api/v1/jobs/1                 → complete
+```
+
+  - Catalyst Center (DNA Center) does this for many write calls ⚠ verify the exact task endpoint (T09).
+
+![Client timeout vs gateway timeout vs async job](../assets/T08/06-timeouts-async.png)
+
+*A: the client gives up (exception, no code). B: the gateway gives up (`504`). C: nobody waits (`202`, then poll).*
+
+### 6. Expiring tokens: `401` in the middle of a run
+- **Tokens expire on purpose**, so a leaked one stops working soon. The lifetime usually comes in the login response as `"expires_in": 300` (seconds).
+  - Lifetimes vary by platform, e.g. about **30 minutes** for Secure Firewall Management Center (FMC) and about **12 hours** for Webex personal tokens ⚠ verify both.
+- **Analogy: a day visitor badge.** It worked all morning; at 5 pm the door stops opening. Your identity didn't change; the badge ran out. Go back to reception for a new one.
+- **The symptom:** a script that worked for its first calls suddenly gets **`401`** mid-run. A good server says why:
+
+```http
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer error="invalid_token", error_description="The access token expired"
+```
+
+- **The fix:** get a new token and retry the failed call **once**.
+  - **With a refresh token** (a longer-lived second credential): POST it with `grant_type=refresh_token` to get a new access token without re-sending the password.
+  - **Without one** (common on Cisco APIs): simply log in again.
+  - **Still `401` after one refresh → stop.** The credentials really are wrong.
+  - Better still, refresh **before** expiry by tracking `expires_in`.
+- **A new token never fixes `403`**: that's a role problem, not an expiry (T10).
+
+![Token expiry mid-script, refresh, retry once](../assets/T08/07-token-expiry.png)
+
+*The token lives 1 s; 1.5 s later the call gets `401` with "The access token expired"; refresh → new token → the same call returns `200`.*
+
+### 7. Scenario → cause → fix (the exam's answer key)
+
+| Scenario in the question | Cause | Fix |
+|---|---|---|
+| Loop over 500 devices starts getting `429` | too many calls per window | honour `Retry-After`; back off; pace; cache/batch; webhooks instead of polling |
+| Report shows 1000 clients, dashboard has 2400 | only the first page read | loop on `Link rel="next"` / `total` / `total_pages`; Meraki SDK `total_pages="all"` |
+| Script hangs forever on one call | no client timeout | `requests.get(url, timeout=(3.05, 10))` |
+| `504` from the API | gateway timed out waiting for the backend | retry later with backoff; use the async (`202`) variant if there is one |
+| Bulk update returns `413` | body too large | split into smaller requests |
+| Works for 30 min, then every call returns `401` | token expired | refresh or log in again, then retry once |
+
+## Exam traps
+- **429 ≠ fix the request.** The request is fine: don't change the URL, body or token. Wait `Retry-After` seconds and resend the **same** call. **429 vs 503:** 429 = **you** sent too many; 503 = the service is down for everyone. Both say "wait and retry".
+- **"Records missing, no error" = pagination**, not permissions or a timeout. Every page returns `200`. On Meraki the next page is in the **`Link` response header** (`rel="next"`), not the body.
+- **`Retry-After` can be a date.** `int(r.headers["Retry-After"])` crashes on the HTTP-date form.
+- **A client timeout is an exception, not a `504`.** `requests` never times out unless you pass `timeout=`; `504` comes from a gateway in the middle.
+- **`401` after many successful calls = expired token**, not wrong credentials. Refresh once; if still 401, stop. A new token never fixes 403.
+- **Don't retry other 4xx** (`400`, `403`, `404`, `413`): unchanged, they can't succeed. Waiting doesn't shrink a 413 body.
+
+<details><summary><b>🟨 Should know (second pass)</b></summary>
+
+- **Page size:** the **API** sets a default and a maximum in its docs; **you** pick a size up to that maximum with `limit`, `per_page` or `perPage`.
   - The same 9 events come back as 3 pages at `per_page=4` and as 2 pages at `per_page=6`.
   - Asking for more than the maximum usually gives `400`, or the API quietly caps it ⚠ verify per API.
-  - Bigger pages mean fewer calls against your rate limit, but each response is slower and heavier. Pick a size near the maximum unless responses time out.
-- **Jumping to page n** is plain arithmetic on the page size, and works only if the list is always sorted the same way.
+  - Bigger pages = fewer calls against the rate limit, but each response is slower and heavier. Pick a size near the maximum unless responses time out.
+- **Jumping to page n** is arithmetic on the page size, and only works if the list is always sorted the same way:
   - Offset / limit: page 3 at `limit=5` is `offset=10`.
-  - Page number: page *n* holds items `(n − 1) × per_page + 1` to `n × per_page`, so page 3 at `per_page=4` holds items 9 to 12. You can request it directly without fetching earlier pages.
+  - Page number: page *n* holds items `(n − 1) × per_page + 1` to `n × per_page`, so page 3 at `per_page=4` holds items 9 to 12. You can request it directly.
 - **A cursor is a bookmark.** It marks the last item you saw, so the next request means "continue after this one".
-  - Cursors exist because offsets and page numbers shift when items are added or deleted mid-fetch, so you skip or repeat items. A cursor is tied to a real item, so it doesn't shift.
-  - The trade-off is that you can't jump to "page 7"; you can only follow `next` (sometimes `prev`, `first`, `last`).
-  - Some APIs use an opaque token such as `nextPageToken=eyJ...` instead. It works the same way: pass it back unchanged.
-- **If the fetch dies halfway, the API won't resume for you**, because REST is stateless. Your script decides.
-  - With no saved bookmark, it starts again at page 1 and fetches everything twice.
-  - If it saved a bookmark after each page, it resumes from the first page it hadn't finished.
-  - Order matters: **save the page's data first, then move the bookmark.** A crash between the two means at worst re-fetching one page, so make saving an item twice harmless by de-duplicating on its id.
+  - **Why cursors exist:** offsets and page numbers shift when items are added or deleted mid-fetch, so you skip or repeat items. A cursor is tied to a real item, so it doesn't shift.
+  - **Trade-off:** you can't jump to "page 7"; you can only follow `next` (sometimes `prev`, `first`, `last`).
+  - Some APIs use an opaque token such as `nextPageToken=eyJ...` instead. Same idea: pass it back unchanged.
+
+| Style | Jump to a page? | Stable if data changes? |
+|---|---|---|
+| Offset / limit | yes | no |
+| Page number | yes | no |
+| Cursor / `Link` | no, next only | yes |
+
+- **Resuming a fetch that died halfway:** the API won't do it for you, because REST is stateless. Your script decides.
+  - No saved bookmark → it starts again at page 1 and fetches everything twice.
+  - Saved bookmark after each page → it resumes from the first page it hadn't finished.
+  - **Order matters:** save the page's data first, then move the bookmark. A crash between the two means at worst re-fetching one page, so de-duplicate on the item's id.
   - On `429` or a timeout, retry the **same** URL; only a successful page moves the bookmark.
   - Cursors can **expire** ⚠ verify per API. If resuming gives `400` or `410`, start again from page 1.
 
@@ -105,70 +285,43 @@
 
 *For each page: save the data (1), then save the next URL as the bookmark (2); after a crash the restart begins at the first unsaved page.*
 
-### 5. Payload size and timeouts
-
-- Servers cap what one request may carry, in **bytes** (the whole body) and in **items** (entries per call). Meraki's synchronous action batches allow at most 20 actions ⚠ verify.
-- A body that is too big gets **`413`**. Its old name is "Payload Too Large" and its current name (RFC 9110) is "Content Too Large"; both mean the same code.
-- An items limit often comes back as a plain **`400`** with the reason in the body, such as `"15 serials; max 10 per request"`. Read the error body.
-- The fix is to **split** the work into batches that fit under both caps. Splitting raises the call count, so keep the rate limit in mind.
-- Rarely tested relatives: `414 URI Too Long` and `431 Request Header Fields Too Large`.
-- **Client timeouts:** the Python `requests` library has **no default timeout**, so without one a call can hang for minutes or more.
-  - `timeout=10` applies 10 seconds to both connecting and reading. `timeout=(3.05, 5)` sets connect and read separately. The read timeout is the longest gap between bytes, not the total download time.
-  - Hitting it raises an **exception** (`requests.exceptions.ConnectTimeout` or `ReadTimeout`). There is no HTTP response and no status code at all. curl's equivalent is `--connect-timeout` and `--max-time`, which exit with code 28.
-- **`504 Gateway Timeout`** is different: a proxy, load balancer or gateway **in the middle** gave up waiting for the backend, and it sends you a real HTTP response.
-- **Async jobs:** for work longer than any sensible timeout (reports, firmware upgrades, backups) the API answers **`202 Accepted`** at once, with a job URI in `Location`. You **poll** that URI until it says complete. Catalyst Center (DNA Center) does this for many write calls ⚠ verify the exact task endpoint.
-
-![Client timeout vs gateway timeout vs async job](../assets/T08/06-timeouts-async.png)
-
-*A: the client gives up (exception, no code). B: the gateway gives up (`504`). C: nobody waits (`202`, then poll).*
-
-### 6. Expiring tokens, retiring versions and caching
-
-- **Tokens expire on purpose**, so a leaked one stops working soon. The lifetime usually comes in the login response as `"expires_in": 300` (seconds). Lifetimes vary by platform, for example about 30 minutes for Secure Firewall Management Center (FMC) and about 12 hours for Webex personal tokens ⚠ verify both.
-  - The symptom is a script that worked for its first calls and then gets **`401`** mid-run. A good server says why: `WWW-Authenticate: Bearer error="invalid_token", error_description="The access token expired"`.
-  - The fix is to get a new token and retry the failed call **once**. With a **refresh token** (a longer-lived second credential), you POST it with `grant_type=refresh_token` and skip re-sending the password. Without one, which is common on Cisco APIs, simply log in again.
-  - If it is still `401` after one refresh, stop: the credentials really are wrong. Better still, refresh before expiry by tracking `expires_in`. A new token never fixes `403`.
 - **Versions retire.** APIs are versioned in the URL (`/api/v1/...`, the common form the exam shows) or in a header such as `Accept: application/vnd.example.v2+json`.
-  - The lifecycle is **active, then deprecated, then removed**. A **deprecated** version still answers `200` but adds warning headers: `Deprecation` (when it was deprecated), `Sunset` (when it stops working) and `Link: <...>; rel="successor-version"` (the replacement).
+  - Lifecycle: **active → deprecated → removed**.
+  - A **deprecated** version still answers `200` but adds warning headers: `Deprecation` (when it was deprecated), `Sunset` (when it stops working) and `Link: <...>; rel="successor-version"` (the replacement).
   - After the sunset date, calls fail with `404` or `410 Gone`. A version that never existed also gives `404`.
-  - Migrate the **field names**, not just the path. In the lab, v0 called the field `name` and v1 calls it `hostname`, so a script that only changes the URL hits a `KeyError`.
+  - **Migrate the field names, not just the path.** In the lab, v0 called the field `name` and v1 calls it `hostname`, so a script that only changes the URL hits a `KeyError`.
 
 ![Version lifecycle: active, deprecated with warning headers, removed; migrate to v1](../assets/T08/08-version-lifecycle.png)
 
 *The deprecated phase (yellow) still returns `200`, which is why scripts don't notice until removal (red).*
 
-- **Caching with ETags** saves bandwidth and server work. The server sends a version tag in the **`ETag`** header. Next time, the client sends it back in **`If-None-Match`**, which makes a **conditional GET**.
-  - Unchanged gives **`304 Not Modified`** with an **empty body**, so reuse your copy. Changed gives a normal `200` with a new body and a new tag.
+- **Caching with ETags** saves bandwidth and server work:
+  - The server sends a version tag in the **`ETag`** header, e.g. `ETag: "Q2SW-0001-r1"`.
+  - Next time, the client sends it back in **`If-None-Match`**: a **conditional GET**.
+  - Unchanged → **`304 Not Modified`** with an **empty body**: reuse your copy. Changed → a normal `200` with a new body and a new tag.
   - Whether a `304` counts against your rate limit depends on the API ⚠ verify per platform.
-  - `Cache-Control: max-age=60` is cheaper still: you may reuse the copy for 60 seconds without asking at all.
+  - `Cache-Control: max-age=60` is cheaper still: reuse the copy for 60 seconds without asking at all.
 
-## Exam traps (the ones that catch people)
+![ETag and If-None-Match: 304 if unchanged, 200 with new ETag if changed](../assets/T08/09-etag-cache.png)
 
-- `429` and `503` both look like "server trouble", but `429` means **you** sent too many and `503` means the service is down for everyone. Both say "wait and retry", and both can carry `Retry-After`.
-- A `429` looks like a broken request, but it is actually fine; don't change the URL or re-authenticate, just wait and send the same call again.
-- "Records missing, no error" looks like a permissions or timeout problem, but it is actually a missing paging loop, because every page returns `200`.
-- On Meraki the next page looks like it should be in the body, but it is actually in the `Link` **response header** as `rel="next"`.
-- `int(r.headers["Retry-After"])` looks safe, but it crashes when the server uses the HTTP-date form.
-- A client timeout looks like it should return `504`, but it actually raises an exception with no response at all; `504` comes from a gateway in the middle.
-- A `401` after many successful calls looks like wrong credentials, but it is actually an expired token. Refresh once; if it is still 401, stop.
-- A deprecated API looks fine because it returns `200`, but it is actually on its way out, so watch the `Deprecation` and `Sunset` headers.
+*The tag goes out as `ETag` and comes back as `If-None-Match`. Only a conditional GET can produce `304`.*
+
+</details>
+
+> **Recognise only, details in the full note:** `414 URI Too Long` and `431 Request Header Fields Too Large`, weak ETags (`W/"…"`), the IETF `RateLimit` draft headers, Meraki SDK smart flow and `nginx_429_retry_wait_time`, per-endpoint `perPage` ranges, parsing the HTTP-date `Retry-After` form, `X-API-Version` headers.
 
 ## Quick self-check
-
 <details><summary>Q1. A loop over 400 devices starts getting <code>429</code> with <code>Retry-After: 1</code>. Best fix?</summary>Sleep for the <code>Retry-After</code> value, retry the same call, and pace the loop; the request itself is fine.</details>
-
 <details><summary>Q2. Which <code>requests</code> expression gives the next Meraki page URL, or <code>None</code> on the last page?</summary><code>r.links.get("next", {}).get("url")</code>, because <code>requests</code> parses the <code>Link</code> header into <code>r.links</code>.</details>
-
 <details><summary>Q3. A bulk call with 2000 serials returns <code>413</code>. What do you change?</summary>Split it into smaller requests; waiting doesn't shrink the body.</details>
-
 <details><summary>Q4. A fetch crashes on page 23. What must the script have saved to resume there?</summary>The next-page URL (the cursor) after each successful page, because the API keeps no record of your progress.</details>
-
 <details><summary>Q5. Which response says your cached copy is still current?</summary><code>304 Not Modified</code>, and only after you sent <code>If-None-Match</code> with the ETag.</details>
+<details><summary>Q6. A script reports 5 of 12 devices. Every call returned <code>200</code>. Cause?</summary>It read only the first page. Loop on the "more?" signal (<code>total</code>, <code>total_pages</code> or <code>Link rel="next"</code>).</details>
+<details><summary>Q7. <code>requests.get(url)</code> has hung for 10 minutes. What's missing, and what happens once it's added and hit?</summary><code>timeout=</code> (e.g. <code>timeout=(3.05, 10)</code>). Hitting it raises <code>requests.exceptions.ReadTimeout</code> (or <code>ConnectTimeout</code>): an exception, no status code.</details>
 
-## Cheat lines to say out loud
-
+## Say it out loud
 - "429 means wait and resend the same thing, not fix the request."
 - "Every page says 200, so follow the Link header until next disappears."
-- "A cursor is a bookmark the server hands me; my script, not the API, remembers where I stopped."
+- "413 means split it; waiting won't shrink the box."
 - "Requests never times out unless I tell it to, and a timeout is an exception, not a 504."
-- "ETag goes out, If-None-Match comes back, 304 means reuse what I have."
+- "401 after it was working means the badge expired: refresh once, then stop."

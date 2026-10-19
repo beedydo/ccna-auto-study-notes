@@ -1,24 +1,34 @@
 # T31 · Bash: essentials
 
-> Blueprint 4.11, 5.9 · Full note: [bee/T31-bash.md](../bee/T31-bash.md) · Teach-back 2026-11-01
+> Blueprint 4.11: Bash commands (files, navigation, environment variables); 5.9: interpret Bash script workflows · Full note: [bee/T31-bash.md](../bee/T31-bash.md) · Teach-back 2026-11-01
 
-## In one picture
 ![T31 at a glance: every Bash concept on one page](../assets/T31/00-overview.png)
+
 *Each row is one concept area; the numbered examples are lines from `labs/T31/device_report.sh`, and the red boxes are the exam traps.*
 
 ## The big idea
-- Bash is home turf, so this page is about the exam's angle, not the basics. The exam asks two kinds of question.
-- Blueprint 4.11 asks you to **pick the right command** for a file, navigation or environment-variable task.
-- Blueprint 5.9 asks you to **read a short script** and say what it does, what it prints and what exit code it returns.
-- Think of a script as a recipe card with three outputs: what goes into files, what goes on screen, and a single number at the end (the exit status). Most wrong answers come from mixing up those three channels.
+- Bash is home turf, so this page is the exam's angle only. The exam asks **two kinds of question**:
+  - **4.11: pick the right command** for a file, navigation or environment-variable task.
+  - **5.9: read a short script** and say what it does, what it prints and what exit code it returns.
+- **Analogy: a script is a recipe card with three outputs.** What goes into **files**, what goes on **screen** (stdout vs stderr), and **one number at the end** (the exit status). Most wrong answers come from mixing up those three channels.
+- **Analogy for variables: a note on the fridge vs a note in the kids' lunchbox.** `VAR=x` is on the fridge: only this shell sees it. `export VAR=x` goes in every child's lunchbox. A child can read its copy but can never change the note on the parent's fridge.
+- **What the exam asks:** the right flag (`-p`, `-r`), what `>` vs `>>` and `2>&1` leave in a file, why a child can't see a variable, and the `$?` / exit code after a line runs.
 
-## What you need to know
+## 🟥 Must know
 
-### 1. Getting around and handling files (4.11)
-- `pwd` prints where you are. `cd` on its own (or `cd ~`) goes home, `cd ..` goes up one level, and `cd -` jumps back to the **previous** directory (it is not "up one").
-- `ls -l` gives the long listing (permissions, owner, size, time), `ls -a` includes hidden dot-files, and `ls -la` does both.
-- An **absolute path** starts at `/` (`/etc/hosts`) and means the same thing from anywhere. A **relative path** starts from the current directory (`./script.sh`, `../labs`).
-- From the practice-exam review: `pushd /etc/ansible` saves where you are and jumps there, and `popd` jumps back. This is a **directory stack**, so it can remember several places, while `cd -` only swaps the last two. Exam cue: "temporarily change directory and return later" means **`pushd`**.
+### 1. Navigation and the 4.11 command picks
+- `cd` alone (or `cd ~`) = home. `cd ..` = up one. **`cd -` = the previous directory** (`$OLDPWD`), not "up one".
+- **Exam-sim gap (practice-test review): `pushd` / `popd` = a directory stack.**
+
+```bash
+pushd /etc/ansible     # save where I am on the stack, then jump to /etc/ansible
+popd                   # pop the stack: jump back to where I was
+```
+
+  - Nest them to visit several directories and return in order; `dirs -v` shows the stack.
+  - `cd -` only swaps the **last two** directories; `pushd` remembers a whole stack.
+  - Exam cue: "temporarily change directory and return later" → **`pushd`** (then `popd`).
+- Absolute path starts at `/` (`/etc/hosts`); relative starts at the current directory (`./script.sh`, `../labs`).
 
 | Task | Command | Trap |
 |---|---|---|
@@ -26,15 +36,15 @@
 | copy a folder | `cp -r backups backups-copy` | without `-r`: "is a directory" |
 | move or rename | `mv csr1.cfg csr1-running.cfg` | same command for both |
 | delete a non-empty folder | `rm -r backups-copy` | `rmdir` only removes **empty** dirs |
-| first / last lines, follow a log | `head -n 1 f`, `tail -n 20 -f /var/log/syslog` | default is 10 lines |
+| last 20 lines, then follow a log | `tail -n 20 -f /var/log/syslog` | default is 10 lines |
 | lines **without** a pattern | `grep -v ntp csr1-running.cfg` | `-i` ignore case, `-r` recurse |
 | find files by name | `find . -name "*.yaml"` | quote the pattern or the shell expands it first |
-
-- `grep` also has exit codes you can test: **0** = a match was found, **1** = no match, **2** = an error. That is why `grep -q pattern file && echo found` works.
+| make a script runnable | `chmod +x device_report.sh` | |
+| var visible to child processes | `export NETBOX_TOKEN=abc123` | |
+| reload shell config | `source ~/.bashrc` | |
 
 ### 2. Permissions
-- The first column of `ls -l`, such as `-rwxr-xr-x`, is the file type followed by three triplets for **user (owner), group and other**.
-- In octal, read = 4, write = 2 and execute = 1, with one digit per triplet.
+- `-rwxr-xr-x` = file type, then three triplets: **user (owner) · group · other**. Octal: r = 4, w = 2, x = 1, one digit per triplet.
 
 | Octal | Symbolic | Typical use |
 |---|---|---|
@@ -43,13 +53,11 @@
 | `700` | `rwx------` | private script or dir |
 | `600` | `rw-------` | private keys, `.env` with tokens |
 
-- `chmod +x f` adds execute for everyone, `chmod u+x f` only for the owner. On a directory, `x` means you may `cd` into it and `r` means you may list it.
-- `chown beedy:netops report.csv` changes owner and group, and needs `sudo`.
-- `sudo echo x > /etc/f` **fails**, because your own shell does the redirect, not sudo. Use `echo x | sudo tee /etc/f`.
-- If a script has no execute bit, `./script.sh` gives "Permission denied" and exit code **126**. `bash script.sh` still works, because Bash only needs to read the file.
+- `chmod +x f` = execute for everyone; `chmod u+x f` = owner only. On a directory, `x` = may `cd` into it, `r` = may list it.
+- **No execute bit:** `./script.sh` → "Permission denied", exit **126**. `bash script.sh` still works, because Bash only needs to **read** the file.
 
-### 3. Variables and who can see them
-- A plain variable lives in the current shell only. `export` hands it down to child processes (a Python script, a sub-shell). A child can never change its parent's variables.
+### 3. Variables: who can see them
+- The fridge-vs-lunchbox rule as a table:
 
 | Form | Who sees it |
 |---|---|
@@ -58,16 +66,22 @@
 | `VAR=value cmd` | that one command only |
 | `local var` (inside a function) | that function only |
 
-- There must be **no spaces** around `=`. `VAR = x` tries to run a command called `VAR`.
-- `${API_BASE:-http://127.0.0.1:8131}` means "use the variable if it is set and non-empty, otherwise use the default". This is how a script reads config from the environment.
-- `env` and `printenv` list only **exported** variables. `set` lists everything. `unset VAR` deletes one.
-- **`PATH`** is a colon-separated list of directories searched left to right. A missing command gives exit code **127**. Writing `PATH=/my/bin` without `:$PATH` wipes the search path, and every other command disappears.
-- `./script.sh` needs the `./` because the current directory is not in `PATH`.
-- To make a variable permanent, put `export VAR=value` in `~/.bashrc` or `~/.profile`. `source ~/.bashrc` reloads it into the **current** shell.
-- **`source file` vs `bash file`:** `bash vars.sh` runs in a child shell, so its variables die with it. `source vars.sh` runs in your shell, so they stay.
+- **No spaces around `=`.** `VAR = x` runs a command called `VAR` with arguments `=` and `x`.
+- **Defaults from the environment:**
+
+```bash
+API_BASE=${API_BASE:-http://127.0.0.1:8131}   # use $API_BASE if set and non-empty, else the default
+```
+
+- `env` / `printenv` list **exported** variables only; `set` lists everything; `unset VAR` deletes one.
+- **`PATH`** = colon-separated dirs, searched left to right. Missing command → exit **127**.
+  - `PATH=/my/bin` without `:$PATH` wipes the search path; every other command disappears.
+  - `./script.sh` needs the `./` because the current directory isn't in `PATH`.
+- **Persist** in `~/.bashrc` or `~/.profile`; `source ~/.bashrc` reloads into the **current** shell.
+- **`source file` vs `bash file`:** `bash vars.sh` runs in a child shell, so its variables die with it. `source vars.sh` runs in your shell, so they stay. A child can never change its parent's variables.
 
 ### 4. Redirection: where output goes
-- Every command has three streams, numbered as **file descriptors**: 0 = stdin (input), 1 = stdout (normal output), 2 = stderr (errors).
+- File descriptors: **0** stdin, **1** stdout, **2** stderr.
 
 | Syntax | Effect |
 |---|---|
@@ -80,19 +94,23 @@
 | `2>&1` | point stderr wherever stdout points **right now** |
 | `&> file` | Bash shorthand for `> file 2>&1` |
 
-- Well-written scripts send data to stdout and log messages to stderr, so `./script.sh > out.txt` captures the data while the messages stay on screen.
-- **Order matters**, because redirections are read left to right:
+- **Order matters**, read left to right:
+
+```bash
+ls /nope > out1.txt 2>&1     # stdout → file, THEN stderr copies that → error is in the file
+ls /nope 2>&1 > out2.txt     # stderr copies stdout's target (the terminal) FIRST → error on screen, file empty
+cmd 2>&1 | grep err          # pipe is set up first, so 2>&1 here sends errors into the pipe
+```
 
 ![2>&1 order](../assets/T31/02-redirect-order.png)
+
 *`2>&1` copies wherever stdout points at that moment, so it must come after `> file` to catch errors.*
 
-- `cmd > f 2>&1` puts both streams in the file. `cmd 2>&1 > f` leaves errors on screen.
-- To grep error text through a pipe, write `cmd 2>&1 | grep err`. Here `2>&1` comes first because the pipe is set up before the redirections.
-- Using `>` inside a loop wipes the file on every pass, so only the last line survives.
+- `>` inside a loop wipes the file on every pass, so only the last line survives.
+- Well-written scripts send data to stdout and log messages to stderr (`>&2`), so `./script.sh > out.txt` captures the data while messages stay on screen.
 
-### 5. Script basics: shebang, arguments, exit codes
-- The **shebang** must be line 1 and start with `#!`. `#!/bin/bash` is the exam form; `#!/usr/bin/env bash` picks the first `bash` in `PATH`. Running `bash script.sh` ignores the shebang.
-- To run a script: `chmod +x device_report.sh`, then `./device_report.sh devices.csv`.
+### 5. Script anatomy: shebang, arguments, exit codes
+- **Shebang** on line 1: `#!/bin/bash` (the exam form). `bash script.sh` ignores it. Run: `chmod +x device_report.sh`, then `./device_report.sh devices.csv`.
 
 | Param | Meaning |
 |---|---|
@@ -103,18 +121,59 @@
 | `"$*"` | every argument joined into **one** string |
 | `$?` | exit status of the last command |
 
-- With the arguments `"site a" b`: `"$@"` gives two words (`site a`, `b`), `"$*"` gives one (`site a b`), and unquoted `$@` gives three (`site`, `a`, `b`).
-- **Exit status:** 0 = success, anything 1–255 = failure. Conventions: 1 = general error, 2 = misuse, **126** = found but not executable, **127** = command not found, 128+N = killed by signal N.
-- A function returns its last command's status (or `return N`). A pipeline returns the **last** command's status. A script returns `exit N` or its last command's status.
-- **`$?` is overwritten by every command**, even `echo` and `[`. Save it on the very next line: `rc=$?`.
-- `local json=$(curl ...)` hides curl's failure, because the line's status is that of `local` (always 0). Declare first, then assign on a separate line.
+- With the arguments `"site a" b`: `"$@"` → 2 words (`site a`, `b`); `"$*"` → 1 (`site a b`); unquoted `$@` → 3 (`site`, `a`, `b`).
+- **Exit status:** 0 = success, 1–255 = failure. `1` general error, `2` misuse, **`126`** found but not executable, **`127`** command not found.
+- Status of a function = its last command (or `return N`). Pipeline = the **last** command's. Script = `exit N` or its last command's.
+- **`$?` is overwritten by every command**, `echo` and `[` included:
+
+```bash
+grep -q zzz f.txt
+echo "grep rc=$?"     # 1  (no match)
+echo "now rc=$?"      # 0  (the first echo succeeded)
+```
+
+  - Save it on the very next line: `rc=$?`.
 
 ![Workflow of device_report.sh](../assets/T31/01-script-workflow.png)
+
 *The lab script's flow, traced with a real run: red = failure paths, yellow = skipped, green = success. This is the shape of a 5.9 answer.*
 
 ### 6. Tests, loops, substitution and quotes
-- `if` runs a command and branches on its exit status (0 = true). `[` is itself a command, so it needs spaces: `[ -f "$f" ]`, never `[-f "$f"]`.
-- File tests: `-f` regular file, `-d` directory, `-e` exists. String tests: `-z` empty, `-n` non-empty, `==` and `!=`. Number tests: `-eq -ne -lt -le -gt -ge`.
+- `if` runs a command and branches on its exit status (0 = true). `[` is a command, so it needs spaces: `[ -f "$f" ]`, never `[-f "$f"]`.
+  - Files: `-f` regular file, `-d` directory, `-e` exists. Strings: `-z` empty, `-n` non-empty, `==`, `!=`. **Numbers: `-eq -ne -lt -le -gt -ge`.**
+- **Loops:**
+
+```bash
+for inventory in "$@"; do ... done                       # each argument, spaces preserved
+while IFS=, read -r host ip os; do ... done < devices.csv  # read a CSV line by line
+```
+
+  - `IFS=,` splits on commas for this `read` only; `-r` keeps backslashes; `< devices.csv` feeds the file to the loop.
+  - `continue` = next pass; `break` = leave the loop.
+- `$(command)` drops a command's output into the line. `$((failed + 1))` does integer maths; `x=5+1` stores the text `5+1`.
+- **Quotes:** double quotes expand `$var` and `$(cmd)` and keep spaces together. Single quotes keep everything literal: `'$host'` prints `$host`.
+
+### 7. Reading a script on the exam (5.9)
+- Trace in this order:
+  1. Shebang and defaults (`${VAR:-default}`).
+  2. Argument checks (`$#`, `usage`, `exit 2`).
+  3. What the loops iterate over (`"$@"`, file lines via `< file`).
+  4. Which branch writes what, and where (`>` vs `>>`, stdout vs stderr).
+  5. The final output and the **exit status**.
+- "What's in the file?" → check `>` vs `>>`, the position of `2>&1`, and whether messages go to `>&2`.
+- "What's the exit code?" → the last command's: last in the pipeline, last in the function, or the explicit `exit N`.
+
+## Exam traps
+- **`cmd 2>&1 > f` leaves errors on screen**; `cmd > f 2>&1` catches both. And `cmd | grep error` misses stderr; write `cmd 2>&1 | grep error`.
+- **`$?` changes after every command**, so a second `echo "rc=$?"` prints `0`. Save it straight away: `rc=$?`.
+- **`VAR=x` doesn't reach a child program**; only `export` does. `bash vars.sh` can't set your shell's variables; `source vars.sh` can.
+- **`cd -` = previous directory**, not up (`cd ..`). "Change directory temporarily and come back" → **`pushd` / `popd`**.
+- **`[[ 10 > 9 ]]` is false** (string compare); use `-gt` for numbers. In `[ ]`, `>` even creates a file named `9`.
+- **126 = not executable** (`chmod +x`); **127 = not found** (not in `PATH`, use `./`). Always quote `"$@"` and `"$var"`.
+
+<details><summary><b>🟨 Should know (second pass)</b></summary>
+
+- **`[ ]` vs `[[ ]]`:**
 
 | | `[ ]` (`test`) | `[[ ]]` (Bash keyword) |
 |---|---|---|
@@ -123,33 +182,29 @@
 | Patterns and regex | no | `[[ $name == core* ]]`, `=~` |
 | `<` and `>` | redirection (creates a file!) | string order, so `[[ 10 > 9 ]]` is false |
 
-- `for x in list; do ...; done` loops over a list. `while IFS=, read -r host ip os; do ... done < file` is the standard way to read a CSV line by line. `continue` skips to the next pass and `break` leaves the loop.
-- `$(command)` runs a command and drops its output into the line. `$((failed + 1))` does integer maths; plain `x=5+1` stores the text `5+1`.
-- **Quotes:** double quotes expand `$var` and `$(cmd)` and keep spaces together. Single quotes keep everything literal, so `'$host'` prints `$host`.
-- The exam assumes Linux GNU tools. On macOS, `sed -i` and `date -d` behave differently, and `/bin/bash` is the old 3.2.
+  - `[ $a == b ]` with an empty `$a` → `unary operator expected`.
+- **`local` hides failures:** `local json=$(curl ...)` returns the status of `local` (always 0), not of `curl`, so a following `|| return` never fires. Declare `local json` first, then assign on a separate line.
+- **`grep` exit codes:** `0` = match, `1` = no match, `2` = error. That's why `grep -q pattern file && echo found` works.
+- **`sudo echo x > /etc/f` fails**, because your own shell does the redirect, not sudo. Use `echo x | sudo tee /etc/f`. `chown beedy:netops report.csv` changes owner and group and needs `sudo`.
+- **Shebang variants:** `#!/usr/bin/env bash` picks the first `bash` in `PATH`. `sh script.sh` may not be Bash (Debian/Ubuntu: `dash`), so `[[ ]]` and `==` can fail there.
+- **More file commands:** `ls -l` (long), `ls -a` (hidden dot-files), `ls -la` (both); `touch f` creates an empty file or updates its mtime; `head -n 1 f`; `grep -r -i "NTP" .`.
+- **Exit code `128+N`** = killed by signal N (130 = Ctrl-C).
+- **The exam assumes Linux GNU tools.** On macOS, `sed -i` and `date -d` behave differently, and `/bin/bash` is the old 3.2.
 
-### 7. Reading a script on the exam (5.9)
-- Trace it in this order: (1) shebang and defaults, (2) argument checks, (3) what the loops iterate over, (4) which branch writes what, and where (`>` vs `>>`, stdout vs stderr), (5) the final output and the **exit status**.
-- For "what's in the file?" questions, check `>` vs `>>`, the position of `2>&1`, and whether messages go to `>&2`.
+</details>
 
-## Exam traps (the ones that catch people)
-- `cmd 2>&1 > f` looks like it captures errors, but it doesn't, because `2>&1` copied stdout's target (the terminal) before stdout moved to the file.
-- `cmd | grep error` looks like it searches errors, but pipes carry stdout only. You need `cmd 2>&1 | grep error`.
-- `echo "rc=$?"` twice looks like it prints the same number twice, but the second shows `0`, because the first `echo` overwrote `$?`.
-- `VAR=x` then running a child program looks like it should pass `VAR`, but it doesn't, because only `export` reaches child processes.
-- `cd -` looks like "go up", but it is "go to the previous directory". Up is `cd ..`.
-- `[[ 10 > 9 ]]` looks true, but it is false, because `>` inside `[[ ]]` compares strings. Use `-gt` for numbers. In `[ ]`, `>` even creates a file named `9`.
-- "Permission denied" on `./script.sh` (exit 126) means the execute bit is missing. "command not found" (exit 127) means it isn't in `PATH`, so use `./`.
-- Unquoted `$@` looks harmless, but it splits a path with spaces into several words. Always write `"$@"` and `"$var"`.
+> **Recognise only, details in the full note:** `awk -F,` / `cut -d` / `wc -l < file` field tricks, `set -o pipefail`, `command -v` vs `which`, `~/.bashrc` vs `~/.bash_profile` (login vs non-login), BSD `sed -i ''` and `date -v`, Bash 4+ features (`declare -A`, `mapfile`, `${var,,}`), curl exit codes 7 and 22, the `ping` no-reply exit code (⚠ verify, platform-dependent).
 
 ## Quick self-check
-<details><summary>Q1. A loop runs `echo "$h" > report.csv` for three hosts, then `echo done >> report.csv`. What is in the file?</summary>The last host and `done`. `>` wipes the file on every pass, and `>>` appends once.</details>
-<details><summary>Q2. Which form sends both stdout and stderr to a log: `cmd 2>&1 > log` or `cmd > log 2>&1`?</summary>`cmd > log 2>&1`. `2>&1` copies stdout's target at that moment, so it must come after `> log`.</details>
-<details><summary>Q3. `TOKEN=abc`, then a Python child prints `None` for `TOKEN`. One fix?</summary>`export TOKEN`. A plain shell variable is not passed to child processes.</details>
-<details><summary>Q4. What does `chmod 744 deploy.sh` give?</summary>`rwxr--r--`: the owner can run it, and group and other can only read.</details>
-<details><summary>Q5. Called with `"Gi1/0/1 uplink" Gi1/0/2`, how many times does `for p in "$@"` loop?</summary>Twice. `"$@"` keeps each argument whole; unquoted it would loop three times.</details>
+<details><summary>Q1. A loop runs <code>echo "$h" &gt; report.csv</code> for three hosts, then <code>echo done &gt;&gt; report.csv</code>. What is in the file?</summary>The last host and <code>done</code>. <code>&gt;</code> wipes the file on every pass, and <code>&gt;&gt;</code> appends once.</details>
+<details><summary>Q2. Which sends both streams to a log: <code>cmd 2&gt;&amp;1 &gt; log</code> or <code>cmd &gt; log 2&gt;&amp;1</code>?</summary><code>cmd &gt; log 2&gt;&amp;1</code>. <code>2&gt;&amp;1</code> copies stdout's target at that moment, so it must come after <code>&gt; log</code>.</details>
+<details><summary>Q3. <code>TOKEN=abc</code>, then a Python child prints <code>None</code> for <code>TOKEN</code>. One fix?</summary><code>export TOKEN</code>. A plain shell variable is not passed to child processes.</details>
+<details><summary>Q4. What does <code>chmod 744 deploy.sh</code> give?</summary><code>rwxr--r--</code>: the owner can run it, and group and other can only read.</details>
+<details><summary>Q5. Called with <code>"Gi1/0/1 uplink" Gi1/0/2</code>, how many times does <code>for p in "$@"</code> loop?</summary>Twice. <code>"$@"</code> keeps each argument whole; unquoted it would loop three times.</details>
+<details><summary>Q6. A script must <code>cd</code> into a work directory, do a job, then return to wherever the user was. Which commands?</summary><code>pushd "$WORKDIR"</code> then <code>popd</code>. The directory stack remembers where you came from.</details>
+<details><summary>Q7. <code>./backup.sh</code> gives "Permission denied". What is <code>$?</code> and the fix?</summary><code>126</code>: found but not executable. <code>chmod +x backup.sh</code> (or run <code>bash backup.sh</code>).</details>
 
-## Cheat lines to say out loud
+## Say it out loud
 - "Single greater-than wipes, double appends, and a pipe only carries stdout."
 - "Two-and-one goes **after** the file, because it copies stdout's target at that moment."
 - "Save dollar-question-mark straight away, because the next command overwrites it."

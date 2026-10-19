@@ -1,30 +1,56 @@
 # T33 · IaC + tool comparison: essentials
 
-> Blueprint 5.5, 5.6 · Full note: [bee/T33-iac-tool-comparison.md](../bee/T33-iac-tool-comparison.md) · Teach-back 2026-11-01
+> Blueprint 5.5: principles of infrastructure as code; 5.6: automation tool capabilities (Ansible, Terraform, NSO) · Full note: [bee/T33-iac-tool-comparison.md](../bee/T33-iac-tool-comparison.md) · Teach-back 2026-11-01
 
-## In one picture
 ![T33 at a glance: IaC principles, declarative vs imperative, push vs pull, a six-tool matrix and scenario answers on one page](../assets/T33/00-overview.png)
+
 *Rows are concept groups, the matrix compares six tools on the same criteria, blue cells are the exam's go-to answers and red boxes are traps.*
 
 ## The big idea
-- **Infrastructure as Code (IaC)** means the infrastructure you want is written down in files, kept in Git, and applied by a tool, instead of being typed into a CLI by hand.
-- An analogy: an IaC file is the architect's blueprint, and the tool is the builder who checks the building against it and fixes only what differs.
-- You already live this with Ansible and Terraform. The exam's angle is classification: **declarative vs imperative**, **push vs pull**, **agentless vs agent-based**, and "which tool fits this scenario". The one new piece is Cisco **NSO**.
+- This topic answers two questions:
+  - **Why write infrastructure as code?** The infrastructure you want is written down in files, kept in Git, and applied by a tool, instead of being typed into a CLI by hand.
+  - **Which tool fits which job?** Classified on three axes: **declarative vs imperative**, **push vs pull**, **agentless vs agent-based**, then matched to a scenario.
+- **Analogies:**
+  - **An IaC file is the architect's blueprint, and the tool is the builder** who checks the building against it and fixes only what differs.
+  - **Declarative is a sat-nav destination; imperative is a list of turns.** Give the destination and the sat-nav works out the route from wherever you are. A list of turns only works if you start from the same spot every time.
+  - **NSO is a translator and air-traffic controller in one.** You describe a service once; it translates it for every vendor's router and lands every change together, or none.
+- You already live this with Ansible and Terraform. The one new piece is Cisco **NSO**.
+- **What the exam asks:** the IaC benefits, classify a tool on the axes, and pick the tool for a scenario: **multivendor atomic service → NSO**, **provisioning with state → Terraform**, **agentless config push → Ansible**.
 
-## What you need to know
+## 🟥 Must know
 
 ### 1. Why IaC (5.5)
-- The wanted state (VLANs, NTP, VMs, ACI tenants, firewall rules) lives in **machine-readable files** such as `*.tf`, playbooks or manifests, and only the tool changes the devices.
-- **Version control** gives you **history** (who changed VLAN 20, and why), **review** (a pull request where people read the diff and the plan output before merge) and **rollback** (`git revert`, then re-apply).
-- It is **repeatable and consistent**: the same files give the same result in every environment. Dev, test and prod differ only in variables, so there are no hand-made "snowflake" devices.
-- It **enables CI/CD for infrastructure**: because a change is a commit, a pipeline can lint, run `terraform plan` or `ansible-playbook --check`, wait for approval, apply and test.
-- Other wins the exam may name: speed, fewer human errors, documentation-as-code and disaster recovery (rebuild from the repo).
+- **Machine-readable files:** the wanted state (VLANs, NTP, VMs, ACI tenants, firewall rules) lives in files such as `*.tf`, playbooks or manifests. Only the tool changes the devices.
+- **Version control** (Git) gives you:
+  - **History:** who changed VLAN 20, when and why.
+  - **Review:** a pull request where people read the diff and the plan output before merge.
+  - **Rollback:** `git revert` the commit, then re-apply; the tool converges the devices back.
+- **Repeatable and consistent:** the same files give the same result in every environment. Dev, test and prod differ only in variables, so there are no hand-made "snowflake" devices.
+- **Enables CI/CD for infrastructure:** a change is a commit, so a pipeline can run on it: lint → `terraform plan` or `ansible-playbook --check` → approve → apply → test.
+- Other wins the exam may name: speed, fewer human errors, documentation-as-code, disaster recovery (rebuild from the repo).
 
 ### 2. Declarative vs imperative
-- **Declarative** means you describe the end state ("VLAN 10 named USERS exists") and the tool works out the steps. **Imperative** (also called **procedural**) means you write the steps in order ("create VLAN 10, then name it").
+- **Declarative** (the sat-nav destination) = you describe the **end state** ("VLAN 10 named USERS exists"); the tool reads the device, diffs, and works out the steps.
+- **Imperative** (also **procedural**, the list of turns) = you write the **steps** in order ("create VLAN 10, then name it"); the tool runs them as written.
 
 ![Imperative steps vs declarative diff loop](../assets/T33/01-imperative-vs-declarative.png)
+
 *Left: a fixed step list that ignores the current state, so a re-run breaks. Right: read the device, diff it against the desired state, and change only the difference.*
+
+- **In the lab:** the desired state is one JSON file (the "code" in Git):
+
+```json
+{
+  "sw1": {"hostname": "branch1-sw1", "vlans": {"10": "USERS", "20": "VOICE"}, "ntp_servers": ["10.0.0.1"]},
+  "sw2": {"hostname": "branch1-sw2", "vlans": {"10": "USERS", "20": "VOICE"}, "ntp_servers": ["10.0.0.1"]}
+}
+```
+
+  - Running the **imperative** step list a second time gave `ERROR 409 VLAN 10 already exists` and a duplicated NTP server, because the steps never check the current state.
+  - The **declarative** plan/apply path compares this file with each device and changes only the difference.
+- **The diff is the heart of every declarative tool.** Terraform calls it a **plan**; NSO calls it a **dry-run**.
+- **Order:** Terraform builds a dependency graph, so block order doesn't matter. In an Ansible playbook, task order **does** matter.
+- **Ansible is the grey area.** Its tasks run in order (procedural), but most modules are state-based and idempotent (`state: merged`). If you must pick "declarative" from a list, pick **Terraform, Puppet or NSO**. ⚠ verify the exact framing in the CBT/N2K questions.
 
 | | **Declarative** (WHAT) | **Imperative / procedural** (HOW) |
 |---|---|---|
@@ -33,28 +59,31 @@
 | Re-run | does nothing if already correct | depends on the author; often errors or duplicates |
 | Examples | Terraform (HCL), NSO (YANG service models), Puppet, Salt states, Kubernetes YAML | shell/Python scripts; Chef recipes run in order; Ansible tasks run top to bottom |
 
-- In the lab, running the imperative step list a second time gave `ERROR 409 VLAN 10 already exists` and a duplicated NTP server, because the steps never check the current state.
-- The **diff** is the heart of every declarative tool. Terraform calls it a **plan**, and NSO calls it a **dry-run**.
-- In Terraform the order of blocks doesn't matter, because it builds a dependency graph. In an Ansible playbook, task order **does** matter.
-- **Ansible is the grey area.** Its tasks run in order (procedural), but most of its modules are state-based and idempotent (`state: merged`). If you must pick "declarative" from a list, pick Terraform, Puppet or NSO. ⚠ verify the exact framing in the CBT/N2K questions.
-
 ### 3. Idempotency, drift, mutable vs immutable
-- **Idempotency** means running the same thing again gives the same end state and changes nothing after the first time. In the lab, the second apply reported `0 changed, 2 ok`. Ansible shows it as `changed=0` in the recap.
-- Idempotency is a property of **how the code is written**, not of the tool. Ansible's `command` and `shell` modules are not idempotent unless you add `creates:` or `changed_when:`.
-- **Configuration drift** means the real config has moved away from the code, usually because someone made a manual change.
+- **Idempotency** = running the same thing again gives the same end state and changes nothing after the first time.
+  - Lab: the second apply reported `0 changed, 2 ok`. Ansible shows it as `changed=0` in the play recap.
+  - It is a property of **how the code is written**, not of the tool. Ansible's `command` and `shell` modules are not idempotent unless you add `creates:` or `changed_when:`.
+- **Configuration drift** = the real config has moved away from the code, usually through a manual change.
 
 ![Animated drift and idempotency loop](../assets/T33/07-drift-loop.gif)
+
 *Plan (8 changes), apply, apply again (0 changed: idempotent), a manual CLI edit on sw2 (drift), plan detects it, apply fixes only sw2. A push tool doesn't watch devices; drift waits for the next run.*
 
-- **Push tools catch drift only when you run them** (`terraform plan`, `ansible-playbook --check --diff`). Pull agents catch it on their next timed run and fix it themselves. NSO detects it with `check-sync` / `compare-config`.
-- **Mutable** infrastructure is changed in place (patch the same box), so its drift risk grows over time. **Immutable** infrastructure is never edited: you build a new image or instance, swap it in, and destroy the old one.
-- Network hardware is mutable by nature, since you can't throw away a core switch for each change. Immutable is the container and cloud golden-image pattern. "Pets vs cattle" is the same idea: pets are nursed back to health, cattle are replaced.
+- **Push tools catch drift only when you run them** (`terraform plan`, `ansible-playbook --check --diff`). Pull agents catch and fix it on their next timed run. NSO detects it with `check-sync` / `compare-config`.
+- **Mutable** = changed in place (patch the same box), so drift risk grows over time. **Immutable** = never edited: build a new image or instance, swap it in, destroy the old one.
+  - Analogy: **pets vs cattle**. Pets are nursed back to health; cattle are replaced.
+  - Network hardware is mutable by nature (you can't throw away a core switch per change). Immutable is the container and cloud golden-image pattern.
 
 ### 4. Push vs pull, agentless vs agent-based
-- Push vs pull is about **who opens the connection**. Agentless vs agent-based is about **whether extra software lives on the managed node**.
+- **Push vs pull = who opens the connection.** **Agentless vs agent-based = whether extra software lives on the managed node.**
+  - **Push:** the controller connects out to the node when you (or CI) run it.
+  - **Pull:** an agent on each node calls a server on a schedule and fetches its config.
 
 ![Push vs pull architecture: a control node connecting out to agentless devices, and agents on nodes calling a config server](../assets/T33/09-push-vs-pull-arch.png)
+
 *Follow each line from its start to its arrow. Push: the control node connects out over SSH, NETCONF or HTTPS when you run it. Pull: an agent on each node calls the server on a schedule.*
+
+- Routers and switches generally can't run agents, so **network automation is agentless push**. ⚠ verify: older NX-OS releases had Puppet/Chef agent support, so don't say "never".
 
 | | **Push** | **Pull** |
 |---|---|---|
@@ -69,45 +98,82 @@
 | Fits | network devices, appliances, cloud APIs | general-purpose servers you control |
 | Tools | Ansible, Terraform, NSO (and `salt-ssh`) | Puppet, Chef, Salt (default) |
 
-- The two axes usually line up, but not always. **Salt** is agent-based (minions) yet **push** (the master publishes over ZeroMQ on ports 4505/4506).
-- Routers and switches generally can't run agents, so **network automation is agentless push**. ⚠ verify: older NX-OS releases had Puppet/Chef agent support, so don't say "never".
+### 5. Ansible: agentless YAML push
+- **Agentless + push:** the control node connects out with existing credentials. **Network modules run on the control node itself**, not on the device, and reach it through a connection type: `network_cli` (SSH to the CLI), `netconf` (NETCONF over SSH, 830), `httpapi` (an HTTPS API such as NX-API), or `local` with a module that makes REST calls (Meraki, Catalyst Center, ACI, ISE).
+- **The lab playbook**, showing both halves of the grey area:
 
-### 5. Ansible and Terraform: the one-line angle
-- **Ansible** is agentless and push. Its **network modules run on the control node itself**, not on the device, and reach the device through a connection type: `network_cli` (SSH to the CLI), `netconf` (NETCONF over SSH on 830), `httpapi` (an HTTPS API such as NX-API), or `local` with a module that makes REST calls (Meraki, Catalyst Center, ACI, ISE).
-- Ansible has **no state file**: every run reads the device and compares. That's why it can't "destroy what it created last time" the way Terraform can. The exam pairs it with "agentless" and "YAML". Its sweet spot is config management and orchestration across many devices.
-- **Terraform** (HashiCorp) is declarative HCL. **Providers** are plugins that turn resources into API calls; Cisco ones include `CiscoDevNet/aci` and `CiscoDevNet/iosxe` (⚠ verify the other namespaces at registry.terraform.io). The iosxe provider talks NETCONF over SSH (830); from v1.0 it dropped RESTCONF.
+```yaml
+- name: Branch switch baseline
+  hosts: branch_switches           # targets from the inventory
+  gather_facts: false
+  tasks:                           # run top to bottom: procedural order
+    - name: VLANs 10 and 20
+      cisco.ios.ios_vlans:         # resource module
+        config:
+          - vlan_id: 10
+            name: USERS
+          - vlan_id: 20
+            name: VOICE
+        state: merged              # state-based: only changes what differs, so re-runs are idempotent
+```
+
+- **No state file:** every run reads the device and compares. That's why it can't "destroy what it created last time" the way Terraform can, and why it has **no cross-device rollback**.
+- Sweet spot: **configuration management and orchestration across many devices**. Exam cues: "playbook", "inventory", "YAML", "agentless".
+
+### 6. Terraform: declarative HCL + providers + state
+- **Terraform** (HashiCorp) = declarative **HCL** (`*.tf`). **Providers** are plugins that turn resources into API calls; Cisco ones include `CiscoDevNet/aci` and `CiscoDevNet/iosxe` (⚠ verify the other namespaces at registry.terraform.io). The iosxe provider talks NETCONF over SSH (830); from v1.0 it dropped RESTCONF.
+
+```hcl
+terraform {
+  required_providers {
+    iosxe = { source = "CiscoDevNet/iosxe" }   # which provider plugin to download on init
+  }
+}
+
+provider "iosxe" {
+  host     = "10.10.20.11"                     # NETCONF over SSH, port 830 by default
+  username = "admin"
+  password = var.iosxe_password                # from a variable, never hardcoded
+}
+
+resource "iosxe_vlan" "users" {                # one managed object: type "iosxe_vlan", name "users"
+  vlan_id = 10
+  name    = "USERS"                            # the end state, not a command
+}
+```
 
 ![Terraform core workflow](../assets/T33/04-terraform-workflow.png)
+
 *`init` downloads providers, `plan` refreshes and diffs (the preview), `apply` calls the APIs and writes the state, and `destroy` removes everything in the state.*
 
-- The **state file** `terraform.tfstate` maps each resource block to a real object. Remove a block and the next plan says **destroy**. Keep it in a remote backend and never commit it, because it can hold secrets.
-- `plan -detailed-exitcode` returns 0 for no changes and 2 for changes, which CI uses for drift checks.
-- Terraform's sweet spot is **provisioning** (VMs, VPCs, ACI tenants, Meraki networks). The classic split is "Terraform builds the VM, Ansible configures what runs inside it".
+```bash
+terraform init        # download providers, set up the backend
+terraform plan        # refresh, diff, preview: changes NOTHING
+terraform apply       # execute the plan, write terraform.tfstate
+terraform destroy     # delete everything in the state
+```
 
-### 6. Cisco NSO, explained gently
+- **State file** `terraform.tfstate` maps each resource block to a real object, so Terraform knows what *it* manages. Remove a block → the next plan says **destroy**. Keep it in a remote backend and never commit it, because it can hold secrets.
+- Sweet spot: **provisioning** (VMs, VPCs, ACI tenants, Meraki networks). The classic split: "Terraform builds the VM, Ansible configures what runs inside it".
+
+### 7. Cisco NSO: YANG services, NEDs, atomic transactions
 - **Cisco Network Services Orchestrator (NSO)** came from the Tail-f acquisition, so commands and files still say `ncs` and `tail-f`. Bob owns the deep dive in T25; this is the exam-level summary.
-- Think of NSO as a translator and air-traffic controller in one. You describe a **service** once ("L3VPN for customer ACME"), and NSO works out the config for every router involved, whatever the vendor, and sends it all as one coordinated change.
+- **The translator/air-traffic-controller idea:** you describe a **service** once ("L3VPN for customer ACME"), and NSO works out the config for every router involved, whatever the vendor, and sends it all as **one coordinated change**.
 
 ![NSO architecture: northbound clients, NSO core with Service Manager, Device Manager and CDB, one NED per vendor, multivendor devices](../assets/T33/08-nso-architecture-arch.png)
+
 *Read top to bottom: every northbound interface reaches the same core, the Service Manager maps a YANG service onto per-device config, and the Device Manager sends each diff through one NED per vendor as one atomic transaction.*
 
-- **Model-driven:** services are defined by **YANG service models** that you write. The **Service Manager** handles services; the **Device Manager** handles device config. The mapping from service to device config is called **FASTMAP** (⚠ verify the name stays exam-relevant).
-- **NEDs (Network Element Drivers)** are NSO's **southbound** drivers, one per vendor or device type. Each models the device in YANG, so NSO can speak CLI (Cisco, Juniper, Arista), NETCONF or an API. That is how it does **multivendor**.
-- **CDB** (configuration database) holds the config of every device and service and is kept in sync with the network (`sync-from`, `sync-to`, `check-sync`).
-- **Transactions:** a commit goes to all devices "in a distributed and atomic transaction", and either everything succeeds or the whole change is rolled back. `commit dry-run` previews the device changes first. **This is the key difference from Ansible, which has no cross-device rollback.**
+- **Model-driven:** services are defined by **YANG service models** that you write. The **Service Manager** handles services; the **Device Manager** handles device config.
+- **NEDs (Network Element Drivers)** = NSO's **southbound** drivers, one per vendor or device type. Each models the device in YANG, so NSO can speak CLI (Cisco, Juniper, Arista), NETCONF or an API. That is how it does **multivendor**.
+- **CDB** (configuration database) holds the config of every device and service, kept in sync with the network (`sync-from`, `sync-to`, `check-sync`).
+- **Transactions:** a commit goes to all devices "in a distributed and atomic transaction". Either everything succeeds or the whole change is rolled back. `commit dry-run` previews the device changes first. **This is the key difference from Ansible**, which has no cross-device rollback.
 - **Northbound APIs** (how people and systems talk *to* NSO): CLI, Web UI, NETCONF, RESTCONF and JSON-RPC. Exam wording "REST" maps to RESTCONF/JSON-RPC.
 
-### 7. Puppet, Chef, Salt and picking the tool (5.6)
-
-| | Puppet | Chef | Salt |
-|---|---|---|---|
-| Architecture | agent + primary server ("master" in old docs) | Chef Infra Client + Chef Infra Server, Workstation with `knife` | master + minions; `salt-ssh` agentless |
-| Push/pull | **pull**: catalog over HTTPS **8140**, every **30 min** by default | **pull**: client periodically fetches cookbooks | **push** over ZeroMQ |
-| Language | Puppet DSL **manifests** (`*.pp`), declarative | **Ruby** **recipes** in **cookbooks** | YAML state files (`*.sls`) |
-
-- Chef's resources run in the order written (procedural flavour). ⚠ verify if a question calls Chef "declarative". Neither Puppet nor Chef is typical for network devices on this exam.
+### 8. Picking the tool (5.6)
 
 ![Scenario to tool decision tree](../assets/T33/06-tool-decision.png)
+
 *Ask the questions in this order: atomic multivendor services first (only NSO does it), agent/pull last.*
 
 | Scenario cue | Answer |
@@ -120,24 +186,43 @@
 | "Recipe", "cookbook", "Ruby" | **Chef** |
 | Replace the server with a new one built from an image | **immutable** |
 
-## Exam traps (the ones that catch people)
-- Push vs pull looks like it's about which way config flows, but it's actually about **who starts the connection**. Config ends up on the node either way.
-- Agentless looks like it always means push, but Salt is agent-based yet push, and `ansible-pull` makes Ansible pull.
-- Ansible looks declarative because of `state: merged`, but its tasks run in order. If the exam wants "declarative", pick Terraform, Puppet or NSO.
-- Idempotent looks like a synonym for declarative, but it isn't: a careful script can be idempotent, and Ansible `command`/`shell` tasks are not idempotent by default.
-- Deleting the Terraform state file looks like a reset, but Terraform simply forgets the resources (they still exist) and will try to create duplicates. Deleting a resource **block** is what plans a destroy.
-- `terraform plan` looks like it might change something, but it never does; `apply` does. `destroy` removes what is in state, not everything in the account.
-- NEDs look like an API you call, but they are NSO's **southbound** drivers. Northbound is CLI, Web UI, NETCONF, RESTCONF and JSON-RPC.
-- A push tool looks like it watches devices live, but drift only shows up on the next `plan` or `--check` run. Pull agents fix it on their next interval.
+## Exam traps
+- **Push vs pull is about who starts the connection**, not which way config flows. And agentless ≠ push by definition: Salt is agent-based yet push; `ansible-pull` makes Ansible pull.
+- **Ansible isn't the "declarative" pick.** Its tasks run in order; pick Terraform, Puppet or NSO. And **idempotent ≠ declarative**: a careful script can be idempotent, and Ansible `command`/`shell` tasks aren't by default.
+- **Terraform state:** deleting a resource **block** plans a destroy. Deleting the **state file** makes Terraform forget the resources (they still exist), so it tries to create duplicates. `plan` never changes anything; `destroy` removes what's in state, not everything in the account.
+- **NSO = atomic multivendor rollback**, not Ansible. **NEDs are southbound**; northbound is CLI, Web UI, NETCONF, RESTCONF, JSON-RPC.
+- **Drift isn't watched live by push tools.** It shows up on the next `plan` or `--check` run; pull agents fix it on their next interval.
+
+<details><summary><b>🟨 Should know (second pass)</b></summary>
+
+- **Puppet, Chef, Salt:**
+
+| | Puppet | Chef | Salt |
+|---|---|---|---|
+| Architecture | agent + primary server ("master" in old docs) | Chef Infra Client + Chef Infra Server, Workstation with `knife` | master + minions; `salt-ssh` agentless |
+| Push/pull | **pull**: catalog over HTTPS **8140**, every **30 min** by default | **pull**: client periodically fetches cookbooks | **push** over ZeroMQ (ports 4505/4506) |
+| Language | Puppet DSL **manifests** (`*.pp`), declarative | **Ruby** **recipes** in **cookbooks** | YAML state files (`*.sls`) |
+
+  - Chef's resources run in the order written (procedural flavour). ⚠ verify if a question calls Chef "declarative".
+  - Neither Puppet nor Chef is typical for network devices on this exam.
+- **Terraform in CI:** `terraform plan -detailed-exitcode` returns 0 for no changes and 2 for changes, which pipelines use for drift checks. `apply` asks for `yes` unless you pass `-auto-approve`.
+- **NSO FASTMAP:** the mapping from a service down to per-device config, which also handles service modify and delete (⚠ verify the name stays exam-relevant).
+- **The "why" behind agentless for networks:** devices already expose SSH, NETCONF and HTTPS APIs, so a controller can use what's there instead of installing and patching a daemon on every box.
+
+</details>
+
+> **Recognise only, details in the full note:** other Cisco Terraform provider namespaces (⚠ verify), `terraform fmt` / `validate`, remote backends (S3, HCP Terraform), NSO `ncs_cli` and `load merge`, NSO Python/Java bindings, `puppet agent -t`, `salt '*' state.apply`, tool vendor ownership (⚠ verify), the Terraform "No changes" message wording (⚠ verify).
 
 ## Quick self-check
 <details><summary>Q1. The same automation runs twice and the second run changes nothing. Which property is this?</summary>Idempotency: the end state is the same however many times it runs.</details>
 <details><summary>Q2. L3VPN across IOS XR and Juniper PEs; any failure must roll back every router. Which tool?</summary>Cisco NSO: atomic multivendor transactions through NEDs, with rollback.</details>
 <details><summary>Q3. Which two tools use an agent that pulls config on a timer?</summary>Puppet and Chef. Ansible, Terraform and NSO are agentless push.</details>
-<details><summary>Q4. You delete a resource block from `main.tf` and run `terraform plan`. What does it show?</summary>A destroy for that resource, because the state file says Terraform manages it.</details>
+<details><summary>Q4. You delete a resource block from <code>main.tf</code> and run <code>terraform plan</code>. What does it show?</summary>A destroy for that resource, because the state file says Terraform manages it.</details>
 <details><summary>Q5. New VMs are built from a fresh image for each release and old ones deleted. What is this called?</summary>Immutable infrastructure; instances are never edited, so they don't drift.</details>
+<details><summary>Q6. Someone changes VLAN 20's name on a switch CLI. When does Ansible or Terraform notice?</summary>Only on the next run (<code>terraform plan</code> or <code>ansible-playbook --check --diff</code>). Push tools don't watch devices; that is configuration drift.</details>
+<details><summary>Q7. Which are NSO's northbound interfaces, and what are NEDs?</summary>Northbound: CLI, Web UI, NETCONF, RESTCONF, JSON-RPC. NEDs are the southbound drivers, one per vendor or device type.</details>
 
-## Cheat lines to say out loud
+## Say it out loud
 - "Declarative says what, imperative says how; Ansible is steps in order with idempotent modules."
 - "Push means the controller dials out; pull means the agent dials in every 30 minutes."
 - "Ansible is agentless YAML, Terraform has state and providers, NSO has YANG services, NEDs and atomic rollback."
