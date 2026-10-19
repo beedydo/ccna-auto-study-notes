@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 XML anatomy, namespaces, XPath</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .row { display: grid; gap: 14px; margin-bottom: 14px; }
+  .r1 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+  .r2 { grid-template-columns: minmax(0, 1.22fr) minmax(0, 1fr); }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+  .panel h2 .ids { margin-left: auto; }
+  .anno { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 0; border: 2px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .anno .l { font-family: Menlo, monospace; font-size: 12.4px; line-height: 1.5; padding: 2px 10px; white-space: pre; border-bottom: 1px dashed #ddd; }
+  .anno .r { font-size: 12px; line-height: 1.5; padding: 2px 8px; border-left: 2px solid var(--line); border-bottom: 1px dashed #ddd; background: #fafaf8; }
+  .anno .r b { color: var(--xml); }
+  ul.rules { margin: 6px 0 0; padding-left: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px 12px; }
+  ul.rules li { font-size: 13px; line-height: 1.35; }
+  ul.rules li .ok, ul.rules li .no { margin-right: 4px; }
+  .map { display: grid; grid-template-columns: minmax(0, 1.3fr) 30px minmax(0, 0.95fr); align-items: center; gap: 6px; }
+  .map .arrow { font-size: 28px; text-align: center; color: var(--py); font-weight: 800; }
+  .map pre.src { font-size: 11.4px; padding: 8px 9px; }
+  .mini { font-size: 12.8px; line-height: 1.45; margin-top: 8px; }
+  table.xp { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.xp td { border: 1.5px solid var(--line); padding: 5px 8px; vertical-align: top; }
+  table.xp td:first-child { width: 42%; }
+  .tree { font-family: Menlo, monospace; font-size: 12.5px; line-height: 1.6; background: #fff; border: 2px solid var(--line); border-radius: 8px; padding: 8px 12px; white-space: pre; }
+  .tree .sel { background: var(--c1); border-radius: 3px; padding: 0 3px; outline: 2px solid var(--warn); }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">XML up close</span> anatomy, namespaces, XPath</h1>
+    <div class="meta"><b>T06.01 · T06.02</b><br>The XML that NETCONF (T15) sends and receives<br>Namespace → RESTCONF module prefix (T16)</div>
+  </header>
+
+  <div class="row r1">
+    <div class="panel">
+      <h2>🔍 Every part of an XML document <span class="ids">T06.01</span></h2>
+      <div class="anno">
+        <div class="l">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="r"><b>declaration</b>: optional, line 1 only</div>
+        <div class="l">&lt;!-- ietf-interfaces, one entry --&gt;</div><div class="r"><b>comment</b>: allowed (JSON: none)</div>
+        <div class="l">&lt;interfaces</div><div class="r"><b>root element</b> (exactly one)</div>
+        <div class="l">  xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces"</div><div class="r"><b>default namespace</b>: this + children</div>
+        <div class="l">  xmlns:ianaift="urn:ietf:params:xml:ns:yang:iana-if-type"&gt;</div><div class="r"><b>prefixed namespace</b> declared</div>
+        <div class="l">  &lt;interface&gt;</div><div class="r"><b>child element</b> (list entry)</div>
+        <div class="l">    &lt;name&gt;GigabitEthernet1&lt;/name&gt;</div><div class="r"><b>element</b> = start tag · text · end tag</div>
+        <div class="l">    &lt;description&gt;AT&amp;amp;T &amp;lt;uplink&amp;gt;&lt;/description&gt;</div><div class="r"><b>escapes</b>: <code>&amp;amp;</code> <code>&amp;lt;</code> <code>&amp;gt;</code></div>
+        <div class="l">    &lt;type&gt;ianaift:ethernetCsmacd&lt;/type&gt;</div><div class="r">value <b>uses</b> the <code>ianaift:</code> prefix</div>
+        <div class="l">    &lt;enabled&gt;true&lt;/enabled&gt;</div><div class="r">still just <b>text</b> "true"</div>
+        <div class="l">    &lt;mtu unit="bytes"&gt;1500&lt;/mtu&gt;</div><div class="r"><b>attribute</b>: <code>name="value"</code> in start tag</div>
+        <div class="l">    &lt;shutdown/&gt;</div><div class="r"><b>empty element</b>, self-closing</div>
+        <div class="l">  &lt;/interface&gt;</div><div class="r">closes in <b>reverse</b> order</div>
+        <div class="l" style="border-bottom:none">&lt;/interfaces&gt;</div><div class="r" style="border-bottom:none">exactly <b>one</b> root closes last</div>
+      </div>
+      <ul class="rules">
+        <li><span class="ok">✓</span><b>one root</b> element wraps everything</li>
+        <li><span class="no">✗</span><code>&lt;a/&gt;&lt;b/&gt;</code> → <code>junk after document element</code></li>
+        <li><span class="ok">✓</span>every tag closed: <code>&lt;/x&gt;</code> or <code>&lt;x/&gt;</code></li>
+        <li><span class="no">✗</span><code>&lt;a&gt;&lt;b&gt;&lt;/a&gt;</code> → <code>mismatched tag</code></li>
+        <li><span class="ok">✓</span>tags <b>case-sensitive</b>, properly nested</li>
+        <li><span class="no">✗</span><code>&lt;Name&gt;x&lt;/name&gt;</code> → <code>mismatched tag</code></li>
+        <li><span class="ok">✓</span>attribute values <b>quoted</b> (<code>"</code> or <code>'</code>)</li>
+        <li><span class="no">✗</span><code>&lt;a x=1/&gt;</code> or <code>&lt;a&gt;AT&amp;T&lt;/a&gt;</code> → <code>not well-formed</code></li>
+      </ul>
+    </div>
+
+    <div class="panel">
+      <h2>🏷️ Element or attribute? <span class="ids">T06.01</span></h2>
+      <table class="grid" style="margin-bottom:10px">
+        <tr><th style="width:28%"></th><th class="xml">Element <code style="background:#fff3">&lt;mtu&gt;1500&lt;/mtu&gt;</code></th><th class="xml">Attribute <code style="background:#fff3">unit="bytes"</code></th></tr>
+        <tr><td class="rowh">Carries</td><td>the <b>data</b></td><td><b>metadata</b> about an element</td></tr>
+        <tr><td class="rowh">Can nest / repeat</td><td><span class="ok">yes</span> / <span class="ok">yes</span> (that's how lists work)</td><td><span class="no">no</span> / <span class="no">no</span> (once per tag)</td></tr>
+        <tr><td class="rowh">Order</td><td>kept</td><td>not significant</td></tr>
+        <tr><td class="rowh">xmltodict key</td><td><code>"mtu"</code></td><td><code>"@unit"</code> (text → <code>"#text"</code>)</td></tr>
+        <tr><td class="rowh">ElementTree</td><td><code>.find("mtu").text</code></td><td><code>.get("unit")</code> · <code>.attrib</code></td></tr>
+        <tr><td class="rowh">In NETCONF</td><td>all YANG data</td><td><code>message-id</code>, <code>nc:operation</code>, <code>type="xpath"</code></td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> both <code>&lt;enabled&gt;true&lt;/enabled&gt;</code> and <code>unit="bytes"</code> are <b>strings</b> to every XML parser. Types come only from the YANG schema, not the XML.</div>
+      <h2 style="margin-top:12px">🌳 Same doc as a tree</h2>
+<div class="tree">interfaces            <span style="color:#888">{urn:…ietf-interfaces}</span>
+└── interface
+    ├── name          "GigabitEthernet1"
+    ├── description   "AT&amp;T &lt;uplink&gt;"
+    ├── type          "ianaift:ethernetCsmacd"
+    ├── enabled       "true"
+    ├── mtu           "1500"  @unit="bytes"
+    └── shutdown      (empty)</div>
+    </div>
+  </div>
+
+  <div class="row r2">
+    <div class="panel">
+      <h2>🧬 Namespace = the YANG model's surname <span class="ids">T06.02</span></h2>
+      <div class="map">
+<pre class="src">&lt;config&gt;  <span style="color:#888">&lt;!-- NETCONF wrapper = 1 root --&gt;</span>
+  <span class="hl5">&lt;interfaces xmlns=</span>
+<span class="hl5">   "urn:ietf:params:xml:ns:yang:ietf-interfaces"&gt;</span>
+    &lt;interface&gt;
+      &lt;name&gt;Loopback100&lt;/name&gt;
+    &lt;/interface&gt;
+  <span class="hl5">&lt;/interfaces&gt;</span>
+  <span class="hl6">&lt;native xmlns=</span>
+<span class="hl6">   "http://cisco.com/ns/yang/Cisco-IOS-XE-native"&gt;</span>
+    &lt;hostname&gt;CSR1&lt;/hostname&gt;
+  <span class="hl6">&lt;/native&gt;</span>
+&lt;/config&gt;</pre>
+        <div class="arrow">⇄</div>
+<pre class="src">{
+  "<span class="hl5">ietf-interfaces:</span>interfaces": {
+    "interface": [
+      {"name": "Loopback100"}
+    ]
+  },
+  "<span class="hl6">Cisco-IOS-XE-native:</span>native": {
+    "hostname": "CSR1"
+  }
+}</pre>
+      </div>
+      <div class="mini">
+        <span class="n">1</span><b>XML</b> (NETCONF, RESTCONF +xml): a URI in <code>xmlns="…"</code>. It's an ID only; nothing is downloaded.<br>
+        <span class="n">2</span><b>JSON</b> (RESTCONF, RFC 7951): the <b>module name</b> + colon on the <b>top-level</b> key, and again wherever the model changes. Children inherit it.<br>
+        <span class="n">3</span>Same model, two spellings: URI <code>urn:…:ietf-interfaces</code> ⇄ module <code>ietf-interfaces</code>. Two models in one payload → two namespaces, no clash.
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> a NETCONF filter with the <b>wrong or missing</b> <code>xmlns</code> returns an <b>empty</b> <code>&lt;data/&gt;</code>, not an error. RESTCONF JSON body without the prefix → device <b>rejects</b> it; reading a reply without it → <code>KeyError</code>.</div>
+    </div>
+
+    <div class="panel">
+      <h2>🧭 XPath = a file path for the XML tree <span class="ids">T06.02</span></h2>
+      <table class="xp">
+        <tr><td><code>/interfaces/interface</code></td><td><code>/</code> from the root, one level per step: every interface</td></tr>
+        <tr><td><code>/interfaces/interface[name="Gi1"]/description</code></td><td><code>[…]</code> <b>predicate</b> = filter: Gi1's description only</td></tr>
+        <tr><td><code>//name</code></td><td><code>//</code> = <b>anywhere</b> below: every <code>name</code> element</td></tr>
+        <tr><td><code>//mtu/@unit</code></td><td><code>@</code> selects an <b>attribute</b></td></tr>
+        <tr><td><code>/interfaces/interface[1]</code></td><td>position predicate: XPath counts from <b>1</b> (Python lists from 0)</td></tr>
+      </table>
+<pre class="src" style="margin-top:8px">&lt;filter type="xpath"
+        select="/if:interfaces/interface[name='GigabitEthernet1']"
+        xmlns:if="urn:ietf:params:xml:ns:yang:ietf-interfaces"/&gt;</pre>
+      <div class="mini">
+        <span class="n">1</span>NETCONF <code>&lt;get-config&gt;</code> filter: <code>type="subtree"</code> (an XML skeleton) or <code>type="xpath"</code> (needs the <code>:xpath</code> capability).<br>
+        <span class="n">2</span>ElementTree speaks a <b>subset</b>: <code>root.findall(".//if:name", ns)</code>, <code>[@unit='bytes']</code>, <code>[tag='text']</code>.
+      </div>
+      <div class="tip" style="margin-top:8px"><b>Cousins:</b> RESTCONF URL <code>/restconf/data/ietf-interfaces:interfaces/interface=Gi1</code> is the <b>same path</b>; the key goes after <code>=</code>, not in <code>[…]</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-xml">XML side</span><span class="k k-code">exact syntax / parser error text</span><span class="k k-trap">exam trap</span><span class="k k-tip">link to Bob's topics</span>
+    <span style="margin-left:auto">Error messages from Python 3.14 <code>xml.etree.ElementTree</code></span>
+  </footer>
+</div>
+</body>
+</html>

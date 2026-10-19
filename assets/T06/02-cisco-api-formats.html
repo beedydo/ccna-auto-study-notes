@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 which format each Cisco API speaks</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  table.grid td { font-size: 13px; padding: 7px 9px; }
+  table.grid td.pf { font-weight: 800; font-size: 13.5px; }
+  table.grid td.pf .ids { display: block; font-weight: 400; }
+  table.grid td.pf .old { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); }
+  .fmt { display: inline-block; font-size: 11.5px; font-weight: 800; padding: 2px 8px; border-radius: 10px; color: #fff; margin: 1px 3px 1px 0; }
+  .fmt.xml { background: var(--xml); } .fmt.json { background: var(--json); } .fmt.both { background: linear-gradient(90deg, var(--xml) 50%, var(--json) 50%); }
+  tr.sep td { background: #f0f0ee; font-weight: 800; font-size: 12.5px; letter-spacing: .4px; padding: 4px 9px; }
+  table.grid td code { white-space: normal; word-break: break-all; }
+  .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .rule { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 8px 12px; font-size: 13px; line-height: 1.45; }
+  .rule h3 { margin: 0 0 4px; font-size: 14.5px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Which format each Cisco API speaks</span> and the first parse step</h1>
+    <div class="meta"><b>For Bob's API topics: T15 – T25, T42</b><br>Format · how you pick it · the line after <code>requests</code><br>Paths from the labs in <code>bob/</code></div>
+  </header>
+
+  <table class="grid">
+    <colgroup><col style="width:190px"><col style="width:150px"><col style="width:330px"><col><col style="width:300px"></colgroup>
+    <tr><th>Platform (topic)</th><th>Format</th><th>How the format is chosen</th><th>First parse step in Python</th><th>Trap</th></tr>
+
+    <tr class="sep"><td colspan="5">📡 DEVICE APIs (model-driven)</td></tr>
+    <tr><td class="pf">NETCONF<span class="ids">T15 · SSH 830</span></td><td><span class="fmt xml">XML only</span></td>
+      <td>Fixed by RFC 6241. Every message wrapped in <code>&lt;rpc&gt;</code> with <code>xmlns="urn:ietf:params:xml:ns:netconf:base:1.0"</code></td>
+      <td class="path"><code>reply.data_xml</code> (str) → <code>xmltodict.parse()</code>, or <code>reply.data.findall(f".//{{{IF_NS}}}interface")</code></td>
+      <td>Wrong <code>xmlns</code> in a filter → <b>empty</b> <code>&lt;data/&gt;</code>, not an error</td></tr>
+    <tr><td class="pf">RESTCONF<span class="ids">T16 · HTTPS 443</span></td><td><span class="fmt both">JSON or XML</span></td>
+      <td><code>Accept: application/yang-data+json</code> (or <code>+xml</code>); same for <code>Content-Type</code> on writes</td>
+      <td class="path"><code>resp.json()["ietf-interfaces:interfaces"]["interface"]</code></td>
+      <td>Top key carries the <b>module prefix</b>; a single-item GET returns <code>"ietf-interfaces:interface"</code></td></tr>
+    <tr><td class="pf">NSO northbound<span class="ids">T25</span></td><td><span class="fmt both">JSON or XML</span></td>
+      <td>RESTCONF again: <code>application/yang-data+json</code></td>
+      <td class="path"><code>resp.json()["tailf-ncs:…"]</code> (module-prefixed keys)</td>
+      <td>Same RFC 7951 rules as device RESTCONF</td></tr>
+
+    <tr class="sep"><td colspan="5">🔀 NX-OS AND ACI (object tree, DN + class)</td></tr>
+    <tr><td class="pf">NX-API CLI<span class="ids">T17 · POST /ins</span></td><td><span class="fmt json">JSON</span><span class="fmt xml">XML</span><span class="fmt json">JSON-RPC</span></td>
+      <td><b>Content-Type</b> picks it: <code>application/json</code> · <code>application/xml</code> · <code>application/json-rpc</code></td>
+      <td class="path"><code>.json()["ins_api"]["outputs"]["output"]["body"]["TABLE_interface"]["ROW_interface"]</code></td>
+      <td>Several commands → <code>output</code> becomes a <b>list</b>; one command → a <b>dict</b></td></tr>
+    <tr><td class="pf">NX-API REST · ACI APIC<span class="ids">T17 · T19</span></td><td><span class="fmt both">JSON or XML</span></td>
+      <td>The <b>URL suffix</b>: <code>/api/class/fvTenant.json</code> vs <code>.xml</code></td>
+      <td class="path"><code>.json()["imdata"][0]["fvTenant"]["attributes"]["name"]</code></td>
+      <td>Every reply is <code>{"totalCount", "imdata": [{class: {"attributes"}}]}</code>; class name is a <b>key</b></td></tr>
+
+    <tr class="sep"><td colspan="5">☁️ CONTROLLERS AND CLOUD (REST + JSON)</td></tr>
+    <tr><td class="pf">Meraki Dashboard<span class="ids">T18</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()[0]["id"]</code></td>
+      <td>List endpoints return a <b>bare array</b>: no wrapper key</td></tr>
+    <tr><td class="pf">Catalyst Center<span class="old">(DNA Center) · T20</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()["response"]</code> · async: <code>["response"]["taskId"]</code></td>
+      <td>Wrapper is <code>"response"</code>, not <code>"data"</code></td></tr>
+    <tr><td class="pf">SD-WAN Manager<span class="old">(vManage) · T22</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON replies; <b>login</b> is a form post (<code>application/x-www-form-urlencoded</code>)</td>
+      <td class="path"><code>resp.json()["data"]</code></td>
+      <td>Login sends <code>data=</code> (form), not <code>json=</code></td></tr>
+    <tr><td class="pf">Secure Firewall MC<span class="old">(FMC) · T23</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()["items"][0]</code></td>
+      <td>Token comes back in a <b>header</b>, not the body</td></tr>
+    <tr><td class="pf">Secure Endpoint · XDR · Malware Analytics<span class="ids">T23</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()["data"]</code></td>
+      <td><code>"data"</code> can be a list <b>or</b> a dict: check per call</td></tr>
+    <tr><td class="pf">Intersight<span class="ids">T24</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()["Results"]</code></td>
+      <td>Capital <b>R</b>: keys are case-sensitive</td></tr>
+    <tr><td class="pf">Webex REST<span class="ids">T42</span></td><td><span class="fmt json">JSON</span></td>
+      <td>JSON only</td>
+      <td class="path"><code>resp.json()["items"]</code></td>
+      <td>Lists under <code>"items"</code>; a single GET has no wrapper</td></tr>
+
+    <tr class="sep"><td colspan="5">📜 XML-FIRST APIs (SOAP, older, on-device)</td></tr>
+    <tr><td class="pf">ISE ERS<span class="ids">T23</span></td><td><span class="fmt xml">XML default</span><span class="fmt json">JSON</span></td>
+      <td><b>Accept</b> header: send <code>Accept: application/json</code> or the reply is XML</td>
+      <td class="path"><code>resp.json()["SearchResult"]["resources"]</code></td>
+      <td>No Accept header → XML → <code>.json()</code> <b>crashes</b></td></tr>
+    <tr><td class="pf">CUCM AXL<span class="ids">T21 · SOAP</span></td><td><span class="fmt xml">XML (SOAP)</span></td>
+      <td>Always: <code>Content-Type: text/xml</code> + <code>SOAPAction: "CUCM:DB ver=14.0 addPhone"</code></td>
+      <td class="path"><code>ET.fromstring(resp.content).find("{http://schemas.xmlsoap.org/soap/envelope/}Body")[0]</code></td>
+      <td>Faults come back as <b>HTTP 500</b> with a SOAP body; 401/403 have <b>no</b> XML to parse</td></tr>
+    <tr><td class="pf">UCS Manager<span class="ids">T24 · /nuova</span></td><td><span class="fmt xml">XML only</span></td>
+      <td>Fixed. <code>aaaLogin</code> → <code>outCookie</code>, then <code>cookie="…"</code> <b>inside</b> each XML body</td>
+      <td class="path"><code>ET.fromstring(resp.content)</code> → read <code>outConfigs</code> children, or use <code>ucsmsdk</code></td>
+      <td>Errors are <b>HTTP 200</b> with an <code>errorCode</code> attribute</td></tr>
+    <tr><td class="pf">RoomOS xAPI on device<span class="ids">T42 · /getxml /putxml</span></td><td><span class="fmt xml">XML</span></td>
+      <td><code>Content-Type: text/xml</code>; path = <code>location=/Status/Audio/Volume</code></td>
+      <td class="path"><code>ET.fromstring(resp.content).findtext(".//Volume")</code></td>
+      <td>Cloud xAPI (<code>webexapis.com/v1/xapi/…</code>) is <b>JSON</b>; on-device is <b>XML</b></td></tr>
+  </table>
+
+  <div class="rules">
+    <div class="rule"><h3>🎛️ Three ways an API lets you pick</h3>
+      <span class="n">1</span><b>Accept</b> header (RESTCONF, ISE ERS) · <span class="n">2</span><b>Content-Type</b> of the request (NX-API CLI) · <span class="n">3</span><b>URL suffix</b> <code>.json</code>/<code>.xml</code> (APIC, NX-API REST). SOAP, NETCONF and UCSM: no choice, XML.</div>
+    <div class="rule"><h3>🧭 Read the wrapper first</h3>
+      Before indexing, print once: <code>print(json.dumps(resp.json(), indent=2))</code>. The wrapper (<code>response</code>, <code>data</code>, <code>items</code>, <code>imdata</code>, <code>Results</code>, none) decides your <b>first</b> key.</div>
+    <div class="trap"><b>Trap:</b> <code>resp.json()</code> on an <b>XML</b> reply raises <code>requests.exceptions.JSONDecodeError</code>. Check <code>resp.headers["Content-Type"]</code>, then use <code>ET.fromstring(resp.content)</code> or <code>xmltodict.parse(resp.text)</code>.</div>
+  </div>
+
+  <footer>
+    <span class="k k-xml">XML</span><span class="k k-json">JSON</span><span class="k k-code">exact syntax</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Endpoint paths and wrapper keys are version-sensitive ⚠ verify against each platform's API reference</span>
+  </footer>
+</div>
+</body>
+</html>

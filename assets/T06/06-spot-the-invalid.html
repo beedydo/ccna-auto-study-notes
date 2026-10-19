@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 spot the invalid snippet</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .col { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .col .h { padding: 8px 12px; color: #fff; font-weight: 800; font-size: 17px; }
+  .col.xml .h { background: var(--xml); } .col.json .h { background: var(--json); } .col.yaml .h { background: var(--yaml); }
+  .col .h small { font-weight: 500; font-size: 12.5px; opacity: .92; display: block; }
+  .bug { display: grid; grid-template-columns: minmax(0, 1fr); border-top: 1.5px solid #ddd; padding: 7px 10px; gap: 3px; }
+  .bug:first-of-type { border-top: none; }
+  .bug .snip { font-family: Menlo, monospace; font-size: 12.6px; background: var(--trap); border: 1.5px solid var(--trap-ink); border-radius: 6px; padding: 3px 8px; white-space: pre; }
+  .bug .snip mark { background: #ffb3b3; color: var(--trap-ink); font-weight: 800; border-radius: 3px; padding: 0 1px; }
+  .bug .err { font-family: Menlo, monospace; font-size: 11.4px; color: var(--trap-ink); }
+  .bug .fix { font-size: 12.5px; }
+  .bug .fix code { font-size: 11.8px; }
+  .bug.ok .snip { background: var(--py-soft); border-color: var(--py); }
+  .bug.warn .snip { background: var(--warn-soft); border-color: var(--warn); }
+  .bug.warn .err { color: #8a6200; }
+  .bug .lab { font-size: 11px; font-weight: 800; letter-spacing: .3px; }
+  .bug .lab.r { color: var(--trap-ink); } .bug .lab.g { color: var(--py); } .bug .lab.y { color: #8a6200; }
+  .bottom { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-top: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16px; }
+  .panel table.grid td { font-size: 12.8px; padding: 5px 8px; }
+  .panel table.grid td code { white-space: normal; overflow-wrap: anywhere; }
+  .method { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .method div { border: 2px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12.8px; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Spot the invalid snippet</span> what breaks each parser</h1>
+    <div class="meta"><b>T06.01 · T06.03 · T06.04 · T06.13</b><br>Red = parser refuses it · yellow = parses, but not to what you meant<br>Error text is the real Python 3.14 message</div>
+  </header>
+
+  <div class="cols">
+    <div class="col xml"><div class="h">📜 XML<small>parser: <code style="background:#fff3">ET.fromstring()</code> → <code style="background:#fff3">ET.ParseError</code></small></div>
+      <div class="bug"><span class="lab r">TWO ROOTS</span><div class="snip">&lt;a/&gt;<mark>&lt;b/&gt;</mark></div><div class="err">junk after document element</div><div class="fix">Wrap in one root. NETCONF: <code>&lt;config&gt;…&lt;/config&gt;</code></div></div>
+      <div class="bug"><span class="lab r">MIS-NESTED</span><div class="snip">&lt;a&gt;&lt;b&gt;<mark>&lt;/a&gt;</mark>&lt;/b&gt;</div><div class="err">mismatched tag</div><div class="fix">Close in reverse order: <code>&lt;a&gt;&lt;b&gt;&lt;/b&gt;&lt;/a&gt;</code></div></div>
+      <div class="bug"><span class="lab r">CASE</span><div class="snip">&lt;Name&gt;Gi1<mark>&lt;/name&gt;</mark></div><div class="err">mismatched tag</div><div class="fix">Tags are case-sensitive</div></div>
+      <div class="bug"><span class="lab r">UNQUOTED ATTRIBUTE</span><div class="snip">&lt;vlan id=<mark>10</mark>/&gt;</div><div class="err">not well-formed (invalid token)</div><div class="fix"><code>id="10"</code> or <code>id='10'</code></div></div>
+      <div class="bug"><span class="lab r">RAW &amp; OR &lt;</span><div class="snip">&lt;d&gt;AT<mark>&amp;</mark>T 1 <mark>&lt;</mark> 2&lt;/d&gt;</div><div class="err">not well-formed (invalid token)</div><div class="fix"><code>&amp;amp;</code> <code>&amp;lt;</code> <code>&amp;gt;</code> <code>&amp;quot;</code> <code>&amp;apos;</code></div></div>
+      <div class="bug warn"><span class="lab y">VALID, BUT…</span><div class="snip">&lt;interfaces xmlns="urn:…"&gt;</div><div class="err">root.find("interface") → None</div><div class="fix">Namespace map needed (sheet 05)</div></div>
+      <div class="bug ok"><span class="lab g">VALID</span><div class="snip">&lt;?xml version="1.0"?&gt;&lt;a x="1"&gt;&lt;b/&gt;&lt;!-- ok --&gt;&lt;/a&gt;</div></div>
+    </div>
+
+    <div class="col json"><div class="h">🧾 JSON<small>parser: <code style="background:#fff3">json.loads()</code> → <code style="background:#fff3">json.JSONDecodeError</code></small></div>
+      <div class="bug"><span class="lab r">SINGLE QUOTES</span><div class="snip">{<mark>'</mark>name<mark>'</mark>: <mark>'</mark>Gi1<mark>'</mark>}</div><div class="err">Expecting property name enclosed in double quotes</div><div class="fix">That's a Python dict literal. JSON = <code>"</code> only</div></div>
+      <div class="bug"><span class="lab r">UNQUOTED KEY</span><div class="snip">{<mark>name</mark>: "Gi1"}</div><div class="err">Expecting property name enclosed in double quotes</div><div class="fix">Keys are always strings: <code>"name"</code></div></div>
+      <div class="bug"><span class="lab r">TRAILING COMMA</span><div class="snip">{"a": 1<mark>,</mark>}   [1, 2<mark>,</mark>]</div><div class="err">Illegal trailing comma before end of object / array</div><div class="fix">Last item has no comma</div></div>
+      <div class="bug"><span class="lab r">PYTHON LITERALS</span><div class="snip">{"up": <mark>True</mark>, "mtu": <mark>None</mark>}</div><div class="err">Expecting value</div><div class="fix">Lowercase: <code>true</code> <code>false</code> <code>null</code></div></div>
+      <div class="bug"><span class="lab r">COMMENT</span><div class="snip">{"vlan": 10} <mark>// users</mark></div><div class="err">Extra data</div><div class="fix">JSON has <b>no</b> comments. Use YAML, or a <code>"_comment"</code> key</div></div>
+      <div class="bug"><span class="lab r">LEADING ZERO</span><div class="snip">{"port": <mark>08</mark>}</div><div class="err">Expecting ',' delimiter</div><div class="fix"><code>8</code>, or <code>"08"</code> as a string</div></div>
+      <div class="bug warn"><span class="lab y">PYTHON ACCEPTS, SPEC DOESN'T</span><div class="snip">{"loss": NaN}</div><div class="err">json.loads → {'loss': nan}</div><div class="fix">Not valid JSON. Other parsers reject it</div></div>
+    </div>
+
+    <div class="col yaml"><div class="h">📝 YAML<small>parser: <code style="background:#fff3">yaml.safe_load()</code> → <code style="background:#fff3">yaml.YAMLError</code></small></div>
+      <div class="bug"><span class="lab r">TAB INDENT</span><div class="snip">vlans:
+<mark>→   </mark>- 10</div><div class="err">ScannerError: while scanning for the next token</div><div class="fix">Spaces only, never tabs</div></div>
+      <div class="bug"><span class="lab r">INDENT DRIFT</span><div class="snip">a:
+  b: 1
+<mark> </mark>c: 2</div><div class="err">ParserError: while parsing a block mapping</div><div class="fix">Siblings line up exactly</div></div>
+      <div class="bug"><span class="lab r">SECOND COLON</span><div class="snip">desc: <mark>uplink: core</mark></div><div class="err">ScannerError: mapping values are not allowed here</div><div class="fix">Quote it: <code>desc: "uplink: core"</code></div></div>
+      <div class="bug"><span class="lab r">LIST + MAP MIXED</span><div class="snip">a:
+  - 1
+  <mark>b: 2</mark></div><div class="err">ParserError: while parsing a block collection</div><div class="fix">One level is either <code>- items</code> or <code>key: value</code></div></div>
+      <div class="bug warn"><span class="lab y">NO SPACE AFTER :</span><div class="snip">hostname<mark>:</mark>R1</div><div class="err">→ the string 'hostname:R1', not a mapping</div><div class="fix"><code>hostname: R1</code></div></div>
+      <div class="bug warn"><span class="lab y">TYPE SURPRISES (YAML 1.1)</span><div class="snip">enabled: <mark>yes</mark>   mode: <mark>on</mark>   country: <mark>NO</mark>
+perm: <mark>010</mark>   ver: <mark>3.10</mark>   time: <mark>22:30</mark></div><div class="err">True · True · False · 8 · 3.1 · 1350</div><div class="fix">Quote anything that must stay text: <code>ver: "3.10"</code></div></div>
+      <div class="bug ok"><span class="lab g">VALID (JSON is YAML)</span><div class="snip">{"a": [1, 2]}   # comment ok</div></div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <h2>🎯 Exam method: check in this order</h2>
+      <div class="method">
+        <div><span class="n">1</span><b>Which format?</b> <code>&lt;</code> = XML · <code>{</code>/<code>[</code> = JSON · <code>key:</code> + indents = YAML</div>
+        <div><span class="n">2</span><b>Structure:</b> one root / brackets balanced / indents line up</div>
+        <div><span class="n">3</span><b>Tokens:</b> quotes, commas, <code>true</code> vs <code>True</code>, escapes, tabs</div>
+      </div>
+      <div class="trap" style="margin-top:8px"><b>Trap:</b> the question shows a <b>Python</b> print-out (<code>{'a': True, 'b': None}</code>) and asks if it's JSON. It isn't: single quotes and capitalised literals.</div>
+    </div>
+    <div class="panel">
+      <h2>🧯 Catch the right exception</h2>
+      <table class="grid">
+        <tr><th style="width:30%">Parser</th><th>Exception</th><th style="width:24%">Base class</th></tr>
+        <tr><td><code>json.loads</code> · <code>resp.json()</code></td><td><code>json.JSONDecodeError</code> · <code>requests.exceptions</code> <code>.JSONDecodeError</code> (a subclass)</td><td><code>ValueError</code></td></tr>
+        <tr><td><code>yaml.safe_load</code></td><td><code>ScannerError</code> · <code>ParserError</code> · <code>ConstructorError</code></td><td><code>yaml.YAMLError</code></td></tr>
+        <tr><td><code>ET.fromstring</code></td><td><code>ET.ParseError</code></td><td><code>SyntaxError</code></td></tr>
+        <tr><td><code>xmltodict.parse</code></td><td><code>xml.parsers.expat</code> <code>.ExpatError</code></td><td><code>Exception</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k k-trap">parser error</span><span class="k" style="--x:0"><span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:var(--warn-soft);border:1px solid var(--warn);vertical-align:-1px;margin-right:6px"></span>parses, wrong meaning</span><span class="k k-code">exact text</span>
+    <span style="margin-left:auto">Verified: Python 3.14, PyYAML 6.0.3 (YAML 1.1 rules), xmltodict 1.0.4</span>
+  </footer>
+</div>
+</body>
+</html>

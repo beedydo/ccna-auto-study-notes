@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 xmltodict vs ElementTree</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .top { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; margin-bottom: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16.5px; display: flex; gap: 8px; align-items: center; }
+  .panel h2 .ids { margin-left: auto; }
+  .panel.x { border-color: var(--xml); } .panel.t { border-color: var(--json); }
+  pre.src { font-size: 12.2px; }
+  .out { background: var(--py-soft) !important; border-color: var(--py) !important; }
+  .steps { font-size: 13px; line-height: 1.5; margin-top: 8px; }
+  .steps div { margin-bottom: 4px; }
+  .force { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .force > div { border: 2px solid var(--line); border-radius: 10px; padding: 8px 10px; font-size: 12.8px; line-height: 1.4; background: #fff; }
+  .force > div h3 { margin: 0 0 6px; font-size: 14px; }
+  .force pre.src { font-size: 11.8px; margin: 4px 0; }
+  .bad { border-color: var(--trap-ink) !important; background: var(--trap) !important; }
+  .good { border-color: var(--py) !important; background: var(--py-soft) !important; }
+  .cmp { margin-top: 14px; }
+  .cmp table.grid td { font-size: 13px; padding: 6px 9px; }
+  .cmp table.grid td code { white-space: normal; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Two ways to read XML</span> xmltodict vs ElementTree</h1>
+    <div class="meta"><b>T06.09 · T06.10</b><br>Same XML in, two very different objects out<br>Used by NETCONF (T15), AXL (T21), UCSM (T24), xAPI (T42)</div>
+  </header>
+
+  <div class="top">
+    <div class="panel">
+      <h2>📜 Input (one string)</h2>
+<pre class="src">X = """
+&lt;vlans xmlns="urn:example:vlans"&gt;
+  &lt;vlan id="10"&gt;USERS&lt;/vlan&gt;
+  &lt;vlan id="20"&gt;VOICE&lt;/vlan&gt;
+&lt;/vlans&gt;"""</pre>
+      <div class="steps">
+        <div><span class="n">1</span>one root: <code>vlans</code> + default namespace</div>
+        <div><span class="n">2</span><code>vlan</code> repeated → a <b>list</b></div>
+        <div><span class="n">3</span>each has an <b>attribute</b> <code>id</code> <b>and</b> <b>text</b></div>
+      </div>
+      <div class="tip" style="margin-top:10px"><b>Pick:</b> xmltodict when you want JSON-style <code>["key"]</code> access. ElementTree when you want stdlib only, search by path, or namespaces handled exactly.</div>
+    </div>
+
+    <div class="panel x">
+      <h2>🧺 <code>xmltodict.parse(X)</code> → nested dict <span class="ids">T06.09</span></h2>
+<pre class="src out">{'vlans': {
+    '@xmlns': 'urn:example:vlans',
+    'vlan': [
+        {'@id': '10', '#text': 'USERS'},
+        {'@id': '20', '#text': 'VOICE'}]}}</pre>
+      <div class="steps">
+        <div><span class="n">A</span>attribute → <code>'@id'</code> · namespace decl → <code>'@xmlns'</code></div>
+        <div><span class="n">B</span>attribute <b>+</b> text → text goes under <code>'#text'</code></div>
+        <div><span class="n">C</span>keys are <b>plain</b> tag names (no <code>{urn:…}</code>)</div>
+        <div><span class="n">D</span>every value is a <b>str</b>: <code>'10'</code>, not 10</div>
+      </div>
+<pre class="src">d = xmltodict.parse(X)
+for v in d["vlans"]["vlan"]:
+    print(v["@id"], v["#text"])     # 10 USERS · 20 VOICE</pre>
+    </div>
+
+    <div class="panel t">
+      <h2>🌳 <code>ET.fromstring(X)</code> → Element tree <span class="ids">T06.10</span></h2>
+<pre class="src out">root.tag     '{urn:example:vlans}vlans'
+len(root)    2
+root[0].tag  '{urn:example:vlans}vlan'
+root[0].attrib  {'id': '10'}
+root[0].text    'USERS'</pre>
+      <div class="steps">
+        <div><span class="n">A</span>attribute → <code>.get("id")</code> / <code>.attrib</code> dict</div>
+        <div><span class="n">B</span>text → <code>.text</code> (str or <code>None</code>)</div>
+        <div><span class="n">C</span>tag = <code>{namespace-uri}name</code> (Clark notation)</div>
+        <div><span class="n">D</span>children: iterate, index, or search by path</div>
+      </div>
+<pre class="src">ns = {"v": "urn:example:vlans"}
+for v in root.findall("v:vlan", ns):
+    print(v.get("id"), v.text)      # 10 USERS · 20 VOICE</pre>
+    </div>
+  </div>
+
+  <div class="force">
+    <div class="bad"><h3>❌ xmltodict: only ONE &lt;vlan&gt; comes back</h3>
+<pre class="src">xmltodict.parse(
+  '&lt;vlans&gt;&lt;vlan id="10"&gt;USERS&lt;/vlan&gt;&lt;/vlans&gt;')
+{'vlans': {'vlan':
+    {'@id': '10', '#text': 'USERS'}}}     # dict!</pre>
+      The loop now iterates the dict's <b>keys</b>: <code>v["@id"]</code> → <code>TypeError: string indices must be integers, not 'str'</code>. Works in the lab with 2 interfaces, breaks on the device with 1.</div>
+    <div class="good"><h3>✅ Fix: <code>force_list</code></h3>
+<pre class="src">xmltodict.parse(x,
+                force_list=("vlan",))
+{'vlans': {'vlan':
+    [{'@id': '10', '#text': 'USERS'}]}}   # list</pre>
+      Name the tags that are YANG <b>lists</b> (<code>interface</code>, <code>vlan</code>, <code>device</code>). Or guard: <code>if isinstance(v, dict): v = [v]</code>.</div>
+    <div class="bad"><h3>❌ ElementTree: namespace forgotten</h3>
+<pre class="src">root.find("vlan")              # None
+root.findall("vlan")           # []
+root.find("v:vlan", ns).text   # 'USERS'
+root.find("{urn:example:vlans}vlan").text  # 'USERS'</pre>
+      No error, just <code>None</code> → next line <code>.text</code> raises <code>AttributeError: 'NoneType'</code>. NETCONF replies <b>always</b> have namespaces.</div>
+  </div>
+
+  <div class="cmp">
+    <table class="grid">
+      <colgroup><col style="width:190px"><col><col></colgroup>
+      <tr><th>Task</th><th class="xml">xmltodict</th><th class="json">xml.etree.ElementTree (stdlib)</th></tr>
+      <tr><td class="rowh">Install</td><td><code>pip install xmltodict</code></td><td>nothing: <code>import xml.etree.ElementTree as ET</code></td></tr>
+      <tr><td class="rowh">Parse a string / file</td><td><code>xmltodict.parse(text)</code> · <code>xmltodict.parse(open("f.xml").read())</code></td><td><code>ET.fromstring(text)</code> → Element · <code>ET.parse("f.xml").getroot()</code></td></tr>
+      <tr><td class="rowh">First match</td><td><code>d["vlans"]["vlan"][0]</code></td><td><code>root.find("v:vlan", ns)</code> → Element or <b>None</b></td></tr>
+      <tr><td class="rowh">All matches</td><td>the list at <code>d["vlans"]["vlan"]</code> (if 2+)</td><td><code>root.findall("v:vlan", ns)</code> (direct path) · <code>root.iter("{urn:example:vlans}vlan")</code> (any depth)</td></tr>
+      <tr><td class="rowh">Filter by attribute</td><td><code>[v for v in vlans if v["@id"] == "20"]</code></td><td><code>root.find("v:vlan[@id='20']", ns).text</code> → <code>'VOICE'</code></td></tr>
+      <tr><td class="rowh">Text of first match</td><td><code>d["vlans"]["vlan"][0]["#text"]</code></td><td><code>root.findtext("v:vlan", namespaces=ns)</code> → <code>'USERS'</code></td></tr>
+      <tr><td class="rowh">Back to XML</td><td><code>xmltodict.unparse(d, pretty=True)</code> (exactly one root key)</td><td><code>ET.tostring(root, encoding="unicode")</code></td></tr>
+      <tr><td class="rowh">Untrusted input</td><td colspan="2"><code>pip install defusedxml</code> → <code>from defusedxml.ElementTree import fromstring</code>: blocks XXE and entity bombs (<code>EntitiesForbidden</code>). Same idea as <code>yaml.safe_load</code>.</td></tr>
+    </table>
+  </div>
+
+  <footer>
+    <span class="k k-xml">xmltodict</span><span class="k k-json">ElementTree</span><span class="k k-py">parser output</span><span class="k k-trap">breaks</span>
+    <span style="margin-left:auto">All outputs verified: Python 3.14, xmltodict 1.0.4, defusedxml 0.7.1</span>
+  </footer>
+</div>
+</body>
+</html>

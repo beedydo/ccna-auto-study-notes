@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 navigate parsed data animation</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .sheet { width: 1150px; height: 640px; padding: 22px 28px; position: relative; }
+  h1 { margin: 0 0 4px; font-size: 26px; font-weight: 800; }
+  h1 .pill { background: var(--green); color: #fff; padding: 2px 14px; border-radius: 20px; }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 14px; }
+  .cols { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; }
+  .doc { font-family: Menlo, monospace; font-size: 14px; line-height: 1.6; background: #fff; border: 2.5px solid var(--line); border-radius: 12px; padding: 12px 14px; white-space: pre; height: 400px; }
+  .doc span { border-radius: 4px; padding: 0 2px; }
+  .doc .on { background: var(--c1); outline: 2.5px solid var(--warn); }
+  .doc .dim { opacity: .3; }
+  .doc .bad { background: var(--trap); outline: 2.5px solid var(--trap-ink); }
+  .right { display: flex; flex-direction: column; gap: 12px; }
+  .expr { font-family: Menlo, monospace; font-size: 14.5px; background: var(--ink); color: #fff; border-radius: 10px; padding: 12px 14px; min-height: 72px; line-height: 1.5; overflow-wrap: anywhere; }
+  .expr .new { color: #7ee2b8; font-weight: 700; }
+  .expr .err { color: #ff8a80; font-weight: 700; }
+  .card { background: #fff; border: 2.5px solid var(--line); border-radius: 12px; padding: 10px 14px; font-size: 15px; line-height: 1.5; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; color: var(--muted); }
+  .type { display: inline-block; font-family: Menlo, monospace; font-weight: 800; padding: 2px 10px; border-radius: 8px; font-size: 15px; }
+  .type.dict { background: var(--json-soft); border: 2px solid var(--json); } .type.list { background: var(--yaml-soft); border: 2px solid var(--yaml); }
+  .type.str { background: var(--py-soft); border: 2px solid var(--py); } .type.err { background: var(--trap); border: 2px solid var(--trap-ink); color: var(--trap-ink); }
+  .rule { font-size: 14px; }
+  .step { position: absolute; left: 28px; bottom: 20px; right: 28px; display: flex; align-items: center; gap: 12px;
+          background: #fff; border: 2px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 15px; }
+  .step .n { width: 30px; height: 30px; font-size: 14px; margin: 0; }
+  .dots { margin-left: auto; display: flex; gap: 5px; } .dots i { width: 9px; height: 9px; border-radius: 50%; background: #ccc; }
+  .dots i.on { background: var(--green); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <h1>T06 · <span class="pill">Curly = key, square = index</span> walking a RESTCONF reply</h1>
+  <div class="sub"><code>data = resp.json()</code> from <code>GET /restconf/data/ietf-interfaces:interfaces</code> · one bracket per level</div>
+  <div class="cols">
+    <div class="doc" id="doc"></div>
+    <div class="right">
+      <div class="expr" id="expr"></div>
+      <div class="card"><h3>This level is a…</h3><div id="type"></div></div>
+      <div class="card rule" id="rule"></div>
+    </div>
+  </div>
+  <div class="step"><div class="n" id="n">1</div><div id="txt"></div><div class="dots" id="dots"></div></div>
+</div>
+<script>
+// Each region of the document gets an id so a frame can highlight it.
+const L = {
+  open:  '{',
+  root:  '  "ietf-interfaces:interfaces": {',
+  intf:  '    "interface": [',
+  o0:    '      {',
+  name0: '        "name": "GigabitEthernet1",',
+  desc0: '        "description": "Uplink to core",',
+  en0:   '        "enabled": true',
+  c0:    '      },',
+  o1:    '      {',
+  name1: '        "name": "GigabitEthernet2",',
+  desc1: '        "description": "Users",',
+  en1:   '        "enabled": false',
+  c1:    '      }',
+  cintf: '    ]',
+  croot: '  }',
+  close: '}',
+};
+const groups = {
+  all: Object.keys(L),
+  root: ["root","intf","o0","name0","desc0","en0","c0","o1","name1","desc1","en1","c1","cintf","croot"],
+  intf: ["intf","o0","name0","desc0","en0","c0","o1","name1","desc1","en1","c1","cintf"],
+  e0: ["o0","name0","desc0","en0","c0"],
+  name0: ["name0"],
+  names: ["name0","name1"],
+  intfbad: ["intf","cintf"],
+};
+const B = '<span class="new">', E = '</span>';
+const frames = [
+  { hl:"all", expr:`data`, type:`<span class="type dict">dict</span> (starts with <b>{</b>)`,
+    rule:`Outer <b>{</b> → next step needs a <b>key</b>. Print once to see it: <code>json.dumps(data, indent=2)</code>`,
+    txt:`Start: <code>resp.json()</code> gave a dict. Look at the first character of each level.` },
+  { hl:"root", expr:`data${B}["ietf-interfaces:interfaces"]${E}`, type:`<span class="type dict">dict</span>`,
+    rule:`Key includes the <b>module prefix</b> (RFC 7951). <code>data["interfaces"]</code> → <code>KeyError: 'interfaces'</code>`,
+    txt:`Key 1: the top-level container, prefix and all.` },
+  { hl:"intf", expr:`data["ietf-interfaces:interfaces"]${B}["interface"]${E}`, type:`<span class="type list">list</span> of 2 (starts with <b>[</b>)`,
+    rule:`<b>[</b> → next step needs an <b>index</b> (0, 1, …) or a <code>for</code> loop.`,
+    txt:`Key 2: <code>"interface"</code> is a YANG list → a JSON array → a Python list.` },
+  { hl:"e0", expr:`data["ietf-interfaces:interfaces"]["interface"]${B}[0]${E}`, type:`<span class="type dict">dict</span> (one interface)`,
+    rule:`Index from <b>0</b>. <code>[2]</code> here → <code>IndexError: list index out of range</code>`,
+    txt:`Index 0: the first interface. Back to a <b>{</b>, so keys again.` },
+  { hl:"name0", expr:`data["ietf-interfaces:interfaces"]["interface"][0]${B}["name"]${E}`, type:`<span class="type str">str</span> → <code>'GigabitEthernet1'</code>`,
+    rule:`Leaf reached. Missing leaf? <code>intf.get("mtu", "unknown")</code> instead of <code>KeyError</code>.`,
+    txt:`Key 3: the leaf. Path = key · key · <b>index</b> · key.` },
+  { hl:"intfbad", bad:true, expr:`data["ietf-interfaces:interfaces"]["interface"]<span class="err">["name"]</span>`, type:`<span class="type err">TypeError</span>`,
+    rule:`<code>TypeError: list indices must be integers or slices, not str</code> → you skipped the <code>[0]</code>.`,
+    txt:`Classic bug: treating the list like a dict.` },
+  { hl:"names", expr:`intfs = data["ietf-interfaces:interfaces"]["interface"]<br>for intf in intfs:<br>&nbsp;&nbsp;&nbsp;&nbsp;print(intf["name"], intf["enabled"])`, type:`each <code>intf</code> is a <span class="type dict">dict</span>`,
+    rule:`Output:<br><code>GigabitEthernet1 True</code><br><code>GigabitEthernet2 False</code>`,
+    txt:`Every item: loop over the list level, then use keys inside the loop.` },
+];
+window.FRAME_COUNT = frames.length;
+window.show = (i) => {
+  const f = frames[i];
+  const on = new Set(groups[f.hl]);
+  document.getElementById("doc").innerHTML = Object.entries(L).map(([k, v]) => {
+    const cls = on.has(k) ? (f.bad ? "bad" : "on") : (f.hl === "all" ? "" : "dim");
+    return `<span class="${cls}">${v.replace(/</g, "&lt;")}</span>`;
+  }).join("\n");
+  document.getElementById("expr").innerHTML = f.expr;
+  document.getElementById("type").innerHTML = f.type;
+  document.getElementById("rule").innerHTML = f.rule;
+  document.getElementById("n").textContent = i + 1;
+  document.getElementById("txt").innerHTML = f.txt;
+  document.getElementById("dots").innerHTML = frames.map((_, j) => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+};
+show(0);
+</script>
+</body>
+</html>

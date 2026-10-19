@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 same data three ways</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .cols { display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr) minmax(0, 0.95fr); gap: 14px; }
+  .col { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .col .h { padding: 8px 12px; color: #fff; font-weight: 800; font-size: 18px; display: flex; align-items: center; gap: 8px; }
+  .col.xml .h { background: var(--xml); } .col.json .h { background: var(--json); } .col.yaml .h { background: var(--yaml); }
+  .col .h small { font-weight: 500; font-size: 12.5px; opacity: .92; margin-left: auto; }
+  .col pre.src { border: none; border-radius: 0; font-size: 12.4px; padding: 10px 12px; min-height: 352px; }
+  .col .stats { display: flex; gap: 6px; padding: 7px 10px; border-top: 1.5px solid var(--line); background: #fafaf8; font-size: 12.5px; flex-wrap: wrap; }
+  .col .stats span { background: var(--code); border-radius: 5px; padding: 2px 7px; }
+  .col .parse { padding: 8px 10px; border-top: 1.5px solid var(--line); font-size: 12.5px; line-height: 1.5; }
+  .col .parse .arrow { font-weight: 800; color: var(--py); }
+  .legend { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 14px 0 10px; }
+  .legend div { border: 1.5px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 12.5px; line-height: 1.35; background: #fff; }
+  .legend div b { display: block; font-size: 13px; }
+  .sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1px solid #888; }
+  .py { border: 2.5px solid var(--py); border-radius: 12px; background: #fff; padding: 10px 14px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 14px; }
+  .py h3 { margin: 0 0 6px; font-size: 16px; color: var(--py); }
+  .py pre.src { font-size: 12.2px; border-color: var(--py); }
+  .traps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Same data, three ways</span> XML vs JSON vs YAML</h1>
+    <div class="meta"><b>T06.01 – T06.05</b><br>Two IOS XE interfaces (ietf-interfaces model)<br>Same colour = same piece of data</div>
+  </header>
+
+  <div class="cols">
+    <div class="col xml">
+      <div class="h">📜 XML <small>NETCONF · SOAP · RESTCONF +xml</small></div>
+<pre class="src"><span class="hl6">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span style="color:#888">&lt;!-- two interfaces, ietf-interfaces model --&gt;</span>
+<span class="hl1">&lt;interfaces</span>
+<span class="hl1">    </span><span class="hl5">xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces"</span><span class="hl1">&gt;</span>
+  <span class="hl2">&lt;interface&gt;</span>
+    <span class="hl3">&lt;name&gt;GigabitEthernet1&lt;/name&gt;</span>
+    <span class="hl3">&lt;description&gt;Uplink to core&lt;/description&gt;</span>
+    <span class="hl4">&lt;enabled&gt;true&lt;/enabled&gt;</span>
+  <span class="hl2">&lt;/interface&gt;</span>
+  <span class="hl2">&lt;interface&gt;</span>
+    <span class="hl3">&lt;name&gt;GigabitEthernet2&lt;/name&gt;</span>
+    <span class="hl3">&lt;description&gt;Users&lt;/description&gt;</span>
+    <span class="hl4">&lt;enabled&gt;false&lt;/enabled&gt;</span>
+  <span class="hl2">&lt;/interface&gt;</span>
+<span class="hl1">&lt;/interfaces&gt;</span></pre>
+      <div class="stats"><span>435 bytes</span><span>15 lines</span><span>list = <b>repeat the tag</b></span><span>every value = <b>text</b></span></div>
+      <div class="parse"><span class="arrow">→</span> <code>xmltodict.parse(x)</code> → dict, but <code>"enabled": "true"</code> (str)<br>
+        <span class="arrow">→</span> <code>ET.fromstring(x)</code> → Element tree, tags <code>{urn:…}name</code></div>
+    </div>
+
+    <div class="col json">
+      <div class="h">🧾 JSON <small>REST · RESTCONF · webhooks</small></div>
+<pre class="src">{
+  <span class="hl1">"</span><span class="hl5">ietf-interfaces:</span><span class="hl1">interfaces": {</span>
+    <span class="hl2">"interface": [</span>
+      {
+        <span class="hl3">"name": "GigabitEthernet1",</span>
+        <span class="hl3">"description": "Uplink to core",</span>
+        <span class="hl4">"enabled": true</span>
+      },
+      {
+        <span class="hl3">"name": "GigabitEthernet2",</span>
+        <span class="hl3">"description": "Users",</span>
+        <span class="hl4">"enabled": false</span>
+      }
+    <span class="hl2">]</span>
+  <span class="hl1">}</span>
+}</pre>
+      <div class="stats"><span>294 bytes (186 minified)</span><span>16 lines</span><span>list = <b>[ ]</b></span><span>bool = <b>true</b></span></div>
+      <div class="parse"><span class="arrow">→</span> <code>json.loads(j)</code> → dict / list, <code>"enabled": True</code> (bool)<br>
+        <span class="arrow">→</span> <code>requests</code>: <code>resp.json()</code> does the same</div>
+    </div>
+
+    <div class="col yaml">
+      <div class="h">📝 YAML <small>Ansible · CI · pyATS testbed</small></div>
+<pre class="src"><span class="hl6">---</span>
+<span style="color:#888"># two interfaces, ietf-interfaces model</span>
+<span class="hl5">ietf-interfaces:</span><span class="hl1">interfaces:</span>
+  <span class="hl2">interface:</span>
+    <span class="hl2">- </span><span class="hl3">name: GigabitEthernet1</span>
+      <span class="hl3">description: Uplink to core</span>
+      <span class="hl4">enabled: true</span>
+    <span class="hl2">- </span><span class="hl3">name: GigabitEthernet2</span>
+      <span class="hl3">description: Users</span>
+      <span class="hl4">enabled: false</span>
+</pre>
+      <div class="stats"><span>243 bytes</span><span>10 lines</span><span>list = <b>- item</b></span><span>nesting = <b>spaces</b></span></div>
+      <div class="parse"><span class="arrow">→</span> <code>yaml.safe_load(y)</code> → <b>identical</b> dict to JSON<br>
+        <span class="arrow">→</span> PyYAML 1.1: <code>yes</code>/<code>on</code> → True, <code>010</code> → 8</div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div><span class="sw hl6"></span><b>Document start</b>XML declaration · YAML <code>---</code> · JSON has none</div>
+    <div><span class="sw hl1"></span><b>Root / container</b>XML: one root element · JSON/YAML: top key</div>
+    <div><span class="sw hl5"></span><b>Which YANG model</b>XML: <code>xmlns="urn:…"</code> · JSON/YAML: <code>module:</code> prefix</div>
+    <div><span class="sw hl2"></span><b>A list</b>XML: same tag repeated · JSON: <code>[ ]</code> · YAML: <code>- </code></div>
+    <div><span class="sw hl3"></span><b>Leaf values</b>Strings: tags, <code>"quotes"</code>, or bare words</div>
+    <div><span class="sw hl4"></span><b>Boolean</b>XML: the text <code>true</code> · JSON/YAML: real bool</div>
+  </div>
+
+  <div class="py">
+    <div>
+      <h3>🐍 What Python sees after parsing (<code>json.loads</code> = <code>yaml.safe_load</code>)</h3>
+<pre class="src">{'ietf-interfaces:interfaces': {
+    'interface': [
+        {'name': 'GigabitEthernet1', 'description': 'Uplink to core', 'enabled': True},
+        {'name': 'GigabitEthernet2', 'description': 'Users',          'enabled': False}]}}
+
+data['ietf-interfaces:interfaces']['interface'][0]['name']   # 'GigabitEthernet1'</pre>
+    </div>
+    <div>
+      <h3>🐍 …and after <code>xmltodict.parse</code> (same XML)</h3>
+<pre class="src">{'interfaces': {
+    '@xmlns': 'urn:ietf:params:xml:ns:yang:ietf-interfaces',
+    'interface': [
+        {'name': 'GigabitEthernet1', ..., 'enabled': 'true'},
+        {'name': 'GigabitEthernet2', ..., 'enabled': 'false'}]}}
+
+x['interfaces']['interface'][0]['name']   # no module prefix</pre>
+    </div>
+  </div>
+
+  <div class="traps">
+    <div class="trap"><b>Trap · XML:</b> the namespace moves into an <code>@xmlns</code> key, so the root key is <code>'interfaces'</code>, <b>not</b> <code>'ietf-interfaces:interfaces'</code>. And <code>'false'</code> is a non-empty string, so <code>if intf['enabled']:</code> is <b>always true</b>.</div>
+    <div class="trap"><b>Trap · JSON:</b> RESTCONF puts the module prefix on the <b>top</b> key only (and wherever the model changes, RFC 7951). Forget it → <code>KeyError: 'interfaces'</code>.</div>
+    <div class="tip"><b>Takeaway:</b> JSON and YAML parse to the <b>same</b> Python object (YAML 1.2 ⊇ JSON). XML needs extra decisions: attributes, text-only values, one-vs-many lists.</div>
+  </div>
+
+  <footer>
+    <span class="k k-xml">XML</span><span class="k k-json">JSON</span><span class="k k-yaml">YAML</span><span class="k k-trap">exam trap</span><span class="k k-tip">key takeaway</span>
+    <span style="margin-left:auto">Byte counts measured on these exact snippets · outputs from PyYAML 6.0.3, xmltodict 1.0.4, Python 3.14</span>
+  </footer>
+</div>
+</body>
+</html>

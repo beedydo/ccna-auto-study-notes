@@ -16,6 +16,10 @@ cross_study: 2026-10-20
 
 > Owner: **Beedy** · Blueprint: **1.1, 1.2** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
 
+![T06 at a glance: XML vs JSON vs YAML on every criterion, with parsers and traps](../assets/T06/00-overview.png)
+
+*Every T06 concept on one page. One row per criterion (IDs under the name), one column per format; green "best" marks the winner of each row, the red row is the exam traps.*
+
 <!-- toc:start -->
 
 **Contents**
@@ -97,6 +101,10 @@ cross_study: 2026-10-20
   - `/` = from root · `//` = anywhere · `[...]` = predicate/filter · `@type` = attribute.
   - Used by NETCONF `<filter type="xpath" select="...">` and by ElementTree (limited subset).
 
+![XML anatomy, element vs attribute, namespaces as YANG model names, and XPath](../assets/T06/03-xml-anatomy-namespaces.png)
+
+*Top: every part of an XML document labelled, plus the well-formed rules with their real parser errors. Bottom: how an XML namespace becomes a RESTCONF JSON module prefix, and how XPath selects nodes (the NETCONF filter link).*
+
 ### T06.03 · JSON
 
 **Must cover:**
@@ -162,6 +170,15 @@ cross_study: 2026-10-20
 | Python parser | `xmltodict`, `xml.etree.ElementTree`, `minidom` | `json` (stdlib) | `yaml` (PyYAML, third-party) |
 
 - All three can represent the same nested data (Examples shows one interface list in each).
+
+![The same two interfaces in XML, JSON and YAML, colour-matched, plus what Python sees after parsing](../assets/T06/01-same-data-three-ways.png)
+
+*Same colour = same piece of data. Read across to see how each format writes the root, the model name, a list and a boolean; read the green panel to see that JSON and YAML parse to the identical dict while xmltodict gives strings and drops the module prefix.*
+
+![Which data format each Cisco API speaks, how you choose it, and the first parse step](../assets/T06/02-cisco-api-formats.png)
+
+*The bridge into Bob's platform topics (T15–T25, T42). Columns: the format, the header/suffix that picks it, the first line of Python after `requests`, and the trap. Paths come from the labs in `bob/`.*
+
 - "Most human-readable / supports comments" → YAML. "Required by NETCONF" → XML. "Smallest, native to JavaScript" → JSON.
 
 ### T06.06 · Python mapping
@@ -186,6 +203,11 @@ cross_study: 2026-10-20
 | `null` | `None` | `null` |
 
 - Round trip is not perfect: tuple → array → list; int dict keys `{1: "a"}` → `"1"` string keys.
+
+
+![Text to Python and back: parser functions per format, the type map, and serialising in an API call](../assets/T06/04-parse-and-types.png)
+
+*Read left to right: wire text → the function that parses it → the Python object you get. Bottom left: the type map across all three parsers. Bottom right: the five steps of one API call and which `requests` argument sets `Content-Type`.*
 
 ### T06.07 · Python json
 
@@ -271,6 +293,11 @@ cross_study: 2026-10-20
   - `root.findall("{urn:ietf:params:xml:ns:yang:ietf-interfaces}interface")`.
 - `xml.dom.minidom` = older DOM API (`parseString`, `getElementsByTagName`, `.firstChild.nodeValue`). Mostly used for `minidom.parseString(x).toprettyxml()` to pretty-print NETCONF replies.
 
+
+![xmltodict vs ElementTree on the same XML, the one-vs-many list bug and the namespace bug](../assets/T06/05-xmltodict-vs-elementtree.png)
+
+*Same input, two objects: a nested dict (`@` attributes, `#text`) vs an Element tree (`{uri}tag`, `.attrib`, `.text`). Middle row: the two bugs that pass in the lab and fail on a device, with the fix. Bottom: the same task in both libraries.*
+
 **Exam-sim gap (practice test review):**
 - **Untrusted XML is risky to parse.** The format allows tricks like *external entities* (XXE: the file asks the parser to read `/etc/passwd` or a URL) and *entity expansion bombs* ("billion laughs": a tiny file that expands to gigabytes).
 - **Python's answer: `defusedxml`.** A drop-in replacement that refuses those features: `from defusedxml.ElementTree import fromstring` instead of `xml.etree.ElementTree`. (The Python `xml` docs list these attacks; recent docs say modern Expat blocks some of them, but `defusedxml` is still the exam answer ⚠ verify.)
@@ -293,6 +320,11 @@ cross_study: 2026-10-20
 - `intf.get("speed", "unknown")` → default instead of `KeyError`.
 - Unsure of a level → `type(x)` / `print(json.dumps(x, indent=2))`.
 - Common errors: `KeyError` (wrong key, or missing module prefix) · `TypeError: list indices must be integers or slices, not str` (forgot `[0]`) · `IndexError` (empty list).
+
+
+![Animated: walking data["ietf-interfaces:interfaces"]["interface"][0]["name"] one bracket at a time, then the missing-[0] TypeError, then the loop](../assets/T06/10-navigate-path.gif)
+
+*Steps: dict → key with module prefix → list → index `[0]` → key → leaf; then the classic `TypeError` from skipping `[0]`, then the `for` loop over the list level. Fixes the misconception that you can key straight into a list.*
 
 ### T06.12 · Terms
 
@@ -322,6 +354,11 @@ cross_study: 2026-10-20
 - **Pick the expression:** count `{`/`[` levels; add `[0]` wherever the level is a list.
 - **Match format → use:** NETCONF = XML · REST/RESTCONF/webhooks = JSON · Ansible/Compose/CI = YAML · SOAP (CUCM AXL) = XML.
 - **Match parser → format:** `json.loads` / `yaml.safe_load` / `xmltodict.parse` or `ET.fromstring`.
+
+
+![Spot the invalid snippet: what breaks the XML, JSON and YAML parsers, with the real error messages](../assets/T06/06-spot-the-invalid.png)
+
+*Red = the parser refuses it (real Python error text underneath); yellow = it parses but means something else (PyYAML's `yes`/`010`/`22:30` surprises). Bottom: the three-step exam method and which exception to catch.*
 
 ## Exam traps
 
@@ -663,3 +700,4 @@ A. `<intf><name>Gi1</Name></intf>`  B. `<intf><name>Gi1</intf></name>`  C. `<int
 - ⚠ The `xmltodict.parse` return type is plain `dict` in 1.0.x and was `OrderedDict` in older releases, so exam answers may still say OrderedDict.
 - Examples 1 and 2 were run locally (Python 3.14, PyYAML 6.0.3, xmltodict 1.0.4), and the output shown is real.
 - `labs/T06/parse_formats.py` is the Example 1 script, verified with the local venv. It hasn't been run in the Docker lab image yet, because the image isn't built.
+- ⚠ `assets/T06/02-cisco-api-formats.png` takes each platform's wrapper key and format switch from Bob's notes and labs (T15–T25, T42), not from live devices. If Bob's verified notes change a path, update the sheet to match.

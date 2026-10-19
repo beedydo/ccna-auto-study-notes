@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 overview: data formats + parsing</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  table.m { width: 100%; table-layout: fixed; border-collapse: collapse; border: 2.5px solid var(--line); background: #fff; }
+  table.m th, table.m td { border: 1.5px solid var(--line); vertical-align: top; padding: 7px 10px; font-size: 13.3px; line-height: 1.42; text-align: left; }
+  table.m th { font-size: 17px; color: #fff; padding: 9px 10px; }
+  table.m th.c0 { background: #f0f0ee; color: var(--ink); font-size: 14px; }
+  table.m th.xml { background: var(--xml); } table.m th.json { background: var(--json); } table.m th.yaml { background: var(--yaml); }
+  table.m th small { display: block; font-size: 12px; font-weight: 500; opacity: .92; }
+  table.m td.k { background: #fafaf8; width: 170px; }
+  table.m td.k .icon { font-size: 18px; margin-right: 4px; }
+  table.m td.k b { font-size: 13.8px; }
+  table.m td.k .ids { display: block; margin-top: 2px; }
+  table.m td code { white-space: normal; }
+  table.m tr.trap td { background: var(--trap); }
+  table.m tr.trap td.k b { color: var(--trap-ink); }
+  .win { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; background: var(--py); border-radius: 8px; padding: 0 6px; margin-left: 4px; vertical-align: 1px; }
+  .strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .strip > div { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 7px 10px; font-size: 13px; line-height: 1.42; }
+  .strip h3 { margin: 0 0 4px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Data Formats + Parsing</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 1.1, 1.2</b><br>Every T06 concept on one page · <span class="win">best</span> = wins this row<br>Code from <code>labs/T06/parse_formats.py</code></div>
+  </header>
+
+  <table class="m">
+    <colgroup><col style="width:170px"><col><col><col></colgroup>
+    <tr><th class="c0">Criterion</th>
+      <th class="xml">📜 XML<small>tags · one root · namespaces</small></th>
+      <th class="json">🧾 JSON<small>objects <code style="background:#fff3">{}</code> and arrays <code style="background:#fff3">[]</code></small></th>
+      <th class="yaml">📝 YAML<small>indentation · <code style="background:#fff3">- </code> lists · comments</small></th></tr>
+
+    <tr><td class="k"><span class="icon">🧱</span><b>Structure</b><span class="ids">T06.01 · T06.03 · T06.04</span></td>
+      <td><code>&lt;name&gt;Gi1&lt;/name&gt;</code> · optional <code>&lt;?xml …?&gt;</code> on line 1 · exactly <b>one root</b> · empty <code>&lt;shutdown/&gt;</code></td>
+      <td><code>{"name": "Gi1"}</code> · keys + strings in <b>double quotes</b> · ordered <code>[ ]</code></td>
+      <td><code>name: Gi1</code> · <b>spaces</b> set nesting (no tabs) · <code>- item</code> · <code>---</code> starts a doc</td></tr>
+
+    <tr><td class="k"><span class="icon">📏</span><b>Size / readability</b><span class="ids">T06.05</span></td>
+      <td>most verbose: every value tagged twice (435 B for the 2-interface sample)</td>
+      <td>compact (294 B, 186 minified) <span class="win">best</span> on the wire; native to JavaScript</td>
+      <td>least noise (243 B) <span class="win">best</span> for humans to read and write</td></tr>
+
+    <tr><td class="k"><span class="icon">💬</span><b>Comments</b><span class="ids">T06.05</span></td>
+      <td><span class="ok">✓</span> <code>&lt;!-- … --&gt;</code></td>
+      <td><span class="no">✗</span> none (<code>//</code> → <code>Extra data</code>)</td>
+      <td><span class="ok">✓</span> <code># …</code> <span class="win">best</span></td></tr>
+
+    <tr><td class="k"><span class="icon">🔢</span><b>Data types</b><span class="ids">T06.03 · T06.06</span></td>
+      <td>everything is <b>text</b>; types come from a schema (YANG/XSD)</td>
+      <td>string · number · <code>true</code>/<code>false</code> · <code>null</code> · object · array <span class="win">best</span> predictable</td>
+      <td>JSON's types + dates; PyYAML 1.1 also reads <code>yes</code>/<code>on</code> → True, <code>010</code> → 8</td></tr>
+
+    <tr><td class="k"><span class="icon">🏷️</span><b>Metadata &amp; namespaces</b><span class="ids">T06.01 · T06.02</span></td>
+      <td><span class="ok">✓</span> attributes <code>id="10"</code> · <span class="ok">✓</span> <code>xmlns="urn:…"</code> <span class="win">best</span> mixing models</td>
+      <td>no attributes · RESTCONF puts the module in the key: <code>"ietf-interfaces:interfaces"</code></td>
+      <td>no attributes, no namespaces</td></tr>
+
+    <tr><td class="k"><span class="icon">🧭</span><b>Query language</b><span class="ids">T06.02</span></td>
+      <td><b>XPath</b> <code>/interfaces/interface[name="Gi1"]</code> · <code>//</code> anywhere · <code>@attr</code></td>
+      <td>none built in; walk with keys and indexes</td>
+      <td>none; walk with keys and indexes</td></tr>
+
+    <tr><td class="k"><span class="icon">📡</span><b>Where you meet it</b><span class="ids">T06.05 · T06.13</span></td>
+      <td><b>NETCONF</b> (only XML) · SOAP: CUCM AXL · UCS Manager · RoomOS <code>/getxml</code> · RESTCONF <code>+xml</code></td>
+      <td><b>REST</b> APIs (Meraki, Catalyst Center, SD-WAN Manager, FMC, Webex) · <b>RESTCONF</b> · webhooks</td>
+      <td><b>Ansible</b> playbooks · Docker Compose · CI pipelines · pyATS testbeds · Kubernetes</td></tr>
+
+    <tr><td class="k"><span class="icon">🐍</span><b>Parse (text → Python)</b><span class="ids">T06.07 – T06.10</span></td>
+      <td><code>xmltodict.parse(x)</code> → dict · <code>ET.fromstring(x)</code> → Element · <code>ET.parse(f).getroot()</code></td>
+      <td><code>json.loads(s)</code> · <code>json.load(f)</code> · <code>resp.json()</code> (stdlib)</td>
+      <td><code>yaml.safe_load(s)</code> · <code>safe_load_all</code> (<code>pip install pyyaml</code>)</td></tr>
+
+    <tr><td class="k"><span class="icon">📤</span><b>Serialise (Python → text)</b><span class="ids">T06.07 – T06.09 · T06.12</span></td>
+      <td><code>xmltodict.unparse(d, pretty=True)</code> · <code>ET.tostring(root)</code></td>
+      <td><code>json.dumps(obj, indent=2, sort_keys=True)</code> · <code>requests.post(url, json=obj)</code></td>
+      <td><code>yaml.safe_dump(obj, sort_keys=False)</code></td></tr>
+
+    <tr><td class="k"><span class="icon">🗺️</span><b>Navigate the result</b><span class="ids">T06.11</span></td>
+      <td>xmltodict: <code>d["interfaces"]["interface"][0]["name"]</code> · ET: <code>root.findall("if:interface", ns)</code></td>
+      <td colspan="2"><code>data["ietf-interfaces:interfaces"]["interface"][0]["name"]</code> · <b>{</b> → key, <b>[</b> → index · <code>.get(k, default)</code> avoids <code>KeyError</code> · loop the list level</td></tr>
+
+    <tr><td class="k"><span class="icon">🔐</span><b>Untrusted input</b><span class="ids">T06.08 · T06.10</span></td>
+      <td><code>defusedxml</code> blocks XXE + "billion laughs" entity bombs</td>
+      <td>safe by design (no code, no entities)</td>
+      <td><code>yaml.safe_load</code>; <code>yaml.load(…, Loader=yaml.Loader)</code> can run code</td></tr>
+
+    <tr class="trap"><td class="k"><span class="icon">⚠️</span><b>Exam trap</b><span class="ids">T06.13</span></td>
+      <td>xmltodict: values are <b>str</b> (<code>'true'</code>) · one element → <b>dict</b>, many → list (<code>force_list</code>) · ET <code>find()</code> without namespace map → <code>None</code></td>
+      <td><code>{'a': True}</code> is a Python dict, <b>not</b> JSON · no trailing comma · <code>loads</code> = string, <code>load</code> = file</td>
+      <td>tab in indent → <code>ScannerError</code> · <code>key:value</code> without space isn't a mapping · <code>|</code> keeps newlines, <code>&gt;</code> folds</td></tr>
+  </table>
+
+  <div class="strip">
+    <div><h3>🎯 Match format → use</h3>NETCONF = <b>XML</b> · REST / RESTCONF / webhooks = <b>JSON</b> · Ansible / CI = <b>YAML</b> · SOAP (AXL) = <b>XML</b></div>
+    <div><h3>🔁 JSON ⇄ Python</h3>object→<code>dict</code> · array→<code>list</code> · <code>true</code>→<code>True</code> · <code>null</code>→<code>None</code>. Tuple → list; int key → str key.</div>
+    <div><h3>🧠 Same object</h3><code>json.loads(j) == yaml.safe_load(y)</code> → <b>True</b> for the same data. YAML 1.2 ⊇ JSON.</div>
+    <div class="trap" style="border-radius:10px"><b>Trap:</b> <code>resp.json()</code> on an XML reply (ISE ERS without <code>Accept: application/json</code>) → <code>JSONDecodeError</code>.</div>
+  </div>
+
+  <footer>
+    <span class="k k-xml">XML</span><span class="k k-json">JSON</span><span class="k k-yaml">YAML</span><span class="k k-code">exact syntax</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Detail sheets 01–06 + animation in <code>assets/T06/</code> · byte counts from sheet 01</span>
+  </footer>
+</div>
+</body>
+</html>

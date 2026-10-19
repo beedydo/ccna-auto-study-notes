@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T06 parsers and Python types</title>
+<link rel="stylesheet" href="t06.css">
+<style>
+  .flow { display: grid; grid-template-columns: 210px 40px minmax(0, 1fr) 40px 230px; align-items: stretch; gap: 0; margin-bottom: 14px; }
+  .box { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 12px; }
+  .box h3 { margin: 0 0 6px; font-size: 15.5px; }
+  .arr { display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 800; font-size: 24px; }
+  .arr small { font-size: 10.5px; font-weight: 700; color: var(--muted); writing-mode: vertical-rl; transform: rotate(180deg); }
+  .wire div { font-family: Menlo, monospace; font-size: 12px; border-radius: 6px; padding: 5px 7px; margin-bottom: 6px; border: 1.5px solid; }
+  .wire .x { background: var(--xml-soft); border-color: var(--xml); } .wire .j { background: var(--json-soft); border-color: var(--json); } .wire .y { background: var(--yaml-soft); border-color: var(--yaml); }
+  table.fn { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.8px; }
+  table.fn th, table.fn td { border: 1.5px solid var(--line); padding: 5px 7px; vertical-align: top; text-align: left; line-height: 1.4; }
+  table.fn th { background: #f0f0ee; }
+  table.fn td.f { font-weight: 800; }
+  table.fn td code { white-space: normal; }
+  .obj div { font-family: Menlo, monospace; font-size: 12.3px; background: var(--py-soft); border: 1.5px solid var(--py); border-radius: 6px; padding: 5px 7px; margin-bottom: 6px; }
+  .row2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 14px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h2 { margin: 0 0 8px; font-size: 16.5px; display: flex; gap: 8px; align-items: center; }
+  .panel h2 .ids { margin-left: auto; }
+  .panel table.grid td { font-size: 12.8px; padding: 5px 8px; }
+  .panel table.grid td code { white-space: normal; word-break: break-word; }
+  .traps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  .seq { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
+  .seq div { border: 2px solid var(--line); border-radius: 8px; padding: 6px 7px; font-size: 12.3px; line-height: 1.35; background: #fafaf8; }
+  .seq div b { display: block; font-size: 12.8px; }
+</style>
+</head>
+<body>
+<div class="sheet wide">
+  <header>
+    <div class="bar"></div>
+    <h1>T06 · <span class="pill">Text ⇄ Python</span> parsers, types, serialising</h1>
+    <div class="meta"><b>T06.06 – T06.10 · T06.12</b><br>Which function, what goes in, what comes out<br>Outputs from <code>labs/T06/parse_formats.py</code></div>
+  </header>
+
+  <div class="flow">
+    <div class="box wire"><h3>📨 Text on the wire</h3>
+      <div class="x">&lt;enabled&gt;true&lt;/enabled&gt;</div>
+      <div class="j">{"enabled": true}</div>
+      <div class="y">enabled: true</div>
+      <div style="font-size:12px;color:var(--muted)"><code>resp.text</code> = str · <code>resp.content</code> = bytes</div>
+    </div>
+    <div class="arr">➜<small>DESERIALISE · parse · decode</small></div>
+    <div class="box" style="padding:0;overflow:hidden">
+      <table class="fn">
+        <colgroup><col style="width:92px"><col><col style="width:28%"><col style="width:27%"></colgroup>
+        <tr><th>Format</th><th>Text → Python (in)</th><th>Python → text (out)</th><th>Install / import</th></tr>
+        <tr><td class="f" style="color:var(--json)">JSON</td><td><code>json.loads(text)</code> · <code>json.load(f)</code> · <code>resp.json()</code></td><td><code>json.dumps(obj, indent=2)</code> · <code>json.dump(obj, f)</code></td><td>stdlib · <code>import json</code></td></tr>
+        <tr><td class="f" style="color:var(--yaml)">YAML</td><td><code>yaml.safe_load(text)</code> · <code>yaml.safe_load_all(text)</code></td><td><code>yaml.safe_dump(obj, sort_keys=False)</code></td><td><code>pip install pyyaml</code> → <code>import yaml</code></td></tr>
+        <tr><td class="f" style="color:var(--xml)">XML → dict</td><td><code>xmltodict.parse(text)</code></td><td><code>xmltodict.unparse(d, pretty=True)</code></td><td><code>pip install xmltodict</code></td></tr>
+        <tr><td class="f" style="color:var(--xml)">XML → tree</td><td><code>ET.fromstring(text)</code> → Element · <code>ET.parse("f.xml").getroot()</code></td><td><code>ET.tostring(root)</code> · <code>minidom…toprettyxml()</code></td><td>stdlib · <code>import xml.etree.ElementTree as ET</code></td></tr>
+      </table>
+    </div>
+    <div class="arr">➜<small>Python objects</small></div>
+    <div class="box obj"><h3>🐍 What you get</h3>
+      <div>{'enabled': 'true'}  <span style="color:var(--xml)">← xmltodict</span></div>
+      <div>{'enabled': True}  <span style="color:var(--json)">← json</span></div>
+      <div>{'enabled': True}  <span style="color:var(--yaml)">← yaml</span></div>
+      <div style="background:var(--xml-soft);border-color:var(--xml)">&lt;Element 'enabled'&gt;.text → 'true'</div>
+    </div>
+  </div>
+
+  <div class="row2">
+    <div class="panel">
+      <h2>🔁 JSON ⇄ Python type map <span class="ids">T06.06 · T06.07</span></h2>
+      <table class="grid">
+        <tr><th class="json">JSON</th><th class="py">Python after <code style="background:#fff3">loads</code></th><th class="json">Back with <code style="background:#fff3">dumps</code></th><th class="yaml">YAML (PyYAML)</th><th class="xml">XML (xmltodict)</th></tr>
+        <tr><td><code>{ }</code> object</td><td><code>dict</code></td><td>object</td><td>mapping → <code>dict</code></td><td>element → <code>dict</code></td></tr>
+        <tr><td><code>[ ]</code> array</td><td><code>list</code></td><td>array (<b>tuple</b> too)</td><td><code>- </code> → <code>list</code></td><td>repeated tag → <code>list</code></td></tr>
+        <tr><td><code>"text"</code></td><td><code>str</code></td><td>string</td><td><code>str</code></td><td><code>str</code></td></tr>
+        <tr><td><code>1500</code> / <code>1.5</code></td><td><code>int</code> / <code>float</code></td><td>number</td><td><code>int</code> / <code>float</code> (<code>010</code> → 8!)</td><td><code>'1500'</code> <b>str</b></td></tr>
+        <tr><td><code>true</code> / <code>false</code></td><td><code>True</code> / <code>False</code></td><td><code>true</code> / <code>false</code></td><td>also <code>yes</code> <code>no</code> <code>on</code> <code>off</code></td><td><code>'true'</code> <b>str</b></td></tr>
+        <tr><td><code>null</code></td><td><code>None</code></td><td><code>null</code></td><td><code>null</code> · <code>~</code> · blank</td><td><code>&lt;x/&gt;</code> → <code>None</code></td></tr>
+        <tr><td>(no date type)</td><td><code>str</code></td><td>—</td><td><code>2026-10-08</code> → <code>date</code></td><td><code>str</code></td></tr>
+      </table>
+      <div class="trap" style="margin-top:8px"><b>Trap · round trip isn't perfect:</b> <code>json.dumps({"t": (1, 2), 1: "a"})</code> → <code>{"t": [1, 2], "1": "a"}</code>. Tuple → list, int key → <b>string</b> key.</div>
+    </div>
+
+    <div class="panel">
+      <h2>📡 Serialise / deserialise in one API call <span class="ids">T06.12</span></h2>
+      <div class="seq">
+        <div><span class="n">1</span><b>Build</b>Python dict<br><code>payload = {…}</code></div>
+        <div><span class="n">2</span><b>Serialise</b><code>json=payload</code> or <code>json.dumps()</code></div>
+        <div><span class="n">3</span><b>Send</b>HTTP body = text<br><code>Content-Type</code></div>
+        <div><span class="n">4</span><b>Receive</b>text back<br><code>resp.text</code></div>
+        <div><span class="n">5</span><b>Deserialise</b><code>resp.json()</code> → dict</div>
+      </div>
+      <table class="grid" style="margin-top:10px">
+        <tr><th style="width:46%">requests call</th><th style="width:22%">Serialises?</th><th>Sets <code>Content-Type</code>?</th></tr>
+        <tr><td><code>requests.post(url, json=payload)</code></td><td><span class="ok">yes</span></td><td><span class="ok">yes</span>: <code>application/json</code></td></tr>
+        <tr><td><code>requests.post(url, data=json.dumps(payload))</code></td><td><span class="ok">yes</span> (you did it)</td><td><span class="no">no</span>: add <code>headers=</code></td></tr>
+        <tr><td><code>requests.post(url, data=payload)</code></td><td>form-encodes it</td><td><code>x-www-form-urlencoded</code></td></tr>
+        <tr><td>RESTCONF write</td><td colspan="2"><code>json=body</code> <b>plus</b> <code>headers=</code> with <code>"Content-Type": "application/yang-data+json"</code>; your header wins</td></tr>
+      </table>
+      <div class="tip" style="margin-top:8px"><b>Words that mean the same:</b> serialise = encode = marshal = dump. Deserialise = decode = parse = unmarshal = load.</div>
+    </div>
+  </div>
+
+  <div class="traps">
+    <div class="trap"><b>Trap · the s:</b> <code>loads</code>/<code>dumps</code> = <b>s</b>tring. <code>json.load("{…}")</code> → <code>'str' object has no attribute 'read'</code>.</div>
+    <div class="trap"><b>Trap · YAML:</b> <code>yaml.load(text)</code> with no Loader → <code>TypeError</code> (PyYAML 6). Untrusted input → <code>safe_load</code>.</div>
+    <div class="trap"><b>Trap · ET:</b> <code>ET.parse()</code> returns an ElementTree → add <code>.getroot()</code>. <code>ET.fromstring()</code> already returns the root.</div>
+    <div class="trap"><b>Trap · bad JSON:</b> <code>json.JSONDecodeError</code> (a <code>ValueError</code>). Bad XML: <code>ET.ParseError</code>. Bad YAML: <code>yaml.YAMLError</code>.</div>
+  </div>
+
+  <footer>
+    <span class="k k-json">JSON</span><span class="k k-yaml">YAML</span><span class="k k-xml">XML</span><span class="k k-py">Python object</span><span class="k k-trap">exam trap</span>
+    <span style="margin-left:auto">Verified on Python 3.14, PyYAML 6.0.3, xmltodict 1.0.4</span>
+  </footer>
+</div>
+</body>
+</html>
