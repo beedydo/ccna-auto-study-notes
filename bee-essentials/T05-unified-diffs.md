@@ -6,19 +6,23 @@
 
 *Every T05 concept on one page. Left: a real `git diff --staged` with numbered parts; right: what each part means. Bottom: how to produce diffs, the 3-step read, rebuilding a side, and the main trap.*
 
-## The big idea
-- This topic answers one question: **given a diff, what changed, where, and in which direction?**
-- **Analogy: "track changes" printed as plain text.** Instead of colours, one symbol at the start of each line says what happened:
-  - `-` = deleted (only in the old version)
-  - `+` = added (only in the new version)
-  - a space = unchanged, shown so you can find your place
-- **Analogy for the `@@` line: a page reference.** "Old pages 4 to 18 are now new pages 4 to 20." It tells you where you are and how much longer the section got, not what changed.
-- **What the exam asks:** read a config or code diff and say what changed in words ("VLAN 30 was added", "the IP address changed"), tell old from new, do the `@@` maths, and spot created/deleted files. Once you can read the `@@` line and the first character of each line, these questions are free marks.
+## 🧭 The big idea
+
+> 💡 This topic answers one question: **given a diff, what changed, where, and in which direction?**
+
+| | Question | Where to look | Analogy |
+|---|---|---|---|
+| 📄 | **Which file, and which side is old?** | the file header (`---` / `+++`) | |
+| 📍 | **Where is the change, and how much longer did it get?** | the `@@` hunk header | **a page reference:** "Old pages 4 to 18 are now new pages 4 to 20." It tells you where you are and how much longer the section got, not what changed. |
+| ✏️ | **What changed, in which direction?** | the first character of each line | **"track changes" printed as plain text.** Instead of colours, one symbol at the start of each line says what happened: `-` = deleted (only in the old version), `+` = added (only in the new version), a space = unchanged, shown so you can find your place |
+
+- 🎯 **What the exam asks:** read a config or code diff and say what changed in words ("VLAN 30 was added", "the IP address changed"), tell old from new, do the `@@` maths, and spot created/deleted files. Once you can read the `@@` line and the first character of each line, these questions are free marks.
 
 ## 🟥 Must know
 
-### 1. The file header: which file, and which side is old
-- A Git diff has two parts: a **file header** that names the file, and one or more **hunks** (the changed regions of that file).
+### 1. 📄 The file header: which file, and which side is old
+
+> 💡 A Git diff has two parts: a **file header** that names the file, and one or more **hunks** (the changed regions of that file).
 
 ```
 diff --git a/switch.cfg b/switch.cfg      <- comparing this file: a/ = old, b/ = new
@@ -27,27 +31,37 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 +++ b/switch.cfg                         <- NEW version ("to" file)
 ```
 
-- **Memory hook:** minus, `---` and `a/` mean **before**; plus, `+++` and `b/` mean **after**. These are the same symbols used on the lines below.
-- **`/dev/null` means "nothing on this side":**
+| ⬅️ Before (old) | ➡️ After (new) |
+|---|---|
+| minus | plus |
+| `---` | `+++` |
+| `a/` | `b/` |
 
-| You see | Meaning | Matching hunk header |
-|---|---|---|
-| `new file mode 100644`, `--- /dev/null`, `+++ b/banner.cfg` | the file was **created** | `@@ -0,0 +1 @@` |
-| `deleted file mode 100644`, `--- a/legacy.txt`, `+++ /dev/null` | the file was **deleted** | `@@ -1 +0,0 @@` |
+- 🧠 **Memory hook:** minus, `---` and `a/` mean **before**; plus, `+++` and `b/` mean **after**. These are the same symbols used on the lines below.
 
-  - Read it as: "nothing **before**" = created; "nothing **after**" = deleted.
-  - `/dev/null` appears only on the `---` and `+++` lines; the `diff --git a/x b/x` line keeps the real file name.
+**🕳️ `/dev/null` means "nothing on this side":**
+
+| | You see | Meaning | Matching hunk header | Read it as |
+|---|---|---|---|---|
+| 🆕 | `new file mode 100644`, `--- /dev/null`, `+++ b/banner.cfg` | the file was **created** | `@@ -0,0 +1 @@` | "nothing **before**" = created |
+| 🗑️ | `deleted file mode 100644`, `--- a/legacy.txt`, `+++ /dev/null` | the file was **deleted** | `@@ -1 +0,0 @@` | "nothing **after**" = deleted |
+
+- `/dev/null` appears only on the `---` and `+++` lines; the `diff --git a/x b/x` line keeps the real file name.
 
 ![File header cases: created, deleted, renamed, permissions, no newline, merge commit, and non-unified formats](../assets/T05/02-file-header-cases.png)
 
 *Read the lines between `diff --git` and `@@` first: they say whether the file was created, deleted, renamed or only had its mode changed. Bottom: plain `diff` (normal format) vs `diff -u`, so you can tell them apart.*
 
-### 2. The hunk header: the `@@` line
-- **Format:** `@@ -oldStart,oldCount +newStart,newCount @@ [section]`
-  - The `-` part describes the region in the **old** file; the `+` part describes it in the **new** file.
-  - **start** = the first line number shown in the hunk, context included.
-  - **count** = how many lines the hunk covers on that side, **context and changed lines together**.
-- **Worked example:**
+### 2. 📍 The hunk header: the `@@` line
+
+> 💡 **Format:** `@@ -oldStart,oldCount +newStart,newCount @@ [section]`. The `-` part describes the region in the **old** file; the `+` part describes it in the **new** file.
+
+| | Field | Means |
+|---|---|---|
+| 🔢 | **start** | the first line number shown in the hunk, context included |
+| 📏 | **count** | how many lines the hunk covers on that side, **context and changed lines together** |
+
+**Worked example:**
 
 ```
 @@ -4,15 +4,17 @@ vlan 10
@@ -58,12 +72,16 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
    └─ old start: line 4
 ```
 
-  - Net change = newCount − oldCount = 17 − 15 = **+2 lines** for this hunk.
-  - Check: the hunk has 4 `+` lines and 2 `-` lines, and 4 − 2 = 2.
-- **Count left out = 1:** `@@ -1 +1 @@` is one line on each side, not zero.
-- **Count 0 = nothing on that side:** `-0,0` is a new file; `+0,0` is a file that was emptied or deleted.
-- **Text after the second `@@`** (like `vlan 10`) is the **enclosing function or section**, there to help you find your place. It is not part of the change. Git finds it by searching upwards for the nearest line starting in column 0 (⚠ verify per language driver).
-- **Why it matters:** the classic wrong answer reads `+10,8` as "8 lines added". The count includes context, so you must subtract.
+- ➗ Net change = newCount − oldCount = 17 − 15 = **+2 lines** for this hunk.
+- ✔️ Check: the hunk has 4 `+` lines and 2 `-` lines, and 4 − 2 = 2.
+
+| | Special case | Means |
+|---|---|---|
+| 1️⃣ | **Count left out = 1** | `@@ -1 +1 @@` is one line on each side, not zero |
+| 0️⃣ | **Count 0 = nothing on that side** | `-0,0` is a new file; `+0,0` is a file that was emptied or deleted |
+| 🪧 | **Text after the second `@@`** (like `vlan 10`) | the **enclosing function or section**, there to help you find your place. It is not part of the change. Git finds it by searching upwards for the nearest line starting in column 0 (⚠ verify per language driver) |
+
+> 🎯 **Why it matters:** the classic wrong answer reads `+10,8` as "8 lines added". The count includes context, so you must subtract.
 
 ![How to count a hunk header: every line numbered on the old and new side, the rules, multiple hunks and a big deletion](../assets/T05/01-hunk-header-maths.png)
 
@@ -73,9 +91,9 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 
 *Steps: walk each line of two real hunks keeping an old and a new tally; context adds to both, `+` to new only, `-` to old only. The second hunk starts 2 lower because the first one added 2. Fixes the misconception that the count after `+` is the number of added lines.*
 
-### 3. Line prefixes: the first character tells the story
-- Only the **first character** of each line is the prefix; the rest is the actual line.
-- There is **no "changed" symbol**. A modified line appears as a `-` line followed by a `+` line:
+### 3. ✏️ Line prefixes: the first character tells the story
+
+> 💡 Only the **first character** of each line is the prefix; the rest is the actual line. There is **no "changed" symbol**: a modified line appears as a `-` line followed by a `+` line.
 
 ```diff
  interface GigabitEthernet1/0/2           <- space: context, in both files
@@ -84,23 +102,27 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
  !
 ```
 
-  - Read that pair as "the access VLAN on Gi1/0/2 changed from 10 to 30".
-  - A lone `+` is an addition; a lone `-` is a removal.
-- **Cisco indentation trap:** IOS indents sub-commands with a space, so an added ` name CAMERAS` shows as `+ name CAMERAS`, and an unchanged ` name VOICE` shows with **two** leading spaces (prefix space + indent).
+- 🔁 Read that pair as "the access VLAN on Gi1/0/2 changed from 10 to 30".
+- A lone `+` is an addition; a lone `-` is a removal.
 
-| First character | Meaning | Counts toward |
-|---|---|---|
-| a space | unchanged **context** line | both old and new counts |
-| `-` | line exists only in the **old** file (removed) | old count only |
-| `+` | line exists only in the **new** file (added) | new count only |
+| | First character | Meaning | Counts toward |
+|---|---|---|---|
+| ⬜ | a space | unchanged **context** line | both old and new counts |
+| ➖ | `-` | line exists only in the **old** file (removed) | old count only |
+| ➕ | `+` | line exists only in the **new** file (added) | new count only |
 
-- **Spotting a big deletion** (exam-sim gap from practice test review):
-  - A long **run of consecutive `-` lines** with few or no `+` lines means a block was deleted. A run of `+` lines means a block was added.
-  - In `@@ -40,30 +40,2 @@`, the old side has 30 lines and the new side has 2, so about **28 lines were deleted** in that hunk.
+- ⚠️ **Cisco indentation trap:** IOS indents sub-commands with a space, so an added ` name CAMERAS` shows as `+ name CAMERAS`, and an unchanged ` name VOICE` shows with **two** leading spaces (prefix space + indent).
 
-### 4. Context lines and multiple hunks
-- By default Git shows **3 lines of context** before and after each change. `-U<n>` or `--unified=<n>` changes that.
-- Changes close together **merge into one hunk**; changes further apart get separate hunks, each with its own `@@` header.
+> 🔐 **Spotting a big deletion** (exam-sim gap from practice test review):
+>
+> - A long **run of consecutive `-` lines** with few or no `+` lines means a block was deleted. A run of `+` lines means a block was added.
+> - In `@@ -40,30 +40,2 @@`, the old side has 30 lines and the new side has 2, so about **28 lines were deleted** in that hunk.
+
+### 4. 🧩 Context lines and multiple hunks
+
+> 💡 By default Git shows **3 lines of context** before and after each change. `-U<n>` or `--unified=<n>` changes that.
+
+- 🔗 Changes close together **merge into one hunk**; changes further apart get separate hunks, each with its own `@@` header.
 - **Context counts on both sides.** Same edit with `git diff --unified=1` splits into three hunks:
 
 ```
@@ -109,44 +131,68 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 @@ -16,3 +18,3 @@ ntp server 10.0.0.1             <- still shifted +2
 ```
 
-  - `-6,2 +6,4` is **+2**, not "4 added": the 2 context lines count on both sides.
-  - **Shortcut:** if a later hunk's new start differs from its old start, the **earlier** hunks added or removed lines. The difference is the net shift (12 → 14 = +2).
+- `-6,2 +6,4` is **+2**, not "4 added": the 2 context lines count on both sides.
+- ⏩ **Shortcut:** if a later hunk's new start differs from its old start, the **earlier** hunks added or removed lines. The difference is the net shift (12 → 14 = +2).
 
-### 5. How to answer a diff question in three steps
-1. **`---` / `+++`:** which file, and which side is old or new. `/dev/null` = created or deleted.
-2. **`@@`:** where the change is, and the net line change (newCount − oldCount).
-3. **Prefixes:** pair each `-` with the `+` that follows it to say "X changed to Y". A lone `+` is an addition, a lone `-` is a removal.
+### 5. 🎯 How to answer a diff question in three steps
 
-- **Rebuild a side:** for the **new** file, keep the space and `+` lines and drop the `-` lines. For the **old** file, keep the space and `-` lines and drop the `+` lines.
-- **Typical answers:** "VLAN 30 added", "access port moved from VLAN 10 to 30", "SNMP community changed", "TLS verification turned on (`verify=False` became `verify=True`)", "API path moved from v1 to v2".
-- A hunk like `@@ -4,12 +4,12 @@` can have net 0 lines yet still contain 3 modified lines, so "same count" doesn't mean "no change".
+1. 📄 **`---` / `+++`:** which file, and which side is old or new. `/dev/null` = created or deleted.
+2. 📍 **`@@`:** where the change is, and the net line change (newCount − oldCount).
+3. ✏️ **Prefixes:** pair each `-` with the `+` that follows it to say "X changed to Y". A lone `+` is an addition, a lone `-` is a removal.
+
+**🔨 Rebuild a side:**
+
+| To rebuild | ✅ Keep | ❌ Drop |
+|---|---|---|
+| the **new** file | the space and `+` lines | the `-` lines |
+| the **old** file | the space and `-` lines | the `+` lines |
+
+- 💬 **Typical answers:** "VLAN 30 added", "access port moved from VLAN 10 to 30", "SNMP community changed", "TLS verification turned on (`verify=False` became `verify=True`)", "API path moved from v1 to v2".
+- ⚠️ A hunk like `@@ -4,12 +4,12 @@` can have net 0 lines yet still contain 3 modified lines, so "same count" doesn't mean "no change".
 
 ![Reading a diff like the exam: a code-review diff in three steps, rebuilding old and new, and pattern-to-answer tables](../assets/T05/04-read-like-the-exam.png)
 
 *Left: the real `api.py` code-review diff read in three steps, with the answer in words. Right: rebuilding the old and new file by keeping or dropping lines. Bottom: diff patterns mapped to plain-English answers, and the traps.*
 
-## Exam traps
-- **`-` is a line only in the OLD file**, not "a line taken away from the new file".
-- **Counts include context:** `@@ -10,7 +10,8 @@` is a **net +1**, not "8 lines added".
-- **Missing count = 1:** `@@ -1 +1 @@` has one line on each side.
-- **`--- /dev/null` = created**, `+++ /dev/null` = deleted.
-- **Text after `@@`** (`vlan 10`, `def connect():`) is only an orientation label, not a change.
-- **Later hunk renumbered** (`-12` → `+14`) = earlier hunks shifted the lines, not a mistake.
+## ⚠️ Exam traps
+
+| ❌ Looks like… | ✅ Actually… |
+|---|---|
+| `-` is a line taken away from the new file | ➖ **`-` is a line only in the OLD file**, not "a line taken away from the new file". |
+| `@@ -10,7 +10,8 @@` means 8 lines added | 📏 **Counts include context:** `@@ -10,7 +10,8 @@` is a **net +1**, not "8 lines added". |
+| `@@ -1 +1 @@` has zero lines | 1️⃣ **Missing count = 1:** `@@ -1 +1 @@` has one line on each side. |
+| `/dev/null` on either side means the same thing | 🆕 **`--- /dev/null` = created**, 🗑️ `+++ /dev/null` = deleted. |
+| text after `@@` was changed | 🪧 **Text after `@@`** (`vlan 10`, `def connect():`) is only an orientation label, not a change. |
+| a renumbered later hunk is an error | ⏩ **Later hunk renumbered** (`-12` → `+14`) = earlier hunks shifted the lines, not a mistake. |
 
 <details><summary><b>🟨 Should know (second pass)</b></summary>
 
-- **Producing diffs:**
-  - `git diff` = unstaged changes · `git diff --staged` = staged changes · `git diff <c1> <c2>` = two commits. The full matrix is in T04.
-  - `git show <commit>` prints a commit's metadata plus its diff against its parent.
-  - `git diff --stat` gives a summary only: `switch.cfg | 6 ++++--` means 4 insertions and 2 deletions. `+` lines are **insertions** and `-` lines are **deletions**, so one modified line counts as 1 insertion and 1 deletion.
-  - `git diff --unified=0` shows no context, only the changes.
-- **Unified vs normal format outside Git:**
-  - `diff -u old.cfg new.cfg` produces the same unified format. It has no `diff --git` or `index` lines, and its `---`/`+++` lines show the filename **plus a timestamp**.
-  - Plain `diff` without `-u` gives the older **normal** format with `<` and `>` lines and commands like `4a5`. That is not unified.
-- **`\ No newline at end of file`** is a marker, not content: the last line has no trailing newline.
-- **`@@@` (three `@` signs)** marks a **combined diff** of a merge commit with two parents. Not a normal two-file diff.
-- **Section label detail:** in a config file the label is usually a `vlan` or `interface` line. In Python without a language diff driver it may show `import requests` rather than the function name. ⚠ verify per language driver.
-- **The `index` line** holds the old and new blob hashes and the file mode. You can ignore it.
+### 🛠️ Producing diffs
+
+| | Command | Shows |
+|---|---|---|
+| 📝 | `git diff` | unstaged changes |
+| 📦 | `git diff --staged` | staged changes |
+| 🔀 | `git diff <c1> <c2>` | two commits. The full matrix is in T04 |
+| 🧾 | `git show <commit>` | a commit's metadata plus its diff against its parent |
+| 📊 | `git diff --stat` | a summary only: `switch.cfg \| 6 ++++--` means 4 insertions and 2 deletions. `+` lines are **insertions** and `-` lines are **deletions**, so one modified line counts as 1 insertion and 1 deletion |
+| 0️⃣ | `git diff --unified=0` | no context, only the changes |
+
+### 🆚 Unified vs normal format outside Git
+
+| | `diff -u old.cfg new.cfg` (unified) | Plain `diff` without `-u` (normal) |
+|---|---|---|
+| Format | the same unified format | the older **normal** format with `<` and `>` lines and commands like `4a5` |
+| Differences from Git | no `diff --git` or `index` lines, and its `---`/`+++` lines show the filename **plus a timestamp** | that is not unified |
+
+### 🔍 Other markers
+
+| | Marker | Means |
+|---|---|---|
+| ↩️ | **`\ No newline at end of file`** | a marker, not content: the last line has no trailing newline |
+| 🔀 | **`@@@` (three `@` signs)** | marks a **combined diff** of a merge commit with two parents. Not a normal two-file diff |
+| 🪧 | **Section label detail** | in a config file the label is usually a `vlan` or `interface` line. In Python without a language diff driver it may show `import requests` rather than the function name. ⚠ verify per language driver |
+| #️⃣ | **The `index` line** | holds the old and new blob hashes and the file mode. You can ignore it |
 
 ![Which git diff command compares which areas, plus --stat, --numstat, --name-status, word diff and git show](../assets/T05/03-producing-diffs.png)
 
@@ -154,9 +200,9 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 
 </details>
 
-> **Recognise only, details in the full note:** the `diff.context` setting, the exact "2× context" merge rule, `*.py diff=python` in `.gitattributes`, `--numstat` / `--name-status` / `--word-diff`, rename and mode-change headers, binary-file diffs.
+> 📚 **Recognise only, details in the full note:** the `diff.context` setting, the exact "2× context" merge rule, `*.py diff=python` in `.gitattributes`, `--numstat` / `--name-status` / `--word-diff`, rename and mode-change headers, binary-file diffs.
 
-## Quick self-check
+## ✍️ Quick self-check
 <details><summary>Q1. What does <code>@@ -22,6 +22,9 @@</code> mean?</summary>A 6-line region from old line 22 is now a 9-line region from new line 22, so net +3 for this hunk. Counts include context.</details>
 <details><summary>Q2. <code>--- /dev/null</code> and <code>+++ b/playbook.yml</code>: what happened to the file?</summary>It was created, because there was nothing on the old side.</details>
 <details><summary>Q3. A hunk header is <code>@@ -5,7 +5,6 @@</code> with 5 context lines. How many <code>-</code> and <code>+</code> lines?</summary>2 minus and 1 plus: old is 5 + 2 = 7, new is 5 + 1 = 6.</details>
@@ -168,12 +214,12 @@ index de65e08..76a0304 100644            <- old blob hash..new blob hash, file m
 <details><summary>Q9. Which command shows changes you have already <code>git add</code>-ed?</summary><code>git diff --staged</code> (or <code>--cached</code>). Plain <code>git diff</code> shows nothing for them.</details>
 <details><summary>Q10. <code>@@ -2,3 +2,3 @@ def connect():</code>: was <code>connect()</code> added?</summary>No. <code>def connect():</code> is the section label, the nearest enclosing line above the hunk. It is not part of the change.</details>
 
-## Say it out loud
-- "Minus, a, three dashes: before. Plus, b, three pluses: after."
-- "The @@ counts include context, so subtract to get the net change."
-- "No count means one; zero count means nothing on that side."
-- "A change is a minus followed by a plus; there is no change symbol."
-- "Text after the @@ is a signpost, not a change."
+## 🗣️ Say it out loud
+- 📄 "Minus, a, three dashes: before. Plus, b, three pluses: after."
+- 📍 "The @@ counts include context, so subtract to get the net change."
+- 1️⃣0️⃣ "No count means one; zero count means nothing on that side."
+- ✏️ "A change is a minus followed by a plus; there is no change symbol."
+- 🪧 "Text after the @@ is a signpost, not a change."
 
 ## Syntax drill
 

@@ -1,4 +1,4 @@
-# Beedy · to-do (from Sun 18 Oct)
+# Beedy · to-do (from Sun 18 Oct; updated Tue 20 Oct)
 
 Goal: teach **T07–T11 from the cards** at Teach-back 2 tonight, then use the **essentials** to catch up on everything else before each Sunday.
 
@@ -10,6 +10,20 @@ Goal: teach **T07–T11 from the cards** at Teach-back 2 tonight, then use the *
 4. Say the **cheat lines** out loud.
 
 Tick `[x]` when done. Put the self-check score as `x/5` and the full-note score as `x/8`.
+
+## Tonight · Tue 20 Oct
+
+Routine per topic (~20 min): read **🟥 Must know** only → close it, say "Say it out loud" from memory → 7-Q self-check, answers hidden → open **🟨** only if you scored 6/7+, otherwise reread the 🟥 parts you missed.
+
+| Done | Topic | Why tonight | Score |
+|---|---|---|---|
+| [ ] | [T09 API styles](../bee-essentials/T09-api-styles-rest-vs-rpc-sync-vs-async.md) | review: verb location + 202/taskId; T47 builds on it | /7 |
+| [ ] | [T10 API auth](../bee-essentials/T10-api-authentication.md) | review: Basic / token / key, 401 vs 403 | /7 |
+| [ ] | [T26 Deployment](../bee-essentials/T26-deployment-models-edge-computing.md) | first read; edge/fog/IOx are new | /7 |
+| [ ] | [T27 Docker](../bee-essentials/T27-docker.md) | home turf: traps only (`-p HOST:CONTAINER`, CMD vs ENTRYPOINT) | /7 |
+| [ ] | [T28 CI/CD](../bee-essentials/T28-ci-cd-devops-principles.md) | home turf: traps only (delivery vs deployment, exam-sim gaps) | /7 |
+
+**Still due before Teach-back 3 (Sun 25 Oct):** T43, T47 and T29 (Thu 22), plus Bob's cycle-1 and cycle-2 cross-study.
 
 ## Today · Sun 18 Oct · Teach-back 2
 
@@ -35,10 +49,10 @@ These were due at Teach-back 1. Use the essentials: about 20 min each.
 
 | Done | # | Read | Concepts to cover | Score |
 |---|---|---|---|---|
-| [ ] | 10 | [T05 essentials](../bee-essentials/T05-unified-diffs.md) | `---`/`+++` · `/dev/null` · hunk headers (counts include context) · `-`/`+` prefixes · big deletion = run of `-` | /5 |
+| [x] | 10 | [T05 essentials](../bee-essentials/T05-unified-diffs.md) | `---`/`+++` · `/dev/null` · hunk headers (counts include context) · `-`/`+` prefixes · big deletion = run of `-` | /5 |
 | [ ] | 11 | [T02 essentials](../bee-essentials/T02-functions-classes-modules.md) | `*args`/`**kwargs` · instance vs class attributes · `@classmethod`/`@staticmethod` · `super().__init__()` · `__main__` | /5 |
-| [ ] | 12 | [T04 essentials](../bee-essentials/T04-git-version-control.md) | 4 areas · `diff` vs `--staged` · `fetch` vs `pull` · conflict markers · `reset` vs `revert` · `rm --cached` | /5 |
-| [ ] | 13 | [T06 essentials](../bee-essentials/T06-data-formats-parsing.md) | XML vs JSON vs YAML · `json.loads`/`yaml.safe_load`/`xmltodict` · `@`/`#text` · `defusedxml` | /5 |
+| [x] | 12 | [T04 essentials](../bee-essentials/T04-git-version-control.md) | 4 areas · `diff` vs `--staged` · `fetch` vs `pull` · conflict markers · `reset` vs `revert` · `rm --cached` | /5 |
+| [x] | 13 | [T06 essentials](../bee-essentials/T06-data-formats-parsing.md) | XML vs JSON vs YAML · `json.loads`/`yaml.safe_load`/`xmltodict` · `@`/`#text` · `defusedxml` | /5 |
 
 ## Cycle 3 · Mon 19 – Sat 24 Oct · Teach-back 3 on Sun 25 Oct
 
@@ -75,9 +89,9 @@ Reread the **"Exam-sim gap"** block in each note's concept section, then retry t
 
 | Done | Note | Gap → what to know | Sim Q |
 |---|---|---|---|
-| [ ] | [T05 Diffs](T05-unified-diffs.md) · T05.03 | G24 · big deletion = a run of `-` lines | Q27 |
-| [ ] | [T06 Data formats](T06-data-formats-parsing.md) · T06.10 | G01 · untrusted XML → `defusedxml` | Q49 |
-| [ ] | [T07 REST](T07-rest-fundamentals-http-codes.md) · T07.11 | G20 · build a request → Postman / curl | Q5 |
+| [x] | [T05 Diffs](T05-unified-diffs.md) · T05.03 | G24 · big deletion = a run of `-` lines | Q27 |
+| [x] | [T06 Data formats](T06-data-formats-parsing.md) · T06.10 | G01 · untrusted XML → `defusedxml` | Q49 |
+| [x] | [T07 REST](T07-rest-fundamentals-http-codes.md) · T07.11 | G20 · build a request → Postman / curl | Q5 |
 | [ ] | [T26 Deployment](T26-deployment-models-edge-computing.md) · T26.04 | G18 · signed, verified apps on devices → IOx | Q35 |
 | [ ] | [T28 CI/CD](T28-ci-cd-devops-principles.md) · T28.06, T28.07 | G23 · pipeline = only route to prod; tickets (Jira) · G07 learning culture = continuous improvement | Q19, Q76, Q45 |
 | [ ] | [T29 Secrets](T29-secrets-encryption-data-handling.md) · T29.02 | G22 · least secure in transit → RC4 | Q7 |

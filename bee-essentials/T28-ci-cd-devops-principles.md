@@ -6,36 +6,52 @@
 
 *The top row follows one commit left to right (Source → CI → Artifact → CD → Operate) with a red dashed feedback loop back; the bottom row covers NetDevOps, DevOps culture and tools, and red boxes are exam traps.*
 
-## The big idea
-- You already run pipelines for a living, so this topic is mostly the **exam's exact vocabulary**. It answers three questions:
-  - **Where does CI stop and CD start, and is there a human before prod?** (CI vs CD, delivery vs deployment)
-  - **What are the parts of a pipeline, and in what order?**
-  - **What do DevOps principles mean in a scenario?** (CALMS, the Three Ways, shift-left, blameless post-mortems)
-- The one genuinely new part is **NetDevOps** (blueprint 5.4): network config treated like application code, with **Git as the source of truth** and a pipeline that tests changes in a simulated network before touching real devices.
-- **Analogy: an assembly line with quality checkpoints.** Any failed check **stops the line**. The same finished product (the **artifact**) is what gets shipped to every store (environment). Nobody rebuilds the product at the last store.
-- **Analogy for delivery vs deployment: a lorry at the gate.** Delivery = the lorry is loaded and waiting; a manager signs to open the gate. Deployment = the gate opens automatically when the checks pass.
-- **What the exam asks:** put stages in order, spot delivery vs deployment from the wording, name the benefit or DevOps principle a scenario describes, and pick the NetDevOps step (lint, simulate, deploy, post-check) that catches a problem.
+## 🧭 The big idea
+
+You already run pipelines for a living, so this topic is mostly the **exam's exact vocabulary**. It answers three questions:
+
+| | Question | Answer options | Analogy |
+|---|---|---|---|
+| 🚦 | **Where does CI stop and CD start, and is there a human before prod?** | CI vs CD, delivery vs deployment | **a lorry at the gate.** Delivery = the lorry is loaded and waiting; a manager signs to open the gate. Deployment = the gate opens automatically when the checks pass. |
+| 🏭 | **What are the parts of a pipeline, and in what order?** | source → build → test → artifact → deploy → monitor | **an assembly line with quality checkpoints.** Any failed check **stops the line**. The same finished product (the **artifact**) is what gets shipped to every store (environment). Nobody rebuilds the product at the last store. |
+| 🤝 | **What do DevOps principles mean in a scenario?** | CALMS, the Three Ways, shift-left, blameless post-mortems | |
+
+> 💡 The one genuinely new part is 🌐 **NetDevOps** (blueprint 5.4): network config treated like application code, with **Git as the source of truth** and a pipeline that tests changes in a simulated network before touching real devices.
+
+- 🎯 **What the exam asks:** put stages in order, spot delivery vs deployment from the wording, name the benefit or DevOps principle a scenario describes, and pick the NetDevOps step (lint, simulate, deploy, post-check) that catches a problem.
 
 ## 🟥 Must know
 
-### 1. CI: merge small and often, and every push is built and tested
-- **Continuous integration (CI)** = every developer merges small changes into the main branch **at least daily**, and **every push or merge request triggers an automated build that includes tests**.
-- **Why it exists:** to stop "integration hell" from long-lived branches. A bug is found minutes after the commit that caused it, by the person who wrote it, so main stays **green and releasable**.
-- **Fail fast:** the first failing stage **stops the run**; later stages are **skipped**, not run "with warnings". A broken main build is fixed immediately or the commit is reverted.
-- **CI ends with a tested artifact.** It does not deploy to production.
-- CI is a **practice**, not a product. Running Jenkins on a branch nobody merges for a month is not CI.
+### 1. 🔁 CI: merge small and often, and every push is built and tested
+
+> 💡 **Continuous integration (CI)** = every developer merges small changes into the main branch **at least daily**, and **every push or merge request triggers an automated build that includes tests**.
+
+| | |
+|---|---|
+| 🎯 Why it exists | to stop "integration hell" from long-lived branches. A bug is found minutes after the commit that caused it, by the person who wrote it, so main stays **green and releasable**. |
+| 🛑 Fail fast | the first failing stage **stops the run**; later stages are **skipped**, not run "with warnings". A broken main build is fixed immediately or the commit is reverted. |
+| 📦 Where it ends | **CI ends with a tested artifact.** It does not deploy to production. |
+| ⚠️ Practice, not product | Running Jenkins on a branch nobody merges for a month is not CI. |
 
 ![CI vs CD boundary](../assets/T28/01-ci-cd-boundary.png)
 
 *Blue is CI, which ends with a tested, packaged artifact; green is CD, which moves that artifact through environments; the yellow gate is the only difference between delivery and deployment.*
 
-### 2. CD: continuous delivery vs continuous deployment
-- **CD** takes the **same artifact** CI produced and promotes it through **dev → staging → prod**.
-- Both meanings abbreviate to "CD", so the exam spells them out. **Look for the human:**
-  - **Continuous delivery:** every change is built, tested and **releasable**; a **human approves** the prod deploy (button, approval). You **can** deploy any version on demand.
-  - **Continuous deployment:** every change that passes all stages **is deployed to prod automatically**. No human. Needs excellent tests, monitoring and fast rollback.
-- Lorry analogy: delivery = loaded and waiting for the manager's signature; deployment = the gate opens on its own.
-- **In a pipeline file**, the difference is one line (GitLab example from the full note):
+### 2. 🚦 CD: continuous delivery vs continuous deployment
+
+> 💡 **CD** takes the **same artifact** CI produced and promotes it through **dev → staging → prod**. Both meanings abbreviate to "CD", so the exam spells them out. **Look for the human.**
+
+| | 🧑‍💼 Continuous **delivery** | 🤖 Continuous **deployment** |
+|---|---|---|
+| Every change | built, tested and **releasable** (ready to deploy) | built, tested **and deployed** |
+| Prod deploy | a **human approves** (button, approval). You **can** deploy any version on demand. | **automatic** when all stages pass. No human. Needs excellent tests, monitoring and fast rollback. |
+| Lorry analogy | loaded and waiting for the manager's signature | the gate opens on its own |
+| GitLab | `when: manual` on the prod job | remove that line |
+| GitHub Actions | environment with **Required reviewers** | no protection rule |
+| Jenkins | an `input` step in the prod stage | remove the `input` |
+| Scenario words | "approval", "manual", "button", "business decides" | "automatically to production", "no human" |
+
+**In a pipeline file**, the difference is one line (GitLab example from the full note):
 
 ```yaml
 deploy-prod:
@@ -51,34 +67,37 @@ deploy-prod:
                                      # delete this line = continuous DEPLOYMENT
 ```
 
-| | Continuous **delivery** | Continuous **deployment** |
-|---|---|---|
-| Every change | built, tested, ready to deploy | built, tested **and deployed** |
-| Prod deploy | a **human approves** | **automatic** when all stages pass |
-| GitLab | `when: manual` on the prod job | remove that line |
-| GitHub Actions | environment with **Required reviewers** | no protection rule |
-| Jenkins | an `input` step in the prod stage | remove the `input` |
-| Scenario words | "approval", "manual", "button", "business decides" | "automatically to production", "no human" |
+### 3. 🏭 Pipeline components and their order
 
-### 3. Pipeline components and their order
-- **The parts, in the order a commit meets them:**
-  - **Source repo** (GitHub, GitLab, Bitbucket): the single source of truth for code **and** the pipeline file. A push or MR is the **trigger**.
-  - **CI server and runner** (GitLab runner, Jenkins agent): reads the pipeline file and runs jobs in clean workers, often containers.
-  - **Lint / static checks** (pylint, yamllint, Bandit): the cheapest checks first: syntax, style, schema, security and secret scans.
-  - **Build** (`docker build`): compile or package, often into a container image.
-  - **Test** (pytest, pyATS): **unit** tests (one function, fast) run in CI on every push; **integration** tests (parts together) run against a **deployed** environment such as staging.
-  - **Artifact repo** (ECR, Harbor, Nexus, Artifactory): stores the versioned build output so every environment gets **the same bytes**. This is **not** Git: Git holds code and the pipeline file.
-  - **Deploy stages** (Ansible, Helm, Terraform): dev → staging → prod, with **gates** before prod.
-  - **Notify and monitor** (Webex/Slack bot, Prometheus, Grafana): tells the committer, watches prod, and feeds back to the start.
-- **The order the exam wants:** source → build → test → store artifact → deploy dev → staging → (approval) → prod → monitor.
-  - Some diagrams merge lint into test, or put lint before build. Either way, **tests always come before any deploy**, and the **artifact is created before the deploy stages**.
-- **Build once, promote many.** Assembly-line analogy: the same product goes to every store. If you rebuild for each environment, prod runs bytes nobody tested.
-- **Which stage catches what:**
-  - a syntax error or a bad VLAN ID → **lint**
-  - a function returning the wrong value → **unit test**
-  - two services not talking → **integration test** on staging
-  - config applied but BGP down → **post-change check**
-- **Pipeline as code:** the pipeline definition lives in the **same repo** as the app, so it gets code review, history and an audit trail like any other code. Example (GitLab, from the full note, trimmed):
+**The parts, in the order a commit meets them:**
+
+| | Component | Examples | Job |
+|---|---|---|---|
+| 📚 | **Source repo** | GitHub, GitLab, Bitbucket | the single source of truth for code **and** the pipeline file. A push or MR is the **trigger**. |
+| 🏃 | **CI server and runner** | GitLab runner, Jenkins agent | reads the pipeline file and runs jobs in clean workers, often containers |
+| 🧹 | **Lint / static checks** | pylint, yamllint, Bandit | the cheapest checks first: syntax, style, schema, security and secret scans |
+| 🔨 | **Build** | `docker build` | compile or package, often into a container image |
+| 🧪 | **Test** | pytest, pyATS | **unit** tests (one function, fast) run in CI on every push; **integration** tests (parts together) run against a **deployed** environment such as staging |
+| 📦 | **Artifact repo** | ECR, Harbor, Nexus, Artifactory | stores the versioned build output so every environment gets **the same bytes**. This is **not** Git: Git holds code and the pipeline file. |
+| 🚀 | **Deploy stages** | Ansible, Helm, Terraform | dev → staging → prod, with **gates** before prod |
+| 📣 | **Notify and monitor** | Webex/Slack bot, Prometheus, Grafana | tells the committer, watches prod, and feeds back to the start |
+
+> 🎯 **The order the exam wants:** source → build → test → store artifact → deploy dev → staging → (approval) → prod → monitor.
+>
+> Some diagrams merge lint into test, or put lint before build. Either way, **tests always come before any deploy**, and the **artifact is created before the deploy stages**.
+
+> 📦 **Build once, promote many.** Assembly-line analogy: the same product goes to every store. If you rebuild for each environment, prod runs bytes nobody tested.
+
+**🔍 Which stage catches what:**
+
+| Problem | Caught by |
+|---|---|
+| a syntax error or a bad VLAN ID | 🧹 **lint** |
+| a function returning the wrong value | 🧪 **unit test** |
+| two services not talking | 🧪 **integration test** on staging |
+| config applied but BGP down | ✅ **post-change check** |
+
+**📜 Pipeline as code:** the pipeline definition lives in the **same repo** as the app, so it gets code review, history and an audit trail like any other code. Example (GitLab, from the full note, trimmed):
 
 ```yaml
 stages:            # stages run in THIS order; jobs in the same stage run in parallel
@@ -111,7 +130,7 @@ package:
       - dist/netinv.pyz
 ```
 
-  - Read it like the exam: order lint → test → build → deploy; a failed `unit-test` means nothing is packaged or deployed.
+- Read it like the exam: order lint → test → build → deploy; a failed `unit-test` means nothing is packaged or deployed.
 
 ![Pipeline components](../assets/T28/02-pipeline-components.png)
 
@@ -121,34 +140,37 @@ package:
 
 *Push → lint → test → package once → dev → staging → prod waits for approval; the next commit fails a test and every later stage is skipped.*
 
-### 4. Benefits: match the scenario wording
-- Each benefit follows from a mechanism above:
-  - Small changes merged often → **faster, smaller, more frequent releases** (smaller blast radius).
-  - Scripted steps instead of a runbook → **fewer manual errors, repeatable deploys**.
-  - Every push tested → **early defect detection**, which is cheaper to fix.
-  - Every artifact kept → **quick rollback** by redeploying the **previous artifact** (already built and tested).
-  - Pipeline status per commit → **visibility and feedback**.
+### 4. 🏆 Benefits: match the scenario wording
 
-| Scenario wording | Benefit |
+> 💡 Each benefit follows from a mechanism above.
+
+| | Mechanism | Benefit | Scenario wording |
+|---|---|---|---|
+| ⚡ | small changes merged often | **faster, smaller, more frequent releases** (smaller blast radius) | "release weekly instead of quarterly", "small changes" |
+| 🤖 | scripted steps instead of a runbook | **fewer manual errors, repeatable deploys** | "no more copy-paste deploy runbook" |
+| 🐞 | every push tested | **early defect detection**, which is cheaper to fix | "the bug was found 5 minutes after the commit" |
+| ⏪ | every artifact kept | **quick rollback** by redeploying the **previous artifact** (already built and tested) | "the bad release was undone in 2 minutes" |
+| 👀 | pipeline status per commit | **visibility and feedback** | "everyone sees which commit broke it" |
+
+### 5. 🌐 CI/CD for the network (NetDevOps, blueprint 5.4)
+
+| ❌ The old way | ✅ NetDevOps |
 |---|---|
-| "release weekly instead of quarterly", "small changes" | faster, smaller, more frequent releases |
-| "no more copy-paste deploy runbook" | fewer manual errors, repeatable deploys |
-| "the bug was found 5 minutes after the commit" | early defect detection |
-| "the bad release was undone in 2 minutes" | quick rollback (previous artifact) |
-| "everyone sees which commit broke it" | visibility and feedback |
+| An engineer SSHes into each device and types config. No review, no test, devices drift apart, and the only record of the change is the device itself. | CI/CD applied to the network. The desired state, called **intent** (VLANs, interfaces, BGP neighbours, ACLs), is stored as **data in Git**, e.g. a JSON file or Ansible `host_vars/`. **Git is the source of truth**; devices should match it. A manual CLI change is **drift** the pipeline will overwrite. |
 
-### 5. CI/CD for the network (NetDevOps, blueprint 5.4)
-- **The old way:** an engineer SSHes into each device and types config. No review, no test, devices drift apart, and the only record of the change is the device itself.
-- **NetDevOps** = CI/CD applied to the network. The desired state, called **intent** (VLANs, interfaces, BGP neighbours, ACLs), is stored as **data in Git**, e.g. a JSON file or Ansible `host_vars/`. **Git is the source of truth**; devices should match it. A manual CLI change is **drift** the pipeline will overwrite.
-- Assembly-line analogy: the intent file is the product spec; the pipeline checks the spec, builds a test copy, and only then changes the real network.
-- **The five steps of an infrastructure pipeline:**
-  1. **Lint and validate** the intent: JSON/YAML syntax, schema, and rules such as "VLAN IDs must be 1–4094 with no duplicates".
-  2. **Test in simulation:** push the change to a virtual copy of the network in **Cisco Modeling Labs (CML)** and check it with **pyATS** (pre-checks, `genie learn` and `diff`).
-  3. **Review and approve:** a peer-reviewed merge request; the change window is the gate.
-  4. **Deploy** with a tool that pushes config: **Ansible**, Cisco **NSO**, **Terraform**, or controller APIs over RESTCONF/NETCONF.
-  5. **Post-change checks:** pyATS diff, ping, routing neighbours up, interfaces up. If they fail, **roll back** by redeploying the previous commit's intent.
+> 🏭 Assembly-line analogy: the intent file is the product spec; the pipeline checks the spec, builds a test copy, and only then changes the real network.
+
+**The five steps of an infrastructure pipeline:**
+
+1. 🧹 **Lint and validate** the intent: JSON/YAML syntax, schema, and rules such as "VLAN IDs must be 1–4094 with no duplicates".
+2. 🧪 **Test in simulation:** push the change to a virtual copy of the network in **Cisco Modeling Labs (CML)** and check it with **pyATS** (pre-checks, `genie learn` and `diff`).
+3. 👥 **Review and approve:** a peer-reviewed merge request; the change window is the gate.
+4. 🚀 **Deploy** with a tool that pushes config: **Ansible**, Cisco **NSO**, **Terraform**, or controller APIs over RESTCONF/NETCONF.
+5. ✅ **Post-change checks:** pyATS diff, ping, routing neighbours up, interfaces up. If they fail, **roll back** by redeploying the previous commit's intent.
+
 - ⚠ verify: the stage list is the common NetDevOps pattern from Cisco DevNet material; check the exact blueprint 5.4 wording in the PDF.
-- **Example: the lint stage rejecting bad intent** (real output from the full note):
+
+**Example: the lint stage rejecting bad intent** (real output from the full note):
 
 ```text
 === stage 1: lint / validate (source + network intent) ===
@@ -160,78 +182,112 @@ package:
 PIPELINE FAILED in stage lint: later stages did not run                    ← fail fast: nothing built or deployed
 ```
 
-- **Benefits for infrastructure:** consistency (every device from the same template), an **audit trail** (`git log` shows who changed what, when and why), peer review, testing before prod, **fewer outages**, fast rollback.
-- **Exam-sim gap:** CI/CD for NSO (or any network change) only works if the pipeline is the **only** path to production. If engineers can still change devices by hand, the devices drift from Git and nothing is repeatable or auditable. Cue: "best practice for CI/CD with NSO" → single pipeline to prod, no manual side doors.
-- **Exam-sim gap:** plan the work in a tracking system too. Changes start as tickets (for example **Jira**), each linked to the branch or MR that implements it, so ticket → branch → pipeline → deploy gives traceability. Cue: "what else does the setup need?" → issue tracking alongside Git and the CI server.
+**🏆 Benefits for infrastructure:** consistency (every device from the same template), an **audit trail** (`git log` shows who changed what, when and why), peer review, testing before prod, **fewer outages**, fast rollback.
+
+> 🔐 **Exam-sim gap: one door to prod.** CI/CD for NSO (or any network change) only works if the pipeline is the **only** path to production. If engineers can still change devices by hand, the devices drift from Git and nothing is repeatable or auditable.
+>
+> 🎯 Cue: "best practice for CI/CD with NSO" → single pipeline to prod, no manual side doors.
+
+> 🔐 **Exam-sim gap: plan the work in a tracking system too.** Changes start as tickets (for example **Jira**), each linked to the branch or MR that implements it, so ticket → branch → pipeline → deploy gives traceability.
+>
+> 🎯 Cue: "what else does the setup need?" → issue tracking alongside Git and the CI server.
 
 ![NetDevOps pipeline](../assets/T28/03-netdevops-pipeline.png)
 
 *Same shape as an app pipeline, but the "code" is network intent and "deploy" changes devices; red is the rollback path when post-change checks fail.*
 
-### 6. DevOps principles: CALMS, the Three Ways and the practices (blueprint 4.12)
-- **DevOps** = a culture plus a set of practices that joins **development** (which wants change) and **operations** (which wants stability) into one team with shared goals, so change is fast **and** safe. It is not a job title or a tool: "buy Jenkins" ≠ DevOps.
-- **CALMS** (Jez Humble), one letter per pillar:
-  - **Culture:** collaboration, shared ownership, no blame. Scenario: dev and ops in the same stand-up; a blameless post-mortem.
-  - **Automation:** automate build, test, deploy and infra. Scenario: pipelines, IaC.
-  - **Lean:** small batches, limit work in progress, remove waste. Scenario: ship small MRs often. (Not "Logging".)
-  - **Measurement:** measure everything, decide with data. Scenario: dashboards, DORA metrics. (Not "Monitoring"; monitoring is one way to measure.)
-  - **Sharing:** share knowledge, tools and responsibility. Scenario: shared runbooks, wikis, demos.
-- **The Three Ways** (Gene Kim), in a fixed order. Assembly-line analogy:
-  1. **Flow:** the line moves fast left to right. Optimise the **whole** dev-to-ops flow, not one silo, and never pass a known defect downstream.
-  2. **Feedback:** problems travel back right to left fast (failing tests, monitoring, alerts). Fix them where they are found.
-  3. **Continual learning and experimentation:** the whole line keeps improving. Take risks, learn from failure, practise.
-- **Exam-sim gap:** a learning culture means **continuous improvement**. Blameless post-mortems, sharing what broke and small experiments improve the process after each failure. Cue: "why does a learning culture matter?" → continuous improvement, not "fewer meetings" or "less testing".
-- **The practices to recognise:**
-  - **Automate everything repeatable:** if a task is done twice, script it.
-  - **Small batches, frequent releases:** easy to review, easy to roll back, smaller blast radius.
-  - **Shift-left:** move testing and security **earlier** in the lifecycle (into CI and onto the developer's laptop). "Run security scans only before the yearly audit" is the opposite. Not "hand it to ops".
-  - **Monitoring and fast feedback:** the pipeline and production both report problems within minutes.
-  - **Blameless post-mortem:** after an incident, ask "what in the system let this happen?", not "who did it?".
-  - **Shared responsibility, "you build it, you run it":** the team that writes the code is on call for it.
+### 6. 🤝 DevOps principles: CALMS, the Three Ways and the practices (blueprint 4.12)
+
+> 💡 **DevOps** = a culture plus a set of practices that joins **development** (which wants change) and **operations** (which wants stability) into one team with shared goals, so change is fast **and** safe. It is not a job title or a tool: "buy Jenkins" ≠ DevOps.
+
+**🧩 CALMS** (Jez Humble), one letter per pillar:
+
+| | CALMS | Means | Spot it (scenario) |
+|---|---|---|---|
+| 🫂 | **C**ulture | collaboration, shared ownership, no blame | dev and ops in the same stand-up; a blameless post-mortem |
+| 🤖 | **A**utomation | automate build, test, deploy and infra | pipelines, IaC |
+| 🪶 | **L**ean | small batches, limit work in progress (WIP), remove waste | ship small MRs often. (Not "Logging".) |
+| 📊 | **M**easurement | measure everything, decide with data | dashboards, DORA metrics. (Not "Monitoring"; monitoring is one way to measure.) |
+| 📖 | **S**haring | share knowledge, tools and responsibility | shared runbooks, wikis, demos |
+
+**🛤️ The Three Ways** (Gene Kim), in a fixed order. Assembly-line analogy:
+
+| | Way | Means | Assembly line |
+|---|---|---|---|
+| 1️⃣ | **Flow** | optimise the **whole** dev-to-ops flow, not one silo, and never pass a known defect downstream | the line moves fast left to right |
+| 2️⃣ | **Feedback** | failing tests, monitoring, alerts; fix them where they are found | problems travel back right to left fast |
+| 3️⃣ | **Continual learning and experimentation** | take risks, learn from failure, practise | the whole line keeps improving |
+
+> 🔐 **Exam-sim gap:** a learning culture means **continuous improvement**. Blameless post-mortems, sharing what broke and small experiments improve the process after each failure.
+>
+> 🎯 Cue: "why does a learning culture matter?" → continuous improvement, not "fewer meetings" or "less testing".
+
+**The practices to recognise:**
+
+| | Practice | Means |
+|---|---|---|
+| 🤖 | **Automate everything repeatable** | if a task is done twice, script it |
+| 🪶 | **Small batches, frequent releases** | easy to review, easy to roll back, smaller blast radius |
+| ⬅️ | **Shift-left** | move testing and security **earlier** in the lifecycle (into CI and onto the developer's laptop). "Run security scans only before the yearly audit" is the opposite. Not "hand it to ops". |
+| 📣 | **Monitoring and fast feedback** | the pipeline and production both report problems within minutes |
+| 🫂 | **Blameless post-mortem** | after an incident, ask "what in the system let this happen?", not "who did it?" |
+| 🔧 | **Shared responsibility, "you build it, you run it"** | the team that writes the code is on call for it |
 
 ![The Three Ways](../assets/T28/04-three-ways.png)
 
 *The 1st Way is work flowing left to right fast, the 2nd Way is information flowing right to left fast, and the 3rd Way is the whole loop improving.*
 
-| CALMS | Means | Spot it |
-|---|---|---|
-| **C**ulture | collaboration, no blame | blameless post-mortem |
-| **A**utomation | automate build, test, deploy, infra | pipelines, IaC |
-| **L**ean | small batches, limit WIP | small MRs often |
-| **M**easurement | decide with data | DORA metrics, dashboards |
-| **S**haring | share knowledge and responsibility | shared runbooks |
+## ⚠️ Exam traps
 
-## Exam traps
-- **"Manual approval before prod" = continuous delivery.** Deployment has no human gate. CI alone never deploys to prod; it ends at a tested artifact.
-- **Build once, promote the same artifact.** Rebuilding for prod = untested bytes. The artifact repo (registry, Nexus, Artifactory) is separate from Git.
-- **Order: build → test → deploy.** Unit tests before any deploy; integration tests on staging; monitoring after prod. A failed stage **skips** everything after it.
-- **CALMS: L = Lean, M = Measurement.** Three Ways order: Flow, Feedback, Continual learning. Shift-left = test and secure **earlier**.
-- **NetDevOps: Git is the source of truth**, the pipeline is the **only** path to prod (no manual side doors), and work starts as a tracked ticket (Jira).
+| ❌ Looks like… | ✅ Actually… |
+|---|---|
+| 🚦 "Manual approval before prod" is continuous deployment; CI deploys to prod | **Continuous delivery.** Deployment has no human gate. CI alone never deploys to prod; it ends at a tested artifact. |
+| 📦 Rebuild for each environment; the artifact lives in Git | **Build once, promote the same artifact.** Rebuilding for prod = untested bytes. The artifact repo (registry, Nexus, Artifactory) is separate from Git. |
+| 🏭 Deploy, then test; a failed stage runs the rest "with warnings" | **Order: build → test → deploy.** Unit tests before any deploy; integration tests on staging; monitoring after prod. A failed stage **skips** everything after it. |
+| 🤝 CALMS L = Logging, M = Monitoring; shift-left = hand it to ops | **L = Lean, M = Measurement.** Three Ways order: Flow, Feedback, Continual learning. Shift-left = test and secure **earlier**. |
+| 🌐 NetDevOps still allows manual device changes | **Git is the source of truth**, the pipeline is the **only** path to prod (no manual side doors), and work starts as a tracked ticket (Jira). |
 
 <details><summary><b>🟨 Should know (second pass)</b></summary>
 
-- **Pipeline tools (awareness):** match the file name to the tool, and read the stage order from a snippet.
-  - **GitLab CI:** `.gitlab-ci.yml` at the repo **root**. A `stages:` list sets the order; jobs in the same stage run in **parallel** and the next stage waits. Jobs run in the `image:` on a runner. Manual gate: `when: manual`. Default stages if none are defined: `.pre`, `build`, `test`, `deploy`, `.post`.
-  - **GitHub Actions:** `.github/workflows/*.yml`. **All jobs run in parallel** unless ordered with `needs:` (they do **not** run in file order). Jobs run on `runs-on: ubuntu-latest`. Manual gate: environment with Required reviewers.
-  - **Jenkins:** `Jenkinsfile` (Groovy). Stages run in sequence on an `agent`. Manual gate: an `input` step.
-  - "Pipeline as code" means the pipeline is versioned in the **app's** repo, not "the pipeline is written in Python".
+### 🛠️ Pipeline tools (awareness)
 
-| | GitLab CI | GitHub Actions | Jenkins |
+> 💡 Match the file name to the tool, and read the stage order from a snippet.
+
+| | 🦊 GitLab CI | 🐙 GitHub Actions | 🤵 Jenkins |
 |---|---|---|---|
-| File | `.gitlab-ci.yml` (root) | `.github/workflows/*.yml` | `Jenkinsfile` |
-| Order | `stages:`; same stage = parallel | parallel unless `needs:` | stages sequential |
-| Runs on | `image:` on a runner | `runs-on:` | `agent` |
-| Manual gate | `when: manual` | Required reviewers | `input` step |
+| File | `.gitlab-ci.yml` at the repo **root** | `.github/workflows/*.yml` | `Jenkinsfile` (Groovy) |
+| Order | a `stages:` list sets the order; jobs in the same stage run in **parallel** and the next stage waits | **all jobs run in parallel** unless ordered with `needs:` (they do **not** run in file order) | stages run in sequence |
+| Runs on | the `image:` on a runner | `runs-on: ubuntu-latest` | an `agent` |
+| Manual gate | `when: manual` | environment with Required reviewers | an `input` step |
+| Extra | default stages if none are defined: `.pre`, `build`, `test`, `deploy`, `.post` | | |
 
-- **Where each kind of test runs:** lint and unit tests in **CI** on every push (seconds); integration / end-to-end tests against a **deployed** env (staging); smoke / post-deploy checks right after each deploy. Example from the full note: a change passed every unit test, then the **post-deploy check failed in dev**, so it never reached staging or prod. That's why each environment has its own checks.
-- **DORA metrics** (the "Measurement" in CALMS): change lead time, deployment frequency, failed deployment recovery time and change fail rate (DORA now also lists deployment rework rate).
-- **Delivery vs deployment wording (Fowler):** delivery means you **can** deploy any version on demand ("push-button"); deployment means every change **does** go to production.
+- "Pipeline as code" means the pipeline is versioned in the **app's** repo, not "the pipeline is written in Python".
+
+### 🧪 Where each kind of test runs
+
+| Test | Runs |
+|---|---|
+| lint and unit tests | in **CI** on every push (seconds) |
+| integration / end-to-end tests | against a **deployed** env (staging) |
+| smoke / post-deploy checks | right after each deploy |
+
+- Example from the full note: a change passed every unit test, then the **post-deploy check failed in dev**, so it never reached staging or prod. That's why each environment has its own checks.
+
+### 📊 DORA metrics (the "Measurement" in CALMS)
+
+- Change lead time, deployment frequency, failed deployment recovery time and change fail rate (DORA now also lists deployment rework rate).
+
+### 🚦 Delivery vs deployment wording (Fowler)
+
+| 🧑‍💼 Delivery | 🤖 Deployment |
+|---|---|
+| you **can** deploy any version on demand ("push-button") | every change **does** go to production |
 
 </details>
 
-> **Recognise only, details in the full note:** GitLab `when: manual` inside `rules:` vs job level (`allow_failure`), GitLab deployment tiers, passing files between jobs (`upload-artifact`, `stash`, `archiveArtifacts`), declarative vs scripted Jenkinsfile, `workflow: rules:` trigger syntax, the deployment rework rate metric.
+> 📚 **Recognise only, details in the full note:** GitLab `when: manual` inside `rules:` vs job level (`allow_failure`), GitLab deployment tiers, passing files between jobs (`upload-artifact`, `stash`, `archiveArtifacts`), declarative vs scripted Jenkinsfile, `workflow: rules:` trigger syntax, the deployment rework rate metric.
 
-## Quick self-check
+## ✍️ Quick self-check
 <details><summary>Q1. A pipeline deploys every passing commit to prod with no human step. Delivery or deployment?</summary>Continuous deployment, because there is no approval gate.</details>
 <details><summary>Q2. Which file name tells you the pipeline is GitHub Actions?</summary><code>.github/workflows/*.yml</code>.</details>
 <details><summary>Q3. Config was applied but BGP neighbours are down. Which stage catches this?</summary>The post-change check, which then triggers a rollback to the previous intent.</details>
@@ -240,9 +296,9 @@ PIPELINE FAILED in stage lint: later stages did not run                    ← f
 <details><summary>Q6. <code>stages: [build, test, deploy]</code>; jobs <code>unit</code> and <code>lint</code> are both in <code>test</code>, and <code>prod</code> has no <code>when: manual</code>. What runs in parallel, and what if <code>unit</code> fails?</summary><code>unit</code> and <code>lint</code> run in parallel (same stage). If <code>unit</code> fails, the test stage fails and <code>prod</code> doesn't run. With no manual gate, passing commits go straight to prod: continuous deployment.</details>
 <details><summary>Q7. A release is bad. What is the fastest CI/CD rollback?</summary>Redeploy the previous artifact, which is already built and tested. Don't rebuild.</details>
 
-## Say it out loud
-- "CI ends at the artifact; CD moves the artifact."
-- "Look for the human: approval means delivery, no human means deployment."
-- "Build once, promote many."
-- "In NetDevOps, Git is the truth and the pipeline is the only door to prod."
-- "CALMS is Culture, Automation, Lean, Measurement, Sharing; the Three Ways are flow, feedback, learning."
+## 🗣️ Say it out loud
+- 🔁📦 "CI ends at the artifact; CD moves the artifact."
+- 🚦 "Look for the human: approval means delivery, no human means deployment."
+- 🏭 "Build once, promote many."
+- 🌐 "In NetDevOps, Git is the truth and the pipeline is the only door to prod."
+- 🤝 "CALMS is Culture, Automation, Lean, Measurement, Sharing; the Three Ways are flow, feedback, learning."

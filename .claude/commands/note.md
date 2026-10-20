@@ -166,6 +166,20 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
 - `## TL;DR (teach-back card)`: 3 key points + 1 trap, written last.
 - `## Sources`: the URLs actually used. If diagrams exist, add a line pointing at `assets/$ARGUMENTS/*.mmd`. `## To verify`: every `⚠ verify` item.
 - Cross-link related notes with relative links instead of repeating their content, e.g. `[T04.07](T04-git-version-control.md#t0407--commands-inspect)`.
+- **Essentials file (`bee-essentials/` or `bob-essentials/`, same filename as the note):** write it after the full note. It is the one-read study version. Reference examples: `bee-essentials/T26-deployment-models-edge-computing.md` (visual style) and `T09`/`T10` (structure).
+  - **Order:** title + `> Blueprint X.Y: <paraphrase from data/blueprint-map.csv, no quote marks> · Full note: … · Teach-back <date>` → overview image + caption → `## 🧭 The big idea` → `## 🟥 Must know` → `## ⚠️ Exam traps` → collapsed `<details><summary><b>🟨 Should know (second pass)</b></summary>` → one line `> 📚 **Recognise only, details in the full note:** …` → `## ✍️ Quick self-check` (7 Qs, `<details>`, HTML `<code>` inside `<summary>`) → `## 🗣️ Say it out loud` (3–5 lines).
+  - **Tiers:** 🟥 = what the blueprint item names + the traps a question would test. 🟨 = useful context, secondary mechanisms (still explained, not terse). ⬜ recognise-only = fine detail (error codes, rare flags, version trivia), named in one line only. Every 🟥 fact must also be in the full note.
+  - **Explain, don't compress.** Each 🟥 concept gets plain English, an analogy tied to it, a real example (command, code, header, payload) with every part annotated, and why it matters. Never cut analogies or explanation to save length; cut only ⬜ detail. The reader must understand on one read without guessing.
+  - **Visual style:**
+    - **Tables over bullet lists** wherever items share attributes: models, methods, types, benefits, commands. Put the analogy and the exam cue as columns, so one row = everything about one item. A compare-many table goes after the explanation, as the summary.
+    - **The big idea as a table**: one row per core question, with answer options and analogy.
+    - **One icon per concept, used consistently** in headings, table rows, the scenario table and "Say it out loud" (e.g. 🔗 always = hybrid). Icons on every `##`/`###` heading.
+    - **`> 💡` callout** for the one key idea at the top of a section; `> 🔐`/`> 🎯` for exam-sim gaps and exam cues.
+    - **Paired contrasts as side-by-side tables**: ❌ problem vs ✅ fix, X vs Y.
+    - **Exam traps as a "❌ Looks like… / ✅ Actually…" table.**
+    - **Rankings with 🥇🥈🥉, yes/no with ✅/❌.**
+    - Keep code blocks and real output as fenced blocks, not tables.
+  - Keep every `⚠ verify` from the note; never invent facts that are not in the full note.
 - **Syntax drill (syntax-heavy topics only: T02, T04, T05, T06, T11, T27, T31, T32, T34):** never a separate cheat-sheet file. Two files per topic only (full note + essentials).
   - Add a `## Syntax drill` section at the **end** of the essentials file (`bee-essentials/` or `bob-essentials/`), after "Cheat lines". Each part goes inside a collapsed `<details><summary><b>N. Area</b></summary>` block: valid vs invalid syntax, each command or call with its **real** output, and the errors you get when it's wrong.
   - Grow the essentials **Quick self-check** to 8–10 questions instead of adding a second self-test.
@@ -200,6 +214,7 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
 
 - Do NOT claim what the CBT video says; only reference it as a study aid.
 - Set front matter `status: drafted` (leave `confidence` for the owner).
+- Write or update the essentials file in the §3 style, and mention it in the summary.
 - Show a short summary:
   - concepts covered (x/y ticked)
   - number of Qs

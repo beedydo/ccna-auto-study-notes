@@ -6,19 +6,23 @@
 
 *Every T06 concept on one page. One row per criterion (IDs under the name), one column per format; green "best" marks the winner of each row, the red row is the exam traps.*
 
-## The big idea
-- This topic answers two questions:
-  - **How do XML, JSON and YAML differ?** (blueprint 1.1, compare)
-  - **How does Python turn each one into dicts and lists, and how do you pull a value out?** (blueprint 1.2, parse)
-- **Analogy: the same shopping list written three ways.** XML is a **formal form** (every field labelled at both ends), JSON is a **compact note** (`{}` and `[]`), YAML is an **indented bullet list**. Same data, different handwriting.
-- **Analogy for parsing: a translator.** The API sends text; the parser translates it into Python objects your script can work with. `json.loads` translates JSON, `yaml.safe_load` YAML, `xmltodict.parse` or `ET.fromstring` XML.
-- **What the exam asks:** spot the invalid snippet, match a format to its protocol (NETCONF = XML, REST = JSON, Ansible = YAML), pick the right parser call, and write the expression that extracts a value.
-- JSON and YAML are home turf, so those sections are traps only. XML gets a gentler walk-through because NETCONF depends on it.
+## 🧭 The big idea
+
+This topic answers **two questions**:
+
+| | Question | Answer options | Analogy |
+|---|---|---|---|
+| ⚖️ | **How do XML, JSON and YAML differ?** (blueprint 1.1, compare) | 🏷️ XML · 📦 JSON · 📝 YAML | **the same shopping list written three ways.** XML is a **formal form** (every field labelled at both ends), JSON is a **compact note** (`{}` and `[]`), YAML is an **indented bullet list**. Same data, different handwriting. |
+| 🔄 | **How does Python turn each one into dicts and lists, and how do you pull a value out?** (blueprint 1.2, parse) | `json.loads` translates JSON, `yaml.safe_load` YAML, `xmltodict.parse` or `ET.fromstring` XML | **a translator.** The API sends text; the parser translates it into Python objects your script can work with. |
+
+- 🎯 **What the exam asks:** spot the invalid snippet, match a format to its protocol (NETCONF = XML, REST = JSON, Ansible = YAML), pick the right parser call, and write the expression that extracts a value.
+- 🏠 JSON and YAML are home turf, so those sections are traps only. XML gets a gentler walk-through because NETCONF depends on it.
 
 ## 🟥 Must know
 
-### 1. XML basics: tags, one root, and "well-formed"
-- XML is a **tree of tags**. Every value sits between a start tag and an end tag, like `<name>GigabitEthernet1</name>`. Each tagged item is an **element**.
+### 1. 🏷️ XML basics: tags, one root, and "well-formed"
+
+> 💡 XML is a **tree of tags**. Every value sits between a start tag and an end tag, like `<name>GigabitEthernet1</name>`. Each tagged item is an **element**.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>        <!-- declaration: optional, must be line 1 if present -->
@@ -30,19 +34,30 @@
 </interfaces>
 ```
 
-- **Element vs attribute:** both carry data. An **attribute** is a small `name="value"` label in the start tag: metadata that can't nest or repeat. **Elements** can nest and repeat.
-- Comments look like `<!-- ... -->`.
-- **Well-formed** = a parser accepts it. Analogy: nesting boxes. Every box you open must be closed, inside the box that holds it. All of these must hold:
-  - Exactly **one root** element.
-  - Every tag is closed, either with `</x>` or as `<x/>`.
-  - Tags are properly **nested**: `<a><b></b></a>` is fine, `<a><b></a></b>` is not.
-  - Tags are **case-sensitive**: `<Name>…</name>` is an error.
-  - Attribute values are **quoted**, single or double.
-  - Special characters in text are **escaped**: `&lt;` for `<`, `&gt;` for `>`, `&amp;` for `&`, plus `&quot;` and `&apos;`. A raw `1 < 2` gives `not well-formed (invalid token)`.
+| | Element | Attribute |
+|---|---|---|
+| Carries data | ✅ | ✅ |
+| Looks like | `<tag>text</tag>` | a small `name="value"` label in the start tag |
+| Can nest or repeat | ✅ **yes** | ❌ no: metadata that can't nest or repeat |
 
-### 2. XML namespaces (why NETCONF looks so busy)
-- A **namespace** is a unique ID (a URI) attached to tag names, so that an `<interface>` from one data model doesn't clash with an `<interface>` from another.
-- **Analogy: a surname.** Two people called "interface" are told apart by their family (`ietf-interfaces` vs `Cisco-IOS-XE-native`).
+- 💬 Comments look like `<!-- ... -->`.
+
+**📦 Well-formed** = a parser accepts it. Analogy: **nesting boxes**. Every box you open must be closed, inside the box that holds it. All of these must hold:
+
+| | Rule | ✅ OK | ❌ Error |
+|---|---|---|---|
+| 🌳 | Exactly **one root** element | | |
+| 🔒 | Every tag is closed | `</x>` or `<x/>` | |
+| 🪆 | Tags are properly **nested** | `<a><b></b></a>` | `<a><b></a></b>` |
+| 🔠 | Tags are **case-sensitive** | | `<Name>…</name>` |
+| ❝ | Attribute values are **quoted** | single or double | |
+| 🧪 | Special characters in text are **escaped** | `&lt;` for `<`, `&gt;` for `>`, `&amp;` for `&`, plus `&quot;` and `&apos;` | a raw `1 < 2` gives `not well-formed (invalid token)` |
+
+### 2. 👪 XML namespaces (why NETCONF looks so busy)
+
+> 💡 A **namespace** is a unique ID (a URI) attached to tag names, so that an `<interface>` from one data model doesn't clash with an `<interface>` from another.
+
+- 👪 **Analogy: a surname.** Two people called "interface" are told apart by their family (`ietf-interfaces` vs `Cisco-IOS-XE-native`).
 
 ```xml
 <interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">   <!-- default namespace: this element and all children -->
@@ -53,33 +68,44 @@
 </interfaces>
 ```
 
-  - The URI is just a unique label; nothing is downloaded from it.
-- **Why it matters:** one NETCONF payload can mix the standard `ietf-interfaces` model with Cisco's `Cisco-IOS-XE-native` model, and the namespace tells the device which YANG model each part belongs to (T14/T15).
-  - NETCONF messages **always** carry namespaces, e.g. `<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">` plus a model namespace in the filter or config.
-  - In RESTCONF JSON the namespace becomes a **module prefix in the key**: `"ietf-interfaces:interfaces"` (RFC 7951).
+- The URI is just a unique label; nothing is downloaded from it.
+
+> 🎯 **Why it matters:** one NETCONF payload can mix the standard `ietf-interfaces` model with Cisco's `Cisco-IOS-XE-native` model, and the namespace tells the device which YANG model each part belongs to (T14/T15).
+
+| | Where | How the namespace appears |
+|---|---|---|
+| 🏷️ | NETCONF messages | **always** carry namespaces, e.g. `<rpc xmlns="urn:ietf:params:xml:ns:netconf:base:1.0">` plus a model namespace in the filter or config |
+| 📦 | RESTCONF JSON | the namespace becomes a **module prefix in the key**: `"ietf-interfaces:interfaces"` (RFC 7951) |
 
 ![XML anatomy, element vs attribute, namespaces as YANG model names, and XPath](../assets/T06/03-xml-anatomy-namespaces.png)
 
 *Top: every part of an XML document labelled, plus the well-formed rules with their real parser errors. Bottom: how an XML namespace becomes a RESTCONF JSON module prefix, and how XPath selects nodes (the NETCONF filter link).*
 
-### 3. JSON rules (home turf, traps only)
-- An **object** `{"k": v}` holds key/value pairs; an **array** `[...]` is an ordered list.
+### 3. 📦 JSON rules (home turf, traps only)
+
+> 💡 An **object** `{"k": v}` holds key/value pairs; an **array** `[...]` is an ordered list. Default format for REST APIs and RESTCONF.
 
 ```json
 {"vlan": 10, "active": true, "desc": null}
 ```
 
-  - Keys and strings use **double quotes**. `{'name': 'Gi1'}` is a Python dict literal, not JSON → `Expecting property name enclosed in double quotes`.
-  - Literals are **lowercase**: `true`, `false`, `null`. `True` → `Expecting value`.
-  - **No comments and no trailing comma.** `{"a": 1,}` → `Illegal trailing comma`.
-- Default format for REST APIs and RESTCONF.
+| Rule | ❌ Invalid | Error |
+|---|---|---|
+| Keys and strings use **double quotes** | `{'name': 'Gi1'}` is a Python dict literal, not JSON | `Expecting property name enclosed in double quotes` |
+| Literals are **lowercase**: `true`, `false`, `null` | `True` | `Expecting value` |
+| **No comments and no trailing comma** | `{"a": 1,}` | `Illegal trailing comma` |
 
-### 4. YAML rules (home turf, traps only)
-- Indentation must be **spaces**; a tab in indentation is a parse error. `key: value` needs the space after the colon; list items start with `- `.
-- `---` starts a document, `#` starts a comment.
-- `|` (**literal**) keeps newlines → `"line1\nline2\n"`. `>` (**folded**) turns them into spaces → `"line1 line2\n"`.
-- YAML 1.2 is a **superset of JSON**, so any valid JSON is valid YAML.
-- **PyYAML follows YAML 1.1** (verified on 6.0.3), so some unquoted values change type:
+### 4. 📝 YAML rules (home turf, traps only)
+
+| | Rule |
+|---|---|
+| ␣ | Indentation must be **spaces**; a tab in indentation is a parse error. `key: value` needs the space after the colon; list items start with `- ` |
+| 📄 | `---` starts a document, `#` starts a comment |
+| 📜 | `\|` (**literal**) keeps newlines → `"line1\nline2\n"`. `>` (**folded**) turns them into spaces → `"line1 line2\n"` |
+| ⊇ | YAML 1.2 is a **superset of JSON**, so any valid JSON is valid YAML |
+| 🧰 | Used by Ansible playbooks, Docker Compose, pyATS testbeds, GitHub Actions and GitLab CI, and Kubernetes |
+
+> ⚠️ **PyYAML follows YAML 1.1** (verified on 6.0.3), so some unquoted values change type:
 
 ```yaml
 enabled: yes        # → True   (also no / on / off become booleans)
@@ -87,11 +113,11 @@ code: 010           # → 8      (octal)
 mode: 'on'          # → 'on'   (quoting keeps it a string)
 ```
 
-  - ⚠ verify: other YAML 1.2 parsers such as ruamel.yaml behave differently.
-- Used by Ansible playbooks, Docker Compose, pyATS testbeds, GitHub Actions and GitLab CI, and Kubernetes.
+- ⚠ verify: other YAML 1.2 parsers such as ruamel.yaml behave differently.
 
-### 5. Comparing the three formats
-- Same data, three ways (from the Syntax drill):
+### 5. ⚖️ Comparing the three formats
+
+Same data, three ways (from the Syntax drill):
 
 ```
 JSON                     YAML                XML
@@ -104,21 +130,23 @@ JSON                     YAML                XML
                          mgmt: null          </device>
 ```
 
-  - JSON shows structure with `{}`/`[]`, YAML with indentation, XML with open/close tags and one root.
-  - A list is `[10, 20]` in JSON, `- 10` lines in YAML, and a **repeated tag** in XML.
-- **Quick matches:** "most human-readable and supports comments" = YAML · "required by NETCONF" = XML · "smallest and native to JavaScript" = JSON.
-- **NETCONF is XML only**; RESTCONF can use XML **or** JSON.
+- JSON shows structure with `{}`/`[]`, YAML with indentation, XML with open/close tags and one root.
+- A list is `[10, 20]` in JSON, `- 10` lines in YAML, and a **repeated tag** in XML.
 
-| | XML | JSON | YAML |
+| | 🏷️ XML | 📦 JSON | 📝 YAML |
 |---|---|---|---|
+| Analogy | a formal form | a compact note | an indented bullet list |
 | Structure shown by | opening and closing tags | `{}` and `[]` | indentation |
-| Verbosity | highest | medium | lowest |
-| Comments | `<!-- -->` | **none** | `#` |
-| Attributes / namespaces | yes / yes | no / module prefix in key | no / no |
+| Verbosity | 🥉 highest | 🥈 medium | 🥇 lowest |
+| Comments | `<!-- -->` | ❌ **none** | `#` |
+| Attributes / namespaces | ✅ yes / ✅ yes | ❌ no / module prefix in key | ❌ no / ❌ no |
 | Data types | everything is text (a schema adds types) | string, number, bool, null | JSON's types plus dates and more |
-| Whitespace matters | no | no | **yes** |
+| Whitespace matters | ❌ no | ❌ no | ✅ **yes** |
 | Typical use | NETCONF, SOAP (CUCM AXL), RESTCONF option | REST APIs, RESTCONF, webhooks | Ansible, Compose, CI, pyATS testbeds |
 | Python parser | `xmltodict`, `xml.etree.ElementTree`, `minidom` | `json` (standard library) | `yaml` (PyYAML, third-party) |
+| 🎯 Quick match | "required by NETCONF" | "smallest and native to JavaScript" | "most human-readable and supports comments" |
+
+> 🎯 **NETCONF is XML only**; RESTCONF can use XML **or** JSON.
 
 ![The same two interfaces in XML, JSON and YAML, colour-matched, plus what Python sees after parsing](../assets/T06/01-same-data-three-ways.png)
 
@@ -128,8 +156,12 @@ JSON                     YAML                XML
 
 *The bridge into Bob's platform topics (T15–T25, T42). Columns: the format, the header/suffix that picks it, the first line of Python after `requests`, and the trap. Paths come from the labs in `bob/`.*
 
-### 6. Parsing JSON in Python
-- **Deserialise** (parse, decode) = text → Python object. **Serialise** (encode) = Python object → text. In an API call you serialise the request body and deserialise the response body.
+### 6. 🔄 Parsing JSON in Python
+
+| ⬇️ **Deserialise** (parse, decode) | ⬆️ **Serialise** (encode) |
+|---|---|
+| text → Python object | Python object → text |
+| in an API call: the response body | in an API call: the request body |
 
 ```python
 import json                                   # standard library, no install
@@ -139,9 +171,11 @@ with open("devices.json") as f:
     data = json.load(f)                       # no s = FILE object in
 ```
 
-  - **The `s` means string.** `json.load(text)` with a string fails: `'str' object has no attribute 'read'`.
-  - With `requests`, `response.json()` is the same as `json.loads(response.text)`.
-- **The type map** (what `loads` gives you, and `dumps` reverses):
+> 💡 **The `s` means string.** `json.load(text)` with a string fails: `'str' object has no attribute 'read'`.
+
+- 🌐 With `requests`, `response.json()` is the same as `json.loads(response.text)`.
+
+**🗺️ The type map** (what `loads` gives you, and `dumps` reverses):
 
 | JSON | Python after `loads` | Back to JSON with `dumps` |
 |---|---|---|
@@ -156,8 +190,9 @@ with open("devices.json") as f:
 
 *Read left to right: wire text → the function that parses it → the Python object you get. Bottom left: the type map across all three parsers. Bottom right: the five steps of one API call and which `requests` argument sets `Content-Type`.*
 
-### 7. Parsing YAML in Python: always `safe_load`
-- `pip install pyyaml`, then `import yaml` (the install name differs from the import name).
+### 7. 🛡️ Parsing YAML in Python: always `safe_load`
+
+> 💡 `pip install pyyaml`, then `import yaml` (the install name differs from the import name).
 
 ```python
 import yaml
@@ -165,12 +200,18 @@ with open("inventory.yml") as f:
     inventory = yaml.safe_load(f)             # builds only standard types: dict, list, str, int…
 ```
 
-- **Why `safe_load`:** `yaml.load` with `Loader=yaml.Loader` or `UnsafeLoader` can build **arbitrary Python objects**, which means **code execution** on untrusted input. `safe_load` rejects tags like `!!python/object/apply:os.system`.
-- In PyYAML 6 and later, `yaml.load(text)` with no Loader raises `TypeError: load() missing 1 required positional argument: 'Loader'`.
-- Exam cue: "securely parse YAML from an untrusted source" → **`yaml.safe_load`**.
+| | ✅ `yaml.safe_load` | ❌ `yaml.load` with `Loader=yaml.Loader` or `UnsafeLoader` |
+|---|---|---|
+| Builds | only standard types | **arbitrary Python objects**, which means **code execution** on untrusted input |
+| Tags like `!!python/object/apply:os.system` | rejected | |
 
-### 8. Parsing XML in Python: xmltodict and ElementTree
-- **xmltodict** (`pip install xmltodict`) turns XML into a **nested dict**, so you can treat it like JSON.
+- 🚫 In PyYAML 6 and later, `yaml.load(text)` with no Loader raises `TypeError: load() missing 1 required positional argument: 'Loader'`.
+
+> 🎯 Exam cue: "securely parse YAML from an untrusted source" → **`yaml.safe_load`**.
+
+### 8. 🌳 Parsing XML in Python: xmltodict and ElementTree
+
+**📖 xmltodict** (`pip install xmltodict`) turns XML into a **nested dict**, so you can treat it like JSON.
 
 ```python
 import xmltodict
@@ -180,10 +221,13 @@ d["vlan"]["@id"]        # '10'   attribute → key starting with @
 d["vlan"]["#text"]      # 'USERS' text of an element that also has attributes → #text
 ```
 
-  - Every value is a **string**: `<enabled>true</enabled>` gives `'true'`, not `True`.
-  - **One-vs-many trap:** a **repeated** element becomes a **list**, but a **single** element becomes a **dict**. A loop over `["interface"]` breaks when the device returns just one interface. Fix: `xmltodict.parse(x, force_list=("interface",))`.
-  - Returns a plain `dict` in current versions; older versions returned `OrderedDict`, and access works the same. ⚠ verify: exam answers may still say OrderedDict.
-- **ElementTree** is in the standard library and gives you a tree of **Element** objects:
+| | xmltodict gotcha | Detail |
+|---|---|---|
+| 🔤 | Every value is a **string** | `<enabled>true</enabled>` gives `'true'`, not `True` |
+| 1️⃣ | **One-vs-many trap** | a **repeated** element becomes a **list**, but a **single** element becomes a **dict**. A loop over `["interface"]` breaks when the device returns just one interface. Fix: `xmltodict.parse(x, force_list=("interface",))` |
+| 📚 | Return type | a plain `dict` in current versions; older versions returned `OrderedDict`, and access works the same. ⚠ verify: exam answers may still say OrderedDict |
+
+**🌳 ElementTree** is in the standard library and gives you a tree of **Element** objects:
 
 ```python
 import xml.etree.ElementTree as ET
@@ -195,41 +239,58 @@ root.findall("interface")                     # list of matches (possibly empty)
 root.tag, root.text, root.attrib              # name, text (str or None), dict of attributes
 ```
 
-- **Namespace trap:** with a namespace, the tag is stored as `{urn:…}interface`, so `root.find("interface")` returns **None** even though interfaces exist. Pass a map:
+> ⚠️ **Namespace trap:** with a namespace, the tag is stored as `{urn:…}interface`, so `root.find("interface")` returns **None** even though interfaces exist. Pass a map:
 
 ```python
 ns = {"if": "urn:ietf:params:xml:ns:yang:ietf-interfaces"}
 root.findall("if:interface", ns)              # now matches
 ```
 
+| | 📖 xmltodict | 🌳 ElementTree |
+|---|---|---|
+| Install | `pip install xmltodict` | standard library |
+| Gives you | a **nested dict** (`@` attributes, `#text`) | a tree of **Element** objects (`{uri}tag`, `.attrib`, `.text`) |
+| The bug that passes in the lab | one element → **dict**, not list (fix: `force_list`) | namespace → `find` returns **None** (fix: namespace map) |
+
 ![xmltodict vs ElementTree on the same XML, the one-vs-many list bug and the namespace bug](../assets/T06/05-xmltodict-vs-elementtree.png)
 
 *Same input, two objects: a nested dict (`@` attributes, `#text`) vs an Element tree (`{uri}tag`, `.attrib`, `.text`). Middle row: the two bugs that pass in the lab and fail on a device, with the fix. Bottom: the same task in both libraries.*
 
-### 9. Navigating parsed data
-- **Analogy: an address.** A `{` level is a street name (use a **key**), a `[` level is a house number (use an **index**). Read the path left to right, one level per bracket.
+### 9. 🗺️ Navigating parsed data
+
+> 💡 **Analogy: an address.** A `{` level is a street name (use a **key**), a `[` level is a house number (use an **index**). Read the path left to right, one level per bracket.
 
 ```python
 data["ietf-interfaces:interfaces"]["interface"][0]["name"]    # -> "GigabitEthernet1"
 #    └─ dict: key (with module prefix)  └─ dict: key  └─ list: index  └─ dict: key
 ```
 
-- Loop over the list level: `for intf in data["ietf-interfaces:interfaces"]["interface"]: print(intf["name"])`.
-- `intf.get("speed", "unknown")` returns a default instead of raising `KeyError`.
-- If you're unsure what a level is, check `type(x)` or print it with `json.dumps(x, indent=2)`.
-- **The three errors:** `KeyError` = wrong key or missing module prefix · `TypeError: list indices must be integers or slices, not str` = you forgot the `[0]` · `IndexError` = the list was empty.
+- 🔁 Loop over the list level: `for intf in data["ietf-interfaces:interfaces"]["interface"]: print(intf["name"])`.
+- 🛟 `intf.get("speed", "unknown")` returns a default instead of raising `KeyError`.
+- 🔍 If you're unsure what a level is, check `type(x)` or print it with `json.dumps(x, indent=2)`.
+
+**💥 The three errors:**
+
+| Error | Cause |
+|---|---|
+| `KeyError` | wrong key or missing module prefix |
+| `TypeError: list indices must be integers or slices, not str` | you forgot the `[0]` |
+| `IndexError` | the list was empty |
 
 ![Animated: walking data["ietf-interfaces:interfaces"]["interface"][0]["name"] one bracket at a time, then the missing-[0] TypeError, then the loop](../assets/T06/10-navigate-path.gif)
 
 *Steps: dict → key with module prefix → list → index `[0]` → key → leaf; then the classic `TypeError` from skipping `[0]`, then the `for` loop over the list level. Fixes the misconception that you can key straight into a list.*
 
-## Exam traps
-- **`{'name': 'Gi1'}` is not JSON:** JSON needs double quotes, lowercase `true`/`null`, no trailing comma, no comments.
-- **`json.load` vs `json.loads`:** no `s` = file object; passing a string fails.
-- **Untrusted YAML → `yaml.safe_load`;** and PyYAML turns unquoted `yes` into `True` and `010` into 8.
-- **xmltodict:** values are always strings, and one element comes back as a **dict**, not a list (`force_list`).
-- **ElementTree + namespace:** `root.find("interface")` → `None` without a namespace map.
-- **NETCONF = XML only;** RESTCONF = XML or JSON; Ansible = YAML.
+## ⚠️ Exam traps
+
+| ❌ Looks like… | ✅ Actually… |
+|---|---|
+| `{'name': 'Gi1'}` is JSON | 📦 **`{'name': 'Gi1'}` is not JSON:** JSON needs double quotes, lowercase `true`/`null`, no trailing comma, no comments. |
+| `json.load` and `json.loads` are interchangeable | 🔄 **`json.load` vs `json.loads`:** no `s` = file object; passing a string fails. |
+| any YAML loader is fine, and `yes` / `010` stay as written | 🛡️ **Untrusted YAML → `yaml.safe_load`;** and PyYAML turns unquoted `yes` into `True` and `010` into 8. |
+| xmltodict gives typed values and always a list | 📖 **xmltodict:** values are always strings, and one element comes back as a **dict**, not a list (`force_list`). |
+| `root.find("interface")` finds namespaced elements | 🌳 **ElementTree + namespace:** `root.find("interface")` → `None` without a namespace map. |
+| NETCONF can use JSON | 🏷️ **NETCONF = XML only;** RESTCONF = XML or JSON; Ansible = YAML. |
 
 ![Spot the invalid snippet: what breaks the XML, JSON and YAML parsers, with the real error messages](../assets/T06/06-spot-the-invalid.png)
 
@@ -237,35 +298,63 @@ data["ietf-interfaces:interfaces"]["interface"][0]["name"]    # -> "GigabitEther
 
 <details><summary><b>🟨 Should know (second pass)</b></summary>
 
-- **XPath** is a path language for picking parts of an XML tree, much like a file path:
-  - `/interfaces/interface[name="Gi1"]/description` selects the description of interface Gi1.
-  - `/` starts from the root, `//` means "anywhere below", `[...]` is a filter (a **predicate**), `@type` selects an attribute.
-  - NETCONF uses it in `<filter type="xpath" select="...">`, and ElementTree supports a limited subset.
-- **More JSON detail:**
-  - No date or binary type, so those are sent as strings. Duplicate keys are legal but undefined, and Python keeps the **last** one.
-  - Media types: plain REST uses `application/json`; RESTCONF uses `application/yang-data+json` or `application/yang-data+xml`.
-  - `json.dumps(obj, indent=2, sort_keys=True)` pretty-prints with sorted keys. Bad input raises `json.JSONDecodeError`, a subclass of `ValueError`.
-  - The round trip isn't perfect: a tuple comes back as a list, and integer dict keys like `{1: "a"}` come back as the string `"1"`.
-  - `requests.post(url, json=payload)` serialises **and** sets `Content-Type: application/json`; `data=json.dumps(payload)` serialises but leaves the header to you.
-- **More YAML detail:**
-  - `...` ends a document; a file can hold several, read with `yaml.safe_load_all(text)`.
-  - More PyYAML 1.1 surprises: `1.10` becomes `1.1`, `~` becomes None, `2026-10-08` becomes a date.
-  - `yaml.safe_dump(obj)` writes YAML and sorts keys by default; add `sort_keys=False` to keep order.
-- **More XML-in-Python detail:**
-  - A namespace declaration becomes an `@xmlns` key in xmltodict.
-  - `xmltodict.unparse(d, pretty=True)` goes back to XML; the dict must have exactly one root key.
-  - ElementTree: `root.iter("tag")` walks every matching descendant at any depth; `root.findtext("tag")` returns the text of the first match; `.get("id")` reads one attribute.
-  - `xml.dom.minidom` is an older DOM API, mostly used as `minidom.parseString(x).toprettyxml()` to pretty-print NETCONF replies.
-- **Untrusted XML** (exam-sim gap from practice test review):
-  - XML allows **external entities** (XXE), where the file asks the parser to read something like `/etc/passwd` or a URL, and **entity expansion bombs** ("billion laughs"), where a tiny file expands to gigabytes.
-  - Python's answer is **`defusedxml`**, a drop-in replacement that refuses those features: `from defusedxml.ElementTree import fromstring`. Recent Python docs say modern Expat blocks some of these, but `defusedxml` is still the exam answer. ⚠ verify
-  - Exam cue: "safely parse XML from an untrusted source" → **defusedxml**, just as untrusted YAML → `yaml.safe_load`.
+### 🧭 XPath
+
+> 💡 **XPath** is a path language for picking parts of an XML tree, much like a file path: `/interfaces/interface[name="Gi1"]/description` selects the description of interface Gi1.
+
+| Symbol | Means |
+|---|---|
+| `/` | starts from the root |
+| `//` | "anywhere below" |
+| `[...]` | a filter (a **predicate**) |
+| `@type` | selects an attribute |
+
+- 🏷️ NETCONF uses it in `<filter type="xpath" select="...">`, and ElementTree supports a limited subset.
+
+### 📦 More JSON detail
+
+| | Detail |
+|---|---|
+| 📅 | No date or binary type, so those are sent as strings. Duplicate keys are legal but undefined, and Python keeps the **last** one |
+| 🏷️ | Media types: plain REST uses `application/json`; RESTCONF uses `application/yang-data+json` or `application/yang-data+xml` |
+| ✨ | `json.dumps(obj, indent=2, sort_keys=True)` pretty-prints with sorted keys. Bad input raises `json.JSONDecodeError`, a subclass of `ValueError` |
+| 🔁 | The round trip isn't perfect: a tuple comes back as a list, and integer dict keys like `{1: "a"}` come back as the string `"1"` |
+
+| `requests.post(url, json=payload)` | `data=json.dumps(payload)` |
+|---|---|
+| serialises **and** sets `Content-Type: application/json` | serialises but leaves the header to you |
+
+### 📝 More YAML detail
+
+| | Detail |
+|---|---|
+| 📄 | `...` ends a document; a file can hold several, read with `yaml.safe_load_all(text)` |
+| 😮 | More PyYAML 1.1 surprises: `1.10` becomes `1.1`, `~` becomes None, `2026-10-08` becomes a date |
+| ✍️ | `yaml.safe_dump(obj)` writes YAML and sorts keys by default; add `sort_keys=False` to keep order |
+
+### 🌳 More XML-in-Python detail
+
+| | Library | Detail |
+|---|---|---|
+| 📖 | xmltodict | a namespace declaration becomes an `@xmlns` key |
+| 📖 | xmltodict | `xmltodict.unparse(d, pretty=True)` goes back to XML; the dict must have exactly one root key |
+| 🌳 | ElementTree | `root.iter("tag")` walks every matching descendant at any depth; `root.findtext("tag")` returns the text of the first match; `.get("id")` reads one attribute |
+| 🧓 | `xml.dom.minidom` | an older DOM API, mostly used as `minidom.parseString(x).toprettyxml()` to pretty-print NETCONF replies |
+
+### 🛡️ Untrusted XML
+
+> 🔐 **Exam-sim gap from practice test review.**
+>
+> - XML allows **external entities** (XXE), where the file asks the parser to read something like `/etc/passwd` or a URL, and **entity expansion bombs** ("billion laughs"), where a tiny file expands to gigabytes.
+> - Python's answer is **`defusedxml`**, a drop-in replacement that refuses those features: `from defusedxml.ElementTree import fromstring`. Recent Python docs say modern Expat blocks some of these, but `defusedxml` is still the exam answer. ⚠ verify
+>
+> 🎯 Exam cue: "safely parse XML from an untrusted source" → **defusedxml**, just as untrusted YAML → `yaml.safe_load`.
 
 </details>
 
-> **Recognise only, details in the full note:** exact parser error texts and positions, YAML anchors and merge keys, `UnsafeLoader` vs `Loader` naming, `minidom` navigation (`getElementsByTagName`, `.firstChild.nodeValue`), the `{uri}tag` form in `findall` paths, xmltodict `OrderedDict` history, marshal/unmarshal synonyms.
+> 📚 **Recognise only, details in the full note:** exact parser error texts and positions, YAML anchors and merge keys, `UnsafeLoader` vs `Loader` naming, `minidom` navigation (`getElementsByTagName`, `.firstChild.nodeValue`), the `{uri}tag` form in `findall` paths, xmltodict `OrderedDict` history, marshal/unmarshal synonyms.
 
-## Quick self-check
+## ✍️ Quick self-check
 <details><summary>Q1. Is <code>{"vlan": 10, "active": true, "desc": null}</code> valid JSON?</summary>Yes: double quotes, lowercase literals, no trailing comma and no comments.</details>
 <details><summary>Q2. Which expression returns the second device's IP from <code>{"response": [{...}, {"hostname": "leaf2", "ip": "10.1.1.2"}]}</code>?</summary><code>data["response"][1]["ip"]</code>. <code>response</code> is a list, so it needs an index before the key.</details>
 <details><summary>Q3. After <code>xmltodict.parse('&lt;vlan id="10"&gt;&lt;name&gt;USERS&lt;/name&gt;&lt;/vlan&gt;')</code>, how do you get "10"?</summary><code>d["vlan"]["@id"]</code>. xmltodict prefixes attributes with <code>@</code>.</details>
@@ -277,12 +366,12 @@ data["ietf-interfaces:interfaces"]["interface"][0]["name"]    # -> "GigabitEther
 <details><summary>Q9. <code>data = {"items": [{"id": 7}]}</code>: what does <code>data["items"]["id"]</code> raise?</summary><code>TypeError: list indices must be integers or slices, not str</code>. You need <code>data["items"][0]["id"]</code>.</details>
 <details><summary>Q10. A NETCONF reply has <code>xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces"</code>. Why does <code>root.find("interface")</code> return None?</summary>The real tag is <code>{urn:…ietf-interfaces}interface</code>. Pass a map: <code>root.find("if:interface", {"if": "urn:ietf:params:xml:ns:yang:ietf-interfaces"})</code>.</details>
 
-## Say it out loud
-- "NETCONF speaks XML, REST speaks JSON, Ansible speaks YAML."
-- "The s in loads means string; no s means file."
-- "Safe load for YAML, defusedxml for XML: never trust strangers' data."
-- "xmltodict: at-sign for attributes, hash-text for text, one item is a dict, many is a list."
-- "Curly brace means key, square bracket means index."
+## 🗣️ Say it out loud
+- 🏷️📦📝 "NETCONF speaks XML, REST speaks JSON, Ansible speaks YAML."
+- 🔄 "The s in loads means string; no s means file."
+- 🛡️ "Safe load for YAML, defusedxml for XML: never trust strangers' data."
+- 📖 "xmltodict: at-sign for attributes, hash-text for text, one item is a dict, many is a list."
+- 🗺️ "Curly brace means key, square bracket means index."
 
 ## Syntax drill
 
