@@ -22,6 +22,10 @@ This is home turf. The job is not to learn Docker but to answer Docker questions
 
 ### 1. 🖼️ Image, container, registry, engine: the exam wording
 
+![Dockerfile → build → Docker image → run → Docker container](../assets/T27/12-dockerfile-image-container.png)
+
+*The whole pipeline in one line: a 📜 **Dockerfile** (the recipe) is turned by `docker build` into a 🖼️ **image** (the read-only template), and `docker run` starts a 📦 **container** (a running instance of that image). Build once, run many times.*
+
 | | Term | What it is | Exam point |
 |---|---|---|---|
 | 🖼️ | **Image** | a **read-only** stack of filesystem layers plus config (env, user, entrypoint, cmd, exposed ports) | built once, run many times |
