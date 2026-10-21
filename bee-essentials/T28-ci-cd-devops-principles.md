@@ -67,7 +67,82 @@ deploy-prod:
                                      # delete this line = continuous DEPLOYMENT
 ```
 
-### 3. 🏭 Pipeline components and their order
+### 3. 📦 What is an artifact?
+
+> 💡 **An artifact is the finished, packaged output of a build**: the file (or image) that actually gets deployed. Your **source code** is the recipe; the **artifact** is the cooked dish, boxed and labelled, ready to ship.
+
+**Code vs artifact:**
+
+| | 📚 Source code | 📦 Artifact |
+|---|---|---|
+| What it is | the files you write and edit | the **output** the build stage produces from them |
+| Who makes it | a developer, by hand | the **pipeline**, automatically |
+| Where it lives | **Git** (source repo) | an **artifact repository**: a registry (Docker Hub, ECR, Harbor) or Nexus / Artifactory |
+| Changes? | every commit | **never**: once built, it's frozen. A new commit makes a **new** artifact. |
+| Gets deployed? | ❌ no, not directly | ✅ **yes**: this is what dev, staging and prod receive |
+
+**What an artifact looks like in practice:**
+
+| Kind of project | Its artifact |
+|---|---|
+| 🐳 containerised app | a **container image**, e.g. pushed to ECR or Harbor (T27) |
+| 🐍 Python tool (this note's lab) | a zipped Python app, `dist/netinv.pyz` |
+| ☕ Java service | a `.jar` / `.war` file (`mvn package`) |
+
+**🏭 Analogy, in pipeline order:**
+
+1. 📚 **Source** = the recipe in the cookbook (Git).
+2. 🔨 **Build** = cooking the dish **once** in the central kitchen.
+3. 🧪 **Test** = the taste test. If it fails, nothing gets boxed.
+4. 📦 **Artifact** = the dish, sealed in a labelled box (name + version) and put in the cold store (artifact repo).
+5. 🚀 **Deploy** = delivering **that same sealed box** to the dev, staging and prod restaurants. Nobody re-cooks it on arrival.
+
+**🔍 In the lab, step by step** (`labs/T28/.gitlab-ci.yml`, trimmed to the artifact lines):
+
+```yaml
+package:
+  stage: build
+  script:
+    - mkdir -p dist
+    - python3 -m zipapp src --main "build_inventory:main" --output dist/netinv.pyz   # ← BUILD: turn src/ into ONE file
+  artifacts:                        # ← tell GitLab: save this file and hand it to later jobs
+    paths:
+      - dist/netinv.pyz             # ← the artifact itself
+    expire_in: 1 week               # ← GitLab deletes the saved copy after a week
+```
+
+```yaml
+deploy-dev:
+  script:
+    - python3 ci/deploy.py --env dev --artifact dist/netinv.pyz --out .       # ← deploy the SAME file
+deploy-staging:
+  script:
+    - python3 ci/deploy.py --env staging --artifact dist/netinv.pyz --out .   # ← same file again
+```
+
+Real output from the local run of the same pipeline (`labs/T28/pipeline.sh`):
+
+```
+=== stage 3: build + package the artifact (once) ===
+  artifact: dist/netinv.pyz (7041 bytes, built once, reused below)
+  deployed dist/netinv.pyz -> envs/dev/netinv.pyz
+  deployed dist/netinv.pyz -> envs/staging/netinv.pyz
+```
+
+- Built **once** in stage 3, then **copied unchanged** into each environment.
+- If the unit tests fail, the `package` job never runs, so **there is no artifact** and nothing can be deployed.
+
+**🏆 Why the exam cares: three rules all hang on the artifact:**
+
+| | Rule | Why |
+|---|---|---|
+| 🔁 | **CI ends with a tested artifact; CD moves it.** | the artifact is the hand-over point between CI and CD |
+| 🎯 | **Build once, promote the same artifact.** | the bytes tested in dev and staging are exactly the bytes in prod. Rebuilding for prod could pull different dependencies or code = **untested bytes in prod**. |
+| ⏪ | **Rollback = redeploy the previous artifact.** | it's already built and tested, so rollback takes minutes, with no rebuild |
+
+> 🎯 **Exam cue:** "Where are build outputs stored?" → **artifact repository** (registry, Nexus, Artifactory), **not** Git. Git holds the code and the pipeline file.
+
+### 4. 🏭 Pipeline components and their order
 
 **The parts, in the order a commit meets them:**
 
@@ -140,7 +215,7 @@ package:
 
 *Push → lint → test → package once → dev → staging → prod waits for approval; the next commit fails a test and every later stage is skipped.*
 
-### 4. 🏆 Benefits: match the scenario wording
+### 5. 🏆 Benefits: match the scenario wording
 
 > 💡 Each benefit follows from a mechanism above.
 
@@ -152,7 +227,7 @@ package:
 | ⏪ | every artifact kept | **quick rollback** by redeploying the **previous artifact** (already built and tested) | "the bad release was undone in 2 minutes" |
 | 👀 | pipeline status per commit | **visibility and feedback** | "everyone sees which commit broke it" |
 
-### 5. 🌐 CI/CD for the network (NetDevOps, blueprint 5.4)
+### 6. 🌐 CI/CD for the network (NetDevOps, blueprint 5.4)
 
 | ❌ The old way | ✅ NetDevOps |
 |---|---|
@@ -196,7 +271,7 @@ PIPELINE FAILED in stage lint: later stages did not run                    ← f
 
 *Same shape as an app pipeline, but the "code" is network intent and "deploy" changes devices; red is the rollback path when post-change checks fail.*
 
-### 6. 🤝 DevOps principles: CALMS, the Three Ways and the practices (blueprint 4.12)
+### 7. 🤝 DevOps principles: CALMS, the Three Ways and the practices (blueprint 4.12)
 
 > 💡 **DevOps** = a culture plus a set of practices that joins **development** (which wants change) and **operations** (which wants stability) into one team with shared goals, so change is fast **and** safe. It is not a job title or a tool: "buy Jenkins" ≠ DevOps.
 

@@ -321,6 +321,11 @@ PIPELINE PASSED: released to prod (mode=deployment)
 | **Notify + monitor** | tell the committer (chat, email, MR ✅/❌); watch prod (metrics, logs, alerts) | `PIPELINE FAILED in stage …` line | Webex/Slack bot, Prometheus, Grafana |
 
 - **Order on the exam:** source → build → test → (store artifact) → deploy dev → staging → (approval) → prod → monitor. Many CBT-style diagrams merge lint into test and "package" into build. Either way, **tests come before any deploy** and the **artifact is created before the deploy stages**.
+- **What an artifact is:** the **packaged output of a build**, the thing that actually gets deployed. Source code is the recipe (in Git); the artifact is the finished product (in an artifact repo).
+  - Made by the **pipeline**, not by hand, and **immutable**: a new commit produces a **new** artifact, it never edits an old one.
+  - Examples: a **container image** pushed to a registry ([T27](T27-docker.md)), a `.jar` from `mvn package`, or this lab's `dist/netinv.pyz` from `python3 -m zipapp`.
+  - In `.gitlab-ci.yml`, `artifacts: paths: [dist/netinv.pyz]` (plus `expire_in: 1 week`) tells GitLab to save that file from `package` and hand it to the deploy jobs. No passing tests → `package` never runs → **no artifact**, nothing to deploy.
+  - It is the **hand-over point** between CI and CD: CI ends with a tested artifact; CD promotes it. Keeping old artifacts is what makes **rollback = redeploy the previous artifact** fast.
 - **Build once, promote many:** `deploy.py` line 16 copies the **same** `netinv.pyz` to every env. Rebuilding per env means prod runs bytes nobody tested.
 - **Where each test runs:** lint + unit tests in **CI** (every push, seconds). Integration / end-to-end tests against a **deployed** env (staging). Smoke / post-deploy checks right after each deploy.
 - **Environments:** GitLab's deployment tiers are `production`, `staging`, `testing`, `development`, `other`. Promote left to right; only staging should look like prod.
