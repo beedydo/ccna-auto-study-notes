@@ -175,6 +175,7 @@ pw   = os.environ["DNAC_PASS"]
 | Catalyst Center takes `Authorization: Bearer` | **Catalyst Center uses `X-Auth-Token`, not Bearer.** A valid token in the wrong header still gets 401. |
 | FMC returns the token in the body | **FMC's token comes back in the response headers**, not the body. |
 | An API key is just another token | **Key vs token:** a key has **no login call** and lasts months; a token comes from a login call and expires. |
+| A JWT (`Bearer eyJ…`) is a fourth auth method | It's a token **format**: still **token auth**. Its payload is only base64url-encoded, so anyone can read it; the signature just stops tampering. |
 
 <details><summary><b>🟨 Should know (second pass)</b></summary>
 
@@ -199,6 +200,36 @@ pw   = os.environ["DNAC_PASS"]
 4. The app swaps the code for an **access token**.
 5. The app calls the API with `Authorization: Bearer <access_token>`.
 
+### 🧾 JWT: what a token can look like (awareness)
+
+> 💡 **JWT (JSON Web Token) is a token *format*, not a fourth auth method.** It travels like any token, `Authorization: Bearer <jwt>`, so on the exam it is still **token auth**. Blueprint 2.7 doesn't name it; you'll meet it in Bob's T25 (CML) and T22 (newer SD-WAN Manager login).
+
+**Spot it:** three base64url parts joined by dots, and the first two usually start with **`eyJ`** (base64 of `{"`):
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9 . eyJzdWIiOiJhZG1pbiIsImlzcyI6ImNtbCIs… . Ieaie3-UuAUCFiojqkfPPEMRUM8C6Y8_-eXcTvgQfEI
+└──────────── header ──────────────┘   └───────────── payload ─────────────┘   └──────────── signature ────────────┘
+{"alg":"HS256","typ":"JWT"}            {"sub":"admin","iss":"cml","exp":…}      HMAC-SHA256(header.payload, server secret)
+```
+
+| | Part | Holds | Can anyone read it? |
+|---|---|---|---|
+| 🏷️ | **Header** | `alg` (signing algorithm, e.g. `HS256`, `RS256`) and `typ` | ✅ yes: base64url only |
+| 📋 | **Payload** | **claims**, facts about the caller: `sub` who, `iss` issuer, `aud` audience, `exp` expiry, `iat` issued at | ✅ **yes**: base64url only, **not encrypted** |
+| ✍️ | **Signature** | proves header + payload weren't changed | needs the key to create or check |
+
+> 🪪 **Analogy: a signed, laminated visitor badge.** Anyone can read the name and expiry printed on it, but only reception's stamp makes it valid. Change the name and the stamp no longer matches.
+
+| ✅ Why APIs use it | ⚠️ The catch |
+|---|---|
+| **Self-contained:** the server checks the signature and reads `exp`/`sub` straight from the token, with no session lookup | **Readable by anyone:** never put secrets in a JWT, and send it over HTTPS (same lesson as Basic's base64) |
+| Tampering fails: change `sub` to `root` and the signature check fails | `"alg": "none"` = an **unsecured** JWT with no signature; a server must reject it |
+
+| 🧩 Cisco | Login | Then send |
+|---|---|---|
+| Cisco Modeling Labs (CML) | `POST /api/v0/authenticate` with `{"username", "password"}` | `Authorization: Bearer <jwt>` |
+| SD-WAN Manager 20.18.1+ | `POST /jwt/login` ⚠ verify | the JWT (see T22) |
+
 ### 💬 Webex identities
 
 | Identity | Credential |
@@ -211,7 +242,7 @@ pw   = os.environ["DNAC_PASS"]
 
 </details>
 
-> 📚 **Recognise only, details in the full note:** OAuth roles, `state`, scopes and refresh tokens, the `WWW-Authenticate` header, token lifetimes (⚠ verify), `HTTPBasicAuth()` (same as `auth=(u, p)`), `os.environ["X"]` vs `.get("X")`.
+> 📚 **Recognise only, details in the full note:** OAuth roles, `state`, scopes and refresh tokens, the `WWW-Authenticate` header, token lifetimes (⚠ verify), `HTTPBasicAuth()` (same as `auth=(u, p)`), `os.environ["X"]` vs `.get("X")`, JWT claim list (`nbf`, `jti`) and JWE (encrypted JWT).
 
 ## ✍️ Quick self-check
 <details><summary>Q1. <code>requests.get(url, auth=("developer", pw))</code>: which method?</summary>HTTP Basic. <code>requests</code> builds <code>Authorization: Basic &lt;base64&gt;</code> for you.</details>
@@ -221,6 +252,7 @@ pw   = os.environ["DNAC_PASS"]
 <details><summary>Q5. A string generated once in the Meraki dashboard, sent on every call with no login: which method?</summary>API key.</details>
 <details><summary>Q6. A script POSTs to <code>/auth/token</code> with Basic, then sends <code>X-Auth-Token</code> on later calls. Which method?</summary>Custom token. Basic is used only once, to log in.</details>
 <details><summary>Q7. Why prefer a header over <code>?api_key=</code> in the URL?</summary>The URL, including the key, is copied into server and proxy logs and browser history.</details>
+<details><summary>Q8. A token starts <code>eyJhbGci…</code> and has two dots. What is it, and is its content secret?</summary>A JWT. Its header and payload are only base64url-encoded, so anyone can read them. The signature only proves nobody changed them.</details>
 
 ## 🗣️ Say it out loud
 - 🪪🎫🔑 "Basic shows the password every time; a token logs in once; a key never logs in."

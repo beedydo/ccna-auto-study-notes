@@ -395,6 +395,41 @@ ACCESS "GET /key/devices?api_key=6bec40cf957de430a6f1f2baa056b99a4fac9ea0 HTTP/1
   - FMC: `POST /api/fmc_platform/v1/auth/refreshtoken` with both tokens in headers. The `fmcapi` SDK assumes a 30-min lifetime and 3 refreshes before a full re-login (⚠ verify).
   - APIC: `/api/aaaRefresh.json`. Catalyst Center: log in again (⚠ verify token lifetime, often quoted as 60 min).
 
+**JWT: what a token can look like (awareness, not in blueprint 2.7):**
+
+- **JWT (JSON Web Token, RFC 7519)** = a token *format*, not an auth method. RFC 7519: "a compact, URL-safe means of representing claims to be transferred between two parties." It still travels as a token, usually `Authorization: Bearer <jwt>`, so on the exam it is still **token auth**.
+- **Spot it:** three **base64url** parts separated by dots, `header.payload.signature`. The header and payload are JSON, so the first two parts usually start with `eyJ` (base64 of `{"`).
+- **Self-contained:** the payload carries **claims**, i.e. facts about the caller. The server checks the signature and reads the claims; it doesn't need to look the token up in a session table.
+  - Registered claims (RFC 7519): `iss` issuer, `sub` subject (who), `aud` audience, `exp` expiry, `nbf` not before, `iat` issued at, `jti` unique ID.
+- **Signed, not encrypted** (the usual JWS form). Anyone can decode the payload with base64; the signature only proves nobody **changed** it. Same lesson as Basic auth: never put secrets in a JWT, and send it over HTTPS. (An encrypted JWE form exists; rare.)
+- **`alg` in the header** names the signing algorithm (`HS256` = HMAC + SHA-256 with a shared secret, `RS256` = RSA signature). `"alg": "none"` = an **unsecured JWT** with an empty signature, which a server must not accept.
+- Real HS256 JWT built and decoded with Python's standard library (`base64`, `hmac`, `json`), secret `server-secret`:
+
+```python
+import base64, hashlib, hmac, json
+
+def b64u(raw):                                     # base64url without "=" padding
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+header  = b64u(json.dumps({"alg": "HS256", "typ": "JWT"}, separators=(",", ":")).encode())
+payload = b64u(json.dumps({"sub": "admin", "iss": "cml", "iat": 1760000000, "exp": 1760003600},
+                          separators=(",", ":")).encode())
+sig = b64u(hmac.new(b"server-secret", f"{header}.{payload}".encode(), hashlib.sha256).digest())
+token = f"{header}.{payload}.{sig}"
+print(token)
+
+part = token.split(".")[1]                         # anyone can read the payload: no key needed
+print(json.loads(base64.urlsafe_b64decode(part + "=" * (-len(part) % 4))))
+```
+
+```
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImlzcyI6ImNtbCIsImlhdCI6MTc2MDAwMDAwMCwiZXhwIjoxNzYwMDAzNjAwfQ.Ieaie3-UuAUCFiojqkfPPEMRUM8C6Y8_-eXcTvgQfEI
+{'sub': 'admin', 'iss': 'cml', 'iat': 1760000000, 'exp': 1760003600}
+```
+
+  - Changing `sub` to `root` without the secret gives a different HMAC, so the server's signature check fails (verified: `hmac.compare_digest` → `False`).
+- **Cisco examples:** Cisco Modeling Labs, `POST /api/v0/authenticate` → JWT, then `Authorization: Bearer <jwt>` ([T25](../bob/T25-nso-cisco-modeling-labs.md)). SD-WAN Manager 20.18.1+ adds `POST /jwt/login` ⚠ verify ([T22](../bob/T22-catalyst-sd-wan.md)).
+
 ### T10.04 · API key
 
 **Must cover:**
@@ -576,6 +611,7 @@ ACCESS "GET /key/devices?api_key=6bec40cf957de430a6f1f2baa056b99a4fac9ea0 HTTP/1
 - **OAuth:** the user's password goes to the **authorization server**, never to the app. The **code** isn't the token: it's single-use and swapped (with `client_secret`) for the access token. The **refresh token** gets a new access token without the user. **Scope** limits the token.
 - **Webex bot vs integration:** bot = its own long-lived bot token, no OAuth. Integration = OAuth, acting for a user.
 - **HTTPS protects in transit only.** It doesn't stop a secret hardcoded in a script or committed to Git.
+- **A JWT is a token format, not a fourth method.** `Authorization: Bearer eyJ…` is still **token auth**. Its payload is only base64url-encoded, not encrypted: anyone can read the claims, and the signature only stops tampering.
 
 ## Examples
 
@@ -880,6 +916,7 @@ Count only the ones you answered before looking. For each miss, reread the linke
 - RFC 6749, OAuth 2.0 (roles, grant types, auth-code steps A–E, `state` anti-CSRF, code ≤ 10 min single use, token response fields, refresh grant, TLS at token endpoint): https://www.rfc-editor.org/rfc/rfc6749
 - RFC 6750, Bearer token usage (header recommended, URI query "SHOULD NOT", `invalid_token` 401, `insufficient_scope` 403): https://www.rfc-editor.org/rfc/rfc6750
 - RFC 9110, HTTP semantics (401 + `WWW-Authenticate`, 403): https://www.rfc-editor.org/rfc/rfc9110
+- RFC 7519, JSON Web Token (definition, `header.payload.signature` base64url parts, registered claims `iss`/`sub`/`aud`/`exp`/`nbf`/`iat`/`jti`, JWS vs JWE, `alg: none` unsecured JWT): https://www.rfc-editor.org/rfc/rfc7519
 - requests docs, Authentication (`auth=` tuple = `HTTPBasicAuth`, netrc) and Advanced (Session persists cookies, headers, `auth`; method-level params not persisted): https://requests.readthedocs.io/en/latest/user/authentication/ · https://requests.readthedocs.io/en/latest/user/advanced/
 - Python `base64`, `os.environ`, `http.server`: https://docs.python.org/3/library/base64.html · https://docs.python.org/3/library/os.html#os.environ · https://docs.python.org/3/library/http.server.html
 - Official Cisco SDK source code from PyPI, read locally because developer.cisco.com failed TLS from this machine:
