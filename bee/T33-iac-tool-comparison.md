@@ -609,6 +609,11 @@ ansible_user=admin
 - **State file** `terraform.tfstate` (backup `terraform.tfstate.backup`) maps each resource block to the real object.
   - It is how Terraform knows what *it* manages: remove a block → the next plan says **destroy**.
   - Store it in a **remote backend** (S3, HCP Terraform) for teams. It can hold secrets, so never commit it ([T29](T29-secrets-encryption-data-handling.md)).
+  - **When it's created**: doesn't exist until the **first successful `apply`** (`init` only sets up the backend; `plan` only reads/simulates, never writes). Local backend → file literally named `terraform.tfstate` lands in the working dir. Remote backend → an object in the bucket/workspace instead.
+  - **How it's written**: not one dump at the end — each resource's attributes (ID, ARN, IP, etc, returned by the provider after create/update) are written **as that resource finishes**. A crashed/interrupted apply leaves a **partial state** matching whatever did complete.
+  - **What's inside**: JSON. `version` (state schema), `terraform_version` (binary that wrote it), `serial` (increments every write — detects staleness), `lineage` (UUID, constant for the state's life — detects a swapped/mismatched state file), `resources[]` (type, name, provider, `instances[]` with attributes and dependencies).
+  - **Updates after creation**: every `apply` re-reads state, refreshes against real infra (unless `-refresh-only`/disabled), diffs, writes a new state with `serial` bumped. `terraform refresh` alone also rewrites state with no config change.
+  - ⚠ State can hold **sensitive attributes in plaintext** (passwords, keys) unless the backend encrypts at rest — never commit it, and prefer a remote backend with encryption + locking (e.g. S3 + DynamoDB lock) over local.
 - **Workflow:**
   - `terraform init`: download providers, set up the backend.
   - `terraform plan`: refresh, diff, print `Plan: X to add, Y to change, Z to destroy.`
@@ -843,6 +848,7 @@ chronyd:
 - **Ansible procedural vs declarative:** tasks run **in order** (procedural), but resource modules are **idempotent / state-based**. If you must pick "declarative", pick Terraform/Puppet/NSO.
 - **Idempotent ≠ declarative.** A well-written script can be idempotent. A declarative tool is idempotent by design. Ansible `command`/`shell` tasks are **not** idempotent by default.
 - **Terraform state file:** deleting a resource block → `plan` shows **destroy**. Deleting the state file → Terraform forgets the resources (they still exist) and will try to create duplicates. Ansible has **no** state file.
+- **State file doesn't exist until the first `apply` succeeds.** `init` just sets up the backend; `plan` reads/simulates only. An interrupted `apply` still leaves partial state for whatever finished.
 - **`terraform plan` changes nothing**; `apply` does. `destroy` removes everything in state, not "everything in the account".
 - **NSO's unique selling point = atomic multivendor transactions with rollback** (plus CDB, NEDs, YANG service models). Ansible can't roll back across devices.
 - **NEDs are NSO's southbound drivers.** NSO's **northbound** = CLI, Web UI, NETCONF, RESTCONF, JSON-RPC. Don't swap them.
