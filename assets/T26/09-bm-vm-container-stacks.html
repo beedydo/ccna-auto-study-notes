@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T26 bare metal vs VM vs container stacks</title>
+<style>
+  :root {
+    --ink: #1d1d1f; --muted: #555; --line: #2b2b2b; --bg: #f7f7f5; --code: #ececec;
+    --hw: #6c757d; --hw-soft: #e9ecef;
+    --os: #f0b429; --os-soft: #fff4cc;
+    --hv: #7b4bc4; --hv-soft: #efe6fb;
+    --rt: #1971c2; --rt-soft: #e1eefb;
+    --lib: #2f9e44; --lib-soft: #e3f6e8;
+    --app: #d9480f; --app-soft: #ffe8dc;
+    --trap: #fde8e8; --trap-ink: #b42318;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1400px; padding: 26px 30px 22px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: #2fb380; border-radius: 4px; }
+  header h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: #2fb380; color: #fff; padding: 3px 16px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 13.5px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 12px; background: var(--code); padding: 1px 5px; border-radius: 4px; }
+
+  .cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+  .col { border: 2.5px solid var(--line); border-radius: 14px; background: #fff; padding: 12px 14px 14px; display: flex; flex-direction: column; }
+  .col h2 { margin: 0 0 2px; font-size: 21px; display: flex; align-items: center; gap: 8px; }
+  .col .sub { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+
+  /* the stack: drawn top (apps) to bottom (hardware), fixed height so the three columns line up */
+  .stack { display: flex; flex-direction: column; gap: 8px; height: 330px; justify-content: flex-end; }
+  .row { display: flex; gap: 5px; }
+  .blk { flex: 1; border: 2px solid; border-radius: 8px; padding: 6px 6px; text-align: center; font-size: 12.5px; font-weight: 700; line-height: 1.25; }
+  .blk small { display: block; font-weight: 500; font-size: 11px; opacity: .85; }
+  .hw  { background: var(--hw-soft);  border-color: var(--hw); }
+  .os  { background: var(--os-soft);  border-color: var(--os); }
+  .hv  { background: var(--hv-soft);  border-color: var(--hv); }
+  .rt  { background: var(--rt-soft);  border-color: var(--rt); }
+  .lib { background: var(--lib-soft); border-color: var(--lib); }
+  .app { background: var(--app-soft); border-color: var(--app); }
+  .kern { position: relative; }
+  .kern::after { content: "🧠 kernel"; position: absolute; bottom: -9px; right: 6px; font-size: 10px; font-weight: 800; background: var(--os); color: #fff; padding: 0 6px; border-radius: 8px; }
+  /* a guest box groups one VM / one container */
+  .guest { flex: 1; display: flex; flex-direction: column; gap: 6px; border: 2px dashed; border-radius: 10px; padding: 5px; }
+  .guest.vm { border-color: var(--hv); background: #faf7ff; }
+  .guest.ct { border-color: var(--rt); background: #f6faff; }
+  .guest .tag { font-size: 10.5px; font-weight: 800; text-align: center; }
+  .guest .kern { margin-bottom: 6px; }
+  .guest.vm .tag { color: var(--hv); } .guest.ct .tag { color: var(--rt); }
+  .guest .blk { font-size: 11.5px; padding: 4px; }
+  .tall { min-height: 64px; display: flex; flex-direction: column; justify-content: center; }
+
+  .facts { margin-top: 12px; display: grid; grid-template-columns: 1fr; gap: 5px; font-size: 13px; line-height: 1.4; }
+  .fact { display: flex; gap: 8px; align-items: baseline; border-top: 1px dashed #ccc; padding-top: 5px; }
+  .fact .k { flex: none; width: 116px; font-weight: 800; font-size: 12.5px; }
+  .count { display: inline-block; font-weight: 800; color: #fff; background: var(--os); border-radius: 10px; padding: 0 8px; font-size: 12px; }
+
+  .bottom { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; margin-top: 16px; }
+  .panel { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; padding: 10px 14px; }
+  .panel h3 { margin: 0 0 8px; font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border: 1.5px solid var(--line); padding: 5px 8px; text-align: left; vertical-align: top; }
+  th { background: #f0f0ee; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px 16px; font-size: 12.5px; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 16px; height: 16px; border-radius: 4px; border: 2px solid; display: inline-block; }
+  .trap { background: var(--trap); border: 1.5px solid var(--trap-ink); border-radius: 8px; padding: 7px 10px; font-size: 13px; line-height: 1.4; margin-top: 10px; }
+  .trap b:first-child { color: var(--trap-ink); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T26 · <span class="pill">Bare metal vs VM vs container</span> what sits under your app</h1>
+    <div class="meta"><b>Blueprint 4.3 · T26 §4–5</b><br>Same hardware, three ways to run apps<br>Count the 🧠 kernels in each column</div>
+  </header>
+
+  <div class="cols">
+    <!-- BARE METAL -->
+    <div class="col">
+      <h2>🖥️ Bare metal</h2>
+      <div class="sub">one OS installed directly on the physical server</div>
+      <div class="stack">
+        <div class="row">
+          <div class="blk app">App A</div><div class="blk app">App B</div><div class="blk app">App C</div>
+        </div>
+        <div class="row"><div class="blk lib tall">Shared libraries / runtime<small>every app uses the same versions: version clashes</small></div></div>
+        <div class="row"><div class="blk os kern tall">Operating system<small>e.g. Ubuntu, Windows Server · ONE kernel</small></div></div>
+        <div class="row"><div class="blk hw tall">Physical server<small>CPU · RAM · disk · NIC · GPU</small></div></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><span class="k">🧠 Kernels</span><span><span class="count">1</span> for the whole server</span></div>
+        <div class="fact"><span class="k">🛡️ Isolation</span><span>none between apps on the box (only one tenant on the hardware)</span></div>
+        <div class="fact"><span class="k">🚀 Start-up</span><span>hours to days: rack, cable, install the OS</span></div>
+        <div class="fact"><span class="k">⚙️ Overhead</span><span>none: full hardware speed</span></div>
+        <div class="fact"><span class="k">🎯 Pick it for</span><span>max performance, GPUs, low-latency hardware access, per-socket licences, hosting a hypervisor</span></div>
+      </div>
+    </div>
+
+    <!-- VM -->
+    <div class="col">
+      <h2>🧱 Virtual machines</h2>
+      <div class="sub">a hypervisor carves one server into many VMs</div>
+      <div class="stack">
+        <div class="row">
+          <div class="guest vm"><div class="tag">VM 1</div>
+            <div class="blk app">App A</div>
+            <div class="blk lib">Libs</div>
+            <div class="blk os kern tall">Guest OS<small>Linux</small></div>
+          </div>
+          <div class="guest vm"><div class="tag">VM 2</div>
+            <div class="blk app">App B</div>
+            <div class="blk lib">Libs</div>
+            <div class="blk os kern tall">Guest OS<small>Windows</small></div>
+          </div>
+          <div class="guest vm"><div class="tag">VM 3</div>
+            <div class="blk app">App C</div>
+            <div class="blk lib">Libs</div>
+            <div class="blk os kern tall">Guest OS<small>Linux</small></div>
+          </div>
+        </div>
+        <div class="row"><div class="blk hv tall">Hypervisor (Type 1)<small>ESXi · KVM · Hyper-V · Xen — gives each VM virtual CPU, RAM, disk, NIC</small></div></div>
+        <div class="row"><div class="blk hw tall">Physical server<small>CPU · RAM · disk · NIC</small></div></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><span class="k">🧠 Kernels</span><span><span class="count">1 per VM</span> (here 3)</span></div>
+        <div class="fact"><span class="k">🛡️ Isolation</span><span>high: each VM has its own kernel; the hypervisor separates them</span></div>
+        <div class="fact"><span class="k">🚀 Start-up</span><span>minutes: each VM boots a full OS</span></div>
+        <div class="fact"><span class="k">⚙️ Overhead</span><span>a whole guest OS per VM (RAM + disk)</span></div>
+        <div class="fact"><span class="k">🎯 Pick it for</span><span>✅ <b>different OSes on one host</b> (Windows + Linux), strong isolation</span></div>
+      </div>
+    </div>
+
+    <!-- CONTAINERS -->
+    <div class="col">
+      <h2>📦 Containers</h2>
+      <div class="sub">isolated processes sharing the host's kernel</div>
+      <div class="stack">
+        <div class="row">
+          <div class="guest ct"><div class="tag">Container 1</div>
+            <div class="blk app">App A</div>
+            <div class="blk lib">Libs<small>from the image</small></div>
+          </div>
+          <div class="guest ct"><div class="tag">Container 2</div>
+            <div class="blk app">App B</div>
+            <div class="blk lib">Libs<small>from the image</small></div>
+          </div>
+          <div class="guest ct"><div class="tag">Container 3</div>
+            <div class="blk app">App C</div>
+            <div class="blk lib">Libs<small>from the image</small></div>
+          </div>
+        </div>
+        <div class="row"><div class="blk rt tall">Container runtime<small>Docker Engine / containerd · isolates with namespaces + cgroups</small></div></div>
+        <div class="row"><div class="blk os kern tall">Host OS<small>Linux · ONE kernel shared by every container</small></div></div>
+        <div class="row"><div class="blk hw tall">Physical server (or a VM)<small>CPU · RAM · disk · NIC</small></div></div>
+      </div>
+      <div class="facts">
+        <div class="fact"><span class="k">🧠 Kernels</span><span><span class="count">1</span> shared by all containers</span></div>
+        <div class="fact"><span class="k">🛡️ Isolation</span><span>lowest: a shared kernel is a bigger attack surface</span></div>
+        <div class="fact"><span class="k">🚀 Start-up</span><span>seconds or less: starts a process, doesn't boot an OS</span></div>
+        <div class="fact"><span class="k">⚙️ Overhead</span><span>tiny: hundreds per host</span></div>
+        <div class="fact"><span class="k">🎯 Pick it for</span><span>fast start-up, many identical instances, the same image dev → prod</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <h3>⚖️ Side by side</h3>
+      <table>
+        <tr><th></th><th>🖥️ Bare metal</th><th>🧱 VM</th><th>📦 Container</th></tr>
+        <tr><td><b>🛡️ Isolation</b></td><td>🥇 highest</td><td>🥈 high</td><td>🥉 lowest</td></tr>
+        <tr><td><b>📊 Density</b></td><td>one OS per box</td><td>tens per host</td><td>🥇 hundreds per host</td></tr>
+        <tr><td><b>🪟 Different OS per workload?</b></td><td>❌</td><td>✅ yes</td><td>❌ same OS family as the host</td></tr>
+        <tr><td><b>📦 What's in the package</b></td><td>nothing: install on the box</td><td>a whole disk image incl. the OS</td><td>an image with app + libs, <b>no kernel</b></td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> "the container runs Ubuntu" means Ubuntu's <b>libraries and shell</b>, not its kernel. A Linux host can't run a Windows container; that needs a VM. (Docker Desktop on a Mac quietly runs a Linux VM.)</div>
+    </div>
+    <div class="panel">
+      <h3>🎨 How to read the stacks</h3>
+      <div class="legend">
+        <span><i style="background:var(--app-soft);border-color:var(--app)"></i>your app</span>
+        <span><i style="background:var(--lib-soft);border-color:var(--lib)"></i>libraries / runtime</span>
+        <span><i style="background:var(--os-soft);border-color:var(--os)"></i>OS with its 🧠 kernel</span>
+        <span><i style="background:var(--hv-soft);border-color:var(--hv)"></i>hypervisor</span>
+        <span><i style="background:var(--rt-soft);border-color:var(--rt)"></i>container runtime</span>
+        <span><i style="background:var(--hw-soft);border-color:var(--hw)"></i>physical hardware</span>
+      </div>
+      <ul style="margin:10px 0 0;padding-left:18px;font-size:13px;line-height:1.5">
+        <li>Read each column <b>bottom to top</b>: hardware → what manages it → what your app runs on.</li>
+        <li><b>Dashed boxes</b> = one isolated guest. A VM box contains its own yellow OS; a container box doesn't.</li>
+        <li><b>Memory hook:</b> each column shares <b>more</b> of the stack, so isolation goes down and density goes up.</li>
+        <li>The types stack: containers often run <b>inside VMs</b> in the cloud (EC2 + ECS/EKS).</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</body>
+</html>

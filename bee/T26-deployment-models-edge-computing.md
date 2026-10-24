@@ -187,9 +187,9 @@ The note hangs on two pictures: **where** the workload runs (cloud model, edge) 
 
 - Deployment type = **what sits between your app and the hardware**. This is the Kubernetes docs' "traditional → virtualised → container" story.
 
-![Bare metal vs VM vs container stacks](../assets/T26/05-stacks.png)
+![Bare metal vs VM vs container: the three stacks side by side, with kernels, isolation, start-up and when to pick each](../assets/T26/09-bm-vm-container-stacks.png)
 
-*Count the kernels (yellow): one per server on bare metal, one per guest on VMs, one shared by all containers.*
+*Read each column bottom to top and count the 🧠 kernels: one on bare metal, one per VM, one shared by all containers. Dashed boxes are one isolated guest: a VM carries its own OS, a container only its app and libraries. The panel below each stack and the table underneath compare isolation, start-up, overhead, density and when to pick each.*
 
 - **Bare metal**: one OS on the physical server. There's no resource boundary between apps on it, so either one app hogs the box or you buy a server per app (under-used, expensive).
   - Pick it for: max performance, GPUs/low-latency hardware access, software licensed per physical CPU, or as the host for a hypervisor or Kubernetes.

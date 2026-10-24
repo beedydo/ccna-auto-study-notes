@@ -154,9 +154,9 @@ docker run --rm ubuntu:24.04 uname -r      # Ubuntu container: same again, a dif
 
 - All three print the same kernel version. A VM would print its own guest kernel. (Not run in the full note: expected result from documented behaviour.)
 
-![Bare metal vs VM vs container stacks](../assets/T26/05-stacks.png)
+![Bare metal vs VM vs container: the three stacks side by side, with kernels, isolation, start-up and when to pick each](../assets/T26/09-bm-vm-container-stacks.png)
 
-*Count the yellow kernels: one per server on bare metal, one per guest on VMs, and one shared by all containers.*
+*Read each column bottom to top and count the 🧠 kernels: one on bare metal, one per VM, one shared by all containers. Dashed boxes are one isolated guest: a VM carries its own OS, a container only its app and libraries. The panel below each stack and the table underneath compare isolation, start-up, overhead, density and when to pick each.*
 
 **🧱 Hypervisor types:**
 
