@@ -86,6 +86,8 @@ Day-by-day detail: `data/pair-plan.csv`.
 | Blueprint 3.9.a/b/c sub-item wording | T18–T22, T42 | Labels are paraphrased; confirm in the Cisco PDF |
 | Bob's GitHub username | repo | Needed for `CODEOWNERS` and the collaborator invite |
 | Mock 1 is four 30-min blocks, which doesn't train 120-min stamina | both | Resolved: the mock is now one 2-hour sitting on Mon 2 Nov |
+| `quizzes/question-bank/` (≈500 MB of PDFs, one folder named `dump/`) | both | Ask Bob where the PDFs came from. If they're real exam dumps, remove them (Cisco exam rules + CLAUDE.md forbid them) with a history rewrite; if legitimate, move them to Git LFS or Drive. |
+| T30 OWASP has no full note | T30 (Beedy) | `bee/T30-…` is still an empty template, so its essentials facts have no backing note. Run `/note T30` before cycle 4. |
 
 ## 7. How to start in Claude Code (Beedy, today)
 
@@ -114,3 +116,13 @@ Day-by-day detail: `data/pair-plan.csv`.
 - **Mock simulator:** `/quiz partner` in interactive mode on cross-study nights.
 - **Score tracking:** a small script that reads `data/practice-log.csv` and prints weighted readiness by domain (weights 15/20/15/15/20/15).
 - **Labs:** CI-free labs only. Use DevNet Sandbox and the Docker container in `labs/`; nothing needs cloud spend.
+
+## 9. Session log: Beedy, 19–24 Oct 2026
+
+- **Essentials redesign.** All 22 `bee-essentials/` files rewritten in two passes: (1) tiered 🟥 must / 🟨 should / recognise-only, fully explained with analogies and annotated examples; (2) visual: big idea as a table, icons, tables over bullets, ❌/✅ contrasts, traps as "Looks like / Actually". Rules now live in `.claude/commands/note.md` §3 "Essentials file"; `/note` writes essentials every run.
+- **T05 and T06 visuals.** HTML-rendered comparison sheets + GIFs in `assets/T05/` and `assets/T06/`. `assets/T06/02-cisco-api-formats.png` maps the data format and first parse step of every Cisco API in Bob's topics: share it with Bob.
+- **Syntax drills.** Standalone cheat sheets were tried and rejected as clutter; the content is now a collapsed `## Syntax drill` at the end of the T05/T06 essentials, and question → answer tables are in `cheatsheet.md`.
+- **Content added on request:** JWT as a token format (T10, awareness), what an artifact is (T28), the mutable vs immutable section rewritten with a one-line analogy (T33), the Dockerfile → image → container image (T27).
+- **Case study.** `case-studies/api-to-s3-collector.md`: a sample API → S3 pipeline read through T06–T47, with 10 issues and fixes. Names made generic before publishing.
+- **Repo housekeeping.** `bob/question-bank` branch was already merged and was deleted. T04–T08 marked done by Beedy on 20 Oct.
+

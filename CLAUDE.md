@@ -46,8 +46,10 @@ bee/                              Beedy's topic notes ONLY (22 files): TXX-slug.
 bob/                              Bob's topic notes ONLY (25 files): TXX-slug.md
 notes/d1..d6-*/README.md          per-domain index tables linking into bee/ and bob/ (no notes here)
 CLAUDE.md, HANDOVER.md, data/     shared context: stays at the root, never inside bee/ or bob/
+bee-essentials/, bob-essentials/  one-read study version of each topic note (same filename as the note)
 teach-back/                       teach-back-1..4.md (cards for each joint session)
 quizzes/                          generated question banks (one file per topic or batch)
+case-studies/                     real-code walkthroughs mapped to topics (project names made generic)
 labs/                             Docker lab container + runnable scripts
 cheatsheet.md                     1-page exam-eve sheet (build from "Exam traps" sections)
 scripts/progress.py               prints progress from note front matter
@@ -58,6 +60,10 @@ scripts/progress.py               prints progress from note front matter
 - New note for a topic: create it at its `note_path` from `templates/topic-note.md`, pre-filling the **Must cover** checklist from `data/concepts.csv`.
 - Bob's round-1 notes (T01, T03, T12-T17) use his own format without front matter. Treat them as `drafted`. Don't reformat them unless Bob asks.
 - If you add or rename a note, update `note_path` in `data/topics.csv` and the link in the matching `notes/dN-*/README.md`.
+- **Two files per topic, no more:** the full note (`bee/` or `bob/`) and its essentials (`bee-essentials/` or `bob-essentials/`). No separate cheat-sheet files.
+  - Essentials follow the "Essentials file" rules in `.claude/commands/note.md` §3: 🟥 must / 🟨 should / recognise-only tiers, fully explained, tables and icons. Reference file: `bee-essentials/T26-deployment-models-edge-computing.md`.
+  - Syntax-heavy topics (T02, T04, T05, T06, T11, T27, T31, T32, T34) end their essentials with a collapsed `## Syntax drill`. Their question-wording → answer table goes in `cheatsheet.md`.
+  - Every 🟥 must-know fact in an essentials file must also be in the full note.
 
 ## Note format (every topic file)
 

@@ -25,7 +25,7 @@ Routine per topic (~20 min): read **🟥 Must know** only → close it, say "Say
 
 **Still due before Teach-back 3 (Sun 25 Oct):** T43, T47 and T29 (Thu 22), plus Bob's cycle-1 and cycle-2 cross-study.
 
-## Today · Sun 18 Oct · Teach-back 2
+## Sun 18 Oct · Teach-back 2 (past; rows 4–9 superseded by the Tue 20 Oct plan above)
 
 | Done | # | Read | Concepts to cover | Task | Score |
 |---|---|---|---|---|---|
@@ -108,4 +108,9 @@ Reread the **"Exam-sim gap"** block in each note's concept section, then retry t
 - [ ] **Docker:** start Docker Desktop so the T27 drill output can be filled in (before Sun 25 Oct).
 - [ ] **`/verify`:** check `⚠ verify` items against Cisco docs on Fri–Sat of each cycle.
 - [ ] **`status: verified`:** set it in a note's front matter once you score 6/8 or more on its full-note questions.
+- [ ] **Teach-back 3 (Sun 25 Oct):** run `/teachback 3` for T43, T47, T26–T29. T43 and T47 are still unread; read their 🟥 sections first.
+- [ ] **Scores:** tonight's T09, T10, T26, T27, T28 self-checks aren't logged yet. Tell Claude the `x/7` scores to fill the table above.
+- [ ] **Share with Bob:** `assets/T06/02-cisco-api-formats.png` (data format + first parse step for every Cisco API in his topics).
+- [ ] **Ask Bob:** where `quizzes/question-bank/` (≈500 MB, a `dump/` folder) came from. Remove it if it's exam dumps.
+- [ ] **Review (optional):** the "Looks like…" column in every essentials trap table is new wording written by Claude; skim it while studying.
 - [ ] **Break week (2–8 Nov):** mock exam Mon 2 Nov, joint review Tue, weak-domain Qs Wed–Thu, rapid-fire Fri, rest Sat–Sun. Exam **Mon 9 Nov**.
