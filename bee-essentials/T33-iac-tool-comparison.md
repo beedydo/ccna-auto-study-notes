@@ -91,14 +91,7 @@ This topic answers two questions:
 
 > 💡 **The question: when the config needs to change, do you edit the thing that's running, or throw it away and start a new one from the recipe?** Mutable = edit in place. Immutable = never edit; **replace**.
 
-**🏠 Analogy: renovating a house vs swapping a prefab cabin.**
-
-| | 🏠 **Mutable** = a house you renovate | 📦 **Immutable** = prefab cabins built from one blueprint |
-|---|---|---|
-| A change | a builder comes in and **re-tiles the bathroom**, adds a socket, patches a leak, in the house **you're living in** | the factory builds a **new cabin** from the **updated blueprint**, you move in, and the old cabin is **hauled away** |
-| After 10 years | every house on the street has had different repairs by different builders: no two are the same, and nobody has the full list of what was done (**drift**, "snowflake" servers) | every cabin is **exactly** the blueprint: you know what's inside because nobody ever opened a wall |
-| A repair goes wrong | you're living in a half-finished bathroom while you work out how to undo it | the new cabin failed inspection? You **never moved out of the old one**: just keep using it |
-| Undo / rollback | re-do the old work by hand (re-apply the old config) | move back into the previous cabin, i.e. redeploy the **previous image** |
+> 🏠 **Analogy:** mutable = **renovating your house** (edit what's there; over years every house ends up different). Immutable = **swapping a prefab cabin** (build a new one from the blueprint, move in, remove the old one).
 
 **🔍 What each looks like in the lab** (`labs/T33/iac_demo.py`):
 
