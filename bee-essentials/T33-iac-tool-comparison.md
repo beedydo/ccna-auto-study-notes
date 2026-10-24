@@ -87,15 +87,61 @@ This topic answers two questions:
 | 📥 Pull agents | catch and fix it on their next timed run |
 | 🛫 NSO | detects it with `check-sync` / `compare-config` |
 
-| | 🐶 **Mutable** | 🐄 **Immutable** |
+#### 🏠 Mutable vs 📦 immutable infrastructure
+
+> 💡 **The question: when the config needs to change, do you edit the thing that's running, or throw it away and start a new one from the recipe?** Mutable = edit in place. Immutable = never edit; **replace**.
+
+**🏠 Analogy: renovating a house vs swapping a prefab cabin.**
+
+| | 🏠 **Mutable** = a house you renovate | 📦 **Immutable** = prefab cabins built from one blueprint |
 |---|---|---|
-| How | changed in place (patch the same box), so drift risk grows over time | never edited: build a new image or instance, swap it in, destroy the old one |
-| Analogy (**pets vs cattle**) | pets are nursed back to health | cattle are replaced |
-| Where | network hardware is mutable by nature (you can't throw away a core switch per change) | the container and cloud golden-image pattern |
+| A change | a builder comes in and **re-tiles the bathroom**, adds a socket, patches a leak, in the house **you're living in** | the factory builds a **new cabin** from the **updated blueprint**, you move in, and the old cabin is **hauled away** |
+| After 10 years | every house on the street has had different repairs by different builders: no two are the same, and nobody has the full list of what was done (**drift**, "snowflake" servers) | every cabin is **exactly** the blueprint: you know what's inside because nobody ever opened a wall |
+| A repair goes wrong | you're living in a half-finished bathroom while you work out how to undo it | the new cabin failed inspection? You **never moved out of the old one**: just keep using it |
+| Undo / rollback | re-do the old work by hand (re-apply the old config) | move back into the previous cabin, i.e. redeploy the **previous image** |
+
+**🔍 What each looks like in the lab** (`labs/T33/iac_demo.py`):
+
+```bash
+python3 iac_demo.py apply          # MUTABLE: edits the existing sw1-v1 in place (same instance, new config)
+python3 iac_demo.py replace sw1    # IMMUTABLE: builds a fresh instance from the desired state, retires the old one
+```
+
+```
+sw1: replaced sw1-v1 -> sw1-v2 (old instance destroyed, not patched)
+```
+
+- 🔢 The instance **ID changes** (`sw1-v1` → `sw1-v2`). That's the giveaway: immutable means a **new thing**, not a changed thing.
+- ✅ A following `plan` prints `No changes. Devices match the desired state.`: the new instance is the desired state from birth, so there's nothing to fix.
+
+**The immutable workflow, step by step:**
+
+1. 📝 Change the **source** (the Dockerfile, the Packer template, the Terraform config), never the running server.
+2. 🔨 **Build** a new image from it (container image, cloud "golden image" such as an AWS AMI).
+3. 🧪 **Test** that image.
+4. 🚀 **Start new instances** from it, move traffic to them.
+5. 🗑️ **Destroy** the old instances.
+
+- This is the same rule as T28's "**build once, promote the same artifact**": the image is the artifact, and nobody logs in to change it afterwards.
+
+| | 🏠 **Mutable** | 📦 **Immutable** |
+|---|---|---|
+| How a change happens | edit, patch or upgrade the **existing** server or device in place | build a **new** image/instance, swap it in, destroy the old one |
+| Instance identity | the same box for years | replaced on every change (`sw1-v1` → `sw1-v2`) |
+| Drift risk | **grows** over time: every manual fix or failed half-change is a difference | **low**: instances are never edited, so they can't drift |
+| Rollback | re-apply the old config (and hope it reverses cleanly) | redeploy the **previous image** |
+| Typical tools | Ansible, Puppet, Chef (they connect and change what's there) | Docker / Kubernetes (T27), cloud VMs from golden images, Terraform `-replace` |
+| Where you'll see it | **physical routers and switches**, long-lived VMs | containers, autoscaling cloud VMs |
+
+> 🌐 **Network hardware is mutable by nature.** You can't throw away a core switch every time you add a VLAN, so network automation (Ansible, NSO, RESTCONF) **edits devices in place**, and that's exactly why drift detection matters so much for networks. Immutable is the cloud and container pattern.
+>
+> 🎯 **Exam cue:** "never modify a running server; replace it with a new one built from an image" → **immutable**. "Patch / upgrade the existing server in place" → **mutable**.
 
 ### 4. 📡 Push vs pull, 🔌 agentless vs agent-based
 
-> 💡 **Push vs pull = who opens the connection.** **Agentless vs agent-based = whether extra software lives on the managed node.**
+> 💡 **Push vs pull = who opens the connection.** 
+>
+> 🔌 **Agentless vs agent-based = whether extra software lives on the managed node.**
 
 | 📤 **Push** | 📥 **Pull** |
 |---|---|
@@ -220,7 +266,7 @@ terraform destroy     # delete everything in the state
 | Push config to 500 IOS XE switches over SSH, nothing may be installed; "playbook", "inventory", "YAML" | 🅰️ | **Ansible** |
 | Every Linux server checks in and self-corrects every 30 min; "manifest", "catalog" | 🧸 | **Puppet** |
 | "Recipe", "cookbook", "Ruby" | 👨‍🍳 | **Chef** |
-| Replace the server with a new one built from an image | 🐄 | **immutable** |
+| Replace the server with a new one built from an image | 📦 | **immutable** |
 
 ## ⚠️ Exam traps
 

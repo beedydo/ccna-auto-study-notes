@@ -478,7 +478,11 @@ No changes. Devices match the desired state.
 | Rollback | apply the old config | redeploy the previous image |
 
 - Network hardware is **mutable by nature**: you can't throw away a core switch for each change. Immutable is the cloud/container pattern.
-- "Pets vs cattle" is the same idea in other words: pets are mutable and nursed back to health; cattle are immutable and replaced.
+- **Analogy: renovating a house vs replacing a prefab cabin.** Mutable = builders keep changing the house you live in, so after years of different repairs no two houses are alike and nobody has the full list (drift, "snowflake" servers). Immutable = cabins are built in a factory from one blueprint; to change one you build a new cabin from the updated blueprint, move in, and haul the old one away, so every cabin is exactly the blueprint and rollback is moving back into the previous one.
+- **The immutable workflow:** change the source (Dockerfile, image template, Terraform config) → build a new image → test it → start new instances from it and move traffic → destroy the old ones. Nobody logs in to a running instance to change it. Same rule as T28's "build once, promote the same artifact".
+- **The giveaway in the demo:** the instance ID changes (`sw1-v1` → `sw1-v2`). Immutable means a new thing, not a changed thing. The next `plan` reports `No changes`, because the new instance is the desired state from the start.
+- Network automation edits devices in place (Ansible, NSO, RESTCONF), which is why drift detection matters so much for networks.
+- (You may also see this called "pets vs cattle": pets are mutable and nursed back to health, cattle are immutable and replaced.)
 
 ### T33.04 · Architectures
 
