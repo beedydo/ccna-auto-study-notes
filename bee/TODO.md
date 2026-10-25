@@ -8,16 +8,16 @@
 
 | Done | Topic | Note |
 |---|---|---|
-| [ ] | T30 OWASP | **no full note yet** — ask me to draft it first |
+| [ ] | T30 OWASP | **drafted 25 Oct** — full note + labs/T30/defences.py ready, needs your first pass |
+| [ ] | T43 Webhooks | essentials still unread |
+| [ ] | T47 Sequence diagrams | essentials still unread |
 | [ ] | T11 Python requests scripting | |
-| [ ] | T27 Docker | Docker Desktop not running — needed for the drill output |
 | [ ] | T29 Secrets, encryption, data handling | essentials unread |
 | [ ] | T31 Bash | |
 | [ ] | T32 TDD + unit tests | |
-| [ ] | T43 Webhooks | essentials unread |
 | [ ] | T44 pyATS + Genie | |
 | [ ] | T46 Code review principles | |
-| [ ] | T47 Sequence diagrams | essentials unread |
+| [ ] | T27 Docker | Docker Desktop not running — needed for the drill output |
 
 ## ✅ Verified (12 of 22)
 
@@ -51,7 +51,7 @@ Done already: T05.03, T06.10, T07.11.
 
 ## Open items
 
-- [ ] **T30 OWASP has no full note.** Only the essentials exist and `status: not-started`. Ask Claude to draft it (no attack lab).
+- [x] **T30 OWASP drafted 25 Oct.** Full note, overview sheet, 4 diagrams, defensive lab, 8 practice Qs. Review it and tell me to set `status: verified`.
 - [ ] **Docker Desktop isn't running.** Needed to fill in the T27 drill output.
 - [ ] **`practice-log.csv` is empty.** No scores logged all cycle.
 - [ ] **`/verify`:** check `⚠ verify` items against Cisco docs — none done yet this cycle.
