@@ -1,0 +1,10 @@
+flowchart TB
+    Q["Snippet or scenario"] --> C1{"SQL built from<br/>input? ' OR 1=1 --?"}
+    C1 -->|yes| SQLI["SQLi<br/>→ parameterised queries"]
+    C1 -->|no| C2{"A script RUNS in<br/>a user's browser?"}
+    C2 -->|yes| XSS["XSS<br/>→ output encoding<br/>(stored / reflected / DOM<br/>by where it lives)"]
+    C2 -->|no| C3{"Logged-in session,<br/>forged cross-site request,<br/>no script on target?"}
+    C3 -->|yes| CSRF["CSRF<br/>→ anti-CSRF token + SameSite"]
+    style SQLI fill:#e1eefb,stroke:#1971c2
+    style XSS fill:#e1eefb,stroke:#1971c2
+    style CSRF fill:#e1eefb,stroke:#1971c2

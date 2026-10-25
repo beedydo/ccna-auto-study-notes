@@ -5,7 +5,7 @@ owner: Beedy
 blueprint: "2.7"
 primary_domain: D2
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified
+status: verified      # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
 cross_study: 2026-10-22

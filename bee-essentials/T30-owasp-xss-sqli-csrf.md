@@ -1,6 +1,6 @@
 # T30 · OWASP: XSS, SQL injection, CSRF: essentials
 
-> Blueprint 4.10: top OWASP threats (XSS, SQL injection, CSRF) · Full note: [bee/T30-owasp-xss-sqli-csrf.md](../bee/T30-owasp-xss-sqli-csrf.md) (not drafted yet)
+> Blueprint 4.10: top OWASP threats (XSS, SQL injection, CSRF) · Full note: [bee/T30-owasp-xss-sqli-csrf.md](../bee/T30-owasp-xss-sqli-csrf.md)
 
 ## 🧭 The big idea
 
@@ -231,7 +231,7 @@ if not hmac.compare_digest(request.form["csrf_token"], session["csrf_token"]):
 
 </details>
 
-> 📚 **Recognise only, details to be added to the full note:** the full 2021 and 2025 Top 10 lists in order (2025 adds Software Supply Chain Failures and Mishandling of Exceptional Conditions, and folds SSRF into A01), per-context encoding rules (attribute, JS, CSS, URL), CSP directive syntax, `SameSite=None` + `Secure` details.
+> 📚 **Recognise only, details in the full note:** the full 2021 and 2025 Top 10 lists in order (2025 adds Software Supply Chain Failures and Mishandling of Exceptional Conditions, and folds SSRF into A01), per-context encoding rules (attribute, JS, CSS, URL), CSP directive syntax, `SameSite=None` + `Secure` details.
 
 ## ✍️ Quick self-check
 <details><summary>Q1. A comment box saves user text, and later every visitor's browser runs a script hidden in a comment. Attack and primary fix?</summary>Stored XSS. Encode or escape the output for its HTML context, for example with an auto-escaping template engine. CSP and HttpOnly are extra layers.</details>

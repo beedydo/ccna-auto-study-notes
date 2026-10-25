@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T30 overview: OWASP XSS, SQLi, CSRF</title>
+<style>
+  :root {
+    --ink:#1d1d1f; --muted:#555; --line:#2b2b2b; --bg:#f7f7f5; --code:#ececec;
+    --sqli:#d9480f; --sqli-soft:#ffe8dc;
+    --xss:#1971c2; --xss-soft:#e1eefb;
+    --csrf:#7b4bc4; --csrf-soft:#efe6fb;
+    --trap:#fde8e8; --trap-ink:#b42318;
+    --ok:#2f9e44; --ok-soft:#ddf6dd;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); font-family:-apple-system,"Helvetica Neue",Arial,sans-serif; color:var(--ink); }
+  .sheet { width:1180px; padding:26px 30px 22px; }
+  header { display:flex; align-items:center; gap:14px; margin-bottom:16px; }
+  header .bar { width:8px; height:50px; background:#2fb380; border-radius:4px; }
+  header h1 { margin:0; font-size:30px; font-weight:800; letter-spacing:-0.5px; }
+  header .pill { background:#2fb380; color:#fff; padding:3px 16px; border-radius:26px; }
+  header .meta { margin-left:auto; text-align:right; font-size:13px; color:var(--muted); line-height:1.4; }
+  header .meta b { color:var(--ink); }
+  code { font-family:Menlo,Consolas,monospace; font-size:12.5px; background:var(--code); padding:1px 5px; border-radius:4px; white-space:nowrap; }
+
+  .cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+  .card { border:2.5px solid var(--line); border-radius:14px; background:#fff; overflow:hidden; display:flex; flex-direction:column; }
+  .card .h { padding:9px 12px; color:#fff; display:flex; align-items:center; gap:8px; }
+  .card.sqli .h { background:var(--sqli); } .card.xss .h { background:var(--xss); } .card.csrf .h { background:var(--csrf); }
+  .card .h .ic { font-size:22px; } .card .h .nm { font-weight:800; font-size:18px; } .card .h .id { margin-left:auto; font-size:11px; opacity:.9; }
+  .card .b { padding:10px 12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+  .row2 { display:flex; gap:8px; align-items:flex-start; font-size:13px; line-height:1.4; }
+  .row2 .k { flex:none; width:20px; font-size:15px; text-align:center; }
+  .box { border-radius:8px; padding:7px 9px; font-size:12.8px; line-height:1.4; }
+  .box.what { background:#faf7f2; border:1.5px solid #e0cdbb; }
+  .box.why { background:#fff; border:1.5px dashed var(--line); }
+  .fix { border-radius:8px; padding:7px 9px; font-size:12.8px; line-height:1.4; background:var(--ok-soft); border:2px solid var(--ok); }
+  .fix b { color:var(--ok); }
+  .trap { border-radius:8px; padding:6px 9px; font-size:12.3px; line-height:1.35; background:var(--trap); border:1.5px solid var(--trap-ink); }
+  .trap b:first-child { color:var(--trap-ink); }
+  .lbl { font-size:11px; font-weight:800; letter-spacing:.4px; color:var(--muted); text-transform:uppercase; }
+  .mini { font-family:Menlo,monospace; font-size:11px; background:var(--code); border-radius:5px; padding:4px 7px; white-space:pre-wrap; line-height:1.4; }
+
+  .strip { margin-top:14px; border:2.5px solid var(--line); border-radius:12px; background:#fff; padding:10px 14px; }
+  .strip h2 { margin:0 0 8px; font-size:15px; display:flex; align-items:center; gap:8px; }
+  table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:12.8px; }
+  th,td { border:1.5px solid var(--line); padding:5px 8px; text-align:left; vertical-align:top; line-height:1.35; }
+  th { background:#f0f0ee; }
+  td code { white-space:normal; }
+  .ic-sqli { color:var(--sqli); } .ic-xss { color:var(--xss); } .ic-csrf { color:var(--csrf); }
+  footer { display:flex; flex-wrap:wrap; gap:16px; margin-top:12px; font-size:12px; color:var(--muted); }
+  footer span::before { content:""; display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+  footer .k-fix::before { background:var(--ok-soft); border:1px solid var(--ok); }
+  footer .k-trap::before { background:var(--trap); border:1px solid var(--trap-ink); }
+  footer .k-code::before { background:var(--code); border:1px solid #999; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T30 · <span class="pill">OWASP: XSS, SQLi, CSRF</span> three attacks, three fixes</h1>
+    <div class="meta"><b>200-901 blueprint 4.10</b><br>Every T30 concept on one page<br>Name the attack → pick the fix</div>
+  </header>
+
+  <div class="cards">
+    <!-- SQLi -->
+    <div class="card sqli">
+      <div class="h"><span class="ic">💉</span><span class="nm">SQL injection</span><span class="id">T30.04 · T30.05</span></div>
+      <div class="b">
+        <div><span class="lbl">What the attacker sends</span>
+          <div class="box what">Input with SQL syntax into a field, e.g. <code>' OR 1=1 --</code>, when the app builds the query by gluing strings.</div></div>
+        <div><span class="lbl">Why it works</span>
+          <div class="box why">The DB can't tell the app's SQL from the attacker's. <code>'</code> ends the string, <code>OR 1=1</code> is always true, <code>--</code> comments out the rest → returns <b>every row</b> / login bypass.</div></div>
+        <div><span class="lbl">The one fix</span>
+          <div class="fix"><b>Parameterised queries</b> (prepared statements). Query + value sent separately, so input is <b>data, never code</b>.
+          <div class="mini" style="margin-top:5px">cur.execute(
+  "… WHERE name = ?", (name,))</div></div></div>
+        <div class="trap"><b>Trap:</b> "input validation" / "escape by hand" are not the best answer — pick <b>parameterised queries</b> (or an ORM).</div>
+      </div>
+    </div>
+
+    <!-- XSS -->
+    <div class="card xss">
+      <div class="h"><span class="ic">📜</span><span class="nm">XSS</span><span class="id">T30.02 · T30.03</span></div>
+      <div class="b">
+        <div><span class="lbl">What the attacker sends</span>
+          <div class="box what">A script the trusted site serves to a victim's browser. <b>Stored</b> (saved on server, hits all), <b>Reflected</b> (in a URL, bounced back), <b>DOM</b> (page's own JS).</div></div>
+        <div><span class="lbl">Why it works</span>
+          <div class="box why">The browser can't tell the injected script from the site's own code, so it <b>runs</b> it → session theft, actions as the user, defacement.</div></div>
+        <div><span class="lbl">The one fix</span>
+          <div class="fix"><b>Encode / escape output</b> for its context. Browser shows the script as text, runs nothing.
+          <div class="mini" style="margin-top:5px">html.escape("&lt;script&gt;")
+# &amp;lt;script&amp;gt;</div></div></div>
+        <div class="trap"><b>Trap:</b> CSP + <code>HttpOnly</code> are extra layers, not the fix. <code>HttpOnly</code> = XSS cookie theft.</div>
+      </div>
+    </div>
+
+    <!-- CSRF -->
+    <div class="card csrf">
+      <div class="h"><span class="ic">📮</span><span class="nm">CSRF</span><span class="id">T30.06 · T30.07</span></div>
+      <div class="b">
+        <div><span class="lbl">What the attacker sends</span>
+          <div class="box what">A hidden request from a malicious page to a site the victim is <b>logged in</b> to. No script runs on the target.</div></div>
+        <div><span class="lbl">Why it works</span>
+          <div class="box why">The browser attaches the session <b>cookie automatically</b>, so the forged request looks legitimate → unwanted actions (change password, transfer funds).</div></div>
+        <div><span class="lbl">The one fix</span>
+          <div class="fix"><b>Anti-CSRF token</b> checked on every state-changing request. The evil page can't read it → rejected.
+          <div class="mini" style="margin-top:5px">hmac.compare_digest(
+  form.csrf, session.csrf)</div></div></div>
+        <div class="trap"><b>Trap:</b> <code>SameSite</code> backs it up (not the sole fix). XSS defeats every CSRF defence.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <h2>🎯 The exam's job: snippet/scenario → attack → fix <span style="font-weight:400;color:var(--muted);font-size:12px">· T30.09 · T30.01 OWASP · T30.08 Top 10</span></h2>
+    <table>
+      <colgroup><col style="width:46%"><col style="width:20%"><col style="width:34%"></colgroup>
+      <tr><th>You see…</th><th>Attack</th><th>Fix</th></tr>
+      <tr><td><code>"… WHERE x = '" + inp + "'"</code> or <code>' OR 1=1 --</code> in a field</td><td><span class="ic-sqli">💉</span> <b>SQLi</b></td><td>parameterised queries</td></tr>
+      <tr><td>a comment/profile field, later a script runs for all visitors</td><td><span class="ic-xss">📜</span> <b>Stored XSS</b></td><td>output encoding</td></tr>
+      <tr><td>a phishing link to a search page that echoes <code>?q=</code> back</td><td><span class="ic-xss">📜</span> <b>Reflected XSS</b></td><td>output encoding</td></tr>
+      <tr><td>logged-in user visits another site, an action fires, no script on target</td><td><span class="ic-csrf">📮</span> <b>CSRF</b></td><td>anti-CSRF token + SameSite</td></tr>
+    </table>
+    <div style="display:flex;gap:14px;margin-top:9px;font-size:12.3px;line-height:1.4">
+      <div style="flex:1" class="box why"><b>🛡️ OWASP</b> = Open Worldwide Application Security Project. The <b>Top 10</b> is its ranked list of web risks, used as a secure-dev checklist. SQLi + XSS = <b>Injection</b>; CSRF = <b>Broken Access Control</b>. Answer by <b>name</b>, not category number (it shifts by edition).</div>
+      <div style="flex:1" class="box why"><b>🍪 Cookie flags:</b> <code>HttpOnly</code> → limits 📜 XSS cookie theft · <code>SameSite</code> → limits 📮 CSRF · <code>Secure</code> → HTTPS only. Don't swap <code>HttpOnly</code> and <code>SameSite</code>.</div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="k-fix">the one primary fix</span>
+    <span class="k-trap">exam trap</span>
+    <span class="k-code">exact syntax</span>
+    <span style="margin-left:auto">Full note + runnable defensive demos: <code>bee/T30</code> · <code>labs/T30/defences.py</code></span>
+  </footer>
+</div>
+</body>
+</html>

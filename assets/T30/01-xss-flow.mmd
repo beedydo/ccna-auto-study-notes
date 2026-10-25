@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant A as Attacker
+    participant S as Trusted site (server + DB)
+    participant V as Victim's browser
+    A->>S: post comment containing a script tag
+    Note over S: STORED without encoding
+    V->>S: open the page
+    S-->>V: page with the raw script embedded
+    Note over V: browser RUNS the script<br/>session theft, actions as user
+    rect rgb(221,246,221)
+    Note over S: FIX: encode output (html.escape)<br/>script shown as text, nothing runs
+    end

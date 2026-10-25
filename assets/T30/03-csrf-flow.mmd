@@ -1,0 +1,13 @@
+sequenceDiagram
+    autonumber
+    participant V as Victim (logged in to bank)
+    participant E as evil.example
+    participant B as bank.example
+    V->>E: visit malicious page
+    E-->>V: hidden auto-submitting form
+    V->>B: POST /transfer  (+ bank session cookie, sent automatically)
+    Note over B: valid cookie → looks legitimate
+    B-->>V: transfer done (no script ran on bank)
+    rect rgb(221,246,221)
+    Note over B: FIX: require anti-CSRF token<br/>evil page can't read it → request rejected 403
+    end

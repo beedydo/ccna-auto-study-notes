@@ -1,0 +1,18 @@
+flowchart TB
+    IN["User input<br/>name = ' OR 1=1 --"]
+    subgraph VULN["❌ Vulnerable: string concatenation"]
+      direction TB
+      V1["app builds:<br/>SELECT * FROM users<br/>WHERE name = '' OR 1=1 --'"]
+      V2["DB runs attacker's logic<br/>→ returns EVERY row"]
+      V1 --> V2
+    end
+    subgraph SAFE["✅ Fixed: parameterised query"]
+      direction TB
+      S1["app sends query + value separately:<br/>WHERE name = ?  ,  (name,)"]
+      S2["DB binds value as DATA<br/>→ no match, returns nothing"]
+      S1 --> S2
+    end
+    IN --> VULN
+    IN --> SAFE
+    style VULN fill:#fde8e8,stroke:#b42318
+    style SAFE fill:#ddf6dd,stroke:#2e7d32
