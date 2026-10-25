@@ -5,16 +5,15 @@ owner: Beedy|Bob
 blueprint: ""
 primary_domain: DX
 cbt_coverage: Full|Partial|None
-status: not-started   # not-started | drafted | verified | taught
+status: not-started   # not-started | drafted | verified
 confidence: 0
 learn_by: YYYY-MM-DD
-teach_back: YYYY-MM-DD
 cross_study: YYYY-MM-DD
 ---
 
 # TXX · Title
 
-## TL;DR (teach-back card)
+## TL;DR
 - 
 - 
 - 

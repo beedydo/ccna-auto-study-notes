@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "5.7"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T45 · Reading Python scripts using Cisco APIs
 
-> Owner: **Bob** · Blueprint: **5.7** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **5.7** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T45 at a glance: script shape, platform fingerprints, workflow, bug symptoms and exam angle on one page](../assets/T45/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T45.01](#t4501--typical-script-structure) Typical script structure · [T45.02](#t4502--recognise-the-platform) Recognise the platform · [T45.03](#t4503--read-the-workflow) Read the workflow · [T45.04](#t4504--spot-bugs) Spot bugs · [T45.05](#t4505--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Same skeleton every time:** imports → constants (base URL, creds from env) → `get_token()` → call functions → `main()` that loops, filters and acts. Read `main()` for the order. The definition order in the file doesn't tell you the run order.
 - **Name the platform from the URL before reading any logic:** `api.meraki.com` = Meraki, `/dna/` + `X-Auth-Token` = Catalyst Center, `/api/aaaLogin.json` = ACI or NX-API REST, `/dataservice` = SD-WAN Manager, `webexapis.com` = Webex, `/restconf/data` = RESTCONF, `ncclient` = NETCONF.

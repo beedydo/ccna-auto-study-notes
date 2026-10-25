@@ -1,6 +1,6 @@
 # T41 · Firewall, DNS, LB, reverse proxy: essentials
 
-> Blueprint 4.9 · Full note: [bob/T41-firewall-dns-lb-reverse-proxy.md](../bob/T41-firewall-dns-lb-reverse-proxy.md) · Teach-back 2026-11-01
+> Blueprint 4.9 · Full note: [bob/T41-firewall-dns-lb-reverse-proxy.md](../bob/T41-firewall-dns-lb-reverse-proxy.md)
 
 ## In one picture
 ![T41 at a glance: the request path client → DNS → firewall/WAF → LB/reverse proxy → app → DB, with what each box does](../assets/T41/00-overview.png)

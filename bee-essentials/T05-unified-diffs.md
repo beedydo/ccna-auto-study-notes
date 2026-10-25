@@ -1,6 +1,6 @@
 # T05 · Unified diffs: essentials
 
-> Blueprint 5.12: interpret a unified diff · Full note: [bee/T05-unified-diffs.md](../bee/T05-unified-diffs.md) · Teach-back 2026-10-11 · **[Syntax drill](#syntax-drill)** at the end
+> Blueprint 5.12: interpret a unified diff · Full note: [bee/T05-unified-diffs.md](../bee/T05-unified-diffs.md) · **[Syntax drill](#syntax-drill)** at the end
 
 ![T05 at a glance: a real annotated git diff with file header, hunk header and line prefixes](../assets/T05/00-overview.png)
 

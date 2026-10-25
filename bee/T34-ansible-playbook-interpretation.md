@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.8"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted       # not-started | drafted | verified | taught
+status: verified      # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T34 · Ansible playbook interpretation
 
-> Owner: **Beedy** · Blueprint: **5.8** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **5.8** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T34 at a glance: inventory, play structure, modules, variables, control keywords, running and reading a playbook on one page](../assets/T34/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T34.01](#t3401--inventory) Inventory · [T34.02](#t3402--playbook-structure) Playbook structure · [T34.03](#t3403--modules) Modules · [T34.04](#t3404--variables) Variables · [T34.05](#t3405--control) Control · [T34.06](#t3406--running) Running · [T34.07](#t3407--structure-awareness) Structure (awareness) · [T34.08](#t3408--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Read a playbook in four passes.** (1) `hosts:` → which inventory group, and so which devices. (2) The connection (`ansible_connection` in group_vars or play vars): `network_cli` = SSH CLI, `netconf` = XML over SSH 830, `httpapi` = REST/RESTCONF. (3) The module on each task: `*_command`/`*_get` = read, `*_config` = write, `uri` = any REST call. (4) The data: `lines:`/`src:`/`content:`/`path:` and the `{{ vars }}` that fill them. Tasks run **top to bottom**.
 - **Control keywords:** `register` saves a task's result dict (`vlan_out.stdout[0]`). `when` is a raw Jinja2 test, checked **per loop item**. `loop` repeats a task with `item`. `notify` queues a handler that runs **once, after all tasks**, and **only if** a notifying task reported `changed`.

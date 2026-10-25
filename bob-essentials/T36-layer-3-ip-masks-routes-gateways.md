@@ -1,6 +1,6 @@
 # T36 · Layer 3: IP, masks, routes, gateways: essentials
 
-> Blueprint 6.2 · Full note: [bob/T36-layer-3-ip-masks-routes-gateways.md](../bob/T36-layer-3-ip-masks-routes-gateways.md) · Teach-back 2026-10-11
+> Blueprint 6.2 · Full note: [bob/T36-layer-3-ip-masks-routes-gateways.md](../bob/T36-layer-3-ip-masks-routes-gateways.md)
 
 ## In one picture
 

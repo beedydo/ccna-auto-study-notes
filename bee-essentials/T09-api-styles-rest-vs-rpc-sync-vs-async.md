@@ -1,6 +1,6 @@
 # T09 · API styles: REST vs RPC, sync vs async: essentials
 
-> Blueprint 2.8: compare API styles (REST, RPC, sync, async) · Full note: [bee/T09-api-styles-rest-vs-rpc-sync-vs-async.md](../bee/T09-api-styles-rest-vs-rpc-sync-vs-async.md) · Teach-back 2026-10-18
+> Blueprint 2.8: compare API styles (REST, RPC, sync, async) · Full note: [bee/T09-api-styles-rest-vs-rpc-sync-vs-async.md](../bee/T09-api-styles-rest-vs-rpc-sync-vs-async.md)
 
 ![T09 at a glance: REST vs RPC vs SOAP, sync vs async](../assets/T09/00-overview.png)
 

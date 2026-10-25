@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.1, 2.4-2.6"
 primary_domain: D2
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T07 · REST fundamentals, HTTP codes
 
-> Owner: **Beedy** · Blueprint: **2.1, 2.4-2.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Beedy** · Blueprint: **2.1, 2.4-2.6** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T07 at a glance: every REST and HTTP-code concept on one page](../assets/T07/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T07.01](#t0701--rest-basics) REST basics · [T07.02](#t0702--rest-constraints) REST constraints · [T07.03](#t0703--http-methods) HTTP methods · [T07.04](#t0704--http-methods) HTTP methods · [T07.05](#t0705--request-parts) Request parts · [T07.06](#t0706--headers) Headers · [T07.07](#t0707--response-parts) Response parts · [T07.08](#t0708--status-classes) Status classes · [T07.09](#t0709--key-codes) Key codes · [T07.10](#t0710--troubleshooting) Troubleshooting · [T07.11](#t0711--using-api-docs) Using API docs · [T07.12](#t0712--curl) curl · [T07.13](#t0713--media-types) Media types · [T07.14](#t0714--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Request = method + URI + headers + body.** CRUD: POST creates on the collection (`201` + `Location`), GET reads, PUT replaces **all** fields, PATCH changes **some**, DELETE removes (`204`). Path param = which resource (`/devices/1`), query param = filter (`?role=edge`).
 - **Status class first:** 2xx worked, 3xx look elsewhere (`Location`) or use the cache (`304`), 4xx **you** fix the request, 5xx the **server** failed. Key 4xx: `400` bad body · `401` who are you · `403` not allowed · `404` wrong URI · `405` wrong method · `415` wrong Content-Type · `429` slow down (`Retry-After`).

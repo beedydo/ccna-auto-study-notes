@@ -1,6 +1,6 @@
 # T38 · Topology diagrams + components: essentials
 
-> Blueprint 6.3, 6.4 · Full note: [bob/T38-topology-diagrams-components.md](../bob/T38-topology-diagrams-components.md) · Teach-back 2026-11-01
+> Blueprint 6.3, 6.4 · Full note: [bob/T38-topology-diagrams-components.md](../bob/T38-topology-diagrams-components.md)
 
 ## In one picture
 

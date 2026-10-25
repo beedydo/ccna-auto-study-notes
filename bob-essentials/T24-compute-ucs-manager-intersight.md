@@ -1,6 +1,6 @@
 # T24 · Compute: UCS Manager + Intersight: essentials
 
-> Blueprint 3.3 · Full note: [bob/T24-compute-ucs-manager-intersight.md](../bob/T24-compute-ucs-manager-intersight.md) · Teach-back 2026-10-25
+> Blueprint 3.3 · Full note: [bob/T24-compute-ucs-manager-intersight.md](../bob/T24-compute-ucs-manager-intersight.md)
 
 ## In one picture
 

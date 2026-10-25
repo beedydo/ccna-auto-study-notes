@@ -1,6 +1,6 @@
 # T40 · App connectivity + network constraints: essentials
 
-> Blueprint 6.8, 6.9 · Full note: [bob/T40-app-connectivity-network-constraints.md](../bob/T40-app-connectivity-network-constraints.md) · Teach-back 2026-11-01
+> Blueprint 6.8, 6.9 · Full note: [bob/T40-app-connectivity-network-constraints.md](../bob/T40-app-connectivity-network-constraints.md)
 
 ## In one picture
 ![T40 at a glance: where an app call breaks on the path, the diagnostic ladder, constraints and the symptom-to-fix table](../assets/T40/00-overview.png)

@@ -1,6 +1,6 @@
 # T23 · Security platforms: essentials
 
-> Blueprint 3.5 · Full note: [bob/T23-security-platforms.md](../bob/T23-security-platforms.md) · Teach-back 2026-10-25
+> Blueprint 3.5 · Full note: [bob/T23-security-platforms.md](../bob/T23-security-platforms.md)
 
 ## In one picture
 

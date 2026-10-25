@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "4.3, 4.6, 4.7"
 primary_domain: D4
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T27 · Docker
 
-> Owner: **Beedy** · Blueprint: **4.3, 4.6, 4.7** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **4.3, 4.6, 4.7** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T27 at a glance: Docker build, run, network and storage on one system map](../assets/T27/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T27.01](#t2701--concepts) Concepts · [T27.02](#t2702--dockerfile) Dockerfile · [T27.03](#t2703--dockerfile) Dockerfile · [T27.04](#t2704--commands) Commands · [T27.05](#t2705--commands) Commands · [T27.06](#t2706--commands) Commands · [T27.07](#t2707--networkingstorage) Networking/storage · [T27.08](#t2708--local-dev) Local dev · [T27.09](#t2709--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Image = read-only layers (template). Container = image + its own writable layer + one running process.** `docker build` turns a Dockerfile into an image, `docker run` turns an image into a container, and a registry stores images as `[host/]namespace/repo:tag` (no tag = `latest`).
 - **Read a Dockerfile top to bottom:** `FROM` = base, `RUN` = build-time step (new layer), `COPY` = your files, `EXPOSE` = documents the port (publishes nothing), `USER` = who runs it, `ENTRYPOINT` + `CMD` = what runs at start. Args after the image name **replace CMD** and are **appended to ENTRYPOINT**.

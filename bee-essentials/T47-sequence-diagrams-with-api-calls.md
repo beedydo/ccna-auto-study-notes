@@ -1,6 +1,6 @@
 # T47 · Sequence diagrams with API calls: essentials
 
-> Blueprint 5.14: interpret a sequence diagram with API calls · Full note: [bee/T47-sequence-diagrams-with-api-calls.md](../bee/T47-sequence-diagrams-with-api-calls.md) · Teach-back 2026-10-25
+> Blueprint 5.14: interpret a sequence diagram with API calls · Full note: [bee/T47-sequence-diagrams-with-api-calls.md](../bee/T47-sequence-diagrams-with-api-calls.md)
 
 ![T47 at a glance: notation, frames, auth, async, webhook and reading flows](../assets/T47/00-overview.png)
 

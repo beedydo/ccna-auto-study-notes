@@ -1,6 +1,6 @@
 # T25 · NSO + Cisco Modeling Labs: essentials
 
-> Blueprint 3.2, 5.3, 5.6 · Full note: [bob/T25-nso-cisco-modeling-labs.md](../bob/T25-nso-cisco-modeling-labs.md) · Teach-back 2026-10-25
+> Blueprint 3.2, 5.3, 5.6 · Full note: [bob/T25-nso-cisco-modeling-labs.md](../bob/T25-nso-cisco-modeling-labs.md)
 
 ## In one picture
 

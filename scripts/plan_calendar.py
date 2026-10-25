@@ -26,8 +26,9 @@ def cell(row):
     b, o, t, phase = row["beedy"], row["bob"], row["together"], row["phase"]
     if b.startswith("EXAM"):
         return "🎯 **EXAM**"
-    if "TEACH-BACK" in t and row["date"] != "2026-10-08":
-        return f"🎤 **Teach-back {re.search(r'TEACH-BACK (\d)', t).group(1)}**"
+    if phase == "Own topics (catch-up/review)":
+        bi, oi = ids(b), ids(o)
+        return f"🗂️ review<br>🐝 {bi or '—'}<br>🅱️ {oi or '—'}"
     if "SWAP QUIZ" in t:
         return "🔀 **Swap quiz**"
     if b.startswith("MOCK EXAM"):
@@ -81,7 +82,7 @@ def build():
             parts.append("| " + " | ".join(cells) + " |")
         parts.append("")
         month = (month.replace(day=28) + dt.timedelta(days=4)).replace(day=1)
-    parts += ["🐝 Beedy · 🅱️ Bob · 🎤 teach-back (Sun, 30 min together) · ✅ check + correct notes, practice Qs, cards · 🔁 cross-study the partner's notes · 🔀 swap quiz · 🧪 mock · 🎯 exam",
+    parts += ["🐝 Beedy · 🅱️ Bob · 🗂️ self-review day (no joint session) · ✅ check + correct notes, practice Qs, cards · 🔁 cross-study the partner's notes · 🔀 swap quiz · 🧪 mock · 🎯 exam",
               "",
               "_Generated from `data/pair-plan.csv` by `scripts/plan_calendar.py`. Change the CSV, then re-run the script._",
               "",

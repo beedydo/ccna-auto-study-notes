@@ -1,6 +1,6 @@
 # T17 · IOS XE and NX-OS device-level APIs: essentials
 
-> Blueprint 3.6 · Full note: [bob/T17-iosxe-nxos-device-apis.md](../bob/T17-iosxe-nxos-device-apis.md) · Teach-back 2026-10-18
+> Blueprint 3.6 · Full note: [bob/T17-iosxe-nxos-device-apis.md](../bob/T17-iosxe-nxos-device-apis.md)
 
 ## In one picture
 

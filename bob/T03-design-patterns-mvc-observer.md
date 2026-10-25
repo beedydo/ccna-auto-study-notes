@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "1.6"
 primary_domain: D1
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T03 · Design patterns: MVC + Observer
 
-> Owner: **Bob** · Blueprint: **1.6** · CBT coverage: **Full** (unconfirmed, see To verify) · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **1.6** · CBT coverage: **Full** (unconfirmed, see To verify) · Learn by 2026-10-10
 
 ![T03 at a glance: design patterns, MVC, Observer, comparison and exam angle on one page](../assets/T03/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T03.01](#t0301--design-patterns) Design patterns · [T03.02](#t0302--mvc) MVC · [T03.03](#t0303--mvc-advantages) MVC advantages · [T03.04](#t0304--observer) Observer · [T03.05](#t0305--observer-advantages) Observer advantages · [T03.06](#t0306--singleton-awareness) Singleton (awareness) · [T03.07](#t0307--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Design pattern = a reusable, proven template for a recurring design problem, not code.** The Gang of Four (GoF) book groups 23 of them as creational, structural and behavioural. Blueprint 1.6 asks for the **advantages** of two: MVC and Observer.
 - **MVC:** Model = data + rules, View = presentation, Controller = takes input, updates the model and picks the view. Flow: user → controller → model → view → user. **Advantage:** separation of concerns, so you can change the UI without touching data logic, build UI and back end in parallel, put many views on one model, and test each part alone.

@@ -1,6 +1,6 @@
 # T26 · Deployment models + edge computing: essentials
 
-> Blueprint 4.1-4.3: benefits of edge computing; deployment models (private, public, hybrid, edge); deployment types (VMs, bare metal, containers) · Full note: [bee/T26-deployment-models-edge-computing.md](../bee/T26-deployment-models-edge-computing.md) · Teach-back 2026-10-25
+> Blueprint 4.1-4.3: benefits of edge computing; deployment models (private, public, hybrid, edge); deployment types (VMs, bare metal, containers) · Full note: [bee/T26-deployment-models-edge-computing.md](../bee/T26-deployment-models-edge-computing.md)
 
 ![T26 at a glance: cloud models, service models, edge, deployment types and scenario answers](../assets/T26/00-overview.png)
 

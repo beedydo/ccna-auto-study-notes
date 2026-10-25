@@ -19,7 +19,7 @@ Project memory for Claude Code. Read this first in every session.
 
 ## Handover context (decisions, schedule, open flags)
 
-Full background from the planning chats: topic split, Pair Plan schedule, teach-back format, CBT coverage audit and open flags. Imported so every session loads it:
+Full background from the planning chats: topic split, Pair Plan schedule, CBT coverage audit and open flags. Imported so every session loads it:
 
 @HANDOVER.md
 
@@ -33,7 +33,7 @@ Full background from the planning chats: topic split, Pair Plan schedule, teach-
 | CBT videos/labs/top-ups per topic | `data/study-aids.csv` |
 | Topics CBT doesn't cover (fully) and how to fill the gap | `data/top-ups.csv` |
 | CBT videos to skip | `data/cbt-skip-list.csv` |
-| Night-by-night pair plan, 5 Oct to 9 Nov (4 weekly cycles, Sunday teach-backs) | `data/pair-plan.csv` |
+| Night-by-night pair plan, 5 Oct to 9 Nov (4 weekly cycles) | `data/pair-plan.csv` |
 | Practice scores | `data/practice-log.csv` |
 | Original Google Sheet (tracker with status columns) | `CCNA_Automation_Training_Schedule` in Beedy's Google Drive |
 
@@ -47,7 +47,6 @@ bob/                              Bob's topic notes ONLY (25 files): TXX-slug.md
 notes/d1..d6-*/README.md          per-domain index tables linking into bee/ and bob/ (no notes here)
 CLAUDE.md, HANDOVER.md, data/     shared context: stays at the root, never inside bee/ or bob/
 bee-essentials/, bob-essentials/  one-read study version of each topic note (same filename as the note)
-teach-back/                       teach-back-1..4.md (cards for each joint session)
 quizzes/                          generated question banks (one file per topic or batch)
 case-studies/                     real-code walkthroughs mapped to topics (project names made generic)
 labs/                             Docker lab container + runnable scripts
@@ -67,10 +66,10 @@ scripts/progress.py               prints progress from note front matter
 
 ## Note format (every topic file)
 
-- Front matter: `id, title, owner, blueprint, primary_domain, cbt_coverage, status, confidence, learn_by, teach_back, cross_study`.
-  - `status` values: `not-started` → `drafted` (Claude wrote it) → `verified` (owner checked it against sources and did practice Qs) → `taught` (after the teach-back).
+- Front matter: `id, title, owner, blueprint, primary_domain, cbt_coverage, status, confidence, learn_by, cross_study`.
+  - `status` values: `not-started` → `drafted` (Claude wrote it) → `verified` (owner checked it against sources and did practice Qs).
 - Sections, in this order:
-  1. `## TL;DR (teach-back card)`: 3 key points and 1 exam trap. Written last.
+  1. `## TL;DR`: 3 key points and 1 exam trap. Written last.
   2. `## Concepts`: one `### TXX.NN · Area` per concept ID.
      - Keep the pre-filled **Must cover** checklist. Tick `[x]` each item once the notes below explain it.
      - Write the explanation under **Notes:**.
@@ -124,8 +123,8 @@ scripts/progress.py               prints progress from note front matter
   - To suggest a change to a partner's note, open a PR or add a line under that note's `## To verify` on your branch. Do not rewrite their content.
 - Branch per person per batch: `beedy/batch-2-apis`, `bob/batch-2-model-driven`. Open a PR to `main`; the other person reviews.
   - The review is itself practice for blueprint 5.13 (code review).
-- Commit messages: `T07: draft REST fundamentals notes`, `T15: verify NETCONF ops, add 6 Qs`, `teach-back-2: Beedy cards`.
-- Shared files (`cheatsheet.md`, `teach-back/*.md`, `data/practice-log.csv`): each person edits only their own section.
+- Commit messages: `T07: draft REST fundamentals notes`, `T15: verify NETCONF ops, add 6 Qs`.
+- Shared files (`cheatsheet.md`, `data/practice-log.csv`): each person edits only their own section.
 
 ## Typical workflows (custom slash commands in `.claude/commands/`)
 
@@ -134,7 +133,6 @@ scripts/progress.py               prints progress from note front matter
 | `/note T07` | Draft the full note for a topic: every concept checklist item covered, exam traps, runnable examples, 5–8 Qs, sources. Sets `status: drafted`. |
 | `/verify T07` | Fact-check a drafted note against official docs; fix errors; tick the checklist; list `⚠ verify` items. |
 | `/quiz T07` or `/quiz batch-2` | Generate or extend an exam-style question bank in `quizzes/`, answers hidden. |
-| `/teachback 2` | Build the teach-back cards for session 2 from the TL;DRs of that batch's notes. |
 | `/crossstudy beedy` | Make a condensed study pack of the *partner's* notes for cross-study nights (20, 22, 27 Oct and 4 Nov). |
 | `/lab T16` | Write a runnable lab script for a topic (DevNet Sandbox target, Docker lab container). |
 | `/cheatsheet` | Rebuild `cheatsheet.md` from all "Exam traps" sections. |

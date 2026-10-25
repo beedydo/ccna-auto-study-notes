@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.6"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T17 · IOS XE and NX-OS device-level APIs
 
-> Owner: **Bob** · Blueprint: **3.6** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.6** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T17 at a glance: IOS XE and NX-OS device APIs as a system map](../assets/T17/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T17.01](#t1701--ios-xe-programmability) IOS XE programmability · [T17.02](#t1702--nx-api-cli) NX-API CLI · [T17.03](#t1703--nx-api-rest) NX-API REST · [T17.04](#t1704--other-nx-os-interfaces) Other NX-OS interfaces · [T17.05](#t1705--dynamic-interfaces) Dynamic interfaces · [T17.06](#t1706--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **IOS XE = YANG interfaces.** NETCONF (SSH 830), RESTCONF (HTTPS `/restconf`) and gNMI (9339), over IETF / OpenConfig / `Cisco-IOS-XE-native` models. There's no NX-API on IOS XE. Guest Shell (on-box Python) and EEM are awareness-level only.
 - **NX-OS has two Cisco APIs on top of the YANG ones, and all of them share one DME.** **NX-API CLI** = CLI text sent in a `POST /ins` (`cli_show` gives structured output, `cli_show_ascii` gives raw text, `cli_conf` configures; JSON, XML or JSON-RPC). **NX-API REST** = DME managed objects: log in with `POST /api/aaaLogin.json` to get the `APIC-cookie`, then use `/api/mo/<dn>.json` for one object or `/api/class/<class>.json` for every object of a class.

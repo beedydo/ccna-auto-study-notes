@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.8, 5.10"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T15 · NETCONF
 
-> Owner: **Bob** · Blueprint: **3.8, 5.10** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.8, 5.10** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T15 at a glance: client, the four NETCONF layers, device datastores, operations, filters, replies and exam angle](../assets/T15/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T15.01](#t1501--what-netconf-is) What NETCONF is · [T15.02](#t1502--layers) Layers · [T15.03](#t1503--session) Session · [T15.04](#t1504--operations) Operations · [T15.05](#t1505--datastores) Datastores · [T15.06](#t1506--filters) Filters · [T15.07](#t1507--replies) Replies · [T15.08](#t1508--python-ncclient) Python ncclient · [T15.09](#t1509--device-setup-and-value) Device setup and value · [T15.10](#t1510--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **NETCONF = RPC over SSH, TCP 830, XML only** (RFC 6241). Four layers: Transport (SSH) → Messages (`<rpc>`/`<rpc-reply>`/`<notification>`) → Operations (`<get>`, `<edit-config>` …) → Content (YANG-modelled XML). The session opens with a `<hello>` exchange of **capabilities**.
 - **Pick the operation:** `<get>` = config **+ state**; `<get-config>` = config only from a `<source>`; `<edit-config>` changes a `<target>` (merge by default, or replace / create / delete / remove). Replies are `<ok/>`, `<data>` or `<rpc-error>` (read `error-tag`).

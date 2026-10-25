@@ -1,6 +1,6 @@
 # T16 · RESTCONF: essentials
 
-> Blueprint 3.8, 5.10, 2.9 · Full note: [bob/T16-restconf.md](../bob/T16-restconf.md) · Teach-back 2026-10-18
+> Blueprint 3.8, 5.10, 2.9 · Full note: [bob/T16-restconf.md](../bob/T16-restconf.md)
 
 ## In one picture
 

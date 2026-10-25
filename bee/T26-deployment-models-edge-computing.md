@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "4.1-4.3"
 primary_domain: D4
 cbt_coverage: "Full"
-status: drafted       # not-started | drafted | verified | taught
+status: verified      # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T26 · Deployment models + edge computing
 
-> Owner: **Beedy** · Blueprint: **4.1-4.3** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **4.1-4.3** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T26 at a glance: cloud models, service models, edge, deployment types and scenario answers on one page](../assets/T26/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T26.01](#t2601--cloud-models) Cloud models · [T26.02](#t2602--service-models) Service models · [T26.03](#t2603--cloud-traits) Cloud traits · [T26.04](#t2604--edge-computing) Edge computing · [T26.05](#t2605--deployment-types) Deployment types · [T26.06](#t2606--comparison) Comparison · [T26.07](#t2607--other-types) Other types · [T26.08](#t2608--app-architecture) App architecture · [T26.09](#t2609--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Two separate questions:** *who* the cloud is for (private · public · community · hybrid; multi-cloud = 2+ public providers) and *how much the provider runs* (IaaS → you patch the OS, PaaS → you push code, SaaS → you use the app). NIST's 5 traits: self-service, broad network access, pooling, rapid elasticity, measured service.
 - **Edge = compute where the data is produced.** Wins: lower latency, less WAN bandwidth, keeps working when the WAN drops, data stays local. Fog = the layer between edge devices and cloud (routers, switches, gateways); Cisco runs edge apps on them with **IOx**.

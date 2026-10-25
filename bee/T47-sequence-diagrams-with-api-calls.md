@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.14"
 primary_domain: D5
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T47 · Sequence diagrams with API calls
 
-> Owner: **Beedy** · Blueprint: **5.14** · CBT coverage: **None** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **5.14** · CBT coverage: **None** · Learn by 2026-10-24
 
 ![T47 at a glance: notation, frames, auth, async, webhook and reading flows](../assets/T47/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T47.01](#t4701--notation) Notation · [T47.02](#t4702--notation) Notation · [T47.03](#t4703--auth-flow) Auth flow · [T47.04](#t4704--async-flow) Async flow · [T47.05](#t4705--webhook-flow) Webhook flow · [T47.06](#t4706--reading) Reading · [T47.07](#t4707--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **How to read it:** boxes across the top are **participants**, and each has a dashed **lifeline** going down. **Time runs top → bottom.** A **solid** arrow is a request (method + URL); a **dashed** arrow is the response (status + data) going back the other way. A thin **activation bar** means "this one is busy".
 - **Frames are code:** `alt` = `if/else` (one branch runs), `opt` = `if` with no else, `loop` = `while` (poll, paginate), `par` = in parallel. Each request/response arrow pair = one `requests.get()` / `post()`.

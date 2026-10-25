@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.1, 3.2, 3.9.a"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T19 · ACI
 
-> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T19 at a glance: APIC, the MIT, the logical model and the REST API on one page](../assets/T19/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T19.01](#t1901--what-aci-is) What ACI is · [T19.02](#t1902--object-model) Object model · [T19.03](#t1903--logical-constructs) Logical constructs · [T19.04](#t1904--rest-api-login) REST API login · [T19.05](#t1905--queries) Queries · [T19.06](#t1906--tools) Tools · [T19.07](#t1907--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **ACI = SDN for the data centre.** The APIC cluster (the controller) holds the policy; the Nexus 9000 spine-leaf fabric forwards traffic. You declare intent (tenant, EPGs, contracts) and APIC programs every switch. APIC is not in the data path.
 - **Everything is a managed object (MO) in one tree (the MIT).** Each MO has a **class** (`fvTenant`, `fvAEPg`, `fabricNode`) and a **DN** built from RNs: `uni/tn-Prod/ap-Web/epg-Frontend`. Logical chain: tenant → VRF (`fvCtx`) → bridge domain → subnet; application profile → EPGs; contracts (subject → filter) allow traffic between EPGs. No contract = drop.

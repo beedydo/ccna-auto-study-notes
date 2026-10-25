@@ -1,6 +1,6 @@
 # T31 · Bash: essentials
 
-> Blueprint 4.11: Bash commands (files, navigation, environment variables); 5.9: interpret Bash script workflows · Full note: [bee/T31-bash.md](../bee/T31-bash.md) · Teach-back 2026-11-01
+> Blueprint 4.11: Bash commands (files, navigation, environment variables); 5.9: interpret Bash script workflows · Full note: [bee/T31-bash.md](../bee/T31-bash.md)
 
 ![T31 at a glance: every Bash concept on one page](../assets/T31/00-overview.png)
 

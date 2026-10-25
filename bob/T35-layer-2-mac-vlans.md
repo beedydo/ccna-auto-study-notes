@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.1"
 primary_domain: D6
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T35 · Layer 2: MAC, VLANs
 
-> Owner: **Bob** · Blueprint: **6.1** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **6.1** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T35 at a glance: MAC anatomy, switch logic, VLANs, access vs trunk, inter-VLAN routing, exam angle](../assets/T35/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T35.01](#t3501--mac-addresses) MAC addresses · [T35.02](#t3502--switching) Switching · [T35.03](#t3503--vlans) VLANs · [T35.04](#t3504--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **MAC = 48 bits, 12 hex digits: first 24 bits = OUI (vendor), last 24 = NIC.** The lowest bit of the first octet (I/G) says unicast (0) or group (1). Broadcast = `FF:FF:FF:FF:FF:FF`.
 - **A switch learns the *source* MAC → ingress port, then decides on the *destination*:** known unicast = forward out one port; broadcast, multicast or unknown unicast = flood the VLAN except the ingress port; destination on the same port = filter. Idle entries age out after 300 s (Cisco default).

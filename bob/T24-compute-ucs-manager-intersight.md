@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.3"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T24 · Compute: UCS Manager + Intersight
 
-> Owner: **Bob** · Blueprint: **3.3** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.3** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T24 at a glance: UCS Manager vs Intersight, service profiles, XML API, SDK and signed REST on one page](../assets/T24/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T24.01](#t2401--ucs-and-ucs-manager) UCS and UCS Manager · [T24.02](#t2402--service-profiles) Service profiles · [T24.03](#t2403--ucsm-xml-api) UCSM XML API · [T24.04](#t2404--ucsm-python-sdk) UCSM Python SDK · [T24.05](#t2405--intersight) Intersight · [T24.06](#t2406--ucsm-vs-intersight) UCSM vs Intersight · [T24.07](#t2407--not-tested) Not tested · [T24.08](#t2408--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **UCS Manager (UCSM) = on-prem, one domain.** It runs on the fabric interconnect pair and manages every blade/rack server behind it. Everything is a **managed object** with a **DN** in one tree (`sys/chassis-1/blade-1`, `org-root/ls-ESX-01`). API = **XML POSTed to `/nuova`**: `aaaLogin` → `outCookie`, then `configResolveClass` / `configResolveDn`; SDK = `ucsmsdk` (`UcsHandle(...).login()`, `query_classid("computeBlade")`).
 - **Service profile = the server's identity as software** (UUID, MAC, WWN, boot order, BIOS, firmware), built from pools + policies + templates. Associate it with any blade; move it to another blade and the server keeps its identity → **stateless computing**.

@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.13"
 primary_domain: D5
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T46 · Code review principles
 
-> Owner: **Beedy** · Blueprint: **5.13** · CBT coverage: **None** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **5.13** · CBT coverage: **None** · Learn by 2026-10-31
 
 ![T46 at a glance: review process swim-lane, benefits, review types, CI vs human, giving feedback](../assets/T46/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T46.01](#t4601--purpose) Purpose · [T46.02](#t4602--process) Process · [T46.03](#t4603--types) Types · [T46.04](#t4604--good-practice) Good practice · [T46.05](#t4605--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Why (the 5.13 "benefits" answer):** find bugs and security issues **early** (cheaper than in prod) · **share knowledge** (no single person owns a module) · keep **style and standards** consistent · **mentor** and raise code quality over time. Never "faster code" or "replaces testing".
 - **Where it sits:** branch → commit → push → **open PR/MR** → **CI** runs lint + tests → **human review** (Comment / Request changes / Approve) → author pushes fixes to the **same branch** → approve → **merge** (branch protection needs approval **and** green checks).

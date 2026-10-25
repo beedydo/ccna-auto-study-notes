@@ -1,6 +1,6 @@
 # T43 · Webhooks: essentials
 
-> Blueprint 2.2: webhook usage patterns · Full note: [bee/T43-webhooks.md](../bee/T43-webhooks.md) · Teach-back 2026-10-25
+> Blueprint 2.2: webhook usage patterns · Full note: [bee/T43-webhooks.md](../bee/T43-webhooks.md)
 
 ![T43 at a glance: register once, event happens, platform POSTs to you, verify and ack, follow-up GET](../assets/T43/00-overview.png)
 

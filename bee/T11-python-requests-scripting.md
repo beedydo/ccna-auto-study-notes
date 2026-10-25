@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.9"
 primary_domain: D2
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T11 · Python requests scripting
 
-> Owner: **Beedy** · Blueprint: **2.9** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Beedy** · Blueprint: **2.9** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T11 at a glance: every requests concept on one page](../assets/T11/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T11.01](#t1101--calls) Calls · [T11.02](#t1102--arguments) Arguments · [T11.03](#t1103--response) Response · [T11.04](#t1104--sessions) Sessions · [T11.05](#t1105--errors) Errors · [T11.06](#t1106--tls-warnings) TLS warnings · [T11.07](#t1107--patterns) Patterns · [T11.08](#t1108--output) Output · [T11.09](#t1109--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **One call = method + URL + keyword args.** `requests.get/post/put/patch/delete(url, ...)` or `requests.request("PATCH", url, ...)`. `params=` builds `?a=1&b=2`, `headers=` adds headers, `json=` sends a dict as JSON **and** sets `Content-Type: application/json`, `auth=(u, p)` adds Basic auth, `verify=` and `timeout=` are client-side only.
 - **Read the response in order:** `resp.status_code` (int) / `resp.ok` (< 400) → `resp.headers` (case-insensitive) → `resp.json()` (dict/list), `resp.text` (str), `resp.content` (bytes). `requests` **never raises on a 4xx/5xx by itself**; call `resp.raise_for_status()` to get an `HTTPError`.

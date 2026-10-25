@@ -5,22 +5,21 @@ owner: Beedy
 blueprint: "4.10"
 primary_domain: D4
 cbt_coverage: "Full"
-status: not-started   # not-started | drafted | verified | taught
+status: not-started   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T30 · OWASP: XSS, SQLi, CSRF
 
-> Owner: **Beedy** · Blueprint: **4.10** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **4.10** · CBT coverage: **Full** · Learn by 2026-10-31
 
 <!-- toc:start -->
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T30.01](#t3001--owasp) OWASP · [T30.02](#t3002--xss) XSS · [T30.03](#t3003--xss-defences) XSS defences · [T30.04](#t3004--sql-injection) SQL injection · [T30.05](#t3005--sqli-defences) SQLi defences · [T30.06](#t3006--csrf) CSRF · [T30.07](#t3007--csrf-defences) CSRF defences · [T30.08](#t3008--other-top-10-awareness) Other Top 10 (awareness) · [T30.09](#t3009--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -32,7 +31,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 <!-- 3 key points + 1 exam trap. Written last. -->
 

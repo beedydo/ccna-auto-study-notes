@@ -44,7 +44,7 @@ docker build --tag ccna-auto-lab:latest --file labs/Dockerfile labs/
    git commit --message "T07: draft REST fundamentals notes"
    ```
 
-4. Before the teach-back, run `/teachback N`, then commit and push:
+4. Push and open a PR:
 
    ```bash
    git push --set-upstream origin beedy/batch-2-apis
@@ -52,7 +52,7 @@ docker build --tag ccna-auto-lab:latest --file labs/Dockerfile labs/
    ```
 
 5. The partner reviews the PR. Use review comments for questions; this is practice for blueprint 5.13.
-6. Merge after the teach-back:
+6. Merge once the batch's self-review day arrives:
 
    ```bash
    gh pr merge beedy/batch-2-apis --squash --delete-branch
@@ -61,6 +61,6 @@ docker build --tag ccna-auto-lab:latest --file labs/Dockerfile labs/
 ## Rules
 
 - Edit only your own topic notes (`owner:` in front matter). For your partner's notes, comment on the PR or add an item under `## To verify` in your branch.
-- Shared files (`cheatsheet.md`, `teach-back/*.md`, `data/practice-log.csv`): edit only your own section or rows.
+- Shared files (`cheatsheet.md`, `data/practice-log.csv`): edit only your own section or rows.
 - Never commit secrets. `labs/.env` is git-ignored; use `labs/.env.example` as the template.
-- Status flow: `not-started` → `drafted` (Claude) → `verified` (you) → `taught` (after the teach-back).
+- Status flow: `not-started` → `drafted` (Claude) → `verified` (you, after checking against sources and doing the practice Qs).

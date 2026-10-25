@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.8, 5.10, 2.9"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T16 · RESTCONF
 
-> Owner: **Bob** · Blueprint: **3.8, 5.10, 2.9** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.8, 5.10, 2.9** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T16 at a glance: every RESTCONF concept on one page](../assets/T16/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T16.01](#t1601--what-restconf-is) What RESTCONF is · [T16.02](#t1602--uri-structure) URI structure · [T16.03](#t1603--methods) Methods · [T16.04](#t1604--headers) Headers · [T16.05](#t1605--responses) Responses · [T16.06](#t1606--query-parameters) Query parameters · [T16.07](#t1607--device-setup) Device setup · [T16.08](#t1608--netconf-vs-restconf) NETCONF vs RESTCONF · [T16.09](#t1609--python) Python · [T16.10](#t1610--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **RESTCONF (RFC 8040) = YANG data over HTTPS 443**, in JSON or XML, using HTTP methods on URIs. The URI follows the YANG tree: `/restconf/data/<module>:<container>/<list>=<key>/<leaf>`. RPCs go under `/restconf/operations/`. On IOS XE you enable it with `restconf` + `ip http secure-server`.
 - **Methods and codes:** GET → `200` + body. POST to the **parent** → `201` + `Location` (`409` if it already exists). PUT = create **or replace** → `201` new / `204` replaced. PATCH = **merge** → `204`. DELETE → `204`. Errors come back as `ietf-restconf:errors` with an `error-tag`.

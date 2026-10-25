@@ -1,6 +1,6 @@
 # T11 · Python requests scripting: essentials
 
-> Blueprint 2.9: Python script calling a REST API with requests · Full note: [bee/T11-python-requests-scripting.md](../bee/T11-python-requests-scripting.md) · Teach-back 2026-10-18
+> Blueprint 2.9: Python script calling a REST API with requests · Full note: [bee/T11-python-requests-scripting.md](../bee/T11-python-requests-scripting.md)
 
 ![T11 at a glance: every requests concept on one page](../assets/T11/00-overview.png)
 

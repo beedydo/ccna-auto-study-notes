@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "4.9"
 primary_domain: D4
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T41 · Firewall, DNS, LB, reverse proxy
 
-> Owner: **Bob** · Blueprint: **4.9** · CBT coverage: **None** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **4.9** · CBT coverage: **None** · Learn by 2026-10-31
 
 ![T41 at a glance: the request path client → DNS → firewall/WAF → LB/reverse proxy → app → DB, with what each box does](../assets/T41/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T41.01](#t4101--firewall) Firewall · [T41.02](#t4102--dns) DNS · [T41.03](#t4103--load-balancer) Load balancer · [T41.04](#t4104--reverse-proxy) Reverse proxy · [T41.05](#t4105--typical-flow) Typical flow · [T41.06](#t4106--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Each box answers one question.** DNS: *where* is the app (name → VIP, TTL, GSLB failover). Firewall: *may* this packet pass (IP / port / protocol, stateful, first match, implicit deny). WAF: is this *HTTP request* an attack (SQLi, XSS). LB: *which* server (VIP → pool, round robin / least conn / weighted, health checks). Reverse proxy: *front* the servers (hide them, TLS termination, cache, compress, route by path).
 - **L4 vs L7 decides what a box can see.** A firewall ACL or L4 LB (AWS NLB) sees IP + port only. A WAF, L7 LB (AWS ALB) or reverse proxy terminates TLS and reads Host, path, headers, cookies, so only they can route `/api/*` vs `/static/*`, set sticky cookies or block `' OR 1=1--`.

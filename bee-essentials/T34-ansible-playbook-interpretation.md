@@ -1,6 +1,6 @@
 # T34 · Ansible playbook interpretation: essentials
 
-> Blueprint 5.8: interpret what an Ansible playbook automates · Full note: [bee/T34-ansible-playbook-interpretation.md](../bee/T34-ansible-playbook-interpretation.md) · Teach-back 2026-11-01
+> Blueprint 5.8: interpret what an Ansible playbook automates · Full note: [bee/T34-ansible-playbook-interpretation.md](../bee/T34-ansible-playbook-interpretation.md)
 
 ![T34 at a glance: inventory, play structure, modules, variables, control keywords, running and reading a playbook on one page](../assets/T34/00-overview.png)
 

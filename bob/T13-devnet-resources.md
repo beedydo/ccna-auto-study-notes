@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.7"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T13 · DevNet resources
 
-> Owner: **Bob** · Blueprint: **3.7** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **3.7** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T13 at a glance: the six DevNet resources as same-shaped cards, awareness-only exchanges, and scenario-to-resource drill](../assets/T13/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T13.01](#t1301--devnet-sandbox) DevNet Sandbox · [T13.02](#t1302--learning-labs) Learning Labs · [T13.03](#t1303--code-exchange) Code Exchange · [T13.04](#t1304--api-documentation) API documentation · [T13.05](#t1305--support-and-community) Support and community · [T13.06](#t1306--other-awareness) Other (awareness) · [T13.07](#t1307--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **One verb per resource:** Sandbox = **TRY** (run code on real or virtual Cisco gear) · Learning Labs = **LEARN** (guided steps) · Code Exchange = **REUSE** (curated GitHub repos) · Docs = **LOOK UP** (endpoint, params, schema) · Community = **ASK** (peers) · Developer support = **ESCALATE** (case with a Cisco engineer).
 - **Two Sandbox types:** **Always-On** = shared, instant, no booking, restricted (non-admin). **Reservation** = private, booked (up to 7 days), VPN in with Cisco Secure Client (AnyConnect) or OpenConnect, **full admin**, wiped at the end.

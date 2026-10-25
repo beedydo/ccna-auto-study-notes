@@ -1,6 +1,6 @@
 # T13 · DevNet resources: essentials
 
-> Blueprint 3.7 · Full note: [bob/T13-devnet-resources.md](../bob/T13-devnet-resources.md) · Teach-back 2026-10-11
+> Blueprint 3.7 · Full note: [bob/T13-devnet-resources.md](../bob/T13-devnet-resources.md)
 
 ## In one picture
 ![T13 at a glance: six DevNet resource cards, awareness-only exchanges and a scenario-to-resource drill](../assets/T13/00-overview.png)

@@ -1,6 +1,6 @@
 # T20 · Catalyst Center (DNA Center): essentials
 
-> Blueprint 3.1, 3.2, 3.9 · Full note: [bob/T20-catalyst-center-dna-center.md](../bob/T20-catalyst-center-dna-center.md) · Teach-back 2026-10-25
+> Blueprint 3.1, 3.2, 3.9 · Full note: [bob/T20-catalyst-center-dna-center.md](../bob/T20-catalyst-center-dna-center.md)
 
 ## In one picture
 

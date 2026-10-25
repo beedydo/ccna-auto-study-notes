@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.4, 3.9.b"
 primary_domain: D3
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T42 · Webex + Webex devices
 
-> Owner: **Bob** · Blueprint: **3.4, 3.9.b** · CBT coverage: **Partial** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **3.4, 3.9.b** · CBT coverage: **Partial** · Learn by 2026-10-31
 
 ![T42 at a glance: Webex REST API, tokens, bots and the RoomOS xAPI on one page](../assets/T42/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T42.01](#t4201--webex-rest-api) Webex REST API · [T42.02](#t4202--authentication) Authentication · [T42.03](#t4203--common-calls) Common calls · [T42.04](#t4204--bots) Bots · [T42.05](#t4205--webex-devices-xapi) Webex devices xAPI · [T42.06](#t4206--sdks-awareness) SDKs (awareness) · [T42.07](#t4207--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **One base URL, one header.** Every call goes to `https://webexapis.com/v1/<resource>` with `Authorization: Bearer <token>`. Rooms = spaces. To post: `POST /messages` with `roomId` (a space) **or** `toPersonEmail` (1:1, no room needed), plus `text` / `markdown` / `files`. To add people: `POST /memberships`.
 - **Pick the token by who acts.** Personal token = you, testing (expires **12 h**). Bot token = an app identity (`@webex.bot`, long-lived). Integration = OAuth 2.0 on behalf of any user (access ~14 days + refresh ~90 days). A bot learns about messages through a **webhook** (Webex pushes to `targetUrl`), and the push carries **IDs only**, so the bot does `GET /messages/{id}` for the text.

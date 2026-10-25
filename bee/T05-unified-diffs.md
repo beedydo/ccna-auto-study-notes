@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.12"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T05 · Unified diffs
 
-> Owner: **Beedy** · Blueprint: **5.12** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11 · Syntax drill: [in the essentials](../bee-essentials/T05-unified-diffs.md#syntax-drill)
+> Owner: **Beedy** · Blueprint: **5.12** · CBT coverage: **Full** · Learn by 2026-10-10 · Syntax drill: [in the essentials](../bee-essentials/T05-unified-diffs.md#syntax-drill)
 
 ![T05 at a glance: a real annotated git diff with file header, hunk header and line prefixes](../assets/T05/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T05.01](#t0501--diff-header) Diff header · [T05.02](#t0502--hunk-header) Hunk header · [T05.03](#t0503--line-prefixes) Line prefixes · [T05.04](#t0504--context) Context · [T05.05](#t0505--producing-diffs) Producing diffs · [T05.06](#t0506--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Header:** `--- a/file` = old, `+++ b/file` = new. `/dev/null` on the `---` side = file created; on the `+++` side = file deleted.
 - **Hunk header** `@@ -4,15 +4,17 @@`: old file has 15 lines from line 4, new file has 17 lines from line 4 → net **+2**. A missing count means 1. Text after `@@` is only the enclosing section label.

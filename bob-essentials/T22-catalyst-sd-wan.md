@@ -1,6 +1,6 @@
 # T22 · Catalyst SD-WAN: essentials
 
-> Blueprint 3.2, 3.9.a · Full note: [bob/T22-catalyst-sd-wan.md](../bob/T22-catalyst-sd-wan.md) · Teach-back 2026-10-25
+> Blueprint 3.2, 3.9.a · Full note: [bob/T22-catalyst-sd-wan.md](../bob/T22-catalyst-sd-wan.md)
 
 ## In one picture
 

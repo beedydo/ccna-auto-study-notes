@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "4.8"
 primary_domain: D4
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T29 · Secrets, encryption, data handling
 
-> Owner: **Beedy** · Blueprint: **4.8** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **4.8** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T29 at a glance: encoding vs hashing vs symmetric vs asymmetric, then secrets, transit/rest, PKI, data and input handling](../assets/T29/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T29.01](#t2901--secrets) Secrets · [T29.02](#t2902--encryption) Encryption · [T29.03](#t2903--crypto-basics) Crypto basics · [T29.04](#t2904--pki) PKI · [T29.05](#t2905--hashing) Hashing · [T29.06](#t2906--data-handling) Data handling · [T29.07](#t2907--input-handling) Input handling · [T29.08](#t2908--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Four transforms, one question each: is there a key, and can it be reversed?** Encoding (base64) has no key and anyone can reverse it, so it is **not security**. Hashing (SHA-256) has no key and can't be reversed: it's for integrity and password checks. Symmetric encryption (AES) uses **one shared key** both ways; it's fast. Asymmetric (RSA/ECC) uses a **key pair**: encrypt with the public key, decrypt with the private key; sign with the private key, verify with the public key.
 - **Protect data in transit *and* at rest.** In transit means TLS (HTTPS), SSH, IPsec. At rest means disk, DB and backup encryption. TLS is hybrid: an asymmetric handshake proves the server's identity (certificate chain to a trusted root CA) and agrees a symmetric session key. `verify=False` still encrypts, but skips the identity check, so a man-in-the-middle can sit in the path.

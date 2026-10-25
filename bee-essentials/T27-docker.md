@@ -1,6 +1,6 @@
 # T27 · Docker: essentials
 
-> Blueprint 4.3, 4.6, 4.7: deployment types (containers); interpret a Dockerfile; use Docker images in a local dev environment · Full note: [bee/T27-docker.md](../bee/T27-docker.md) · Teach-back 2026-10-25
+> Blueprint 4.3, 4.6, 4.7: deployment types (containers); interpret a Dockerfile; use Docker images in a local dev environment · Full note: [bee/T27-docker.md](../bee/T27-docker.md)
 
 ![T27 at a glance: Docker build, run, network and storage on one system map](../assets/T27/00-overview.png)
 

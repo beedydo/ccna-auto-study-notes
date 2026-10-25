@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.5"
 primary_domain: D6
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T39 · Management, control, data planes
 
-> Owner: **Bob** · Blueprint: **6.5** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **6.5** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T39 at a glance: the three planes inside one device, who talks to each plane, the SDN split and the place-it list](../assets/T39/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T39.01](#t3901--management-plane) Management plane · [T39.02](#t3902--control-plane) Control plane · [T39.03](#t3903--data-plane) Data plane · [T39.04](#t3904--sdn-link) SDN link · [T39.05](#t3905--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Management = how you reach and watch the box** (SSH, SNMP, NETCONF/RESTCONF, syslog, NTP, AAA). **Control = how the boxes decide paths** (OSPF, BGP, EIGRP, STP, ARP, LACP) and fill the RIB, MAC and ARP tables. **Data = moving the user's packet** using the FIB + adjacency table in the ASIC (plus ACL, NAT, QoS, encap).
 - **Config and decisions flow down:** management configures the control plane → the control plane builds the RIB → CEF copies it into the FIB → the data plane forwards at line rate. Transit traffic never touches the CPU. Traffic **to** the router's own IP (SSH, OSPF hellos) is punted to the CPU, and CoPP polices it.

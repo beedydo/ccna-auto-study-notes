@@ -1,6 +1,6 @@
 # T14 · YANG data models: essentials
 
-> Blueprint 3.8, 5.11 · Full note: [bob/T14-yang-data-models.md](../bob/T14-yang-data-models.md) · Teach-back 2026-10-18
+> Blueprint 3.8, 5.11 · Full note: [bob/T14-yang-data-models.md](../bob/T14-yang-data-models.md)
 
 ## In one picture
 

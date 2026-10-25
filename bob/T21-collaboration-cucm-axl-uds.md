@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.4"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T21 · Collaboration: CUCM AXL + UDS
 
-> Owner: **Bob** · Blueprint: **3.4** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.4** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T21 at a glance: CUCM, its APIs, AXL vs UDS on one page](../assets/T21/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T21.01](#t2101--cucm) CUCM · [T21.02](#t2102--axl) AXL · [T21.03](#t2103--uds) UDS · [T21.04](#t2104--other-uc-apis-awareness) Other UC APIs (awareness) · [T21.05](#t2105--choosing) Choosing · [T21.06](#t2106--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **CUCM (Unified CM) = on-prem call control.** Phones register to it. One **Publisher** holds the writable config DB; **Subscribers** process calls. Several APIs, one job each: AXL (config), UDS (one user's data), RisPort70 (live registration), JTAPI/TAPI (live calls), Finesse (contact-centre agents).
 - **AXL = SOAP/XML for admin and bulk provisioning.** Always `POST https://<cucm>:8443/axl/` to the Publisher, `Content-Type: text/xml`, `SOAPAction: "CUCM:DB ver=14.0 addPhone"`, envelope namespace `http://www.cisco.com/AXL/API/14.0`. Defined by a **WSDL** (AXL SQL Toolkit). Needs an **application user** with **Standard AXL API Access**. Operations are verb+object: `addPhone`, `getUser`, `listPhone`, `updateUser`, `removeLine`, plus `executeSQLQuery`.

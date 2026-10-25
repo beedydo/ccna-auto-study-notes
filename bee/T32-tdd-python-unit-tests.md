@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "1.3, 4.5"
 primary_domain: D1
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T32 · TDD + Python unit tests
 
-> Owner: **Beedy** · Blueprint: **1.3, 4.5** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **1.3, 4.5** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T32 at a glance: TDD cycle, test types, unittest anatomy, output codes, mocking, pytest](../assets/T32/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T32.01](#t3201--tdd) TDD · [T32.02](#t3202--test-types) Test types · [T32.03](#t3203--unittest) unittest · [T32.04](#t3204--unittest) unittest · [T32.05](#t3205--running) Running · [T32.06](#t3206--mocking-awareness) Mocking (awareness) · [T32.07](#t3207--pytest-awareness) pytest (awareness) · [T32.08](#t3208--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **TDD = red → green → refactor.** Write a failing test first (red), the minimum code to pass it (green), then clean up while the tests stay green (refactor). The test is the requirement.
 - **unittest anatomy:** `import unittest` → `class TestX(unittest.TestCase):` → methods named `test_*` using `self.assertEqual / assertTrue / assertIn / assertIsNone / assertRaises`. `setUp()` runs before **every** test, `tearDown()` after every test. Run with `python -m unittest -v` (discovers `test*.py`) or `unittest.main()` under the `__main__` guard.

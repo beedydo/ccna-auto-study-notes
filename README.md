@@ -3,7 +3,7 @@
 Shared study notes for Beedy ([@beedydo](https://github.com/beedydo)) and Bob, for the exam on **Mon 9 Nov 2026**.
 
 - Notes are written mostly with Claude Code. `CLAUDE.md` holds the rules, and `.claude/commands/` holds the slash commands.
-- Each person writes their own topics, teaches them to the other, and then studies the other person's notes.
+- Each person writes their own topics, and studies the other person's notes to cross-study.
 
 ## Who owns what
 
@@ -29,18 +29,18 @@ Every one of the 63 blueprint items maps to at least one topic (`data/blueprint-
 
 ## Plan (30 min a night each)
 
-Four weekly cycles: Mon-Sat self-study (draft, check and correct notes, prep cards), Sunday teach-back. Then a break week before the exam.
+Four weekly cycles: Mon-Sat self-study (draft, check and correct notes, prep cards), Sunday self-review (no joint session). Then a break week before the exam.
 
 | Dates | Phase |
 |---|---|
 | 5-10 Oct | Cycle 1: learn your own topics |
-| **Sun 11 Oct** | **Teach-back 1** (together, 30 min) |
+| Sun 11 Oct | Self-review: cycle 1 topics |
 | 12-17 Oct | Cycle 2: learn, check and correct notes, prep cards |
-| **Sun 18 Oct** | **Teach-back 2** |
+| Sun 18 Oct | Self-review: cycle 2 topics |
 | 19-24 Oct | Cycle 3, plus cross-study the partner's cycle 1-2 notes (Tue, Thu) |
-| **Sun 25 Oct** | **Teach-back 3** |
+| Sun 25 Oct | Self-review: cycle 3 topics |
 | 26-31 Oct | Cycle 4, plus cross-study cycle 3 notes (Tue); **swap quiz Fri 30 Oct** |
-| **Sun 1 Nov** | **Teach-back 4** |
+| Sun 1 Nov | Self-review: cycle 4 topics |
 | Mon 2 Nov | Mock exam: one 2-hour sitting |
 | Tue 3 Nov | Joint mock review |
 | 4-5 Nov | Weak-domain questions (cross-study cycle 4 notes on Wed) |
@@ -56,20 +56,20 @@ Four weekly cycles: Mon-Sat self-study (draft, check and correct notes, prep car
 
 | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|
-| **5**<br>📚 Cycle 1 study | **6**<br>📚 Cycle 1 study | **7**<br>📚 Cycle 1 study | **8**<br>📚 Cycle 1 study | **9**<br>📚 Cycle 1 study | **10**<br>📚 Cycle 1 study | **11**<br>🎤 **Teach-back 1** |
-| **12**<br>🐝 T07 T08<br>🅱️ T14 T15 | **13**<br>🐝 T09<br>🅱️ T16 | **14**<br>🐝 T10<br>🅱️ T17 T18 | **15**<br>🐝 T11<br>🅱️ T19 | **16**<br>✅ Check notes + cards | **17**<br>✅ Check notes + cards | **18**<br>🎤 **Teach-back 2** |
-| **19**<br>🐝 T43 T47<br>🅱️ T20 T21 | **20**<br>🐝 T26<br>🅱️ T22 T37<br>🔁 cross-study | **21**<br>🐝 T27 T28<br>🅱️ T23 T24 | **22**<br>🐝 T29<br>🅱️ T25<br>🔁 cross-study | **23**<br>✅ Check notes + cards | **24**<br>✅ Check notes + cards | **25**<br>🎤 **Teach-back 3** |
+| **5**<br>📚 Cycle 1 study | **6**<br>📚 Cycle 1 study | **7**<br>📚 Cycle 1 study | **8**<br>📚 Cycle 1 study | **9**<br>📚 Cycle 1 study | **10**<br>📚 Cycle 1 study | **11**<br>🗂️ review<br>🐝 T02 T04 T05 T06<br>🅱️ T01 T03 T12 T13 T35 T36 T39 |
+| **12**<br>🐝 T07 T08<br>🅱️ T14 T15 | **13**<br>🐝 T09<br>🅱️ T16 | **14**<br>🐝 T10<br>🅱️ T17 T18 | **15**<br>🐝 T11<br>🅱️ T19 | **16**<br>✅ Check notes + cards | **17**<br>✅ Check notes + cards | **18**<br>🗂️ review<br>🐝 T07 T08 T09 T10 T11<br>🅱️ T14 T15 T16 T17 T18 T19 |
+| **19**<br>🐝 T43 T47<br>🅱️ T20 T21 | **20**<br>🐝 T26<br>🅱️ T22 T37<br>🔁 cross-study | **21**<br>🐝 T27 T28<br>🅱️ T23 T24 | **22**<br>🐝 T29<br>🅱️ T25<br>🔁 cross-study | **23**<br>✅ Check notes + cards | **24**<br>✅ Check notes + cards | **25**<br>🗂️ review<br>🐝 T43 T47 T26 T27 T28 T29<br>🅱️ T20 T21 T22 T37 T23 T24 T25 |
 | **26**<br>🐝 T30 T31<br>🅱️ T42 T45 | **27**<br>🐝 T32 T33<br>🅱️ T38<br>🔁 cross-study | **28**<br>🐝 T34 T44<br>🅱️ T40 | **29**<br>🐝 T46<br>🅱️ T41 | **30**<br>🔀 **Swap quiz** | **31**<br>✅ Check notes + cards |   |
 
 **November 2026**
 
 | Mon | Tue | Wed | Thu | Fri | Sat | Sun |
 |---|---|---|---|---|---|---|
-|   |   |   |   |   |   | **1**<br>🎤 **Teach-back 4** |
+|   |   |   |   |   |   | **1**<br>🗂️ review<br>🐝 T30 T31 T32 T33 T34 T44 T46<br>🅱️ T42 T45 T38 T40 T41 |
 | **2**<br>🧪 **Mock exam** (2 h) | **3**<br>🔍 **Mock review** | **4**<br>🩹 Weak-domain Qs · 🔁 cross-study | **5**<br>🩹 Weak-domain Qs | **6**<br>⚡ Rapid-fire | **7**<br>📋 Cheat sheet + admin | **8**<br>😴 Rest |
 | **9**<br>🎯 **EXAM** |   |   |   |   |   |   |
 
-🐝 Beedy · 🅱️ Bob · 🎤 teach-back (Sun, 30 min together) · ✅ check + correct notes, practice Qs, cards · 🔁 cross-study the partner's notes · 🔀 swap quiz · 🧪 mock · 🎯 exam
+🐝 Beedy · 🅱️ Bob · 🗂️ self-review day (no joint session) · ✅ check + correct notes, practice Qs, cards · 🔁 cross-study the partner's notes · 🔀 swap quiz · 🧪 mock · 🎯 exam
 
 _Generated from `data/pair-plan.csv` by `scripts/plan_calendar.py`. Change the CSV, then re-run the script._
 
@@ -92,7 +92,6 @@ Then, inside Claude Code:
 /note T07          # draft a topic note
 /verify T07        # fact-check it
 /quiz T07          # practice questions
-/teachback 2       # cards for the next joint session
 ```
 
 ## Progress
@@ -157,10 +156,10 @@ _Updated 2026-10-05 by scripts/progress.py_
 - `HANDOVER.md`: how this repo was set up, decisions, open flags
 - `CONTRIBUTING.md`: Git workflow for Beedy and Bob
 - `data/`: topics, concepts, blueprint map, CBT aids, skip list, top-ups, pair plan, practice log
-- `bee/`: Beedy's topic notes
-- `bob/`: Bob's topic notes
+- `bee/`, `bee-essentials/`: Beedy's topic notes and their one-read essentials
+- `bob/`, `bob-essentials/`: Bob's topic notes and their one-read essentials
 - `notes/dN-*/README.md`: per-domain index linking to both
-- `teach-back/`: cards for the 4 joint sessions
+- `case-studies/`: real-code walkthroughs mapped to topics
 - `quizzes/`: generated question banks
 - `labs/`: Docker lab container and per-topic labs
 - `cheatsheet.md`: exam-eve sheet

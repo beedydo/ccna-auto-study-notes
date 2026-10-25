@@ -1,10 +1,10 @@
 # Beedy · essentials
 
-Plain-English summaries of every one of your topics: one picture, the big idea, what to know, traps, a 5-question self-check and lines to say at teach-back. Each links to the full note for depth.
+Plain-English summaries of every one of your topics: one picture, the big idea, what to know, traps, a 5-question self-check and lines to say out loud. Each links to the full note for depth.
 
 **How to use:** read the essentials first (about 10–15 min per topic), do its self-check, then open the full note only for the parts you got wrong.
 
-## Cycle 1 · teach-back 2026-10-11
+## Cycle 1 (review 2026-10-11)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -13,7 +13,7 @@ Plain-English summaries of every one of your topics: one picture, the big idea, 
 | T05 Unified diffs | [essentials](T05-unified-diffs.md) | [full note](../bee/T05-unified-diffs.md) |
 | T06 Data formats + parsing | [essentials](T06-data-formats-parsing.md) | [full note](../bee/T06-data-formats-parsing.md) |
 
-## Cycle 2 · teach-back 2026-10-18
+## Cycle 2 (review 2026-10-18)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -23,7 +23,7 @@ Plain-English summaries of every one of your topics: one picture, the big idea, 
 | T10 API authentication | [essentials](T10-api-authentication.md) | [full note](../bee/T10-api-authentication.md) |
 | T11 Python requests scripting | [essentials](T11-python-requests-scripting.md) | [full note](../bee/T11-python-requests-scripting.md) |
 
-## Cycle 3 · teach-back 2026-10-25
+## Cycle 3 (review 2026-10-25)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -34,7 +34,7 @@ Plain-English summaries of every one of your topics: one picture, the big idea, 
 | T43 Webhooks | [essentials](T43-webhooks.md) | [full note](../bee/T43-webhooks.md) |
 | T47 Sequence diagrams with API calls | [essentials](T47-sequence-diagrams-with-api-calls.md) | [full note](../bee/T47-sequence-diagrams-with-api-calls.md) |
 
-## Cycle 4 · teach-back 2026-11-01
+## Cycle 4 (review 2026-11-01)
 
 | Topic | Essentials | Full note |
 |---|---|---|

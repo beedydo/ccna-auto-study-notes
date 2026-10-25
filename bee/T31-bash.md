@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "4.11, 5.9"
 primary_domain: D4
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T31 · Bash
 
-> Owner: **Beedy** · Blueprint: **4.11, 5.9** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **4.11, 5.9** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T31 at a glance: every Bash concept on one page](../assets/T31/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T31.01](#t3101--navigation) Navigation · [T31.02](#t3102--file-management) File management · [T31.03](#t3103--permissions) Permissions · [T31.04](#t3104--environment-variables) Environment variables · [T31.05](#t3105--redirection) Redirection · [T31.06](#t3106--scripts) Scripts · [T31.07](#t3107--scripts) Scripts · [T31.08](#t3108--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Two blueprint asks:** 4.11 = pick the command for a file, navigation or env-var task. 5.9 = read a short script and state what it does, what it prints and what exit code it returns.
 - **Variables:** `VAR=x` stays in this shell. `export VAR=x` reaches child processes. `VAR=x ./script` sets it for that one child only. `source file` runs it in **this** shell; `bash file` runs it in a child shell.

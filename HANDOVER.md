@@ -28,14 +28,14 @@ Written 5 Oct 2026. It covers everything decided so far, so a Claude Code sessio
 
 ## 4. Schedule (Pair Plan)
 
-Re-planned on Sun 11 Oct 2026: the exam moved to **Mon 9 Nov**. Four weekly cycles: **Mon–Sat** self-study (draft notes, check and correct them, practice questions, teach-back cards), **Sunday** teach-back together. Topics were rebalanced across cycles by note size, CBT gaps and how new each topic is to its owner.
+Re-planned on Sun 11 Oct 2026: the exam moved to **Mon 9 Nov**. Re-planned again on Sat 24 Oct 2026: the Sunday joint teach-back sessions were dropped (each person now self-studies and reviews on Sundays instead). Four weekly cycles: **Mon–Sat** self-study (draft notes, check and correct them, practice questions). Topics were rebalanced across cycles by note size, CBT gaps and how new each topic is to its owner.
 
-| Cycle | Study | Teach-back | Beedy | Bob |
+| Cycle | Study (Mon–Sat) | Sunday review | Beedy | Bob |
 |---|---|---|---|---|
-| 1 | 5–10 Oct | **Sun 11 Oct** | T02, T04, T05, T06 | T01, T03, T12, T13, T35, T36, T39 |
-| 2 | 12–17 Oct | **Sun 18 Oct** | T07, T08, T09, T10, T11 | T14, T15, T16, T17, T18, T19 |
-| 3 | 19–24 Oct | **Sun 25 Oct** | T43, T47, T26, T27, T28, T29 | T20, T21, T22, T37, T23, T24, T25 |
-| 4 | 26–31 Oct | **Sun 1 Nov** | T30, T31, T32, T33, T34, T44, T46 | T42, T45, T38, T40, T41 |
+| 1 | 5–10 Oct | Sun 11 Oct | T02, T04, T05, T06 | T01, T03, T12, T13, T35, T36, T39 |
+| 2 | 12–17 Oct | Sun 18 Oct | T07, T08, T09, T10, T11 | T14, T15, T16, T17, T18, T19 |
+| 3 | 19–24 Oct | Sun 25 Oct | T43, T47, T26, T27, T28, T29 | T20, T21, T22, T37, T23, T24, T25 |
+| 4 | 26–31 Oct | Sun 1 Nov | T30, T31, T32, T33, T34, T44, T46 | T42, T45, T38, T40, T41 |
 
 | Date | Together |
 |---|---|
@@ -51,8 +51,6 @@ Re-planned on Sun 11 Oct 2026: the exam moved to **Mon 9 Nov**. Four weekly cycl
 | **Mon 9 Nov** | **Exam** |
 
 Day-by-day detail: `data/pair-plan.csv`.
-
-**Teach-back format (30 min):** Beedy teaches for 12 min and Bob for 12 min, using 3 key points and 1 exam trap per topic. The last 6 min is one question per topic, with weak topic IDs logged.
 
 ## 5. CBT coverage audit (done 1 Oct against the v1.1 exam topics PDF)
 
@@ -108,7 +106,7 @@ Day-by-day detail: `data/pair-plan.csv`.
    - `/note T02`, then `/note T04`. These are tonight's topics (Mon 5 Oct).
    - `/verify T02`, `/verify T04`
    - Do the questions, then set `status: verified`.
-4. Tomorrow: T05, T06. Wednesday: `/teachback 1` for your section.
+4. Tomorrow: T05, T06. Sunday: review cycle 1 topics on your own.
 
 ## 8. Ideas Claude Code can take further
 

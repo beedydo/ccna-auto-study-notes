@@ -1,6 +1,6 @@
 # T30 · OWASP: XSS, SQL injection, CSRF: essentials
 
-> Blueprint 4.10: top OWASP threats (XSS, SQL injection, CSRF) · Full note: [bee/T30-owasp-xss-sqli-csrf.md](../bee/T30-owasp-xss-sqli-csrf.md) (not drafted yet) · Teach-back 2026-11-01
+> Blueprint 4.10: top OWASP threats (XSS, SQL injection, CSRF) · Full note: [bee/T30-owasp-xss-sqli-csrf.md](../bee/T30-owasp-xss-sqli-csrf.md) (not drafted yet)
 
 ## 🧭 The big idea
 

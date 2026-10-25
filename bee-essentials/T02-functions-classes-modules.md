@@ -1,6 +1,6 @@
 # T02 · Functions, classes, modules: essentials
 
-> Blueprint 1.5: benefits of methods/functions, classes, modules · Full note: [bee/T02-functions-classes-modules.md](../bee/T02-functions-classes-modules.md) · Teach-back 2026-10-11
+> Blueprint 1.5: benefits of methods/functions, classes, modules · Full note: [bee/T02-functions-classes-modules.md](../bee/T02-functions-classes-modules.md)
 
 ![T02 at a glance: every concept on one page](../assets/T02/00-overview.png)
 

@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.5"
 primary_domain: D3
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T23 · Security platforms
 
-> Owner: **Bob** · Blueprint: **3.5** · CBT coverage: **Partial** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.5** · CBT coverage: **Partial** · Learn by 2026-10-24
 
 ![T23 at a glance: seven Cisco security platforms, their job, their API auth and their key calls](../assets/T23/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T23.01](#t2301--secure-firewall-management-center-fmc) Secure Firewall Management Center (FMC) · [T23.02](#t2302--fdm-awareness) FDM (awareness) · [T23.03](#t2303--ise) ISE · [T23.04](#t2304--xdr) XDR · [T23.05](#t2305--secure-endpoint) Secure Endpoint · [T23.06](#t2306--secure-malware-analytics) Secure Malware Analytics · [T23.07](#t2307--secure-connect) Secure Connect · [T23.08](#t2308--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Know the job of each box.** FMC = central manager for many firewalls; FDM = on-box manager for one firewall; ISE = who/what is on the network (AAA, NAC, posture, guest); Secure Endpoint (AMP) = EDR on the laptop; Secure Malware Analytics (Threat Grid) = sandbox that detonates files and returns a threat score; XDR = correlates telemetry from all of them and triggers responses; Secure Connect = cloud SASE (Umbrella + Meraki) for remote users and DNS/web security.
 - **Know how each one authenticates.** FMC: `POST /api/fmc_platform/v1/auth/generatetoken` with Basic auth → `204`, tokens come back in **response headers** (`X-auth-access-token`, `X-auth-refresh-token`, `DOMAIN_UUID`), and you send `X-auth-access-token` on every call. ISE ERS: Basic auth on every call, port `9060`. Secure Endpoint: Basic with client ID + API key. Malware Analytics: `api_key` parameter. XDR and Secure Connect/Umbrella: OAuth client credentials → Bearer token. FDM: JSON password grant → Bearer.

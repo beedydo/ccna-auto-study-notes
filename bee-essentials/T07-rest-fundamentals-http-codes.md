@@ -1,6 +1,6 @@
 # T07 · REST fundamentals, HTTP codes: essentials
 
-> Blueprint 2.1, 2.4-2.6: construct a REST request from API docs, common HTTP response codes, troubleshoot using the code, request and docs, interpret the parts of an HTTP response · Full note: [bee/T07-rest-fundamentals-http-codes.md](../bee/T07-rest-fundamentals-http-codes.md) · Teach-back 2026-10-18
+> Blueprint 2.1, 2.4-2.6: construct a REST request from API docs, common HTTP response codes, troubleshoot using the code, request and docs, interpret the parts of an HTTP response · Full note: [bee/T07-rest-fundamentals-http-codes.md](../bee/T07-rest-fundamentals-http-codes.md)
 
 ![T07 at a glance: every REST and HTTP-code concept on one page](../assets/T07/00-overview.png)
 

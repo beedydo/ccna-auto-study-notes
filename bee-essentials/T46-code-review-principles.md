@@ -1,6 +1,6 @@
 # T46 · Code review principles: essentials
 
-> Blueprint 5.13: code review process principles and benefits · Full note: [bee/T46-code-review-principles.md](../bee/T46-code-review-principles.md) · Teach-back 2026-11-01
+> Blueprint 5.13: code review process principles and benefits · Full note: [bee/T46-code-review-principles.md](../bee/T46-code-review-principles.md)
 
 ![T46 at a glance: review process swim-lane, benefits, review types, CI vs human, giving feedback](../assets/T46/00-overview.png)
 

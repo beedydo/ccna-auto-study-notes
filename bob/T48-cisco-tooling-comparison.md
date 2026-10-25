@@ -5,22 +5,21 @@ owner: Bob
 blueprint: "3.1-3.6, 3.9"
 primary_domain: D3
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T48 · Cisco platforms side by side (auth, API style, gotchas)
 
-> Owner: **Bob** · Blueprint: **3.1-3.6, 3.9** · CBT coverage: **None** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **3.1-3.6, 3.9** · CBT coverage: **None** · Learn by 2026-10-31
 
 ![T48 at a glance: five login styles plus two odd ones, who manages what, API style and naming, Python entry points, and the exam's clue-to-platform map](../assets/T48/00-overview.png)
 
 *The matrix at the top is the whole note: find the platform's row, read across (what you send · how long it lasts · the trap). The three cards below it are T48.01, T48.03 · T48.04 and T48.07. The bottom strip is T48.08, clue → platform. Red = exam traps, grey = exact syntax, blue = the platform to pick.*
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Five login styles, plus two odd ones.** Basic on every call (IOS XE RESTCONF, NX-API CLI, NSO, ISE ERS, Secure Endpoint, CUCM, Webex xAPI) · static key (Meraki, Webex) · login → token header (FMC, Catalyst Center, FDM, CML, XDR, Secure Connect) · login → cookie (ACI, NX-API REST, SD-WAN Manager, UCSM) · signed request (Intersight). Odd ones: Malware Analytics' `api_key` parameter, and NETCONF/pyATS, which aren't HTTP at all.
 - **Three platforms do something unexpected with the token.** SD-WAN needs a cookie **plus** an `X-XSRF-TOKEN` header, UCSM puts its cookie **in the XML body**, and FMC / Catalyst Center use custom **headers** (`X-auth-access-token`, `X-Auth-Token`), not `Authorization`.

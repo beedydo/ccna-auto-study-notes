@@ -163,7 +163,7 @@ Don't edit `assets/_arch/` for one topic. If the kit needs a new icon or link ty
   - Use full runnable commands/code (curl, Python requests/ncclient/SDK, Docker). Target DevNet Sandbox hosts where relevant, with credentials read from env vars.
   - Every block must be **reproducible from the note alone**. Never show output without the commands that create the files and produce it.
 - `## Practice questions`: 6-8 original exam-style Qs (mix of MCQ, drag-and-drop-as-ordering, complete-the-code). Answer + one-line explanation inside `<details>`. Where it fits, base questions on the reference program or a diagram.
-- `## TL;DR (teach-back card)`: 3 key points + 1 trap, written last.
+- `## TL;DR`: 3 key points + 1 trap, written last.
 - `## Sources`: the URLs actually used. If diagrams exist, add a line pointing at `assets/$ARGUMENTS/*.mmd`. `## To verify`: every `⚠ verify` item.
 - Cross-link related notes with relative links instead of repeating their content, e.g. `[T04.07](T04-git-version-control.md#t0407--commands-inspect)`.
 - **Essentials file (`bee-essentials/` or `bob-essentials/`, same filename as the note):** write it after the full note. It is the one-read study version. Reference examples: `bee-essentials/T26-deployment-models-edge-computing.md` (visual style) and `T09`/`T10` (structure).

@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "1.5"
 primary_domain: D1
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T02 · Functions, classes, modules
 
-> Owner: **Beedy** · Blueprint: **1.5** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Beedy** · Blueprint: **1.5** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T02 at a glance: every concept on one page](../assets/T02/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T02.01](#t0201--why-organise-code) Why organise code · [T02.02](#t0202--functions) Functions · [T02.03](#t0203--functions) Functions · [T02.04](#t0204--methods) Methods · [T02.05](#t0205--classes) Classes · [T02.06](#t0206--oop-principles) OOP principles · [T02.07](#t0207--modules) Modules · [T02.08](#t0208--modules) Modules · [T02.09](#t0209--packages) Packages · [T02.10](#t0210--dependencies) Dependencies · [T02.11](#t0211--python-basics) Python basics · [T02.12](#t0212--python-basics) Python basics · [T02.13](#t0213--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Why organise code (the 1.5 answer):** reuse (DRY), readability, maintainability (fix once), testability (unit-test each piece), separation of concerns.
 - **Three levels:** function = reusable block of logic · class = blueprint bundling data + behaviour, `__init__` sets attributes, methods take `self` · module = a `.py` file / namespace; package = folder of modules.

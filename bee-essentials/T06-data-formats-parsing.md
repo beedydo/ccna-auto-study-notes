@@ -1,6 +1,6 @@
 # T06 · Data formats + parsing: essentials
 
-> Blueprint 1.1, 1.2: compare XML, JSON, YAML; parse XML/JSON/YAML into Python structures · Full note: [bee/T06-data-formats-parsing.md](../bee/T06-data-formats-parsing.md) · Teach-back 2026-10-11 · **[Syntax drill](#syntax-drill)** at the end
+> Blueprint 1.1, 1.2: compare XML, JSON, YAML; parse XML/JSON/YAML into Python structures · Full note: [bee/T06-data-formats-parsing.md](../bee/T06-data-formats-parsing.md) · **[Syntax drill](#syntax-drill)** at the end
 
 ![T06 at a glance: XML vs JSON vs YAML on every criterion, with parsers and traps](../assets/T06/00-overview.png)
 

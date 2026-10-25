@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.2"
 primary_domain: D2
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T43 · Webhooks
 
-> Owner: **Beedy** · Blueprint: **2.2** · CBT coverage: **None** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **2.2** · CBT coverage: **None** · Learn by 2026-10-24
 
 ![T43 at a glance: register once, event happens, platform POSTs to you, verify and ack, follow-up GET](../assets/T43/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T43.01](#t4301--concept) Concept · [T43.02](#t4302--comparison) Comparison · [T43.03](#t4303--components) Components · [T43.04](#t4304--registration) Registration · [T43.05](#t4305--payload) Payload · [T43.06](#t4306--security) Security · [T43.07](#t4307--testing-tools) Testing tools · [T43.08](#t4308--use-cases) Use cases · [T43.09](#t4309--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Webhook = the platform calls you.** You register once (`POST /v1/webhooks` with `name`, `targetUrl`, `resource`, `event`, optional `filter` + `secret`). When a matching event happens, the platform sends an HTTP **POST** with a JSON body to your `targetUrl`. Push, not poll: no wasted "anything new?" calls, near real time, no rate-limit burn.
 - **Your receiver is a public HTTPS server.** The platform must reach it, so `localhost`/private IPs don't work; use ngrok while testing. The payload is often **IDs only** (Webex leaves out the message text), so you make a **follow-up GET** (`GET /v1/messages/{id}`) with your own token.

@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.8, 6.9"
 primary_domain: D6
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T40 · App connectivity + network constraints
 
-> Owner: **Bob** · Blueprint: **6.8, 6.9** · CBT coverage: **Partial** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **6.8, 6.9** · CBT coverage: **Partial** · Learn by 2026-10-31
 
 ![T40 at a glance: where an app call breaks on the path, the diagnostic ladder, constraints and the symptom-to-fix table](../assets/T40/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T40.01](#t4001--nat-issues) NAT issues · [T40.02](#t4002--port-blocking) Port blocking · [T40.03](#t4003--proxy-issues) Proxy issues · [T40.04](#t4004--vpn-issues) VPN issues · [T40.05](#t4005--diagnostic-tools) Diagnostic tools · [T40.06](#t4006--network-constraints-69) Network constraints (6.9) · [T40.07](#t4007--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Read the failure mode, not just "it failed".** Instant `Connection refused` = RST = host is reachable but nothing listens. Hang then `timed out` = silent drop (firewall/ACL, no route, missing NAT). `407` = the **proxy** wants credentials. `CERTIFICATE_VERIFY_FAILED` only on the corp network = TLS inspection, so trust the corp CA.
 - **Walk the ladder bottom-up:** DNS (`nslookup`/`dig`) → reachability (`ping`) → path (`traceroute`) → TCP port (`nc -zv` / `telnet`) → HTTP (`curl -v`) → server listener (`ss -ltn`). Stop at the first rung that fails.

@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.1, 3.2, 3.9"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T18 · Meraki
 
-> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T18 at a glance: Meraki platform, APIs, auth, hierarchy, limits, SDK and client discovery on one page](../assets/T18/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T18.01](#t1801--platform) Platform · [T18.02](#t1802--apis) APIs · [T18.03](#t1803--authentication) Authentication · [T18.04](#t1804--hierarchy-and-endpoints) Hierarchy and endpoints · [T18.05](#t1805--constraints) Constraints · [T18.06](#t1806--python-sdk) Python SDK · [T18.07](#t1807--client-discovery-39c) Client discovery (3.9.c) · [T18.08](#t1808--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Cloud-managed, no controller on-prem.** MX (security/SD-WAN appliance), MS (switch), MR (wireless AP), MV (camera) dial out to the Meraki cloud. Config, monitoring and the API all live at `https://api.meraki.com/api/v1`. User traffic stays on site.
 - **Walk the tree, one ID per hop:** `GET /organizations` → `organizationId` → `/organizations/{organizationId}/networks` → `networkId` → `/networks/{networkId}/devices` (by **serial**) and `/networks/{networkId}/clients`. Auth = API key from the dashboard profile, sent as `Authorization: Bearer <key>` (or the legacy `X-Cisco-Meraki-API-Key: <key>`).

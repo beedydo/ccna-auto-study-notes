@@ -1,6 +1,6 @@
 # T39 · Management, control, data planes: essentials
 
-> Blueprint 6.5 · Full note: [bob/T39-management-control-data-planes.md](../bob/T39-management-control-data-planes.md) · Teach-back 2026-10-11
+> Blueprint 6.5 · Full note: [bob/T39-management-control-data-planes.md](../bob/T39-management-control-data-planes.md)
 
 ## In one picture
 

@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.5, 5.6"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted       # not-started | drafted | verified | taught
+status: verified      # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T33 · IaC + tool comparison
 
-> Owner: **Beedy** · Blueprint: **5.5, 5.6** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **5.5, 5.6** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T33 at a glance: IaC principles, declarative vs imperative, push vs pull, a six-tool matrix and scenario answers on one page](../assets/T33/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T33.01](#t3301--iac-principles) IaC principles · [T33.02](#t3302--models) Models · [T33.03](#t3303--properties) Properties · [T33.04](#t3304--architectures) Architectures · [T33.05](#t3305--ansible) Ansible · [T33.06](#t3306--terraform) Terraform · [T33.07](#t3307--nso) NSO · [T33.08](#t3308--puppetchef-awareness) Puppet/Chef (awareness) · [T33.09](#t3309--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **IaC = infrastructure described in files, kept in Git, applied by a tool.** You get history, review, rollback and repeatable dev → prod. **Declarative** = describe the end state, and the tool diffs it against reality (Terraform, NSO, Puppet). **Imperative** = list the steps (scripts; Ansible runs tasks in order). **Idempotent** = run again, nothing changes.
 - **Two axes the exam loves:** agentless vs agent-based, and **push** (the controller connects out when you run it: Ansible, Terraform, NSO) vs **pull** (an agent on each node checks in on a timer: Puppet, Chef). Network devices can't host agents, so network automation is **agentless push**.

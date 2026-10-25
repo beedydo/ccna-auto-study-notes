@@ -1,6 +1,6 @@
 # T28 · CI/CD + DevOps principles: essentials
 
-> Blueprint 4.4, 4.12, 5.4: components of a CI/CD pipeline (app deployment); principles of DevOps practices; CI/CD components and benefits for infrastructure automation · Full note: [bee/T28-ci-cd-devops-principles.md](../bee/T28-ci-cd-devops-principles.md) · Teach-back 2026-10-25
+> Blueprint 4.4, 4.12, 5.4: components of a CI/CD pipeline (app deployment); principles of DevOps practices; CI/CD components and benefits for infrastructure automation · Full note: [bee/T28-ci-cd-devops-principles.md](../bee/T28-ci-cd-devops-principles.md)
 
 ![T28 at a glance: CI, CD, pipeline components, NetDevOps and DevOps principles](../assets/T28/00-overview.png)
 

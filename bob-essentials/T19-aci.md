@@ -1,6 +1,6 @@
 # T19 · ACI: essentials
 
-> Blueprint 3.1, 3.2, 3.9.a · Full note: [bob/T19-aci.md](../bob/T19-aci.md) · Teach-back 2026-10-18
+> Blueprint 3.1, 3.2, 3.9.a · Full note: [bob/T19-aci.md](../bob/T19-aci.md)
 
 ## In one picture
 

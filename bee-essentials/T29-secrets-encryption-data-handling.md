@@ -1,6 +1,6 @@
 # T29 · Secrets, encryption, data handling: essentials
 
-> Blueprint 4.8: security issues (secrets, encryption, data handling) · Full note: [bee/T29-secrets-encryption-data-handling.md](../bee/T29-secrets-encryption-data-handling.md) · Teach-back 2026-10-25
+> Blueprint 4.8: security issues (secrets, encryption, data handling) · Full note: [bee/T29-secrets-encryption-data-handling.md](../bee/T29-secrets-encryption-data-handling.md)
 
 ![T29 at a glance: secrets, encoding vs hashing vs encryption, TLS and PKI, passwords, data handling](../assets/T29/00-overview.png)
 

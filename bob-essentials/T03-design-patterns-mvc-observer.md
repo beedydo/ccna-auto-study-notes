@@ -1,6 +1,6 @@
 # T03 · Design patterns: MVC + Observer: essentials
 
-> Blueprint 1.6 · Full note: [bob/T03-design-patterns-mvc-observer.md](../bob/T03-design-patterns-mvc-observer.md) · Teach-back 2026-10-11
+> Blueprint 1.6 · Full note: [bob/T03-design-patterns-mvc-observer.md](../bob/T03-design-patterns-mvc-observer.md)
 
 ## In one picture
 ![T03 at a glance: design patterns, MVC, Observer, comparison and exam angle](../assets/T03/00-overview.png)

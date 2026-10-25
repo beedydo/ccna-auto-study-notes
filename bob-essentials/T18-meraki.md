@@ -1,6 +1,6 @@
 # T18 · Meraki: essentials
 
-> Blueprint 3.1, 3.2, 3.9 · Full note: [bob/T18-meraki.md](../bob/T18-meraki.md) · Teach-back 2026-10-18
+> Blueprint 3.1, 3.2, 3.9 · Full note: [bob/T18-meraki.md](../bob/T18-meraki.md)
 
 ## In one picture
 

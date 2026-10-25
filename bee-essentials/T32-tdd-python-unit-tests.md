@@ -1,6 +1,6 @@
 # T32 · TDD + Python unit tests: essentials
 
-> Blueprint 1.3: test-driven development concepts; 4.5: construct a Python unit test · Full note: [bee/T32-tdd-python-unit-tests.md](../bee/T32-tdd-python-unit-tests.md) · Teach-back 2026-11-01
+> Blueprint 1.3: test-driven development concepts; 4.5: construct a Python unit test · Full note: [bee/T32-tdd-python-unit-tests.md](../bee/T32-tdd-python-unit-tests.md)
 
 ![T32 at a glance: TDD cycle, test types, unittest anatomy, output codes, mocking, pytest](../assets/T32/00-overview.png)
 

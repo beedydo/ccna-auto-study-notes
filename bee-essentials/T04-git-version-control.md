@@ -1,6 +1,6 @@
 # T04 · Git + version control: essentials
 
-> Blueprint 1.7, 1.8: advantages of version control; Git operations (clone, add/rm, commit, push/pull, branch, merge/conflicts, diff) · Full note: [bee/T04-git-version-control.md](../bee/T04-git-version-control.md) · Teach-back 2026-10-11
+> Blueprint 1.7, 1.8: advantages of version control; Git operations (clone, add/rm, commit, push/pull, branch, merge/conflicts, diff) · Full note: [bee/T04-git-version-control.md](../bee/T04-git-version-control.md)
 
 ![Git four areas](../assets/T04/01-four-areas.png)
 

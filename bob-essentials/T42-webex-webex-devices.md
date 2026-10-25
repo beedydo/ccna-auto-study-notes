@@ -1,6 +1,6 @@
 # T42 · Webex + Webex devices: essentials
 
-> Blueprint 3.4, 3.9.b · Full note: [bob/T42-webex-webex-devices.md](../bob/T42-webex-webex-devices.md) · Teach-back 2026-11-01
+> Blueprint 3.4, 3.9.b · Full note: [bob/T42-webex-webex-devices.md](../bob/T42-webex-webex-devices.md)
 
 ## In one picture
 ![T42 at a glance: Webex REST API, tokens, bots and the RoomOS xAPI on one page](../assets/T42/00-overview.png)

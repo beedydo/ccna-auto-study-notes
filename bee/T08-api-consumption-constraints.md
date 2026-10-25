@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.3"
 primary_domain: D2
 cbt_coverage: "None"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T08 · API consumption constraints
 
-> Owner: **Beedy** · Blueprint: **2.3** · CBT coverage: **None** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Beedy** · Blueprint: **2.3** · CBT coverage: **None** · Learn by 2026-10-17
 
 ![T08 at a glance: every API consumption limit, its signal, the fix and the trap](../assets/T08/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T08.01](#t0801--rate-limiting) Rate limiting · [T08.02](#t0802--rate-limiting) Rate limiting · [T08.03](#t0803--pagination) Pagination · [T08.04](#t0804--payload-limits) Payload limits · [T08.05](#t0805--timeouts) Timeouts · [T08.06](#t0806--auth-limits) Auth limits · [T08.07](#t0807--versioning) Versioning · [T08.08](#t0808--caching) Caching · [T08.09](#t0809--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Rate limit → `429` + `Retry-After`.** Sleep exactly what `Retry-After` says, then retry the **same** call. With no header, use capped exponential backoff (1, 2, 4, 8 s). Cut the call count with caching, batching and webhooks instead of polling. `X-RateLimit-Remaining: 0` warns you before the 429 arrives.
 - **Pagination → `200` with only part of the data.** Loop until done: offset/limit (`total`), page number (`total_pages`), or a cursor in the `Link` header (`rel="next"`, Meraki `startingAfter`). Payload too big → `413`; split it with `chunks()`. Always pass `timeout=`; a long job comes back as `202` + `Location`, so poll it.

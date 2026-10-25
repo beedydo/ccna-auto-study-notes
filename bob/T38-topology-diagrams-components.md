@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.3, 6.4"
 primary_domain: D6
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T38 · Topology diagrams + components
 
-> Owner: **Bob** · Blueprint: **6.3, 6.4** · CBT coverage: **Partial** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Bob** · Blueprint: **6.3, 6.4** · CBT coverage: **Partial** · Learn by 2026-10-31
 
 ![T38 at a glance: components, physical vs logical, common designs and how to trace a path](../assets/T38/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T38.01](#t3801--components) Components · [T38.02](#t3802--reading-diagrams) Reading diagrams · [T38.03](#t3803--common-designs) Common designs · [T38.04](#t3804--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Each box reads one header.** Switch = dst **MAC** (L2, VLANs). Router / L3 switch = dst **IP** (routing table, longest match; it's the gateway). Firewall = IP + port + **state**, between **zones**, implicit deny. Load balancer = owns a **VIP**, health checks a pool, rewrites dst to a real server. AP = radio ↔ wire; WLC = central brain for lightweight APs (CAPWAP).
 - **Answer any "trace it" question in 3 steps:** (1) same subnet? → switch only; (2) else → the **default gateway** is the L3 interface **in the source's own subnet** (often an SVI on the distribution switch, or a firewall interface); (3) follow routes; a firewall on the path decides permit/deny, a VIP means the LB picks the server.

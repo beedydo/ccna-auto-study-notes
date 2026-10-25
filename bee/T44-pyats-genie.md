@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "5.3"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-31
-teach_back: 2026-11-01
 cross_study: 2026-11-04
 ---
 
 # T44 · pyATS + Genie
 
-> Owner: **Beedy** · Blueprint: **5.3** · CBT coverage: **Full** · Learn by 2026-10-31 · Teach-back 2026-11-01
+> Owner: **Beedy** · Blueprint: **5.3** · CBT coverage: **Full** · Learn by 2026-10-31
 
 ![T44 at a glance: pyATS/Genie/Unicon stack, testbed YAML, parse vs execute, learn + diff change window, AEtest structure, use cases and tool choice](../assets/T44/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-11-04
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T44.01](#t4401--components) Components · [T44.02](#t4402--testbed) Testbed · [T44.03](#t4403--workflow) Workflow · [T44.04](#t4404--learn-and-diff) Learn and diff · [T44.05](#t4405--aetest) AEtest · [T44.06](#t4406--cml-link) CML link · [T44.07](#t4407--use-cases) Use cases · [T44.08](#t4408--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-11-04
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Three layers, three jobs.** **pyATS** is Cisco's free Python **test framework** (testbed loader, AEtest harness, `pyats run job` runner). **Genie** (the pyATS Library) **parses** show output into dicts, **learns** whole features (`dev.learn("routing")`) and **diffs** snapshots. **Unicon** **connects** over SSH, Telnet or console and handles prompts.
 - **Workflow:** testbed YAML (`os:`, `type:`, `connections:`, credentials as `%ENV{...}`) → `load("testbed.yaml")` → `dev = testbed.devices["csr1"]` → `dev.connect()` → `dev.parse(cmd)` returns a **dict**, `dev.execute(cmd)` returns a **string**, `dev.configure(lines)` pushes config. For change windows: `genie learn routing --output before` → change → `--output after` → `genie diff before after`.

@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "4.4, 4.12, 5.4"
 primary_domain: D4
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: verified      # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T28 · CI/CD + DevOps principles
 
-> Owner: **Beedy** · Blueprint: **4.4, 4.12, 5.4** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Beedy** · Blueprint: **4.4, 4.12, 5.4** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T28 at a glance: CI stages, artifact, CD environments, NetDevOps and DevOps principles on one swim-lane sheet](../assets/T28/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T28.01](#t2801--ci) CI · [T28.02](#t2802--cd) CD · [T28.03](#t2803--pipeline-components) Pipeline components · [T28.04](#t2804--tools-awareness) Tools (awareness) · [T28.05](#t2805--benefits) Benefits · [T28.06](#t2806--infra-cicd) Infra CI/CD · [T28.07](#t2807--devops) DevOps · [T28.08](#t2808--devops-practices) DevOps practices · [T28.09](#t2809--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **CI = merge small changes to main at least daily; every push triggers an automated lint + test + build.** A failing stage stops the line, so main stays releasable. The output is **one artifact**, built once and stored in an artifact repo (registry, Nexus, Artifactory).
 - **CD promotes that same artifact through dev → staging → prod.** Continuous **delivery** = always releasable, a **human approves** prod. Continuous **deployment** = every passing change goes to prod **automatically**. For infrastructure (NetDevOps), Git holds the intent, the pipeline validates it, tests it in simulation (CML/pyATS), deploys it (Ansible/NSO/Terraform) and runs post-change checks.

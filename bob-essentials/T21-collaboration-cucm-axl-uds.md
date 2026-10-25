@@ -1,6 +1,6 @@
 # T21 · Collaboration: CUCM AXL + UDS: essentials
 
-> Blueprint 3.4 · Full note: [bob/T21-collaboration-cucm-axl-uds.md](../bob/T21-collaboration-cucm-axl-uds.md) · Teach-back 2026-10-25
+> Blueprint 3.4 · Full note: [bob/T21-collaboration-cucm-axl-uds.md](../bob/T21-collaboration-cucm-axl-uds.md)
 
 ## In one picture
 

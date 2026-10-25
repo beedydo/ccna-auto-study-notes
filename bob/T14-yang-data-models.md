@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.8, 5.11"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T14 · YANG data models
 
-> Owner: **Bob** · Blueprint: **3.8, 5.11** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Bob** · Blueprint: **3.8, 5.11** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T14 at a glance: every YANG concept on one page](../assets/T14/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T14.01](#t1401--what-yang-is) What YANG is · [T14.02](#t1402--model-sources) Model sources · [T14.03](#t1403--module-header) Module header · [T14.04](#t1404--node-types) Node types · [T14.05](#t1405--reuse-and-types) Reuse and types · [T14.06](#t1406--config-vs-state) Config vs state · [T14.07](#t1407--pyang-tree-output) pyang tree output · [T14.08](#t1408--model-to-api-path) Model to API path · [T14.09](#t1409--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **YANG is the schema, not the data and not the protocol.** A module (name, `namespace`, `prefix`, `import`, `revision`) describes config and state. NETCONF (XML), RESTCONF (JSON/XML) and gNMI carry data that fits it. Models come from **IETF** (standard), **OpenConfig** (vendor-neutral, written by operators) and **Native** (vendor, e.g. `Cisco-IOS-XE-native`), all published in github.com/YangModels/yang.
 - **Four data nodes:** a **container** groups other nodes and has no value. A **list** holds many entries, each picked out by a **key**. A **leaf** holds one typed value. A **leaf-list** holds many values of one type. Reuse: **typedef** names a type, **grouping**/**uses** copies a block of nodes, **augment** adds nodes into another module's tree. `config false` marks read-only state.

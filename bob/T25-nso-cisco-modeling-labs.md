@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.2, 5.3, 5.6"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T25 · NSO + Cisco Modeling Labs
 
-> Owner: **Bob** · Blueprint: **3.2, 5.3, 5.6** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.2, 5.3, 5.6** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T25 at a glance: NSO architecture, transactions, sync, CML and tool choice on one page](../assets/T25/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T25.01](#t2501--what-nso-is) What NSO is · [T25.02](#t2502--architecture) Architecture · [T25.03](#t2503--transactions) Transactions · [T25.04](#t2504--sync) Sync · [T25.05](#t2505--cml) CML · [T25.06](#t2506--tool-choice) Tool choice · [T25.07](#t2507--not-tested) Not tested · [T25.08](#t2508--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **NSO = model-driven, transactional, multivendor orchestration.** A **service** (YANG model + template/Python mapping) turns intent into config for each device. **NEDs** translate that config into each device's native interface (CLI, NETCONF, SNMP, REST). **CDB** holds the services and every device's config. You reach NSO northbound through CLI, Web UI, RESTCONF, NETCONF or JSON-RPC.
 - **Transactions + FASTMAP.** One commit covers many devices and is all-or-nothing. `commit dry-run outformat native` (RESTCONF `?dry-run=native`) previews the exact per-device commands. FASTMAP remembers what a service created, so changing or deleting the service touches only that config. Sync: `sync-from` pulls the device into CDB, `sync-to` pushes CDB to the device, and `check-sync` compares them.

@@ -1,6 +1,6 @@
 # T08 · API consumption constraints: essentials
 
-> Blueprint 2.3: constraints when consuming APIs (rate limits, pagination, payload size) · Full note: [bee/T08-api-consumption-constraints.md](../bee/T08-api-consumption-constraints.md) · Teach-back 2026-10-18
+> Blueprint 2.3: constraints when consuming APIs (rate limits, pagination, payload size) · Full note: [bee/T08-api-consumption-constraints.md](../bee/T08-api-consumption-constraints.md)
 
 ![T08 at a glance: every API consumption limit, its signal, the fix and the trap](../assets/T08/00-overview.png)
 

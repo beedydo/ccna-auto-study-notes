@@ -1,6 +1,6 @@
 # T44 · pyATS + Genie: essentials
 
-> Blueprint 5.3: simulation and testing tools (Modeling Labs, pyATS) · Full note: [bee/T44-pyats-genie.md](../bee/T44-pyats-genie.md) · Teach-back 2026-11-01
+> Blueprint 5.3: simulation and testing tools (Modeling Labs, pyATS) · Full note: [bee/T44-pyats-genie.md](../bee/T44-pyats-genie.md)
 
 ![T44 at a glance: pyATS/Genie/Unicon stack, testbed YAML, parse vs execute, learn + diff change window, AEtest structure, use cases and tool choice](../assets/T44/00-overview.png)
 

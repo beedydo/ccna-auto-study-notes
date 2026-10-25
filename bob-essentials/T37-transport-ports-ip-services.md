@@ -1,6 +1,6 @@
 # T37 · Transport, ports, IP services: essentials
 
-> Blueprint 6.6, 6.7 · Full note: [bob/T37-transport-ports-ip-services.md](../bob/T37-transport-ports-ip-services.md) · Teach-back 2026-10-25
+> Blueprint 6.6, 6.7 · Full note: [bob/T37-transport-ports-ip-services.md](../bob/T37-transport-ports-ip-services.md)
 
 ## In one picture
 

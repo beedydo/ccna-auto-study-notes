@@ -1,10 +1,10 @@
 # Bob · essentials
 
-Plain-English summaries of every one of Bob's topics: one picture, the big idea, what to know, traps, a 5-question self-check and lines to say at teach-back. Each links to the full note for depth.
+Plain-English summaries of every one of Bob's topics: one picture, the big idea, what to know, traps, a 5-question self-check and lines to say out loud. Each links to the full note for depth.
 
 **How to use:** read the essentials first (about 10–15 min per topic), do its self-check, then open the full note only for the parts you got wrong.
 
-## Cycle 1 · teach-back 2026-10-11
+## Cycle 1 (review 2026-10-11)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -16,7 +16,7 @@ Plain-English summaries of every one of Bob's topics: one picture, the big idea,
 | T36 Layer 3: IP, masks, routes, gateways | [essentials](T36-layer-3-ip-masks-routes-gateways.md) | [full note](../bob/T36-layer-3-ip-masks-routes-gateways.md) |
 | T39 Management, control, data planes | [essentials](T39-management-control-data-planes.md) | [full note](../bob/T39-management-control-data-planes.md) |
 
-## Cycle 2 · teach-back 2026-10-18
+## Cycle 2 (review 2026-10-18)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -27,7 +27,7 @@ Plain-English summaries of every one of Bob's topics: one picture, the big idea,
 | T18 Meraki | [essentials](T18-meraki.md) | [full note](../bob/T18-meraki.md) |
 | T19 ACI | [essentials](T19-aci.md) | [full note](../bob/T19-aci.md) |
 
-## Cycle 3 · teach-back 2026-10-25
+## Cycle 3 (review 2026-10-25)
 
 | Topic | Essentials | Full note |
 |---|---|---|
@@ -39,7 +39,7 @@ Plain-English summaries of every one of Bob's topics: one picture, the big idea,
 | T25 NSO + Cisco Modeling Labs | [essentials](T25-nso-cisco-modeling-labs.md) | [full note](../bob/T25-nso-cisco-modeling-labs.md) |
 | T37 Transport, ports, IP services | [essentials](T37-transport-ports-ip-services.md) | [full note](../bob/T37-transport-ports-ip-services.md) |
 
-## Cycle 4 · teach-back 2026-11-01
+## Cycle 4 (review 2026-11-01)
 
 | Topic | Essentials | Full note |
 |---|---|---|

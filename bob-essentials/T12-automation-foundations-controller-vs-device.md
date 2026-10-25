@@ -1,6 +1,6 @@
 # T12 · Automation foundations: controller vs device: essentials
 
-> Blueprint 5.1, 5.2 · Full note: [bob/T12-automation-foundations-controller-vs-device.md](../bob/T12-automation-foundations-controller-vs-device.md) · Teach-back 2026-10-11
+> Blueprint 5.1, 5.2 · Full note: [bob/T12-automation-foundations-controller-vs-device.md](../bob/T12-automation-foundations-controller-vs-device.md)
 
 ## In one picture
 ![T12 at a glance: two ways to reach a switch, why automate, model-driven value, the stack, SDN and the comparison table](../assets/T12/00-overview.png)

@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.7"
 primary_domain: D2
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T10 · API authentication
 
-> Owner: **Beedy** · Blueprint: **2.7** · CBT coverage: **Full** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Beedy** · Blueprint: **2.7** · CBT coverage: **Full** · Learn by 2026-10-17
 
 ![T10 at a glance: every API auth method as one card](../assets/T10/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T10.01](#t1001--concepts) Concepts · [T10.02](#t1002--basic-auth) Basic auth · [T10.03](#t1003--custom-token) Custom token · [T10.04](#t1004--api-key) API key · [T10.05](#t1005--sessioncookie) Session/cookie · [T10.06](#t1006--oauth-20-awareness) OAuth 2.0 (awareness) · [T10.07](#t1007--python) Python · [T10.08](#t1008--credential-handling) Credential handling · [T10.09](#t1009--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Read the header to name the method.** `Authorization: Basic <base64 user:pass>` = Basic. A token fetched from a login call and then sent as `X-Auth-Token` / `X-auth-access-token` = custom token (Catalyst Center (DNA Center) / Secure Firewall Management Center (FMC)). A static key from a portal = API key (Meraki). `Set-Cookie` after login = session cookie (APIC `APIC-cookie`, SD-WAN Manager (vManage) `JSESSIONID` + `X-XSRF-TOKEN`). Redirect → code → token exchange = OAuth 2.0 (Webex integrations).
 - **Base64 is encoding, not encryption.** Anyone can decode `YWRtaW46QzFzY28xMjM0NQ==` back to `admin:C1sco12345`, so every method depends on HTTPS. Secrets come from env vars or a vault, never from the script or Git.

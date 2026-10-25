@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.6, 6.7"
 primary_domain: D6
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T37 · Transport, ports, IP services
 
-> Owner: **Bob** · Blueprint: **6.6, 6.7** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **6.6, 6.7** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T37 at a glance: TCP vs UDP, exam ports and the five IP services on one page](../assets/T37/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T37.01](#t3701--tcp-vs-udp) TCP vs UDP · [T37.02](#t3702--ports-to-memorise) Ports to memorise · [T37.03](#t3703--ip-services) IP services · [T37.04](#t3704--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **TCP = handshake first (SYN, SYN-ACK, ACK), then acked, ordered bytes. UDP = fire a datagram, no ack, no order.** Closed TCP port → RST at once; closed UDP port → silence (app times out).
 - **Ports:** TCP 20/21 FTP · 22 SSH · 23 Telnet · 25 SMTP · 80 HTTP · 443 HTTPS **and RESTCONF** · 830 NETCONF. UDP 67/68 DHCP · 69 TFTP · 123 NTP · 161 SNMP · 162 traps · 514 syslog. DNS 53 is **both** (UDP queries, TCP zone transfers).

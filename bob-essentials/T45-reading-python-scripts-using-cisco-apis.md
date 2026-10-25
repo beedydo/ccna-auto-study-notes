@@ -1,6 +1,6 @@
 # T45 · Reading Python scripts using Cisco APIs: essentials
 
-> Blueprint 5.7 · Full note: [bob/T45-reading-python-scripts-using-cisco-apis.md](../bob/T45-reading-python-scripts-using-cisco-apis.md) · Teach-back 2026-11-01
+> Blueprint 5.7 · Full note: [bob/T45-reading-python-scripts-using-cisco-apis.md](../bob/T45-reading-python-scripts-using-cisco-apis.md)
 
 ## In one picture
 ![T45 at a glance: script shape, platform fingerprints, workflow, bug symptoms and exam angle on one page](../assets/T45/00-overview.png)

@@ -1,6 +1,6 @@
 # T35 · Layer 2: MAC, VLANs: essentials
 
-> Blueprint 6.1 · Full note: [bob/T35-layer-2-mac-vlans.md](../bob/T35-layer-2-mac-vlans.md) · Teach-back 2026-10-11
+> Blueprint 6.1 · Full note: [bob/T35-layer-2-mac-vlans.md](../bob/T35-layer-2-mac-vlans.md)
 
 ## In one picture
 

@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "5.1, 5.2"
 primary_domain: D5
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T12 · Automation foundations: controller vs device
 
-> Owner: **Bob** · Blueprint: **5.1, 5.2** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **5.1, 5.2** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T12 at a glance: why automate, model-driven stack, device-level vs controller-level, SDN and intent on one page](../assets/T12/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T12.01](#t1201--why-automate) Why automate · [T12.02](#t1202--model-driven-programmability) Model-driven programmability · [T12.03](#t1203--value-of-model-driven-programmability-51) Value of model-driven programmability (5.1) · [T12.04](#t1204--programmability-stack) Programmability stack · [T12.05](#t1205--device-level-management) Device-level management · [T12.06](#t1206--controller-level-management) Controller-level management · [T12.07](#t1207--sdn-concepts) SDN concepts · [T12.08](#t1208--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Model-driven programmability (5.1):** config and state are described by a **YANG model**, not CLI text. You read and write them through an API (NETCONF, RESTCONF, gNMI) that returns **structured XML/JSON**. That gives you parsing-free data, the same code across vendors (OpenConfig/IETF models), validation before apply, and transactions (NETCONF candidate → commit / rollback).
 - **Stack:** model **YANG** → encoding **XML / JSON / protobuf** → protocol **NETCONF / RESTCONF / gNMI** → transport **SSH :830 / HTTPS :443 / gRPC over HTTP/2**.

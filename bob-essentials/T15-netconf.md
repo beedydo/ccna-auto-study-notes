@@ -1,6 +1,6 @@
 # T15 · NETCONF: essentials
 
-> Blueprint 3.8, 5.10 · Full note: [bob/T15-netconf.md](../bob/T15-netconf.md) · Teach-back 2026-10-18
+> Blueprint 3.8, 5.10 · Full note: [bob/T15-netconf.md](../bob/T15-netconf.md)
 
 ## In one picture
 

@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.1, 3.2, 3.9"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T20 · Catalyst Center (DNA Center)
 
-> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.1, 3.2, 3.9** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T20 at a glance: Catalyst Center as a system map with its four API families, auth, endpoints, async tasks, SDK and client discovery](../assets/T20/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T20.01](#t2001--what-catalyst-center-is) What Catalyst Center is · [T20.02](#t2002--api-families) API families · [T20.03](#t2003--authentication) Authentication · [T20.04](#t2004--common-endpoints) Common endpoints · [T20.05](#t2005--asynchronous-tasks) Asynchronous tasks · [T20.06](#t2006--python-sdk) Python SDK · [T20.07](#t2007--client-discovery-39c) Client discovery (3.9.c) · [T20.08](#t2008--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Catalyst Center (DNA Center) is the campus/branch controller.** You state the intent and it turns that into device config. Four jobs: **Design → Policy → Provision → Assurance**. Four API directions: **north = Intent API** (your scripts), **west = Integration API** (ServiceNow, IPAM), **south = Multivendor SDK** (3rd-party devices), **east = Events and Notifications** (webhook, email, syslog, pushed to you).
 - **Auth is two steps.** `POST /dna/system/api/v1/auth/token` with **Basic auth** returns `{"Token": "..."}`, valid **60 min**. Every other call sends it in the **`X-Auth-Token`** header (not `Authorization: Bearer`). Intent paths start `/dna/intent/api/v1/`: `network-device`, `site-health`, `client-detail?macAddress=`, `topology/physical-topology`.

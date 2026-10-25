@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "6.2"
 primary_domain: D6
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T36 · Layer 3: IP, masks, routes, gateways
 
-> Owner: **Bob** · Blueprint: **6.2** · CBT coverage: **Full** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **6.2** · CBT coverage: **Full** · Learn by 2026-10-10
 
 ![T36 at a glance: addressing, gateway/ARP and routing types on one page](../assets/T36/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T36.01](#t3601--ipv4-addressing) IPv4 addressing · [T36.02](#t3602--ipv6-awareness) IPv6 (awareness) · [T36.03](#t3603--gateway-and-arp) Gateway and ARP · [T36.04](#t3604--routing-table) Routing table · [T36.05](#t3605--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Mask splits network from host:** network = IP AND mask, broadcast = all host bits 1, usable = 2^h − 2 (except /31 = 2 and /32 = 1). RFC 1918 = `10/8`, `172.16/12` (up to 172.31), `192.168/16`.
 - **Host decision:** destination AND **my** mask. Same network → ARP for the destination. Different → ARP for the **default gateway**. The dst IP never changes; only the frame's MAC does, hop by hop.

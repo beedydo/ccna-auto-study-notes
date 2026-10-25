@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "1.4"
 primary_domain: D1
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-10
-teach_back: 2026-10-11
 cross_study: 2026-10-20
 ---
 
 # T01 · Software dev methods: agile, lean, waterfall
 
-> Owner: **Bob** · Blueprint: **1.4** · CBT coverage: **Partial** · Learn by 2026-10-10 · Teach-back 2026-10-11
+> Owner: **Bob** · Blueprint: **1.4** · CBT coverage: **Partial** · Learn by 2026-10-10
 
 ![T01 at a glance: waterfall, agile, Scrum and Kanban, lean, and a compare-and-pick matrix on one page](../assets/T01/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-20
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T01.01](#t0101--waterfall) Waterfall · [T01.02](#t0102--agile) Agile · [T01.03](#t0103--agile-frameworks) Agile frameworks · [T01.04](#t0104--lean) Lean · [T01.05](#t0105--comparison) Comparison · [T01.06](#t0106--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-20
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Waterfall = plan-driven and sequential.** Requirements → design → implementation → testing → deployment → maintenance. Each phase is signed off before the next one starts. Predictable, but feedback comes late and late change is expensive. Pick it for fixed scope, contracts and regulated work.
 - **Agile = adaptive and iterative.** Short iterations (sprints of 1–4 weeks) each deliver **working software**, so feedback arrives every iteration and requirements can change. Scrum runs it with timeboxes (Product Owner, Scrum Master, Developers; planning, Daily Scrum, review, retrospective). Kanban runs it as continuous flow (board, WIP limits, pull).

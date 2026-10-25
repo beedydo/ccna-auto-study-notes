@@ -1,6 +1,6 @@
 # T33 · IaC + tool comparison: essentials
 
-> Blueprint 5.5: principles of infrastructure as code; 5.6: automation tool capabilities (Ansible, Terraform, NSO) · Full note: [bee/T33-iac-tool-comparison.md](../bee/T33-iac-tool-comparison.md) · Teach-back 2026-11-01
+> Blueprint 5.5: principles of infrastructure as code; 5.6: automation tool capabilities (Ansible, Terraform, NSO) · Full note: [bee/T33-iac-tool-comparison.md](../bee/T33-iac-tool-comparison.md)
 
 ![T33 at a glance: IaC principles, declarative vs imperative, push vs pull, a six-tool matrix and scenario answers on one page](../assets/T33/00-overview.png)
 

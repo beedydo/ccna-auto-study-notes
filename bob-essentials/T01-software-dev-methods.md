@@ -1,6 +1,6 @@
 # T01 · Software dev methods: agile, lean, waterfall: essentials
 
-> Blueprint 1.4 · Full note: [bob/T01-software-dev-methods.md](../bob/T01-software-dev-methods.md) · Teach-back 2026-10-11
+> Blueprint 1.4 · Full note: [bob/T01-software-dev-methods.md](../bob/T01-software-dev-methods.md)
 
 ## In one picture
 ![T01 at a glance: waterfall, agile, Scrum and Kanban, lean, and a compare-and-pick table](../assets/T01/00-overview.png)

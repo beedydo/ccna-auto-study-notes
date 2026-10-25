@@ -5,16 +5,15 @@ owner: Bob
 blueprint: "3.2, 3.9.a"
 primary_domain: D3
 cbt_coverage: "Full"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-24
-teach_back: 2026-10-25
 cross_study: 2026-10-27
 ---
 
 # T22 · Catalyst SD-WAN
 
-> Owner: **Bob** · Blueprint: **3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-24 · Teach-back 2026-10-25
+> Owner: **Bob** · Blueprint: **3.2, 3.9.a** · CBT coverage: **Full** · Learn by 2026-10-24
 
 ![T22 at a glance: SD-WAN components, the /dataservice API, the 3-step session login and the common endpoints](../assets/T22/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-27
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T22.01](#t2201--components) Components · [T22.02](#t2202--api-base) API base · [T22.03](#t2203--authentication) Authentication · [T22.04](#t2204--common-endpoints) Common endpoints · [T22.05](#t2205--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-27
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Four components, four planes.** SD-WAN **Manager** (vManage) = management + the **only REST API**. SD-WAN **Controller** (vSmart) = control plane, runs **OMP**, pushes policy. SD-WAN **Validator** (vBond) = orchestration, **authenticates** devices and points them at the controllers. **WAN Edge** (vEdge/cEdge) = data plane, IPsec tunnels + BFD.
 - **API base = `https://<manager>:8443/dataservice/`.** Login and logout are at the root (`/j_security_check`, `/logout`), everything else is under `/dataservice`. Inventory `/device`, health `/device/monitor` + `/device/counters`, stats `/statistics/...`, `/alarms`, `/template/device` + `/template/feature`.

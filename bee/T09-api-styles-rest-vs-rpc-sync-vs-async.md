@@ -5,16 +5,15 @@ owner: Beedy
 blueprint: "2.8"
 primary_domain: D2
 cbt_coverage: "Partial"
-status: drafted   # not-started | drafted | verified | taught
+status: drafted   # not-started | drafted | verified
 confidence: 0         # 1-5, owner's self-rating after practice Qs
 learn_by: 2026-10-17
-teach_back: 2026-10-18
 cross_study: 2026-10-22
 ---
 
 # T09 · API styles: REST vs RPC, sync vs async
 
-> Owner: **Beedy** · Blueprint: **2.8** · CBT coverage: **Partial** · Learn by 2026-10-17 · Teach-back 2026-10-18
+> Owner: **Beedy** · Blueprint: **2.8** · CBT coverage: **Partial** · Learn by 2026-10-17
 
 ![T09 at a glance: REST vs RPC vs SOAP, sync vs async](../assets/T09/00-overview.png)
 
@@ -24,7 +23,7 @@ cross_study: 2026-10-22
 
 **Contents**
 
-- [TL;DR (teach-back card)](#tldr-teach-back-card)
+- [TL;DR](#tldr)
 - [Concepts](#concepts)
   - [T09.01](#t0901--rest) REST · [T09.02](#t0902--rpc) RPC · [T09.03](#t0903--soap) SOAP · [T09.04](#t0904--comparison) Comparison · [T09.05](#t0905--synchronous) Synchronous · [T09.06](#t0906--asynchronous) Asynchronous · [T09.07](#t0907--async-example) Async example · [T09.08](#t0908--choosing) Choosing · [T09.09](#t0909--exam-angle) Exam angle
 - [Exam traps](#exam-traps)
@@ -36,7 +35,7 @@ cross_study: 2026-10-22
 
 <!-- toc:end -->
 
-## TL;DR (teach-back card)
+## TL;DR
 
 - **Where is the verb?** REST: the verb is the **HTTP method** and the URI is a **noun** (`GET /api/v1/devices/1`). RPC: the verb is a **named function** in the body or URL, usually `POST` to one endpoint (`{"jsonrpc": "2.0", "method": "getDevice"}`; NETCONF `<rpc><get-config>`). SOAP: XML **Envelope > Header? > Body (> Fault)**, contract in a **WSDL**; Cisco example = CUCM **AXL**.
 - **Sync** = the client blocks until the full answer (fine for quick reads). **Async** = the server answers at once with **`202 Accepted` + a task ID / status URL**, and the client polls (or gets a webhook) later. Use async for long jobs: provisioning, image upgrades, CLI on many devices.

@@ -1,6 +1,6 @@
 # T10 · API authentication: essentials
 
-> Blueprint 2.7: auth mechanisms (basic, custom token, API key) · Full note: [bee/T10-api-authentication.md](../bee/T10-api-authentication.md) · Teach-back 2026-10-18
+> Blueprint 2.7: auth mechanisms (basic, custom token, API key) · Full note: [bee/T10-api-authentication.md](../bee/T10-api-authentication.md)
 
 ![T10 at a glance: every API auth method as one card](../assets/T10/00-overview.png)
 
