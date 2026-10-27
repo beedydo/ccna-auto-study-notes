@@ -48,3 +48,9 @@ Plain-English summaries of every one of Bob's topics: one picture, the big idea,
 | T41 Firewall, DNS, LB, reverse proxy | [essentials](T41-firewall-dns-lb-reverse-proxy.md) | [full note](../bob/T41-firewall-dns-lb-reverse-proxy.md) |
 | T42 Webex + Webex devices | [essentials](T42-webex-webex-devices.md) | [full note](../bob/T42-webex-webex-devices.md) |
 | T45 Reading Python scripts using Cisco APIs | [essentials](T45-reading-python-scripts-using-cisco-apis.md) | [full note](../bob/T45-reading-python-scripts-using-cisco-apis.md) |
+
+## Cross-cutting
+
+| Topic | Essentials | Full note |
+|---|---|---|
+| T50 API cheat sheet: transport, style, auth, headers, operations | [essentials](T50-api-cheatsheet-transport-auth-operations.md) | [full note](../bob/T50-api-cheatsheet-transport-auth-operations.md) |

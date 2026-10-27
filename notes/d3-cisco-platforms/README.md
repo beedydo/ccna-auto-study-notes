@@ -17,3 +17,4 @@
 | [T25](../../bob/T25-nso-cisco-modeling-labs.md) | NSO + Cisco Modeling Labs | Bob | 3.2, 5.3, 5.6 | Full | 2026-10-24 |
 | [T42](../../bob/T42-webex-webex-devices.md) | Webex + Webex devices | Bob | 3.4, 3.9.b | Partial | 2026-10-31 |
 | [T48](../../bob/T48-cisco-tooling-comparison.md) | Cisco platforms side by side | Bob | 3.1-3.6, 3.9 | None | 2026-10-31 |
+| [T50](../../bob/T50-api-cheatsheet-transport-auth-operations.md) | API cheat sheet: transport, style, auth, operations | Bob | 2.x, 3.1-3.6, 3.9, 4.9 | None | 2026-10-31 |
