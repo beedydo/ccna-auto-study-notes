@@ -7,6 +7,9 @@
 *Read a row left to right: where it listens, what style, how you log in, which headers, which operations, what success looks like. Bands: blue = one device, green = controller, orange = cloud, purple = app server. Red = exam trap, grey = exact syntax, blue chips = the answer.*
 
 ## 🧭 The big idea
+![The six questions, left to right](../assets/T50/01-six-questions.png)
+*Ask these six, in this order, about any platform.*
+
 Every Cisco API question is the same six questions asked about a different product. Learn the questions, then the table is just lookup.
 
 | # | Question | Answer set | Analogy |
@@ -25,56 +28,59 @@ Every Cisco API question is the same six questions asked about a different produ
 ### 🚪 1. Ports and URLs
 | Port / URL | What | Cue |
 |---|---|---|
-| TCP `830` over SSH, subsystem `netconf` | NETCONF | "XML, `<hello>`, candidate/commit" |
-| TCP `443` | RESTCONF, most REST APIs, UCSM, APIC, Catalyst Center | the default for HTTPS |
-| TCP `8443` | SD-WAN Manager (`/dataservice`), CUCM (`/axl/`, `/cucm-uds/`) | non-standard HTTPS |
-| TCP `9060` (443 on ISE 3.1+) | ISE ERS | "NAC / quarantine" |
-| TCP `22` | plain SSH CLI (pyATS, Netmiko) | not NETCONF |
-| `/ins` · `/nuova` · `/axl/` · `/putxml` | NX-API CLI · UCSM · CUCM AXL · Webex device xAPI | **one URL**; the body names the operation |
+| 🔌 TCP `830` over SSH, subsystem `netconf` | NETCONF | "XML, `<hello>`, candidate/commit" |
+| 🔒 TCP `443` | RESTCONF, most REST APIs, UCSM, APIC, Catalyst Center | the default for HTTPS |
+| 🔢 TCP `8443` | SD-WAN Manager (`/dataservice`), CUCM (`/axl/`, `/cucm-uds/`) | non-standard HTTPS |
+| 🛡️ TCP `9060` (443 on ISE 3.1+) | ISE ERS | "NAC / quarantine" |
+| 💻 TCP `22` | plain SSH CLI (pyATS, Netmiko) | not NETCONF |
+| 🎯 `/ins` · `/nuova` · `/axl/` · `/putxml` | NX-API CLI · UCSM · CUCM AXL · Webex device xAPI | **one URL**; the body names the operation |
 
 ### 🔐 2. The seven login styles
+![What each login style looks like on the wire](../assets/T50/02-login-flows.png)
+*Blue arrow = what you send, green arrow = what comes back. Only styles 2 and 3 store something between calls.*
+
 | Style | Platforms | You send | Stored? |
 |---|---|---|---|
-| 1 · Basic every call | IOS XE RESTCONF, NX-API CLI, NSO, ISE ERS, Secure Endpoint, CUCM, xAPI | `Authorization: Basic` | nothing |
-| 2 · Static key | Meraki, Webex | `Authorization: Bearer <key>` | nothing |
-| 3 · Login → token header | FMC `X-auth-access-token`, Catalyst Center `X-Auth-Token`; FDM, CML, XDR, Secure Connect use `Bearer` | token header | token |
-| 4 · Login → cookie | ACI / NX-API REST `APIC-cookie`; SD-WAN `JSESSIONID` + `X-XSRF-TOKEN`; UCSM cookie in the **XML body** | cookie | cookie → use `Session()` |
-| 5 · Sign every request | Intersight: `Date`, `Digest`, `Authorization: Signature` | signature | nothing |
-| 6 · Key as parameter | Malware Analytics `?api_key=` | query string | nothing |
-| 7 · Not HTTP | NETCONF, pyATS | SSH session | session |
+| 🟢 1 · Basic every call | IOS XE RESTCONF, NX-API CLI, NSO, ISE ERS, Secure Endpoint, CUCM, xAPI | `Authorization: Basic` | nothing |
+| 🔵 2 · Static key | Meraki, Webex | `Authorization: Bearer <key>` | nothing |
+| 🟠 3 · Login → token header | FMC `X-auth-access-token`, Catalyst Center `X-Auth-Token`; FDM, CML, XDR, Secure Connect use `Bearer` | token header | token |
+| 🟣 4 · Login → cookie 🍪 | ACI / NX-API REST `APIC-cookie`; SD-WAN `JSESSIONID` + `X-XSRF-TOKEN`; UCSM cookie in the **XML body** | cookie | cookie → use `Session()` |
+| 🔏 5 · Sign every request | Intersight: `Date`, `Digest`, `Authorization: Signature` | signature | nothing |
+| 🟡 6 · Key as parameter | Malware Analytics `?api_key=` | query string | nothing |
+| ⚫ 7 · Not HTTP 🔌 | NETCONF, pyATS | SSH session | session |
 
 ### 🛠️ 3. The same action in four spellings
 | Action | HTTP / RESTCONF | NETCONF | UCSM | AXL |
 |---|---|---|---|---|
-| Read | `GET` | `get-config` / `get` | `configResolveDn` / `Class` | `getPhone` / `listPhone` |
-| Create | `POST` to the parent | `edit-config` `operation="create"` | `status="created"` | `addPhone` |
-| Replace | `PUT` | `operation="replace"` | n/a | `updatePhone` |
-| Merge | `PATCH` | `operation="merge"` (default) | `configConfMos` | `updatePhone` |
-| Delete | `DELETE` | `operation="delete"` / `"remove"` | `status="deleted"` | `removePhone` |
-| Live? | immediately | after `commit` (candidate) | immediately | immediately |
+| 👀 Read | `GET` | `get-config` / `get` | `configResolveDn` / `Class` | `getPhone` / `listPhone` |
+| ➕ Create | `POST` to the parent | `edit-config` `operation="create"` | `status="created"` | `addPhone` |
+| 🔁 Replace | `PUT` | `operation="replace"` | n/a | `updatePhone` |
+| 🧩 Merge | `PATCH` | `operation="merge"` (default) | `configConfMos` | `updatePhone` |
+| 🗑️ Delete | `DELETE` | `operation="delete"` / `"remove"` | `status="deleted"` | `removePhone` |
+| 🚀 Live? | immediately | after `commit` (candidate) | immediately | immediately |
 
 ### ✅ 4. What the status code really means
 | You see | It means | Next step |
 |---|---|---|
-| `200` + failure in body | SD-WAN (bad login = HTML page), UCSM (`errorCode`), ACI (`totalCount 0`) | read the body |
-| `201` | FMC saved, **not deployed** | deployment request |
-| `202` | Catalyst Center task accepted | poll `/task/{taskId}` |
-| `204` | RESTCONF done, no body | none |
-| `401` / `403` | not authenticated / not allowed (role, scope, missing XSRF) | new credential / different role |
-| `409` | already exists, or lock held | PATCH instead / wait |
-| `429` | rate limit | wait `Retry-After` |
+| 🟡 `200` + failure in body | SD-WAN (bad login = HTML page), UCSM (`errorCode`), ACI (`totalCount 0`) | read the body |
+| 🟢 `201` | FMC saved, **not deployed** | deployment request |
+| ⏳ `202` | Catalyst Center task accepted | poll `/task/{taskId}` |
+| 🟢 `204` | RESTCONF done, no body | none |
+| 🔴 `401` / `403` | not authenticated / not allowed (role, scope, missing XSRF) | new credential / different role |
+| ⚠️ `409` | already exists, or lock held | PATCH instead / wait |
+| 🐢 `429` | rate limit | wait `Retry-After` |
 
 ## ⚠️ Exam traps
 | ❌ Looks like… | ✅ Actually… |
 |---|---|
-| "It's a token, so it's `Bearer`" | FMC and Catalyst Center use custom headers; Bearer is Meraki, Webex, FDM, CML, XDR, Secure Connect |
-| "NETCONF is on 443" | NETCONF is SSH `830`; RESTCONF is HTTPS `443` |
-| "PUT updates one field" | `PUT` replaces the whole resource; use `PATCH` to merge |
-| "`200` means it worked" | SD-WAN, UCSM and ACI report failure inside a `200` |
-| "`edit-config` returned `<ok/>`, so it's live" | candidate needs `<commit>` |
-| "ISE returns JSON by default" | without `Accept: application/json` it answers XML |
-| "XDR / Malware Analytics will block it" | they analyse; Secure Endpoint, ISE or FMC enforce |
-| "Secure Endpoint and Secure Connect auth the same way" | Endpoint = Basic (client ID : key); Connect = key + secret → Bearer |
+| 🎫 "It's a token, so it's `Bearer`" | FMC and Catalyst Center use custom headers; Bearer is Meraki, Webex, FDM, CML, XDR, Secure Connect |
+| 🔌 "NETCONF is on 443" | NETCONF is SSH `830`; RESTCONF is HTTPS `443` |
+| ✏️ "PUT updates one field" | `PUT` replaces the whole resource; use `PATCH` to merge |
+| 🎭 "`200` means it worked" | SD-WAN, UCSM and ACI report failure inside a `200` |
+| 📝 "`edit-config` returned `<ok/>`, so it's live" | candidate needs `<commit>` |
+| 📄 "ISE returns JSON by default" | without `Accept: application/json` it answers XML |
+| 🔍 "XDR / Malware Analytics will block it" | they analyse; Secure Endpoint, ISE or FMC enforce |
+| 🔑 "Secure Endpoint and Secure Connect auth the same way" | Endpoint = Basic (client ID : key); Connect = key + secret → Bearer |
 
 <details><summary><b>🟨 Should know (second pass)</b></summary>
 
