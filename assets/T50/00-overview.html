@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>T50 overview: transport, API style, auth, headers and operations side by side</title>
+<style>
+  :root {
+    --green: #2fb380; --ink: #1d1d1f; --muted: #555; --line: #2b2b2b;
+    --code: #ececec; --bg: #f7f7f5; --trap: #fde8e8; --trap-ink: #b42318;
+    --blue: #cfe2ff; --blue-b: #0d6efd;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .sheet { width: 1560px; padding: 28px 32px 24px; }
+  header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  header .bar { width: 8px; height: 46px; background: var(--green); border-radius: 4px; }
+  header h1 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -0.5px; }
+  header .pill { background: var(--green); color: #fff; padding: 4px 18px; border-radius: 26px; }
+  header .meta { margin-left: auto; text-align: right; font-size: 14px; color: var(--muted); line-height: 1.4; }
+  header .meta b { color: var(--ink); }
+  code { font-family: Menlo, Consolas, monospace; font-size: 11.6px; background: var(--code); padding: 2px 5px; border-radius: 4px; white-space: nowrap; }
+  .ids { font-size: 11px; color: #e8f0ff; font-weight: 400; margin-left: 6px; }
+  .n { display: inline-flex; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: #fff;
+       font-size: 11px; font-weight: 700; align-items: center; justify-content: center; margin-right: 5px; vertical-align: 1px; }
+  .trap { background: var(--trap); border-radius: 6px; padding: 4px 7px; font-size: 12px; line-height: 1.35; }
+  .trap b { color: var(--trap-ink); }
+  .chips code { display: inline-block; margin: 0 3px 3px 0; }
+
+  /* matrix: one row per login family */
+  .matrix { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .matrix h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; background: var(--ink); }
+  table.m { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.5px; line-height: 1.38; }
+  table.m th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .4px; color: var(--muted); padding: 5px 8px; border-bottom: 2px solid var(--line); background: #fafafa; }
+  table.m td { padding: 6px 8px; vertical-align: top; border-bottom: 1px solid #ddd; }
+  table.m tr:last-child td { border-bottom: 0; }
+  td.fam { color: #fff; font-weight: 800; font-size: 13.5px; line-height: 1.25; }
+  td.fam small { display: block; font-weight: 400; font-size: 11px; opacity: .92; margin-top: 3px; }
+  .f-a { background: #198754; } .f-b { background: #0d6efd; } .f-c { background: #d9480f; } .f-d { background: #6f42c1; }
+  .f-e { background: #0f766e; } .f-f { background: #b45309; } .f-g { background: #495057; }
+  .hl { background: var(--blue); border: 1.5px solid var(--blue-b); border-radius: 5px; padding: 0 5px; font-weight: 700; white-space: nowrap; }
+
+  .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+  .card { border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; display: flex; flex-direction: column; }
+  .card h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; }
+  .card .body { padding: 9px 12px 11px; font-size: 12.5px; line-height: 1.4; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .c1 h3 { background: #7c3aed; } .c2 h3 { background: #0e7490; } .c3 h3 { background: #15803d; }
+  table.s { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+  table.s td { border-bottom: 1px solid #ddd; padding: 3px 2px; vertical-align: top; }
+  table.s td:first-child { width: 112px; font-weight: 700; }
+  table.s tr:last-child td { border-bottom: 0; }
+
+  .wide { margin-top: 14px; border: 2.5px solid var(--line); border-radius: 12px; background: #fff; overflow: hidden; }
+  .wide h3 { margin: 0; padding: 8px 12px; font-size: 16px; color: #fff; background: #343a40; }
+  .wide .body { display: grid; grid-template-columns: minmax(0, 2.4fr) minmax(0, 1fr); gap: 16px; padding: 11px 14px; }
+  .map { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px 12px; font-size: 12.5px; }
+  .map div { line-height: 1.3; }
+  .map b { display: inline-block; background: var(--blue); border: 2px solid var(--blue-b); border-radius: 6px; padding: 0 6px; margin-top: 2px; }
+  footer { display: flex; gap: 22px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+  footer span.k::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  footer .k1::before { background: var(--ink); border-radius: 50%; } footer .k2::before { background: var(--trap); border: 1px solid var(--trap-ink); }
+  footer .k3::before { background: var(--code); border: 1px solid #999; } footer .k4::before { background: var(--blue); border: 1px solid var(--blue-b); }
+
+  table.m td code { white-space: normal; word-break: break-all; }
+  table.m td.p { font-weight: 800; font-size: 12.5px; }
+  table.m td.p small { display:block; font-weight:400; font-size:10.5px; color:var(--muted); }
+  tr.band td { color:#fff; font-weight:800; font-size:12px; padding:3px 8px; letter-spacing:.3px; }
+  .b1 td { background:#0d6efd; } .b2 td { background:#198754; } .b3 td { background:#d9480f; } .b4 td { background:#6f42c1; }
+  td.t { font-size:11.5px; }
+  table.m td { font-size:11.8px; }
+  .ports { display:flex; flex-wrap:wrap; gap:4px 6px; }
+  .ports code { background:var(--blue); border:1.5px solid var(--blue-b); font-weight:700; }
+  .cards { grid-template-columns: repeat(3, minmax(0,1fr)); }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="bar"></div>
+    <h1>T50 · <span class="pill">Cisco API cheat sheet</span> at a glance</h1>
+    <div class="meta"><b>200-901 blueprint 2.x, 3.1 to 3.6, 3.9, 4.9</b><br>Transport · API style · auth · headers · operations, per platform<br>Built from the T12-T25, T37, T42 and T48 notes (nothing new, only rearranged)</div>
+  </header>
+
+  <div class="matrix"><h3>🧩 Read across: where does it listen, what style, how do I log in, what headers, what can I do, what does success look like <span class="ids">T50.01 to T50.05</span></h3>
+    <table class="m">
+      <colgroup><col style="width:130px"><col style="width:200px"><col style="width:190px"><col style="width:235px"><col style="width:260px"><col style="width:300px"><col></colgroup>
+      <tr><th>Platform</th><th>Transport · port · URL</th><th>API style · encoding</th><th>Auth: login → send</th><th>Key headers</th><th>Operations</th><th>Success / catch</th></tr>
+<tr class="band b1"><td colspan="7">ONE DEVICE: the box's own API</td></tr>
+<tr><td class="p">IOS XE RESTCONF<small>T16</small></td><td class="t">HTTPS <b>443</b><br><code>/restconf/data/…</code></td><td>REST on YANG · JSON or XML</td><td><b>Basic</b> every call</td><td><code>application/yang-data+json</code> (Accept + Content-Type)</td><td>GET · POST (create child) · PUT (create/replace) · PATCH (merge) · DELETE</td><td><code>201</code>+Location · <code>204</code> · dup POST <code>409</code></td></tr>
+<tr><td class="p">NETCONF<small>T15 · IOS XE, NX-OS</small></td><td class="t">SSH <b>830</b><br>subsystem <code>netconf</code></td><td>RPC · <b>XML only</b> (RFC 6241)</td><td>SSH login, then <code>&lt;hello&gt;</code> capabilities</td><td>no HTTP headers; XML namespaces</td><td><code>get</code> · <code>get-config</code> · <code>edit-config</code> · <code>copy-config</code> · <code>lock</code> · <code>commit</code> · <code>unlock</code></td><td><code>&lt;ok/&gt;</code> / <code>&lt;rpc-error&gt;</code> — candidate not live until <code>commit</code></td></tr>
+<tr><td class="p">gNMI<small>T12 · T17</small></td><td class="t">gRPC / HTTP2 <b>9339</b> (IOS XE secure)</td><td>RPC · protobuf (or JSON_IETF)</td><td>TLS</td><td>—</td><td><code>Capabilities</code> <code>Get</code> <code>Set</code> <code>Subscribe</code></td><td>streaming telemetry via <code>Subscribe</code></td></tr>
+<tr><td class="p">NX-API CLI<small>T17 · Nexus</small></td><td class="t">HTTPS <b>443</b> (80 if enabled)<br><b>one URL</b> <code>POST /ins</code></td><td>CLI text in a JSON/XML body → structured out</td><td><b>Basic</b> (optional <code>nxapi_auth</code> cookie)</td><td>JSON body <code>{"ins_api":{"type":…}}</code></td><td>type <code>cli_show</code> (structured) · <code>cli_show_ascii</code> (raw) · <code>cli_conf</code> (config)</td><td>per-command <code>code 200 msg Success</code>; <code>501</code> = no structured output</td></tr>
+<tr><td class="p">NX-API REST<small>T17 · Nexus</small></td><td class="t">HTTPS <b>443</b><br><code>/api/mo/&lt;dn&gt;.json</code></td><td>REST on the DME · <b>format = URL suffix</b></td><td>login <code>aaaLogin.json</code> → <b>cookie</b> <code>APIC-cookie</code></td><td>—</td><td>GET by class / DN · POST (create+modify) · DELETE</td><td><code>200</code> even if nothing matched</td></tr>
+<tr><td class="p">FDM<small>T23 · one FTD</small></td><td class="t">HTTPS <b>443</b><br><code>/api/fdm/latest/…</code></td><td>REST / JSON</td><td><code>POST /fdm/token</code> → <b>Bearer</b></td><td><code>Authorization: Bearer</code></td><td>GET · POST · PUT · DELETE</td><td>reply has <code>expires_in</code></td></tr>
+<tr><td class="p">Webex device xAPI<small>T42 · RoomOS</small></td><td class="t">HTTP(S) <b>80/443</b> <code>/putxml</code> · or cloud <code>/xapi/…</code></td><td>XML over HTTP · <b>one URL</b></td><td><b>Basic</b> (device) · Bearer + scope (cloud)</td><td><code>Content-Type: text/xml</code></td><td><code>xCommand</code> do · <code>xConfiguration</code> persist · <code>xStatus</code> read · <code>xEvent</code> notify</td><td>cloud: <code>403</code> without <code>spark:xapi_*</code> scope</td></tr>
+<tr class="band b2"><td colspan="7">CONTROLLER: one API, many devices</td></tr>
+<tr><td class="p">Catalyst Center<br>(DNA Center)<small>T20</small></td><td class="t">HTTPS <b>443</b><br><code>/dna/intent/api/v1/…</code></td><td>REST / JSON</td><td><code>POST /dna/system/api/v1/auth/token</code> (Basic) → <b>custom header</b></td><td><code>X-Auth-Token</code> · token in body <code>["Token"]</code></td><td>GET · POST · PUT · DELETE · poll <code>GET …/task/{taskId}</code></td><td><code>202</code> = task accepted, not done</td></tr>
+<tr><td class="p">SD-WAN Manager<br>(vManage)<small>T22</small></td><td class="t">HTTPS <b>8443</b><br><code>/dataservice/…</code></td><td>REST / JSON</td><td><code>POST /j_security_check</code> (form) → <b>cookie</b> + <code>GET /client/token</code></td><td><code>Cookie: JSESSIONID</code> + <code>X-XSRF-TOKEN</code> (POST needs it)</td><td>GET · POST · PUT · DELETE</td><td>bad login = <code>200</code> + HTML page</td></tr>
+<tr><td class="p">ACI APIC<small>T19</small></td><td class="t">HTTPS <b>443</b><br><code>/api/mo/&lt;dn&gt;.json</code></td><td>REST on the MIT · <b>format = URL suffix</b></td><td><code>POST /api/aaaLogin.json</code> → <b>cookie</b></td><td><code>Cookie: APIC-cookie</code> (use a <code>Session</code>)</td><td>GET class / DN · POST create+modify · DELETE · <code>aaaRefresh</code></td><td>missing DN = <code>200</code> + <code>totalCount 0</code></td></tr>
+<tr><td class="p">FMC<small>T23 · many FTDs</small></td><td class="t">HTTPS <b>443</b><br><code>/api/fmc_config/v1/domain/{UUID}/…</code></td><td>REST / JSON · <code>offset</code>+<code>limit</code> paging</td><td><code>POST …/auth/generatetoken</code> (Basic) → <b>custom header</b></td><td><code>X-auth-access-token</code> · refresh token (3×)</td><td>GET · POST · PUT · DELETE · deploy request</td><td><code>201</code> saved, <b>not deployed</b>; <code>429</code> at 120/min</td></tr>
+<tr><td class="p">NSO<small>T25 · multi-vendor</small></td><td class="t">HTTP <b>8080</b> RESTCONF ⚠ · NETCONF <b>2022</b> ⚠</td><td>RESTCONF + NETCONF on YANG</td><td><b>Basic</b> every call</td><td><code>application/yang-data+json</code></td><td>RESTCONF verbs · <code>?dry-run=native</code> · commit = <b>all-or-nothing</b></td><td>refused commit changes nothing</td></tr>
+<tr><td class="p">UCS Manager<small>T24 · one UCS domain</small></td><td class="t">HTTPS <b>443</b> <code>POST /nuova</code><br><b>one URL</b></td><td>XML API · method = root element</td><td><code>aaaLogin</code> → <b>cookie in the XML body</b> (<code>outCookie</code>)</td><td><code>Content-Type: text/xml</code></td><td><code>configResolveClass</code> · <code>configResolveDn</code> · <code>configConfMos</code> · <code>aaaRefresh</code> · <code>aaaLogout</code></td><td>errors = <code>200</code> + <code>errorCode</code></td></tr>
+<tr><td class="p">CML<small>T25 · lab</small></td><td class="t">HTTPS <b>443</b> <code>/api/v0/…</code></td><td>REST / JSON</td><td><code>POST /authenticate</code> → <b>Bearer</b></td><td><code>Authorization: Bearer</code></td><td>GET · POST · PUT · DELETE</td><td>—</td></tr>
+<tr class="band b3"><td colspan="7">CLOUD: vendor-hosted, one public URL</td></tr>
+<tr><td class="p">Meraki Dashboard<small>T18</small></td><td class="t">HTTPS <code>api.meraki.com/api/v1</code></td><td>REST / JSON · <code>perPage</code> + <code>Link rel=next</code></td><td><b>static key</b> in a header</td><td><code>Authorization: Bearer</code> (or <code>X-Cisco-Meraki-API-Key</code>)</td><td>GET · POST · PUT · DELETE</td><td><code>429</code>+<code>Retry-After</code> (10 req/s per org)</td></tr>
+<tr><td class="p">Intersight<small>T24</small></td><td class="t">HTTPS <code>intersight.com/api/v1</code></td><td>REST / JSON · OData <code>$filter $select $top</code></td><td><b>signed request</b>, no login</td><td><code>Date</code> <code>Digest</code> <code>Authorization: Signature keyId=…</code></td><td>GET · POST · PATCH · DELETE</td><td>bad signature = <code>401</code></td></tr>
+<tr><td class="p">Webex<small>T42</small></td><td class="t">HTTPS <code>webexapis.com/v1</code></td><td>REST / JSON · <code>max</code> + <code>Link rel=next</code></td><td><b>Bearer</b> token: personal 12 h · bot · integration (OAuth)</td><td><code>Authorization: Bearer</code> · webhooks sign with <code>X-Spark-Signature</code></td><td>GET · POST · PUT · DELETE · webhooks</td><td><code>429</code>+<code>Retry-After</code>; <code>401</code> expired</td></tr>
+<tr><td class="p">XDR / Secure Connect<small>T23</small></td><td class="t">HTTPS <code>visibility.amp.cisco.com/iroh</code> · <code>api.umbrella.com</code></td><td>REST / JSON</td><td><code>client_credentials</code> form → <b>Bearer</b> (XDR 600 s · Secure Connect 3600 s)</td><td><code>Authorization: Bearer</code></td><td>POST <code>/iroh-inspect/inspect</code></td><td>XDR analyses, never blocks</td></tr>
+<tr><td class="p">Secure Endpoint<br>(AMP)<small>T23</small></td><td class="t">HTTPS <code>api.amp.cisco.com/v1</code></td><td>REST / JSON · 500/page, <code>offset</code></td><td><b>Basic</b> (client ID : API key)</td><td><code>Authorization: Basic</code></td><td>GET · POST · PUT · DELETE</td><td>rate-limit headers <code>X-RateLimit-*</code></td></tr>
+<tr><td class="p">Malware Analytics<br>(Threat Grid)<small>T23</small></td><td class="t">HTTPS <code>panacea.threatgrid.com/api/v2</code></td><td>REST / JSON · <b>async</b></td><td><b>key as a parameter</b></td><td><code>?api_key=…</code> (no auth header)</td><td>POST sample · GET <code>/samples/{id}/state</code> until <code>succ</code></td><td>analyses, never blocks</td></tr>
+<tr class="band b4"><td colspan="7">APP SERVER: an application with an API</td></tr>
+<tr><td class="p">ISE ERS<small>T23</small></td><td class="t">HTTPS <b>9060</b> (443 on 3.1+) <code>/ers/config/…</code></td><td>REST CRUD</td><td><b>Basic</b> every call (ERS Admin = CRUD, Operator = GET)</td><td><code>Accept: application/json</code> else you get XML</td><td>GET · POST · PUT · DELETE</td><td>—</td></tr>
+<tr><td class="p">CUCM AXL<small>T21 · admin</small></td><td class="t">HTTPS <b>8443</b> <code>POST /axl/</code><br><b>one URL</b></td><td><b>SOAP</b> / XML · WSDL</td><td><b>Basic</b> (app user with AXL role)</td><td><code>Content-Type: text/xml</code> <code>SOAPAction: "CUCM:DB ver=14.0 addPhone"</code></td><td><code>add</code><code>get</code><code>list</code><code>update</code><code>remove</code> + object (<code>addPhone</code>) · <code>executeSQLQuery</code></td><td>duplicate = SOAP fault</td></tr>
+<tr><td class="p">CUCM UDS<small>T21 · end user</small></td><td class="t">HTTPS <b>8443</b> <code>/cucm-uds/…</code></td><td>REST · XML replies</td><td><b>Basic</b> (that end user's own login)</td><td><code>Accept: application/xml</code></td><td>GET</td><td><code>/version</code> needs no auth</td></tr>
+    </table>
+  </div>
+
+  <div class="cards">
+    <div class="card c1"><h3>🔁 Same action, four spellings <span class="ids">T50.04</span></h3><div class="body">
+      <table class="s">
+        <tr><td>Read</td><td>HTTP <code>GET</code> · NETCONF <code>get-config</code> · UCSM <code>configResolveDn</code> · AXL <code>getPhone</code></td></tr>
+        <tr><td>Create</td><td><code>POST</code> to the parent · <code>edit-config</code> <code>operation="create"</code> · UCSM <code>status="created"</code> · <code>addPhone</code></td></tr>
+        <tr><td>Replace</td><td><code>PUT</code> · <code>edit-config</code> <code>operation="replace"</code></td></tr>
+        <tr><td>Merge</td><td><code>PATCH</code> · <code>edit-config</code> <code>operation="merge"</code> (the default)</td></tr>
+        <tr><td>Delete</td><td><code>DELETE</code> · <code>operation="delete"</code> / <code>"remove"</code> · <code>removePhone</code></td></tr>
+        <tr><td>Make it live</td><td>RESTCONF: immediate · NETCONF candidate: <code>commit</code> · FMC: deploy · NSO: commit</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> <code>PUT</code> replaces the whole resource, so a leaf you leave out is deleted. <code>PATCH</code> merges</div>
+    </div></div>
+
+    <div class="card c2"><h3>🔌 Ports and transport <span class="ids">T50.01</span></h3><div class="body">
+      <div class="ports"><code>22</code> SSH · <code>23</code> Telnet · <code>80</code> HTTP · <code>443</code> HTTPS + RESTCONF · <code>830</code> NETCONF · <code>2022</code> NSO NETCONF ⚠ · <code>8080</code> NSO RESTCONF ⚠ · <code>8443</code> SD-WAN, CUCM · <code>9060</code> ISE ERS · <code>9339</code> gNMI · <code>161/162</code> SNMP · <code>514</code> syslog</div>
+      <table class="s">
+        <tr><td>Over SSH</td><td>NETCONF, CLI (pyATS, Netmiko)</td></tr>
+        <tr><td>Over HTTPS</td><td>every REST, RESTCONF, SOAP, XML-API platform</td></tr>
+        <tr><td>Over HTTP/2</td><td>gRPC / gNMI</td></tr>
+        <tr><td>One URL</td><td><code>/ins</code> · <code>/nuova</code> · <code>/axl/</code> · <code>/putxml</code>: the body names the operation</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> 830 = NETCONF (SSH), 443 = RESTCONF (HTTPS), 22 = plain SSH. DNS is UDP <b>and</b> TCP 53</div>
+    </div></div>
+
+    <div class="card c3"><h3>🚦 Status codes and headers that decide the answer <span class="ids">T50.05</span></h3><div class="body">
+      <table class="s">
+        <tr><td><code>200</code></td><td>answered, <b>not</b> "it worked": SD-WAN, UCSM, ACI put failure in the body</td></tr>
+        <tr><td><code>201</code> / <code>204</code></td><td>created (+<code>Location</code>) / done, no body</td></tr>
+        <tr><td><code>202</code></td><td>accepted: poll the task (Catalyst Center)</td></tr>
+        <tr><td><code>401</code> / <code>403</code></td><td>who are you? (missing, expired) / you may not (role, scope, XSRF)</td></tr>
+        <tr><td><code>404</code> / <code>409</code></td><td>no such path / already exists, lock held</td></tr>
+        <tr><td><code>429</code></td><td>slow down: wait <code>Retry-After</code></td></tr>
+        <tr><td>Paging</td><td><code>Link rel=next</code> (Meraki, Webex) · <code>offset</code>+<code>limit</code> (FMC) · OData <code>$top</code> (Intersight)</td></tr>
+      </table>
+      <div class="trap"><b>Trap:</b> <code>Accept</code> = what I want back, <code>Content-Type</code> = what I am sending. ISE without <code>Accept: application/json</code> replies in XML</div>
+    </div></div>
+  </div>
+
+  <div class="wide"><h3>🎯 Exam angle: the clue gives you the platform <span class="ids">T50.06</span></h3><div class="body">
+    <div class="map">
+      <div><span class="n">1</span><code>X-auth-access-token</code><br><b>FMC</b></div>
+      <div><span class="n">2</span><code>X-Auth-Token</code>, <code>202</code> task<br><b>Catalyst Center</b></div>
+      <div><span class="n">3</span><code>APIC-cookie</code>, DN<br><b>ACI / NX-API REST</b></div>
+      <div><span class="n">4</span><code>X-XSRF-TOKEN</code>, <code>:8443</code><br><b>SD-WAN Manager</b></div>
+      <div><span class="n">5</span><code>Digest</code> + <code>Signature</code><br><b>Intersight</b></div>
+      <div><span class="n">6</span><code>/nuova</code>, <code>outCookie</code><br><b>UCS Manager</b></div>
+      <div><span class="n">7</span><code>SOAPAction</code>, WSDL<br><b>CUCM AXL</b></div>
+      <div><span class="n">8</span><code>api_key</code> parameter<br><b>Malware Analytics</b></div>
+      <div><span class="n">9</span><code>/ins</code>, <code>cli_show</code><br><b>NX-API CLI</b></div>
+      <div><span class="n">10</span>port <code>830</code>, <code>&lt;hello&gt;</code><br><b>NETCONF</b></div>
+      <div><span class="n">11</span><code>:9060</code>, <code>/ers/config</code><br><b>ISE ERS</b></div>
+      <div><span class="n">12</span><code>429</code> + <code>Retry-After</code>, <code>organizationId</code><br><b>Meraki</b></div>
+    </div>
+    <div class="trap" style="align-self:start"><b>Traps:</b> "Bearer" alone names no platform: Meraki, Webex, FDM, CML, XDR, Secure Connect all use it. A <b>header or port name</b> beats a scheme name. vManage = SD-WAN Manager, DNA Center = Catalyst Center</div>
+  </div></div>
+
+  <footer>
+    <span class="k k1">number = clue → answer</span>
+    <span class="k k2">red = exam trap</span>
+    <span class="k k3">grey = exact syntax</span>
+    <span class="k k4">blue = the platform / port to pick</span>
+    <span style="margin-left:auto">⚠ = version-sensitive, see the platform note</span>
+  </footer>
+</div>
+</body>
+</html>

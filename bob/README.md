@@ -30,3 +30,4 @@ CCNA Automation study notes for Bob's 26 topics (from `data/topics.csv`). Every 
 | T42 | [Webex + Webex devices](T42-webex-webex-devices.md) | 3.4, 3.9.b | 2026-10-31 | 2026-11-01 | [`labs/T42/`](../labs/T42/) |
 | T45 | [Reading Python scripts using Cisco APIs](T45-reading-python-scripts-using-cisco-apis.md) | 5.7 | 2026-10-31 | 2026-11-01 | [`labs/T45/`](../labs/T45/) |
 | T48 | [Cisco platforms side by side](T48-cisco-tooling-comparison.md) | 3.1-3.6, 3.9 | 2026-10-31 | 2026-11-01 | [`labs/T48/`](../labs/T48/) |
+| T50 | [API cheat sheet: transport, style, auth, operations](T50-api-cheatsheet-transport-auth-operations.md) | 2.x, 3.1-3.6, 3.9, 4.9 | 2026-10-31 | 2026-11-01 | — |
