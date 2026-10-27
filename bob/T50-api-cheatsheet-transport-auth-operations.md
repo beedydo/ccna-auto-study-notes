@@ -19,6 +19,17 @@ cross_study: 2026-11-04
 
 *Read a row left to right: where it listens, what style, how you log in, which headers, which operations, what success looks like. Bands: blue = one device, green = controller, orange = cloud, purple = app server.*
 
+<!-- toc:start -->
+
+**Contents**
+
+- [The six questions (ask them of every platform)](#the-six-questions-ask-them-of-every-platform)
+- [Exam traps](#exam-traps)
+- [Sources](#sources)
+- [To verify](#to-verify)
+
+<!-- toc:end -->
+
 ## The six questions (ask them of every platform)
 
 1. **Transport:** SSH `:830` (NETCONF), HTTPS `:443` (most), `:8443` (SD-WAN, CUCM), `:9060` (ISE ERS), gRPC `:9339` (gNMI). Single-URL APIs: `/ins`, `/nuova`, `/axl/`, `/putxml`.
