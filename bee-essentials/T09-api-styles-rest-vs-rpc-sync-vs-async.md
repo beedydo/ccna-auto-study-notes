@@ -141,6 +141,105 @@ Other RPC styles you may see:
 
 *The decision flow: body first, then the URL and method.*
 
+### 4b. 🐍 Code side by side: REST vs RPC in Python
+
+> 💡 Same job, same fake inventory server (`https://api.example.com`): **read device 1, rename it, delete it, handle "not found".** Only the *shape of the call* changes. Watch where the verb sits and where the error is read.
+
+#### 🗄️ REST: one URL per resource, the method is the verb
+
+```python
+import requests
+
+BASE = "https://api.example.com/api/v1"
+HEADERS = {"Authorization": "Bearer <token>"}   # stateless: sent on EVERY call
+
+# read     -> GET    /devices/1
+r = requests.get(f"{BASE}/devices/1", headers=HEADERS, timeout=30)
+r.raise_for_status()                            # error check = the STATUS CODE
+device = r.json()
+
+# update   -> PATCH  /devices/1
+r = requests.patch(f"{BASE}/devices/1", headers=HEADERS, timeout=30,
+                   json={"hostname": "sw-new"})
+r.raise_for_status()
+
+# delete   -> DELETE /devices/1   (same URL as the GET)
+r = requests.delete(f"{BASE}/devices/1", headers=HEADERS, timeout=30)
+r.raise_for_status()                            # 204 No Content = success
+
+# not found -> the status line tells you, no need to read the body
+r = requests.get(f"{BASE}/devices/99", headers=HEADERS, timeout=30)
+if r.status_code == 404:
+    print("device 99 does not exist")
+```
+
+#### 📞 RPC (JSON-RPC 2.0): one endpoint, the function name is the verb
+
+```python
+import requests
+
+URL = "https://api.example.com/jsonrpc"         # ONE endpoint for everything
+HEADERS = {"Authorization": "Bearer <token>"}
+
+def call(method, params, req_id=1):
+    """Every RPC call is a POST to the same URL; only `method` changes."""
+    payload = {"jsonrpc": "2.0", "method": method, "params": params, "id": req_id}
+    r = requests.post(URL, headers=HEADERS, json=payload, timeout=30)
+    r.raise_for_status()                        # only catches network/HTTP-level faults
+    body = r.json()
+    if "error" in body:                         # error check = the BODY, under a 200 OK
+        raise RuntimeError(f"RPC error {body['error']['code']}: {body['error']['message']}")
+    return body["result"]
+
+device = call("getDevice",    {"id": 1})
+call("renameDevice", {"id": 1, "hostname": "sw-new"})
+call("deleteDevice", {"id": 1})
+
+# not found -> HTTP status is still 200; the failure is inside the body
+try:
+    call("getDevice", {"id": 99})
+except RuntimeError as e:
+    print("device 99 failed:", e)
+```
+
+#### 🔎 What differs, line by line
+
+| | 🗄️ REST | 📞 RPC |
+|---|---|---|
+| Python call | `requests.get / patch / delete(...)` (**3 different methods**) | `requests.post(...)` **every time** |
+| URL | `/devices/1` (changes per resource) | `/jsonrpc` (**never changes**) |
+| Where the action is | HTTP method (`GET`, `PATCH`, `DELETE`) | `"method": "getDevice"` in the body |
+| Arguments | in the URL path (`/devices/1`) or query string | in `"params"` |
+| Body on a read | none | always a JSON envelope |
+| Success / failure check | `r.status_code` / `r.raise_for_status()` | `"error" in r.json()` (status is `200` either way) |
+| "Not found" looks like | `404` | `200` + `{"error": {"code": -32601, ...}}` |
+| Matching reply to request | not needed (one request, one response) | the `"id"` field |
+| Adding a new action | usually a new resource or method on an existing URL | a new function name; URL unchanged |
+
+#### 📡 Same contrast on Cisco gear: RESTCONF vs NETCONF
+
+```python
+import requests
+from ncclient import manager
+
+# 🗄️ RESTCONF (REST): URL = the YANG path, method = the verb
+r = requests.get(
+    "https://10.10.20.48:443/restconf/data/ietf-interfaces:interfaces/interface=GigabitEthernet1",
+    auth=("developer", "<password>"),
+    headers={"Accept": "application/yang-data+json"},
+    verify=False,
+)
+print(r.status_code, r.json())                  # 200 + JSON, or 404 if no such interface
+
+# 📞 NETCONF (RPC): SSH port 830, the operation is an <rpc> child element
+with manager.connect(host="10.10.20.48", port=830, username="developer",
+                     password="<password>", hostkey_verify=False) as m:
+    reply = m.get_config(source="running")      # ncclient builds <rpc><get-config>...
+    print(reply.xml)                            # <rpc-reply> in XML
+```
+
+> 🎯 **Exam shortcut:** `requests.get/put/delete` + a resource path = **REST**. `requests.post` to a fixed URL with `"method"` in the JSON, or `m.get_config(...)` / `<rpc>` = **RPC**.
+
 ### 5. ☕ Synchronous: you wait on the line
 
 > 💡 **Synchronous** = you send a request, then **wait** until the full answer comes back on the same call. Every ordinary `requests.get()` is synchronous.
