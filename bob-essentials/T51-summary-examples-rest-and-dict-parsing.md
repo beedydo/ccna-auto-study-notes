@@ -10,25 +10,84 @@
 | 3. Reading API code | how to read a script for each platform, line by line | "which platform / what is printed / what is missing?" |
 
 ## Example 1 · The six parts of a REST call
-🟦 = what I send · 🟩 = what I get back · headers and body are split by one blank line.
+One exchange = **3 parts going out** (request) + **3 parts coming back** (response). Each part has its own colour and its own box below.
 
+| Colour | Part | Direction | What it is |
+|---|---|---|---|
+| 🟥 | **HTTP request** | client → server | method + URL: *what I want to do, and where* |
+| 🟧 | **request header** | client → server | metadata about my request: format, login |
+| 🟨 | **request payload** | client → server | the data I send |
+| 🟩 | **HTTP response** | server → client | status line: *did it work?* |
+| 🟦 | **response header** | server → client | metadata about the reply: format, location |
+| 🟪 | **response payload** | server → client | the data I get back |
+
+---
+
+### ➡️ REQUEST (client → server)
+
+#### 🟥 1. HTTP request
 ```text
-🟦 REQUEST (client → server)
-  POST /api/v1/devices HTTP/1.1                     ◀── [1] request line
-  Content-Type: application/json                    ◀── [2] request headers
-  Accept: application/json                          ◀── [2]
-  Authorization: Bearer abc123                      ◀── [2]
-  Content-Length: 33                                ◀── [2]
-                                                    ◀── (blank line: headers end, body starts)
-  {"name": "sw1", "ip": "10.0.0.1"}                 ◀── [3] request body
+POST /api/v1/devices HTTP/1.1
+```
+- `POST` = the action (create). `/api/v1/devices` = where.
 
-🟩 RESPONSE (server → client)
-  HTTP/1.1 201 Created                              ◀── [4] status line
-  Content-Type: application/json                    ◀── [5] response headers
-  Location: /api/v1/devices/42                      ◀── [5]
-  Content-Length: 25                                ◀── [5]
-                                                    ◀── (blank line: headers end, body starts)
-  {"id": 42, "name": "sw1"}                         ◀── [6] response body
+#### 🟧 2. request header
+```text
+Content-Type: application/json
+Accept: application/json
+Authorization: Bearer abc123
+Content-Length: 33
+```
+- `Content-Type` = format of **my** payload. `Accept` = format I **want back**. `Authorization` = who I am.
+
+#### 🟨 3. request payload
+```json
+{"name": "sw1", "ip": "10.0.0.1"}
+```
+- Sits **after** the blank line that ends the headers.
+
+---
+
+### ⬅️ RESPONSE (server → client)
+
+#### 🟩 4. HTTP response
+```text
+HTTP/1.1 201 Created
+```
+- `201` = created. This line is the first thing in the reply.
+
+#### 🟦 5. response header
+```text
+Content-Type: application/json
+Location: /api/v1/devices/42
+Content-Length: 25
+```
+- `Location` = where the new object lives.
+
+#### 🟪 6. response payload
+```json
+{"id": 42, "name": "sw1"}
+```
+- Also after a blank line. This is the data you parse with `resp.json()`.
+
+---
+
+### 🧩 Put together (raw, in order)
+```text
+POST /api/v1/devices HTTP/1.1            <- 🟥 HTTP request
+Content-Type: application/json           <- 🟧 request header
+Accept: application/json                 <- 🟧 request header
+Authorization: Bearer abc123             <- 🟧 request header
+Content-Length: 33                       <- 🟧 request header
+                                         <- (blank line)
+{"name": "sw1", "ip": "10.0.0.1"}        <- 🟨 request payload
+
+HTTP/1.1 201 Created                     <- 🟩 HTTP response
+Content-Type: application/json           <- 🟦 response header
+Location: /api/v1/devices/42             <- 🟦 response header
+Content-Length: 25                       <- 🟦 response header
+                                         <- (blank line)
+{"id": 42, "name": "sw1"}                <- 🟪 response payload
 ```
 
 ### 🚩 Exam traps
