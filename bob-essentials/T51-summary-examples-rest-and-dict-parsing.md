@@ -153,7 +153,12 @@ Snippets are trimmed from the runnable lab scripts in `labs/` (path under each h
 ---
 
 ### Meraki Dashboard · `labs/T18/meraki_requests.py`
-**Summary:** A `Session` is created once, with the key already in its headers. It asks for the list of organizations. If the server says "slow down" (`429`), the script sleeps for the number of seconds the server asked for. Any other error stops the script. Otherwise the reply is a plain list, and it prints the first organization's name.
+**Summary:**
+- Create one `Session` with the key already in its headers.
+- Ask for the list of organizations.
+- If the server says `429` (slow down), sleep for `Retry-After` seconds, then retry.
+- Any other error stops the script.
+- Otherwise the reply is a plain list: print the first organization's name.
 
 ```python
 BASE_URL = "https://api.meraki.com/api/v1"            # 🟦 Q1: api.meraki.com = Meraki
@@ -199,7 +204,12 @@ sequenceDiagram
 ---
 
 ### Catalyst Center (DNA Center) · `labs/T20/catc_inventory.py`
-**Summary:** The script trades the username and password for a token (done once). Every later call carries that token in the `X-Auth-Token` header instead of the password. It then lists the network devices and prints each one's name and whether it is reachable. The device list is nested under the key `"response"`.
+**Summary:**
+- Trade the username and password for a token (done once).
+- Send that token in the `X-Auth-Token` header on every later call, not the password.
+- List the network devices.
+- The list sits under the key `"response"`.
+- Print each device's name and whether it is reachable.
 
 ```python
 BASE_URL = "https://sandboxdnac2.cisco.com"
@@ -248,7 +258,11 @@ sequenceDiagram
 ---
 
 ### RESTCONF on IOS XE · `labs/T16/restconf_client.py`
-**Summary:** The URL names a YANG model (`ietf-interfaces`) and the part of it to read (`interfaces`). The script sends username and password with this one request, because RESTCONF has no login step. The device answers with the interface list under a key that includes the module name. It prints each interface name.
+**Summary:**
+- The URL names a YANG model (`ietf-interfaces`) and the part to read (`interfaces`).
+- Send username and password with this one request: RESTCONF has no login step.
+- The device returns the interface list under a key that includes the module name.
+- Print each interface name.
 
 ```python
 IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🟦 Q1: /restconf/data/<module>:<container>
@@ -285,7 +299,11 @@ sequenceDiagram
 ---
 
 ### ACI (APIC) · `labs/T19/aci_tenant_builder.py`
-**Summary:** The script logs in by POSTing a JSON body, and the `Session` keeps the cookie that comes back. It then asks for every object of the class `fabricNode` (the switches and controllers). Each object comes back as a one-key dict where the key is the class name, so the loop unpacks that key and reads the name from `"attributes"`.
+**Summary:**
+- Log in by POSTing a JSON body; the `Session` keeps the cookie that comes back.
+- Ask for every object of the class `fabricNode` (the switches and controllers).
+- Each object is a one-key dict, and the key is the class name.
+- Unpack that key in the loop, then read the name from `"attributes"`.
 
 ```python
 BASE = f"https://{APIC}/api"
@@ -329,7 +347,10 @@ sequenceDiagram
 ---
 
 ### NETCONF · `labs/T15/netconf_walkthrough.py`
-**Summary:** The script opens an SSH session to the device and reads the running config (config only; `get` would add live state). To change something it locks the candidate datastore so nobody else edits, stages the new config, commits it so it goes live, and releases the lock. Without the `commit`, the change sits in the candidate and nothing happens on the device.
+**Summary:**
+- Open an SSH session to the device and read the running config (`get_config` is config only; `get` adds live state).
+- To change something: lock the candidate datastore, stage the new config, commit, then unlock.
+- Without the `commit`, the change sits in the candidate and nothing happens on the device.
 
 ```python
 from ncclient import manager                                 # 🟦 Q1: ncclient = NETCONF
