@@ -75,18 +75,23 @@ Content-Length: 25
 ### 🧩 Put together (raw, in order)
 ```text
 POST /api/v1/devices HTTP/1.1            <- 🟥 HTTP request
+
 Content-Type: application/json           <- 🟧 request header
 Accept: application/json                 <- 🟧 request header
 Authorization: Bearer abc123             <- 🟧 request header
 Content-Length: 33                       <- 🟧 request header
-                                         <- (blank line)
+
+                                         <- (blank line = headers end)
 {"name": "sw1", "ip": "10.0.0.1"}        <- 🟨 request payload
 
+
 HTTP/1.1 201 Created                     <- 🟩 HTTP response
+
 Content-Type: application/json           <- 🟦 response header
 Location: /api/v1/devices/42             <- 🟦 response header
 Content-Length: 25                       <- 🟦 response header
-                                         <- (blank line)
+
+                                         <- (blank line = headers end)
 {"id": 42, "name": "sw1"}                <- 🟪 response payload
 ```
 
@@ -158,6 +163,7 @@ session.headers.update({
 })
 
 resp = session.get(BASE_URL + "/organizations")
+
 if resp.status_code == 429:                           # 🟥 Q4: 429 = too many requests
     time.sleep(int(resp.headers["Retry-After"]))      # 🟥 Q4: wait as long as the server says
 resp.raise_for_status()                               # 🟥 Q4: any other 4xx/5xx raises an error
@@ -182,10 +188,12 @@ BASE_URL = "https://sandboxdnac2.cisco.com"
 
 resp = requests.post(f"{BASE_URL}/dna/system/api/v1/auth/token",   # 🟦 Q1: /dna/ = Catalyst Center
                      auth=HTTPBasicAuth(USER, PASSWORD))           # 🟧 Q2: username + password, once
+
 token = resp.json()["Token"]                                       # 🟩 Q3: token is in the body, capital T
 
 headers = {"X-Auth-Token": token}                                  # 🟧 Q2: token goes in this header
 resp = requests.get(f"{BASE_URL}/dna/intent/api/v1/network-device", headers=headers)
+
 resp.raise_for_status()                                            # 🟥 Q4: 401 here = bad or expired token
 
 for dev in resp.json()["response"]:                                # 🟩 Q3: list is under "response"
@@ -209,6 +217,7 @@ HEADERS = {"Accept": "application/yang-data+json",                    # 🟦 Q1:
            "Content-Type": "application/yang-data+json"}
 
 r = requests.get(IFACES, auth=(USER, PASSWORD), headers=HEADERS)      # 🟧 Q2: Basic auth on EVERY call
+
 print(r.status_code)                                                  # 🟥 Q4: 200 = read ok; 401 = forgot auth=
 
 for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3: key = "module:container"
@@ -230,11 +239,14 @@ for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3:
 BASE = f"https://{APIC}/api"
 
 body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}  # 🟧 Q2: credentials in a JSON body
+
 resp = session.post(f"{BASE}/aaaLogin.json", json=body)              # 🟦 Q1: aaaLogin.json = APIC
                                                                      # 🟧 Q2: session now holds APIC-cookie
 
 data = session.get(f"{BASE}/class/fabricNode.json").json()           # 🟦 Q1: fabricNode = ACI class
+
 print(data["totalCount"])                                            # 🟥 Q4: "0" = no match, still HTTP 200
+
 for mo in data["imdata"]:                                            # 🟩 Q3: a list of managed objects
     (cls, body), = mo.items()                                        # 🟩 Q3: the one key is the class name
     print(cls, body["attributes"]["name"])                           # 🟩 Q3: the fields are under "attributes"
