@@ -148,7 +148,7 @@ Ask the same 4 questions of every script. Each question has its own colour and n
 | 🟩 **Q3** | **Where is the data?** | the key path after `.json()` |
 | 🟥 **Q4** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
-Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram colours match the questions (blue Q1, orange Q2, green Q3, red Q4).
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram shading shows which question a step answers (blue Q1, orange Q2, green Q3, red Q4); the Q labels themselves are not steps.
 
 ---
 
@@ -185,21 +185,14 @@ print(orgs[0]["name"])
 sequenceDiagram
     participant C as Client (script)
     participant S as Meraki cloud
-    rect rgb(219,234,254)
-    Note over C,S: Q1 platform: api.meraki.com/api/v1
-    end
     rect rgb(254,215,170)
     C->>S: GET /organizations (Authorization: Bearer key)
-    Note over C,S: Q2 login: key sent on every call
     end
     rect rgb(254,202,202)
     S-->>C: 429 Too Many Requests (Retry-After: 2)
-    Note over C: Q4 sleep 2 seconds
+    Note over C: sleep 2 seconds
     C->>S: GET /organizations (retry)
     S-->>C: 200 OK
-    end
-    rect rgb(187,247,208)
-    Note over C,S: Q3 body = plain JSON list [ {"name": ...} ]
     end
 ```
 
@@ -238,27 +231,17 @@ for dev in resp.json()["response"]:                                # 🟩 Q3: li
 sequenceDiagram
     participant C as Client (script)
     participant S as Catalyst Center
-    rect rgb(219,234,254)
-    Note over C,S: Q1 platform: /dna/...
-    end
     rect rgb(254,215,170)
     C->>S: POST /dna/system/api/v1/auth/token (Basic user:pass)
-    Note over C,S: Q2 login step 1: password sent once
     end
     rect rgb(187,247,208)
     S-->>C: 200 {"Token": "eyJ..."}
-    Note over C: Q3 token in body, capital T
     end
     rect rgb(254,215,170)
     C->>S: GET /dna/intent/api/v1/network-device (X-Auth-Token: eyJ...)
-    Note over C,S: Q2 login step 2: token in header
     end
     rect rgb(254,202,202)
     S-->>C: 200 OK
-    Note over C: Q4 401 would mean bad or expired token
-    end
-    rect rgb(187,247,208)
-    Note over C: Q3 devices under "response"
     end
 ```
 
@@ -291,19 +274,11 @@ for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3:
 sequenceDiagram
     participant C as Client (script)
     participant S as IOS XE device
-    rect rgb(219,234,254)
-    Note over C,S: Q1 platform: /restconf/data/... + yang-data+json
-    end
     rect rgb(254,215,170)
     C->>S: GET /restconf/data/ietf-interfaces:interfaces (Basic user:pass)
-    Note over C,S: Q2 login: Basic on every call, no token step
     end
     rect rgb(254,202,202)
     S-->>C: 200 OK
-    Note over C: Q4 401 = forgot auth=
-    end
-    rect rgb(187,247,208)
-    Note over C: Q3 body key "ietf-interfaces:interfaces" then "interface"
     end
 ```
 
@@ -341,21 +316,13 @@ for mo in data["imdata"]:                                            # 🟩 Q3: 
 sequenceDiagram
     participant C as Client (script)
     participant S as APIC
-    rect rgb(219,234,254)
-    Note over C,S: Q1 platform: /api/aaaLogin.json
-    end
     rect rgb(254,215,170)
     C->>S: POST /api/aaaLogin.json {"aaaUser": {...}}
     S-->>C: 200 + Set-Cookie: APIC-cookie
-    Note over C,S: Q2 login: JSON body, then cookie
     C->>S: GET /api/class/fabricNode.json (Cookie: APIC-cookie)
     end
     rect rgb(254,202,202)
     S-->>C: 200 OK
-    Note over C: Q4 no match is still 200, totalCount "0"
-    end
-    rect rgb(187,247,208)
-    Note over C: Q3 imdata, then class, then attributes
     end
 ```
 
@@ -391,19 +358,14 @@ m.unlock(target="candidate")                                 # 🟥 Q4: step 4, 
 sequenceDiagram
     participant C as Client (ncclient)
     participant S as Device
-    rect rgb(219,234,254)
-    Note over C,S: Q1 platform: SSH port 830, subsystem netconf
-    end
     rect rgb(254,215,170)
     C->>S: SSH connect (username + password)
     S-->>C: hello (capabilities)
     C->>S: hello
-    Note over C,S: Q2 login: SSH credentials
     end
     rect rgb(187,247,208)
     C->>S: get-config (running)
     S-->>C: rpc-reply with XML data
-    Note over C: Q3 data is XML
     end
     rect rgb(254,202,202)
     C->>S: lock candidate
@@ -412,7 +374,6 @@ sequenceDiagram
     C->>S: commit
     S-->>C: ok (now live)
     C->>S: unlock candidate
-    Note over C,S: Q4 live only after commit
     end
 ```
 
