@@ -25,20 +25,22 @@ Self-contained: it starts a tiny local server, then calls it, so you can run it 
 
 ### 📡 On the wire (raw HTTP, each part labelled)
 ```text
-🟦 [1] REQUEST LINE      POST /api/v1/devices HTTP/1.1
-🟦 [2] REQUEST HEADERS   Content-Type: application/json
-🟦 [2] REQUEST HEADERS   Accept: application/json
-🟦 [2] REQUEST HEADERS   Authorization: Bearer abc123
-🟦 [2] REQUEST HEADERS   Content-Length: 33
-                         (blank line = headers end, body starts)
-🟦 [3] REQUEST BODY      {"name": "sw1", "ip": "10.0.0.1"}
+🟦 REQUEST (client → server)
+  POST /api/v1/devices HTTP/1.1                     ◀── [1] request line
+  Content-Type: application/json                    ◀── [2] request headers
+  Accept: application/json                          ◀── [2]
+  Authorization: Bearer abc123                      ◀── [2]
+  Content-Length: 33                                ◀── [2]
+                                                    ◀── (blank line: headers end, body starts)
+  {"name": "sw1", "ip": "10.0.0.1"}                 ◀── [3] request body
 
-🟩 [4] STATUS LINE       HTTP/1.1 201 Created
-🟩 [5] RESPONSE HEADERS  Content-Type: application/json
-🟩 [5] RESPONSE HEADERS  Location: /api/v1/devices/42
-🟩 [5] RESPONSE HEADERS  Content-Length: 25
-                         (blank line = headers end, body starts)
-🟩 [6] RESPONSE BODY     {"id": 42, "name": "sw1"}
+🟩 RESPONSE (server → client)
+  HTTP/1.1 201 Created                              ◀── [4] status line
+  Content-Type: application/json                    ◀── [5] response headers
+  Location: /api/v1/devices/42                      ◀── [5]
+  Content-Length: 25                                ◀── [5]
+                                                    ◀── (blank line: headers end, body starts)
+  {"id": 42, "name": "sw1"}                         ◀── [6] response body
 ```
 
 > 💡 Headers and body are separated by one **blank line**. Everything above it is metadata; everything below is the data.
@@ -89,52 +91,52 @@ req = requests.Request(
 ).prepare()
 
 banner("[1] REQUEST LINE")
-print(req.method, req.path_url)
+print("   ", req.method, req.path_url)
 banner("[2] REQUEST HEADERS")
 for k, v in req.headers.items():
-    print(f"{k}: {v}")
+    print(f"    {k}: {v}")
 banner("[3] REQUEST BODY")
-print(req.body.decode())
+print("   ", req.body.decode())
 
 # ################ RESPONSE (server -> client) ################
 resp = requests.Session().send(req)
 
 banner("[4] STATUS LINE")
-print(resp.status_code, resp.reason)
+print("   ", resp.status_code, resp.reason)
 banner("[5] RESPONSE HEADERS")
 for k, v in resp.headers.items():
-    print(f"{k}: {v}")
+    print(f"    {k}: {v}")
 banner("[6] RESPONSE BODY")
-print(resp.json())
+print("   ", resp.json())
 srv.shutdown()
 ```
 
 ### 🖨️ Output (each part prints under its own banner)
 ```text
 ===== [1] REQUEST LINE ==================================
-POST /api/v1/devices
+    POST /api/v1/devices
 
 ===== [2] REQUEST HEADERS ===============================
-Content-Type: application/json
-Accept: application/json
-Authorization: Bearer abc123
-Content-Length: 33
+    Content-Type: application/json
+    Accept: application/json
+    Authorization: Bearer abc123
+    Content-Length: 33
 
 ===== [3] REQUEST BODY ==================================
-{"name": "sw1", "ip": "10.0.0.1"}
+    {"name": "sw1", "ip": "10.0.0.1"}
 
 ===== [4] STATUS LINE ===================================
-201 Created
+    201 Created
 
 ===== [5] RESPONSE HEADERS ==============================
-Server: BaseHTTP/0.6 Python/3.10.12
-Date: Fri, 30 Oct 2026 04:55:17 GMT
-Content-Type: application/json
-Location: /api/v1/devices/42
-Content-Length: 25
+    Server: BaseHTTP/0.6 Python/3.10.12
+    Date: Fri, 30 Oct 2026 04:59:08 GMT
+    Content-Type: application/json
+    Location: /api/v1/devices/42
+    Content-Length: 25
 
 ===== [6] RESPONSE BODY =================================
-{'id': 42, 'name': 'sw1'}
+    {'id': 42, 'name': 'sw1'}
 ```
 
 ### 🚩 Exam traps
