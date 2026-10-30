@@ -134,124 +134,163 @@ n/a
 | `.get("role", "n/a")` | value or default | missing key → default, **no** error |
 
 ## Example 3 · Reading API code, platform by platform
-Same 4 questions for every script, in this order:
+Ask the same 4 questions of every script. Each question has its own colour and number, and the code comments below carry the same tag.
 
-| # | Ask | Look at |
+| Tag | Question | Look at |
 |---|---|---|
-| 1 | 🎯 **Which platform?** | URL path, import line (`requests` / `ncclient` / SDK) |
-| 2 | 🔐 **How does it log in?** | first call, `auth=`, which header carries the credential |
-| 3 | 📦 **Where is the data?** | the key path after `.json()` |
-| 4 | ✅ **What does success look like?** | status code check, `raise_for_status()`, task polling |
+| 🟦 **Q1** | **Which platform?** | URL path, import line (`requests` / `ncclient`) |
+| 🟧 **Q2** | **How does it log in?** | the first call, `auth=`, the header that carries the credential |
+| 🟩 **Q3** | **Where is the data?** | the key path after `.json()` |
+| 🟥 **Q4** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
-Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading).
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: code with tags, then the 4 answers, then the story.
 
-### 🟩 Meraki Dashboard · `labs/T18/meraki_requests.py`
+---
+
+### Meraki Dashboard · `labs/T18/meraki_requests.py`
 ```python
+BASE_URL = "https://api.meraki.com/api/v1"            # 🟦 Q1: api.meraki.com = Meraki
+
 session = requests.Session()
 session.headers.update({
-    "Authorization": f"Bearer {API_KEY}",     # login = static key in every call
+    "Authorization": f"Bearer {API_KEY}",             # 🟧 Q2: static key, sent on every call
     "Accept": "application/json",
 })
 
-resp = session.get(url, params=params)
-if resp.status_code == 429:                   # rate limited
-    wait = int(resp.headers.get("Retry-After", "1"))   # server says how long to wait
-    time.sleep(wait)
+resp = session.get(BASE_URL + "/organizations")
+if resp.status_code == 429:                           # 🟥 Q4: 429 = too many requests
+    time.sleep(int(resp.headers["Retry-After"]))      # 🟥 Q4: wait as long as the server says
+resp.raise_for_status()                               # 🟥 Q4: any other 4xx/5xx raises an error
 
-items = resp.json()                           # plain JSON list, no wrapper key
-while "next" in resp.links:                   # pagination = Link header, rel=next
-    resp = session.get(resp.links["next"]["url"])
-    items.extend(resp.json())
+orgs = resp.json()                                    # 🟩 Q3: a plain JSON list, no wrapper key
+print(orgs[0]["name"])
 ```
-| Spot | Meaning |
-|---|---|
-| `Bearer` + `api.meraki.com` | Meraki (host decides, because Webex also uses Bearer) |
-| `Session()` | headers set once, reused by every call |
-| `429` + `Retry-After` | rate limit: wait, then retry |
-| `resp.links["next"]` | pagination lives in a **header**, not the body |
+| Q | Answer | Evidence |
+|---|---|---|
+| 🟦 Q1 | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
+| 🟧 Q2 | static API key, no login call | `Authorization: Bearer` in `session.headers` |
+| 🟩 Q3 | the list itself | `resp.json()[0]["name"]` |
+| 🟥 Q4 | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
 
-### 🟦 Catalyst Center (DNA Center) · `labs/T20/catc_inventory.py`
+**What is going on:** a `Session` is created once, with the key already in its headers. It asks for the list of organizations. If the server says "slow down" (`429`), the script sleeps for the number of seconds the server asked for. Any other error stops the script. Otherwise the reply is a plain list, and it prints the first organization's name.
+
+---
+
+### Catalyst Center (DNA Center) · `labs/T20/catc_inventory.py`
 ```python
-resp = requests.post(f"{BASE_URL}/dna/system/api/v1/auth/token",
-                     auth=HTTPBasicAuth(USER, PASSWORD))   # only call that sends the password
-token = resp.json()["Token"]                               # capital T
+BASE_URL = "https://sandboxdnac2.cisco.com"
 
-headers = {"X-Auth-Token": token}                          # every later call
+resp = requests.post(f"{BASE_URL}/dna/system/api/v1/auth/token",   # 🟦 Q1: /dna/ = Catalyst Center
+                     auth=HTTPBasicAuth(USER, PASSWORD))           # 🟧 Q2: username + password, once
+token = resp.json()["Token"]                                       # 🟩 Q3: token is in the body, capital T
+
+headers = {"X-Auth-Token": token}                                  # 🟧 Q2: token goes in this header
 resp = requests.get(f"{BASE_URL}/dna/intent/api/v1/network-device", headers=headers)
-for dev in resp.json()["response"]:                        # list sits under "response"
+resp.raise_for_status()                                            # 🟥 Q4: 401 here = bad or expired token
+
+for dev in resp.json()["response"]:                                # 🟩 Q3: list is under "response"
     print(dev["hostname"], dev["reachabilityStatus"])
 ```
-| Spot | Meaning |
-|---|---|
-| `/dna/system/api/v1/auth/token` | Catalyst Center login: POST + HTTP Basic |
-| `["Token"]` | token is in the body, key is capital-T |
-| `X-Auth-Token` | the header name that identifies this platform |
-| `["response"]` | data wrapper (compare ACI's `imdata`) |
-| write calls (PUT/POST) | return a `taskId`; poll `GET /task/{id}` for `endTime` / `isError` |
+| Q | Answer | Evidence |
+|---|---|---|
+| 🟦 Q1 | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
+| 🟧 Q2 | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
+| 🟩 Q3 | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
+| 🟥 Q4 | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
 
-### 🟨 RESTCONF on IOS XE · `labs/T16/restconf_client.py`
+**What is going on:** the script trades the username and password for a token (done once). Every later call carries that token in the `X-Auth-Token` header instead of the password. It then lists the network devices and prints each one's name and whether it is reachable. The device list is nested under the key `"response"`.
+
+---
+
+### RESTCONF on IOS XE · `labs/T16/restconf_client.py`
 ```python
-IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # <module>:<container>
-HEADERS = {"Accept": "application/yang-data+json",         # what I want back
-           "Content-Type": "application/yang-data+json"}   # what I am sending
+IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🟦 Q1: /restconf/data/<module>:<container>
+HEADERS = {"Accept": "application/yang-data+json",                    # 🟦 Q1: yang-data+json = RESTCONF
+           "Content-Type": "application/yang-data+json"}
 
-r = requests.get(IFACES, auth=AUTH, headers=HEADERS)       # auth=(user, pass): Basic on every call
-r = requests.put(f"{IFACES}/interface=Loopback100", auth=AUTH, headers=HEADERS, json=LOOPBACK)
+r = requests.get(IFACES, auth=(USER, PASSWORD), headers=HEADERS)      # 🟧 Q2: Basic auth on EVERY call
+print(r.status_code)                                                  # 🟥 Q4: 200 = read ok; 401 = forgot auth=
+
+for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3: key = "module:container"
+    print(i["name"])
 ```
-| Spot | Meaning |
-|---|---|
-| `/restconf/data/module:container` | RESTCONF; path is the YANG model |
-| `yang-data+json` | RESTCONF media type (not plain `application/json`) |
-| `auth=(user, pass)` | HTTP Basic on **every** call: no token step |
-| `interface=Loopback100` | list entry addressed by key: `list=key` |
-| forgot `auth=` | `401` |
+| Q | Answer | Evidence |
+|---|---|---|
+| 🟦 Q1 | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
+| 🟧 Q2 | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
+| 🟩 Q3 | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
+| 🟥 Q4 | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
 
-### 🟧 ACI (APIC) · `labs/T19/aci_tenant_builder.py`
+**What is going on:** the URL names a YANG model (`ietf-interfaces`) and the part of it to read (`interfaces`). The script sends username and password with this one request, because RESTCONF has no login step. The device answers with the interface list under a key that includes the module name. It prints each interface name.
+
+---
+
+### ACI (APIC) · `labs/T19/aci_tenant_builder.py`
 ```python
-body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}
-resp = session.post(f"{BASE}/aaaLogin.json", json=body)    # session keeps the APIC-cookie
-token = resp.json()["imdata"][0]["aaaLogin"]["attributes"]["token"]
+BASE = f"https://{APIC}/api"
 
-data = session.get(f"{BASE}/class/fabricNode.json").json()
-for mo in data["imdata"]:                                  # list of {class: {attributes: {...}}}
-    (cls, body), = mo.items()                              # unpack the single key = class name
-    print(cls, body["attributes"]["name"])
+body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}  # 🟧 Q2: credentials in a JSON body
+resp = session.post(f"{BASE}/aaaLogin.json", json=body)              # 🟦 Q1: aaaLogin.json = APIC
+                                                                     # 🟧 Q2: session now holds APIC-cookie
+
+data = session.get(f"{BASE}/class/fabricNode.json").json()           # 🟦 Q1: fabricNode = ACI class
+print(data["totalCount"])                                            # 🟥 Q4: "0" = no match, still HTTP 200
+for mo in data["imdata"]:                                            # 🟩 Q3: a list of managed objects
+    (cls, body), = mo.items()                                        # 🟩 Q3: the one key is the class name
+    print(cls, body["attributes"]["name"])                           # 🟩 Q3: the fields are under "attributes"
 ```
-| Spot | Meaning |
-|---|---|
-| `aaaLogin.json` + `aaaUser` body | APIC login (JSON body, **not** Basic) |
-| `session` | cookie `APIC-cookie` is kept automatically |
-| `["imdata"][0]["aaaLogin"]["attributes"]` | 4-level path: wrapper → item → class → attributes |
-| `(cls, body), = mo.items()` | each managed object is a one-key dict whose key is its class |
-| `/api/class/` vs `/api/mo/` | all objects of a class vs one object by DN |
-| empty `imdata` | no match is `200` with `totalCount: "0"`, **not** 404 |
+| Q | Answer | Evidence |
+|---|---|---|
+| 🟦 Q1 | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
+| 🟧 Q2 | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
+| 🟩 Q3 | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
+| 🟥 Q4 | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
 
-### ⬜ NETCONF · `labs/T15/netconf_walkthrough.py`
+**What is going on:** the script logs in by POSTing a JSON body, and the `Session` keeps the cookie that comes back. It then asks for every object of the class `fabricNode` (the switches and controllers). Each object comes back as a one-key dict where the key is the class name, so the loop unpacks that key and reads the name from `"attributes"`.
+
+---
+
+### NETCONF · `labs/T15/netconf_walkthrough.py`
 ```python
-from ncclient import manager
+from ncclient import manager                                 # 🟦 Q1: ncclient = NETCONF
 
-m = manager.connect(host=HOST, port=830, username=USER, password=PASSWORD,
-                    hostkey_verify=False)                  # SSH, subsystem netconf, port 830
-m.get_config(source="running")                             # config only (get = config + state)
-m.lock(target="candidate")                                 # nobody else can edit
-m.edit_config(target="candidate", config=XML)              # stage the change
-m.commit()                                                 # make it live
-m.unlock(target="candidate")
+m = manager.connect(host=HOST, port=830,                     # 🟦 Q1: port 830, no URL, no HTTP
+                    username=USER, password=PASSWORD,        # 🟧 Q2: SSH username + password
+                    hostkey_verify=False)
+
+reply = m.get_config(source="running")                       # 🟩 Q3: reply is XML (reply.data_xml)
+
+m.lock(target="candidate")                                   # 🟥 Q4: step 1, nobody else can edit
+m.edit_config(target="candidate", config=XML)                # 🟥 Q4: step 2, staged only, NOT live
+m.commit()                                                   # 🟥 Q4: step 3, now it is live
+m.unlock(target="candidate")                                 # 🟥 Q4: step 4, release
 ```
-| Spot | Meaning |
-|---|---|
-| `ncclient`, `port=830` | NETCONF (SSH, XML): no URL, no HTTP |
-| `get_config` vs `get` | config only vs config + operational state |
-| `lock` → `edit_config` → `commit` → `unlock` | the safe edit sequence on a `candidate` datastore |
-| `edit_config` without `commit` | change staged but **not** live |
-| `server_capabilities` | what the device supports (`:candidate`, `:validate`, ...) |
+| Q | Answer | Evidence |
+|---|---|---|
+| 🟦 Q1 | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
+| 🟧 Q2 | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
+| 🟩 Q3 | XML, not JSON | `reply.data_xml` |
+| 🟥 Q4 | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
+
+**What is going on:** the script opens an SSH session to the device and reads the running config (config only; `get` would add live state). To change something it locks the candidate datastore so nobody else edits, stages the new config, commits it so it goes live, and releases the lock. Without the `commit`, the change sits in the candidate and nothing happens on the device.
+
+---
+
+### Side by side
+| | 🟦 Q1 Platform | 🟧 Q2 Login | 🟩 Q3 Data | 🟥 Q4 Success |
+|---|---|---|---|---|
+| Meraki | `api.meraki.com` | `Authorization: Bearer <key>` | plain list | `200`; `429` → `Retry-After` |
+| Catalyst Center | `/dna/...` | Basic → token → `X-Auth-Token` | `["response"]` | `200`; writes return a task |
+| RESTCONF | `/restconf/data/...` | Basic on every call | `"module:container"` | `200` / `201` / `204` |
+| ACI | `aaaLogin.json`, `uni/` | JSON POST → cookie | `["imdata"]` → class → `attributes` | `200`, empty = `totalCount: "0"` |
+| NETCONF | `ncclient`, `830` | SSH user + password | XML | `<ok/>`, then `commit` |
 
 ### 🚩 Reading traps
 | Looks like | Actually |
 |---|---|
 | `Bearer` means Webex | Meraki and Webex both use it; the host name decides |
-| `aaaLogin.json` means ACI | also NX-API REST: look at `uni/` (ACI) vs `sys/` (Nexus) |
+| `aaaLogin.json` means ACI | also NX-API REST: `uni/` is ACI, `sys/` is Nexus |
 | `200` on a write means done | Catalyst Center returns a task; poll it |
 | `["response"]` and `["imdata"]` are interchangeable | `response` = Catalyst Center; `imdata` = ACI / NX-API REST |
-| No `auth=` and no token header | the call fails with `401` |
+| no `auth=` and no token header | the call fails with `401` |
 | `edit_config` succeeded, so it is live | needs `commit` on a candidate datastore |
