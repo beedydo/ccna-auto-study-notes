@@ -7,6 +7,7 @@
 |---|---|---|
 | 1. REST request + response | the six parts of one HTTP exchange (raw) | "which part carries X?" |
 | 2. Parsing a dictionary | `[]` vs `.get()`, dict holding a list of dicts, looping | "what does this script print?" |
+| 3. Reading API code | how to read a script for each platform, line by line | "which platform / what is printed / what is missing?" |
 
 ## Example 1 · The six parts of a REST call
 🟦 = what I send · 🟩 = what I get back · headers and body are split by one blank line.
@@ -72,3 +73,126 @@ n/a
 | `for device in data["devices"]` | one dict per loop | looping a dict directly gives **keys** |
 | `data["devices"][0]` | first item of the list | index starts at `0` |
 | `.get("role", "n/a")` | value or default | missing key → default, **no** error |
+
+## Example 3 · Reading API code, platform by platform
+Same 4 questions for every script, in this order:
+
+| # | Ask | Look at |
+|---|---|---|
+| 1 | 🎯 **Which platform?** | URL path, import line (`requests` / `ncclient` / SDK) |
+| 2 | 🔐 **How does it log in?** | first call, `auth=`, which header carries the credential |
+| 3 | 📦 **Where is the data?** | the key path after `.json()` |
+| 4 | ✅ **What does success look like?** | status code check, `raise_for_status()`, task polling |
+
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading).
+
+### 🟩 Meraki Dashboard · `labs/T18/meraki_requests.py`
+```python
+session = requests.Session()
+session.headers.update({
+    "Authorization": f"Bearer {API_KEY}",     # login = static key in every call
+    "Accept": "application/json",
+})
+
+resp = session.get(url, params=params)
+if resp.status_code == 429:                   # rate limited
+    wait = int(resp.headers.get("Retry-After", "1"))   # server says how long to wait
+    time.sleep(wait)
+
+items = resp.json()                           # plain JSON list, no wrapper key
+while "next" in resp.links:                   # pagination = Link header, rel=next
+    resp = session.get(resp.links["next"]["url"])
+    items.extend(resp.json())
+```
+| Spot | Meaning |
+|---|---|
+| `Bearer` + `api.meraki.com` | Meraki (host decides, because Webex also uses Bearer) |
+| `Session()` | headers set once, reused by every call |
+| `429` + `Retry-After` | rate limit: wait, then retry |
+| `resp.links["next"]` | pagination lives in a **header**, not the body |
+
+### 🟦 Catalyst Center (DNA Center) · `labs/T20/catc_inventory.py`
+```python
+resp = requests.post(f"{BASE_URL}/dna/system/api/v1/auth/token",
+                     auth=HTTPBasicAuth(USER, PASSWORD))   # only call that sends the password
+token = resp.json()["Token"]                               # capital T
+
+headers = {"X-Auth-Token": token}                          # every later call
+resp = requests.get(f"{BASE_URL}/dna/intent/api/v1/network-device", headers=headers)
+for dev in resp.json()["response"]:                        # list sits under "response"
+    print(dev["hostname"], dev["reachabilityStatus"])
+```
+| Spot | Meaning |
+|---|---|
+| `/dna/system/api/v1/auth/token` | Catalyst Center login: POST + HTTP Basic |
+| `["Token"]` | token is in the body, key is capital-T |
+| `X-Auth-Token` | the header name that identifies this platform |
+| `["response"]` | data wrapper (compare ACI's `imdata`) |
+| write calls (PUT/POST) | return a `taskId`; poll `GET /task/{id}` for `endTime` / `isError` |
+
+### 🟨 RESTCONF on IOS XE · `labs/T16/restconf_client.py`
+```python
+IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # <module>:<container>
+HEADERS = {"Accept": "application/yang-data+json",         # what I want back
+           "Content-Type": "application/yang-data+json"}   # what I am sending
+
+r = requests.get(IFACES, auth=AUTH, headers=HEADERS)       # auth=(user, pass): Basic on every call
+r = requests.put(f"{IFACES}/interface=Loopback100", auth=AUTH, headers=HEADERS, json=LOOPBACK)
+```
+| Spot | Meaning |
+|---|---|
+| `/restconf/data/module:container` | RESTCONF; path is the YANG model |
+| `yang-data+json` | RESTCONF media type (not plain `application/json`) |
+| `auth=(user, pass)` | HTTP Basic on **every** call: no token step |
+| `interface=Loopback100` | list entry addressed by key: `list=key` |
+| forgot `auth=` | `401` |
+
+### 🟧 ACI (APIC) · `labs/T19/aci_tenant_builder.py`
+```python
+body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}
+resp = session.post(f"{BASE}/aaaLogin.json", json=body)    # session keeps the APIC-cookie
+token = resp.json()["imdata"][0]["aaaLogin"]["attributes"]["token"]
+
+data = session.get(f"{BASE}/class/fabricNode.json").json()
+for mo in data["imdata"]:                                  # list of {class: {attributes: {...}}}
+    (cls, body), = mo.items()                              # unpack the single key = class name
+    print(cls, body["attributes"]["name"])
+```
+| Spot | Meaning |
+|---|---|
+| `aaaLogin.json` + `aaaUser` body | APIC login (JSON body, **not** Basic) |
+| `session` | cookie `APIC-cookie` is kept automatically |
+| `["imdata"][0]["aaaLogin"]["attributes"]` | 4-level path: wrapper → item → class → attributes |
+| `(cls, body), = mo.items()` | each managed object is a one-key dict whose key is its class |
+| `/api/class/` vs `/api/mo/` | all objects of a class vs one object by DN |
+| empty `imdata` | no match is `200` with `totalCount: "0"`, **not** 404 |
+
+### ⬜ NETCONF · `labs/T15/netconf_walkthrough.py`
+```python
+from ncclient import manager
+
+m = manager.connect(host=HOST, port=830, username=USER, password=PASSWORD,
+                    hostkey_verify=False)                  # SSH, subsystem netconf, port 830
+m.get_config(source="running")                             # config only (get = config + state)
+m.lock(target="candidate")                                 # nobody else can edit
+m.edit_config(target="candidate", config=XML)              # stage the change
+m.commit()                                                 # make it live
+m.unlock(target="candidate")
+```
+| Spot | Meaning |
+|---|---|
+| `ncclient`, `port=830` | NETCONF (SSH, XML): no URL, no HTTP |
+| `get_config` vs `get` | config only vs config + operational state |
+| `lock` → `edit_config` → `commit` → `unlock` | the safe edit sequence on a `candidate` datastore |
+| `edit_config` without `commit` | change staged but **not** live |
+| `server_capabilities` | what the device supports (`:candidate`, `:validate`, ...) |
+
+### 🚩 Reading traps
+| Looks like | Actually |
+|---|---|
+| `Bearer` means Webex | Meraki and Webex both use it; the host name decides |
+| `aaaLogin.json` means ACI | also NX-API REST: look at `uni/` (ACI) vs `sys/` (Nexus) |
+| `200` on a write means done | Catalyst Center returns a task; poll it |
+| `["response"]` and `["imdata"]` are interchangeable | `response` = Catalyst Center; `imdata` = ACI / NX-API REST |
+| No `auth=` and no token header | the call fails with `401` |
+| `edit_config` succeeded, so it is live | needs `commit` on a candidate datastore |
