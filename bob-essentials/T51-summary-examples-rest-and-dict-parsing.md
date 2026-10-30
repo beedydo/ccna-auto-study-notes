@@ -160,6 +160,13 @@ Snippets are trimmed from the runnable lab scripts in `labs/` (path under each h
 - Any other error stops the script.
 - Otherwise the reply is a plain list: print the first organization's name.
 
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🏷️ Q1 | **Which product it is** | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
+| 🔑 Q2 | **Authentication method** | static API key, no login call | `Authorization: Bearer` in `session.headers` |
+| 📦 Q3 | **What data you get back** | the list itself | `resp.json()[0]["name"]` |
+| 🛡️ Q4 | **Error management** | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
+
 ```python
 BASE_URL = "https://api.meraki.com/api/v1"            # 🏷️ Q1: api.meraki.com = Meraki
 
@@ -178,13 +185,6 @@ resp.raise_for_status()                               # 🛡️ Q4: any other 4x
 orgs = resp.json()                                    # 📦 Q3: a plain JSON list, no wrapper key
 print(orgs[0]["name"])
 ```
-| Q | What it is for | Answer | Evidence |
-|---|---|---|---|
-| 🏷️ Q1 | **Which product it is** | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
-| 🔑 Q2 | **Authentication method** | static API key, no login call | `Authorization: Bearer` in `session.headers` |
-| 📦 Q3 | **What data you get back** | the list itself | `resp.json()[0]["name"]` |
-| 🛡️ Q4 | **Error management** | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
-
 **Diagram:**
 ```mermaid
 sequenceDiagram
@@ -211,6 +211,13 @@ sequenceDiagram
 - The list sits under the key `"response"`.
 - Print each device's name and whether it is reachable.
 
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🏷️ Q1 | **Which product it is** | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
+| 🔑 Q2 | **Authentication method** | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
+| 📦 Q3 | **What data you get back** | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
+| 🛡️ Q4 | **Error management** | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
+
 ```python
 BASE_URL = "https://sandboxdnac2.cisco.com"
 
@@ -229,13 +236,6 @@ resp.raise_for_status()                                            # 🛡️ Q4:
 for dev in resp.json()["response"]:                                # 📦 Q3: list is under "response"
     print(dev["hostname"], dev["reachabilityStatus"])
 ```
-| Q | What it is for | Answer | Evidence |
-|---|---|---|---|
-| 🏷️ Q1 | **Which product it is** | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
-| 🔑 Q2 | **Authentication method** | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
-| 📦 Q3 | **What data you get back** | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
-| 🛡️ Q4 | **Error management** | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
-
 **Diagram:**
 ```mermaid
 sequenceDiagram
@@ -264,6 +264,13 @@ sequenceDiagram
 - The device returns the interface list under a key that includes the module name.
 - Print each interface name.
 
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🏷️ Q1 | **Which product it is** | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
+| 🔑 Q2 | **Authentication method** | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
+| 📦 Q3 | **What data you get back** | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
+| 🛡️ Q4 | **Error management** | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
+
 ```python
 IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🏷️ Q1: /restconf/data/<module>:<container>
 HEADERS = {"Accept": "application/yang-data+json",                    # 🏷️ Q1: yang-data+json = RESTCONF
@@ -276,13 +283,6 @@ print(r.status_code)                                                  # 🛡️ 
 for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 📦 Q3: key = "module:container"
     print(i["name"])
 ```
-| Q | What it is for | Answer | Evidence |
-|---|---|---|---|
-| 🏷️ Q1 | **Which product it is** | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
-| 🔑 Q2 | **Authentication method** | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
-| 📦 Q3 | **What data you get back** | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
-| 🛡️ Q4 | **Error management** | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
-
 **Diagram:**
 ```mermaid
 sequenceDiagram
@@ -305,6 +305,13 @@ sequenceDiagram
 - Each object is a one-key dict, and the key is the class name.
 - Unpack that key in the loop, then read the name from `"attributes"`.
 
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🏷️ Q1 | **Which product it is** | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
+| 🔑 Q2 | **Authentication method** | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
+| 📦 Q3 | **What data you get back** | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
+| 🛡️ Q4 | **Error management** | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
+
 ```python
 BASE = f"https://{APIC}/api"
 
@@ -322,13 +329,6 @@ for mo in data["imdata"]:                                            # 📦 Q3: 
     (cls, body), = mo.items()                                        # 📦 Q3: the one key is the class name
     print(cls, body["attributes"]["name"])                           # 📦 Q3: the fields are under "attributes"
 ```
-| Q | What it is for | Answer | Evidence |
-|---|---|---|---|
-| 🏷️ Q1 | **Which product it is** | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
-| 🔑 Q2 | **Authentication method** | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
-| 📦 Q3 | **What data you get back** | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
-| 🛡️ Q4 | **Error management** | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
-
 **Diagram:**
 ```mermaid
 sequenceDiagram
@@ -352,6 +352,13 @@ sequenceDiagram
 - To change something: lock the candidate datastore, stage the new config, commit, then unlock.
 - Without the `commit`, the change sits in the candidate and nothing happens on the device.
 
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🏷️ Q1 | **Which product it is** | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
+| 🔑 Q2 | **Authentication method** | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
+| 📦 Q3 | **What data you get back** | XML, not JSON | `reply.data_xml` |
+| 🛡️ Q4 | **Error management** | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
+
 ```python
 from ncclient import manager                                 # 🏷️ Q1: ncclient = NETCONF
 
@@ -367,13 +374,6 @@ m.edit_config(target="candidate", config=XML)                # 🛡️ Q4: step 
 m.commit()                                                   # 🛡️ Q4: step 3, now it is live
 m.unlock(target="candidate")                                 # 🛡️ Q4: step 4, release
 ```
-| Q | What it is for | Answer | Evidence |
-|---|---|---|---|
-| 🏷️ Q1 | **Which product it is** | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
-| 🔑 Q2 | **Authentication method** | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
-| 📦 Q3 | **What data you get back** | XML, not JSON | `reply.data_xml` |
-| 🛡️ Q4 | **Error management** | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
-
 **Diagram:**
 ```mermaid
 sequenceDiagram
