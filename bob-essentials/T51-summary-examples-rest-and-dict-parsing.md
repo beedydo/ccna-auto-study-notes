@@ -148,11 +148,13 @@ Ask the same 4 questions of every script. Each question has its own colour and n
 | 🟩 **Q3** | **Where is the data?** | the key path after `.json()` |
 | 🟥 **Q4** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
-Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: code with tags, then the 4 answers, then a diagram of the client/server conversation, then the story. Diagram colours match the questions (blue Q1, orange Q2, green Q3, red Q4).
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram colours match the questions (blue Q1, orange Q2, green Q3, red Q4).
 
 ---
 
 ### Meraki Dashboard · `labs/T18/meraki_requests.py`
+**Summary:** A `Session` is created once, with the key already in its headers. It asks for the list of organizations. If the server says "slow down" (`429`), the script sleeps for the number of seconds the server asked for. Any other error stops the script. Otherwise the reply is a plain list, and it prints the first organization's name.
+
 ```python
 BASE_URL = "https://api.meraki.com/api/v1"            # 🟦 Q1: api.meraki.com = Meraki
 
@@ -201,11 +203,11 @@ sequenceDiagram
     end
 ```
 
-**What is going on:** a `Session` is created once, with the key already in its headers. It asks for the list of organizations. If the server says "slow down" (`429`), the script sleeps for the number of seconds the server asked for. Any other error stops the script. Otherwise the reply is a plain list, and it prints the first organization's name.
-
 ---
 
 ### Catalyst Center (DNA Center) · `labs/T20/catc_inventory.py`
+**Summary:** The script trades the username and password for a token (done once). Every later call carries that token in the `X-Auth-Token` header instead of the password. It then lists the network devices and prints each one's name and whether it is reachable. The device list is nested under the key `"response"`.
+
 ```python
 BASE_URL = "https://sandboxdnac2.cisco.com"
 
@@ -260,11 +262,11 @@ sequenceDiagram
     end
 ```
 
-**What is going on:** the script trades the username and password for a token (done once). Every later call carries that token in the `X-Auth-Token` header instead of the password. It then lists the network devices and prints each one's name and whether it is reachable. The device list is nested under the key `"response"`.
-
 ---
 
 ### RESTCONF on IOS XE · `labs/T16/restconf_client.py`
+**Summary:** The URL names a YANG model (`ietf-interfaces`) and the part of it to read (`interfaces`). The script sends username and password with this one request, because RESTCONF has no login step. The device answers with the interface list under a key that includes the module name. It prints each interface name.
+
 ```python
 IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🟦 Q1: /restconf/data/<module>:<container>
 HEADERS = {"Accept": "application/yang-data+json",                    # 🟦 Q1: yang-data+json = RESTCONF
@@ -305,11 +307,11 @@ sequenceDiagram
     end
 ```
 
-**What is going on:** the URL names a YANG model (`ietf-interfaces`) and the part of it to read (`interfaces`). The script sends username and password with this one request, because RESTCONF has no login step. The device answers with the interface list under a key that includes the module name. It prints each interface name.
-
 ---
 
 ### ACI (APIC) · `labs/T19/aci_tenant_builder.py`
+**Summary:** The script logs in by POSTing a JSON body, and the `Session` keeps the cookie that comes back. It then asks for every object of the class `fabricNode` (the switches and controllers). Each object comes back as a one-key dict where the key is the class name, so the loop unpacks that key and reads the name from `"attributes"`.
+
 ```python
 BASE = f"https://{APIC}/api"
 
@@ -357,11 +359,11 @@ sequenceDiagram
     end
 ```
 
-**What is going on:** the script logs in by POSTing a JSON body, and the `Session` keeps the cookie that comes back. It then asks for every object of the class `fabricNode` (the switches and controllers). Each object comes back as a one-key dict where the key is the class name, so the loop unpacks that key and reads the name from `"attributes"`.
-
 ---
 
 ### NETCONF · `labs/T15/netconf_walkthrough.py`
+**Summary:** The script opens an SSH session to the device and reads the running config (config only; `get` would add live state). To change something it locks the candidate datastore so nobody else edits, stages the new config, commits it so it goes live, and releases the lock. Without the `commit`, the change sits in the candidate and nothing happens on the device.
+
 ```python
 from ncclient import manager                                 # 🟦 Q1: ncclient = NETCONF
 
@@ -413,8 +415,6 @@ sequenceDiagram
     Note over C,S: Q4 live only after commit
     end
 ```
-
-**What is going on:** the script opens an SSH session to the device and reads the running config (config only; `get` would add live state). To change something it locks the candidate datastore so nobody else edits, stages the new config, commits it so it goes live, and releases the lock. Without the `commit`, the change sits in the candidate and nothing happens on the device.
 
 ---
 
