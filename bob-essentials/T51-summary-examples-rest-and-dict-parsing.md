@@ -173,12 +173,12 @@ resp.raise_for_status()                               # 🟥 Q4: any other 4xx/5
 orgs = resp.json()                                    # 🟩 Q3: a plain JSON list, no wrapper key
 print(orgs[0]["name"])
 ```
-| Q | Answer | Evidence |
-|---|---|---|
-| 🟦 Q1 | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
-| 🟧 Q2 | static API key, no login call | `Authorization: Bearer` in `session.headers` |
-| 🟩 Q3 | the list itself | `resp.json()[0]["name"]` |
-| 🟥 Q4 | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🟦 Q1 | **Which product it is** | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
+| 🟧 Q2 | **Authentication method** | static API key, no login call | `Authorization: Bearer` in `session.headers` |
+| 🟩 Q3 | **What data you get back** | the list itself | `resp.json()[0]["name"]` |
+| 🟥 Q4 | **Error management** | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
 
 **Diagram:**
 ```mermaid
@@ -219,12 +219,12 @@ resp.raise_for_status()                                            # 🟥 Q4: 40
 for dev in resp.json()["response"]:                                # 🟩 Q3: list is under "response"
     print(dev["hostname"], dev["reachabilityStatus"])
 ```
-| Q | Answer | Evidence |
-|---|---|---|
-| 🟦 Q1 | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
-| 🟧 Q2 | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
-| 🟩 Q3 | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
-| 🟥 Q4 | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🟦 Q1 | **Which product it is** | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
+| 🟧 Q2 | **Authentication method** | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
+| 🟩 Q3 | **What data you get back** | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
+| 🟥 Q4 | **Error management** | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
 
 **Diagram:**
 ```mermaid
@@ -262,12 +262,12 @@ print(r.status_code)                                                  # 🟥 Q4:
 for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3: key = "module:container"
     print(i["name"])
 ```
-| Q | Answer | Evidence |
-|---|---|---|
-| 🟦 Q1 | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
-| 🟧 Q2 | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
-| 🟩 Q3 | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
-| 🟥 Q4 | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🟦 Q1 | **Which product it is** | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
+| 🟧 Q2 | **Authentication method** | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
+| 🟩 Q3 | **What data you get back** | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
+| 🟥 Q4 | **Error management** | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
 
 **Diagram:**
 ```mermaid
@@ -304,12 +304,12 @@ for mo in data["imdata"]:                                            # 🟩 Q3: 
     (cls, body), = mo.items()                                        # 🟩 Q3: the one key is the class name
     print(cls, body["attributes"]["name"])                           # 🟩 Q3: the fields are under "attributes"
 ```
-| Q | Answer | Evidence |
-|---|---|---|
-| 🟦 Q1 | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
-| 🟧 Q2 | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
-| 🟩 Q3 | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
-| 🟥 Q4 | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🟦 Q1 | **Which product it is** | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
+| 🟧 Q2 | **Authentication method** | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
+| 🟩 Q3 | **What data you get back** | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
+| 🟥 Q4 | **Error management** | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
 
 **Diagram:**
 ```mermaid
@@ -346,12 +346,12 @@ m.edit_config(target="candidate", config=XML)                # 🟥 Q4: step 2, 
 m.commit()                                                   # 🟥 Q4: step 3, now it is live
 m.unlock(target="candidate")                                 # 🟥 Q4: step 4, release
 ```
-| Q | Answer | Evidence |
-|---|---|---|
-| 🟦 Q1 | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
-| 🟧 Q2 | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
-| 🟩 Q3 | XML, not JSON | `reply.data_xml` |
-| 🟥 Q4 | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
+| Q | What it is for | Answer | Evidence |
+|---|---|---|---|
+| 🟦 Q1 | **Which product it is** | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
+| 🟧 Q2 | **Authentication method** | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
+| 🟩 Q3 | **What data you get back** | XML, not JSON | `reply.data_xml` |
+| 🟥 Q4 | **Error management** | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
 
 **Diagram:**
 ```mermaid
