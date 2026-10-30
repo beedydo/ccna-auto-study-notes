@@ -139,16 +139,16 @@ n/a
 | `.get("role", "n/a")` | value or default | missing key → default, **no** error |
 
 ## Example 3 · Reading API code, platform by platform
-Ask the same 4 questions of every script. Each question has its own colour and number, and the code comments below carry the same tag.
+Ask the same 4 questions of every script. Each question has its own icon and number, and the code comments below carry the same tag.
 
 | Tag | What it is for | Question | Look at |
 |---|---|---|---|
-| 🟦 **Q1** | **Which product it is** | **Which platform?** | URL path, import line (`requests` / `ncclient`) |
-| 🟧 **Q2** | **Authentication method** | **How does it log in?** | the first call, `auth=`, the header that carries the credential |
-| 🟩 **Q3** | **What data you get back** | **Where is the data?** | the key path after `.json()` |
-| 🟥 **Q4** | **Error management** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
+| 🏷️ **Q1** | **Which product it is** | **Which platform?** | URL path, import line (`requests` / `ncclient`) |
+| 🔑 **Q2** | **Authentication method** | **How does it log in?** | the first call, `auth=`, the header that carries the credential |
+| 📦 **Q3** | **What data you get back** | **Where is the data?** | the key path after `.json()` |
+| 🛡️ **Q4** | **Error management** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
-Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram shading shows which question a step answers (blue Q1, orange Q2, green Q3, red Q4); the Q labels themselves are not steps.
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram shading shows which question a step answers (login steps orange, error handling red); the Q labels themselves are not steps.
 
 ---
 
@@ -161,29 +161,29 @@ Snippets are trimmed from the runnable lab scripts in `labs/` (path under each h
 - Otherwise the reply is a plain list: print the first organization's name.
 
 ```python
-BASE_URL = "https://api.meraki.com/api/v1"            # 🟦 Q1: api.meraki.com = Meraki
+BASE_URL = "https://api.meraki.com/api/v1"            # 🏷️ Q1: api.meraki.com = Meraki
 
 session = requests.Session()
 session.headers.update({
-    "Authorization": f"Bearer {API_KEY}",             # 🟧 Q2: static key, sent on every call
+    "Authorization": f"Bearer {API_KEY}",             # 🔑 Q2: static key, sent on every call
     "Accept": "application/json",
 })
 
 resp = session.get(BASE_URL + "/organizations")
 
-if resp.status_code == 429:                           # 🟥 Q4: 429 = too many requests
-    time.sleep(int(resp.headers["Retry-After"]))      # 🟥 Q4: wait as long as the server says
-resp.raise_for_status()                               # 🟥 Q4: any other 4xx/5xx raises an error
+if resp.status_code == 429:                           # 🛡️ Q4: 429 = too many requests
+    time.sleep(int(resp.headers["Retry-After"]))      # 🛡️ Q4: wait as long as the server says
+resp.raise_for_status()                               # 🛡️ Q4: any other 4xx/5xx raises an error
 
-orgs = resp.json()                                    # 🟩 Q3: a plain JSON list, no wrapper key
+orgs = resp.json()                                    # 📦 Q3: a plain JSON list, no wrapper key
 print(orgs[0]["name"])
 ```
 | Q | What it is for | Answer | Evidence |
 |---|---|---|---|
-| 🟦 Q1 | **Which product it is** | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
-| 🟧 Q2 | **Authentication method** | static API key, no login call | `Authorization: Bearer` in `session.headers` |
-| 🟩 Q3 | **What data you get back** | the list itself | `resp.json()[0]["name"]` |
-| 🟥 Q4 | **Error management** | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
+| 🏷️ Q1 | **Which product it is** | Meraki | `api.meraki.com` (Bearer alone is not enough: Webex uses it too) |
+| 🔑 Q2 | **Authentication method** | static API key, no login call | `Authorization: Bearer` in `session.headers` |
+| 📦 Q3 | **What data you get back** | the list itself | `resp.json()[0]["name"]` |
+| 🛡️ Q4 | **Error management** | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
 
 **Diagram:**
 ```mermaid
@@ -214,27 +214,27 @@ sequenceDiagram
 ```python
 BASE_URL = "https://sandboxdnac2.cisco.com"
 
-url = f"{BASE_URL}/dna/system/api/v1/auth/token"                   # 🟦 Q1: /dna/ = Catalyst Center
+url = f"{BASE_URL}/dna/system/api/v1/auth/token"                   # 🏷️ Q1: /dna/ = Catalyst Center
 
-basic = HTTPBasicAuth(USER, PASSWORD)                              # 🟧 Q2: username + password, once
+basic = HTTPBasicAuth(USER, PASSWORD)                              # 🔑 Q2: username + password, once
 resp = requests.post(url, auth=basic)
 
-token = resp.json()["Token"]                                       # 🟩 Q3: token is in the body, capital T
+token = resp.json()["Token"]                                       # 📦 Q3: token is in the body, capital T
 
-headers = {"X-Auth-Token": token}                                  # 🟧 Q2: token goes in this header
+headers = {"X-Auth-Token": token}                                  # 🔑 Q2: token goes in this header
 resp = requests.get(f"{BASE_URL}/dna/intent/api/v1/network-device", headers=headers)
 
-resp.raise_for_status()                                            # 🟥 Q4: 401 here = bad or expired token
+resp.raise_for_status()                                            # 🛡️ Q4: 401 here = bad or expired token
 
-for dev in resp.json()["response"]:                                # 🟩 Q3: list is under "response"
+for dev in resp.json()["response"]:                                # 📦 Q3: list is under "response"
     print(dev["hostname"], dev["reachabilityStatus"])
 ```
 | Q | What it is for | Answer | Evidence |
 |---|---|---|---|
-| 🟦 Q1 | **Which product it is** | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
-| 🟧 Q2 | **Authentication method** | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
-| 🟩 Q3 | **What data you get back** | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
-| 🟥 Q4 | **Error management** | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
+| 🏷️ Q1 | **Which product it is** | Catalyst Center | `/dna/system/api/v1/auth/token`, `/dna/intent/api/v1/...` |
+| 🔑 Q2 | **Authentication method** | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
+| 📦 Q3 | **What data you get back** | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
+| 🛡️ Q4 | **Error management** | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
 
 **Diagram:**
 ```mermaid
@@ -265,23 +265,23 @@ sequenceDiagram
 - Print each interface name.
 
 ```python
-IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🟦 Q1: /restconf/data/<module>:<container>
-HEADERS = {"Accept": "application/yang-data+json",                    # 🟦 Q1: yang-data+json = RESTCONF
+IFACES = f"https://{HOST}/restconf/data/ietf-interfaces:interfaces"   # 🏷️ Q1: /restconf/data/<module>:<container>
+HEADERS = {"Accept": "application/yang-data+json",                    # 🏷️ Q1: yang-data+json = RESTCONF
            "Content-Type": "application/yang-data+json"}
 
-r = requests.get(IFACES, auth=(USER, PASSWORD), headers=HEADERS)      # 🟧 Q2: Basic auth on EVERY call
+r = requests.get(IFACES, auth=(USER, PASSWORD), headers=HEADERS)      # 🔑 Q2: Basic auth on EVERY call
 
-print(r.status_code)                                                  # 🟥 Q4: 200 = read ok; 401 = forgot auth=
+print(r.status_code)                                                  # 🛡️ Q4: 200 = read ok; 401 = forgot auth=
 
-for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3: key = "module:container"
+for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 📦 Q3: key = "module:container"
     print(i["name"])
 ```
 | Q | What it is for | Answer | Evidence |
 |---|---|---|---|
-| 🟦 Q1 | **Which product it is** | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
-| 🟧 Q2 | **Authentication method** | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
-| 🟩 Q3 | **What data you get back** | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
-| 🟥 Q4 | **Error management** | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
+| 🏷️ Q1 | **Which product it is** | RESTCONF, talking to **one device** | `/restconf/data/ietf-interfaces:interfaces`, `yang-data+json` |
+| 🔑 Q2 | **Authentication method** | HTTP Basic on every call, **no token step** | `auth=(USER, PASSWORD)` on the call itself |
+| 📦 Q3 | **What data you get back** | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
+| 🛡️ Q4 | **Error management** | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
 
 **Diagram:**
 ```mermaid
@@ -308,26 +308,26 @@ sequenceDiagram
 ```python
 BASE = f"https://{APIC}/api"
 
-body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}  # 🟧 Q2: credentials in a JSON body
+body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}  # 🔑 Q2: credentials in a JSON body
 
-url = f"{BASE}/aaaLogin.json"                                         # 🟦 Q1: aaaLogin.json = APIC
+url = f"{BASE}/aaaLogin.json"                                         # 🏷️ Q1: aaaLogin.json = APIC
 
-resp = session.post(url, json=body)                                  # 🟧 Q2: session now holds APIC-cookie
+resp = session.post(url, json=body)                                  # 🔑 Q2: session now holds APIC-cookie
 
-data = session.get(f"{BASE}/class/fabricNode.json").json()           # 🟦 Q1: fabricNode = ACI class
+data = session.get(f"{BASE}/class/fabricNode.json").json()           # 🏷️ Q1: fabricNode = ACI class
 
-print(data["totalCount"])                                            # 🟥 Q4: "0" = no match, still HTTP 200
+print(data["totalCount"])                                            # 🛡️ Q4: "0" = no match, still HTTP 200
 
-for mo in data["imdata"]:                                            # 🟩 Q3: a list of managed objects
-    (cls, body), = mo.items()                                        # 🟩 Q3: the one key is the class name
-    print(cls, body["attributes"]["name"])                           # 🟩 Q3: the fields are under "attributes"
+for mo in data["imdata"]:                                            # 📦 Q3: a list of managed objects
+    (cls, body), = mo.items()                                        # 📦 Q3: the one key is the class name
+    print(cls, body["attributes"]["name"])                           # 📦 Q3: the fields are under "attributes"
 ```
 | Q | What it is for | Answer | Evidence |
 |---|---|---|---|
-| 🟦 Q1 | **Which product it is** | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
-| 🟧 Q2 | **Authentication method** | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
-| 🟩 Q3 | **What data you get back** | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
-| 🟥 Q4 | **Error management** | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
+| 🏷️ Q1 | **Which product it is** | ACI (APIC) | `aaaLogin.json`, `fabricNode`, `uni/` objects (`sys/` would be Nexus NX-API REST) |
+| 🔑 Q2 | **Authentication method** | **POST JSON login**, then a **cookie** kept by `session` | `aaaUser` body, `session.post(...)` |
+| 📦 Q3 | **What data you get back** | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
+| 🛡️ Q4 | **Error management** | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
 
 **Diagram:**
 ```mermaid
@@ -353,26 +353,26 @@ sequenceDiagram
 - Without the `commit`, the change sits in the candidate and nothing happens on the device.
 
 ```python
-from ncclient import manager                                 # 🟦 Q1: ncclient = NETCONF
+from ncclient import manager                                 # 🏷️ Q1: ncclient = NETCONF
 
-port = 830                                                   # 🟦 Q1: port 830, no URL, no HTTP
+port = 830                                                   # 🏷️ Q1: port 830, no URL, no HTTP
 
-creds = dict(username=USER, password=PASSWORD)               # 🟧 Q2: SSH username + password
+creds = dict(username=USER, password=PASSWORD)               # 🔑 Q2: SSH username + password
 m = manager.connect(host=HOST, port=port, hostkey_verify=False, **creds)
 
-reply = m.get_config(source="running")                       # 🟩 Q3: reply is XML (reply.data_xml)
+reply = m.get_config(source="running")                       # 📦 Q3: reply is XML (reply.data_xml)
 
-m.lock(target="candidate")                                   # 🟥 Q4: step 1, nobody else can edit
-m.edit_config(target="candidate", config=XML)                # 🟥 Q4: step 2, staged only, NOT live
-m.commit()                                                   # 🟥 Q4: step 3, now it is live
-m.unlock(target="candidate")                                 # 🟥 Q4: step 4, release
+m.lock(target="candidate")                                   # 🛡️ Q4: step 1, nobody else can edit
+m.edit_config(target="candidate", config=XML)                # 🛡️ Q4: step 2, staged only, NOT live
+m.commit()                                                   # 🛡️ Q4: step 3, now it is live
+m.unlock(target="candidate")                                 # 🛡️ Q4: step 4, release
 ```
 | Q | What it is for | Answer | Evidence |
 |---|---|---|---|
-| 🟦 Q1 | **Which product it is** | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
-| 🟧 Q2 | **Authentication method** | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
-| 🟩 Q3 | **What data you get back** | XML, not JSON | `reply.data_xml` |
-| 🟥 Q4 | **Error management** | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
+| 🏷️ Q1 | **Which product it is** | NETCONF (SSH + XML) | `from ncclient import manager`, `port=830` |
+| 🔑 Q2 | **Authentication method** | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
+| 📦 Q3 | **What data you get back** | XML, not JSON | `reply.data_xml` |
+| 🛡️ Q4 | **Error management** | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
 
 **Diagram:**
 ```mermaid
@@ -401,7 +401,7 @@ sequenceDiagram
 ---
 
 ### Side by side
-| | 🟦 Q1 Which product it is | 🟧 Q2 Authentication method | 🟩 Q3 What data you get back | 🟥 Q4 Error management |
+| | 🏷️ Q1 Which product it is | 🔑 Q2 Authentication method | 📦 Q3 What data you get back | 🛡️ Q4 Error management |
 |---|---|---|---|---|
 | Meraki | `api.meraki.com` | `Authorization: Bearer <key>` | plain list | `200`; `429` → `Retry-After` |
 | Catalyst Center | `/dna/...` | Basic → token → `X-Auth-Token` | `["response"]` | `200`; writes return a task |
