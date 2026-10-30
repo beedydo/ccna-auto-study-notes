@@ -148,7 +148,7 @@ Ask the same 4 questions of every script. Each question has its own colour and n
 | 🟩 **Q3** | **Where is the data?** | the key path after `.json()` |
 | 🟥 **Q4** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
-Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: code with tags, then the 4 answers, then the story.
+Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: code with tags, then the 4 answers, then a diagram of the client/server conversation, then the story. Diagram colours match the questions (blue Q1, orange Q2, green Q3, red Q4).
 
 ---
 
@@ -178,6 +178,29 @@ print(orgs[0]["name"])
 | 🟩 Q3 | the list itself | `resp.json()[0]["name"]` |
 | 🟥 Q4 | `200`; `429` means wait and retry | `status_code == 429`, `Retry-After`, `raise_for_status()` |
 
+**Diagram:**
+```mermaid
+sequenceDiagram
+    participant C as Client (script)
+    participant S as Meraki cloud
+    rect rgb(219,234,254)
+    Note over C,S: Q1 platform: api.meraki.com/api/v1
+    end
+    rect rgb(254,215,170)
+    C->>S: GET /organizations (Authorization: Bearer key)
+    Note over C,S: Q2 login: key sent on every call
+    end
+    rect rgb(254,202,202)
+    S-->>C: 429 Too Many Requests (Retry-After: 2)
+    Note over C: Q4 sleep 2 seconds
+    C->>S: GET /organizations (retry)
+    S-->>C: 200 OK
+    end
+    rect rgb(187,247,208)
+    Note over C,S: Q3 body = plain JSON list [ {"name": ...} ]
+    end
+```
+
 **What is going on:** a `Session` is created once, with the key already in its headers. It asks for the list of organizations. If the server says "slow down" (`429`), the script sleeps for the number of seconds the server asked for. Any other error stops the script. Otherwise the reply is a plain list, and it prints the first organization's name.
 
 ---
@@ -186,8 +209,10 @@ print(orgs[0]["name"])
 ```python
 BASE_URL = "https://sandboxdnac2.cisco.com"
 
-resp = requests.post(f"{BASE_URL}/dna/system/api/v1/auth/token",   # 🟦 Q1: /dna/ = Catalyst Center
-                     auth=HTTPBasicAuth(USER, PASSWORD))           # 🟧 Q2: username + password, once
+url = f"{BASE_URL}/dna/system/api/v1/auth/token"                   # 🟦 Q1: /dna/ = Catalyst Center
+
+basic = HTTPBasicAuth(USER, PASSWORD)                              # 🟧 Q2: username + password, once
+resp = requests.post(url, auth=basic)
 
 token = resp.json()["Token"]                                       # 🟩 Q3: token is in the body, capital T
 
@@ -205,6 +230,35 @@ for dev in resp.json()["response"]:                                # 🟩 Q3: li
 | 🟧 Q2 | **two steps**: Basic auth gets a token, then `X-Auth-Token` header | `auth=HTTPBasicAuth(...)`, then `headers={"X-Auth-Token": token}` |
 | 🟩 Q3 | token: `["Token"]`; devices: `["response"]` | the two `.json()[...]` keys |
 | 🟥 Q4 | `200`; but a PUT/POST returns a **task**, so poll `GET /task/{id}` until `endTime` | `raise_for_status()`; a write is not done at `200`/`202` |
+
+**Diagram:**
+```mermaid
+sequenceDiagram
+    participant C as Client (script)
+    participant S as Catalyst Center
+    rect rgb(219,234,254)
+    Note over C,S: Q1 platform: /dna/...
+    end
+    rect rgb(254,215,170)
+    C->>S: POST /dna/system/api/v1/auth/token (Basic user:pass)
+    Note over C,S: Q2 login step 1: password sent once
+    end
+    rect rgb(187,247,208)
+    S-->>C: 200 {"Token": "eyJ..."}
+    Note over C: Q3 token in body, capital T
+    end
+    rect rgb(254,215,170)
+    C->>S: GET /dna/intent/api/v1/network-device (X-Auth-Token: eyJ...)
+    Note over C,S: Q2 login step 2: token in header
+    end
+    rect rgb(254,202,202)
+    S-->>C: 200 OK
+    Note over C: Q4 401 would mean bad or expired token
+    end
+    rect rgb(187,247,208)
+    Note over C: Q3 devices under "response"
+    end
+```
 
 **What is going on:** the script trades the username and password for a token (done once). Every later call carries that token in the `X-Auth-Token` header instead of the password. It then lists the network devices and prints each one's name and whether it is reachable. The device list is nested under the key `"response"`.
 
@@ -230,6 +284,27 @@ for i in r.json()["ietf-interfaces:interfaces"]["interface"]:         # 🟩 Q3:
 | 🟩 Q3 | under `"ietf-interfaces:interfaces"` → `"interface"` | the key is `module:container` |
 | 🟥 Q4 | GET `200`; PUT create `201`; PUT/PATCH/DELETE update `204` (no body) | `r.status_code` |
 
+**Diagram:**
+```mermaid
+sequenceDiagram
+    participant C as Client (script)
+    participant S as IOS XE device
+    rect rgb(219,234,254)
+    Note over C,S: Q1 platform: /restconf/data/... + yang-data+json
+    end
+    rect rgb(254,215,170)
+    C->>S: GET /restconf/data/ietf-interfaces:interfaces (Basic user:pass)
+    Note over C,S: Q2 login: Basic on every call, no token step
+    end
+    rect rgb(254,202,202)
+    S-->>C: 200 OK
+    Note over C: Q4 401 = forgot auth=
+    end
+    rect rgb(187,247,208)
+    Note over C: Q3 body key "ietf-interfaces:interfaces" then "interface"
+    end
+```
+
 **What is going on:** the URL names a YANG model (`ietf-interfaces`) and the part of it to read (`interfaces`). The script sends username and password with this one request, because RESTCONF has no login step. The device answers with the interface list under a key that includes the module name. It prints each interface name.
 
 ---
@@ -240,8 +315,9 @@ BASE = f"https://{APIC}/api"
 
 body = {"aaaUser": {"attributes": {"name": USER, "pwd": PASSWORD}}}  # 🟧 Q2: credentials in a JSON body
 
-resp = session.post(f"{BASE}/aaaLogin.json", json=body)              # 🟦 Q1: aaaLogin.json = APIC
-                                                                     # 🟧 Q2: session now holds APIC-cookie
+url = f"{BASE}/aaaLogin.json"                                         # 🟦 Q1: aaaLogin.json = APIC
+
+resp = session.post(url, json=body)                                  # 🟧 Q2: session now holds APIC-cookie
 
 data = session.get(f"{BASE}/class/fabricNode.json").json()           # 🟦 Q1: fabricNode = ACI class
 
@@ -258,6 +334,29 @@ for mo in data["imdata"]:                                            # 🟩 Q3: 
 | 🟩 Q3 | `["imdata"]` → one-key dict (the class) → `["attributes"]` | `(cls, body), = mo.items()` |
 | 🟥 Q4 | `200`; **no results is also `200`** with `totalCount: "0"`, not 404 | `data["totalCount"]` |
 
+**Diagram:**
+```mermaid
+sequenceDiagram
+    participant C as Client (script)
+    participant S as APIC
+    rect rgb(219,234,254)
+    Note over C,S: Q1 platform: /api/aaaLogin.json
+    end
+    rect rgb(254,215,170)
+    C->>S: POST /api/aaaLogin.json {"aaaUser": {...}}
+    S-->>C: 200 + Set-Cookie: APIC-cookie
+    Note over C,S: Q2 login: JSON body, then cookie
+    C->>S: GET /api/class/fabricNode.json (Cookie: APIC-cookie)
+    end
+    rect rgb(254,202,202)
+    S-->>C: 200 OK
+    Note over C: Q4 no match is still 200, totalCount "0"
+    end
+    rect rgb(187,247,208)
+    Note over C: Q3 imdata, then class, then attributes
+    end
+```
+
 **What is going on:** the script logs in by POSTing a JSON body, and the `Session` keeps the cookie that comes back. It then asks for every object of the class `fabricNode` (the switches and controllers). Each object comes back as a one-key dict where the key is the class name, so the loop unpacks that key and reads the name from `"attributes"`.
 
 ---
@@ -266,9 +365,10 @@ for mo in data["imdata"]:                                            # 🟩 Q3: 
 ```python
 from ncclient import manager                                 # 🟦 Q1: ncclient = NETCONF
 
-m = manager.connect(host=HOST, port=830,                     # 🟦 Q1: port 830, no URL, no HTTP
-                    username=USER, password=PASSWORD,        # 🟧 Q2: SSH username + password
-                    hostkey_verify=False)
+port = 830                                                   # 🟦 Q1: port 830, no URL, no HTTP
+
+creds = dict(username=USER, password=PASSWORD)               # 🟧 Q2: SSH username + password
+m = manager.connect(host=HOST, port=port, hostkey_verify=False, **creds)
 
 reply = m.get_config(source="running")                       # 🟩 Q3: reply is XML (reply.data_xml)
 
@@ -283,6 +383,36 @@ m.unlock(target="candidate")                                 # 🟥 Q4: step 4, 
 | 🟧 Q2 | SSH username and password, at connect time | `manager.connect(username=..., password=...)` |
 | 🟩 Q3 | XML, not JSON | `reply.data_xml` |
 | 🟥 Q4 | `<ok/>` reply, but **only live after `commit`** | the `lock` → `edit_config` → `commit` → `unlock` order |
+
+**Diagram:**
+```mermaid
+sequenceDiagram
+    participant C as Client (ncclient)
+    participant S as Device
+    rect rgb(219,234,254)
+    Note over C,S: Q1 platform: SSH port 830, subsystem netconf
+    end
+    rect rgb(254,215,170)
+    C->>S: SSH connect (username + password)
+    S-->>C: hello (capabilities)
+    C->>S: hello
+    Note over C,S: Q2 login: SSH credentials
+    end
+    rect rgb(187,247,208)
+    C->>S: get-config (running)
+    S-->>C: rpc-reply with XML data
+    Note over C: Q3 data is XML
+    end
+    rect rgb(254,202,202)
+    C->>S: lock candidate
+    C->>S: edit-config candidate
+    S-->>C: ok (staged, NOT live)
+    C->>S: commit
+    S-->>C: ok (now live)
+    C->>S: unlock candidate
+    Note over C,S: Q4 live only after commit
+    end
+```
 
 **What is going on:** the script opens an SSH session to the device and reads the running config (config only; `get` would add live state). To change something it locks the candidate datastore so nobody else edits, stages the new config, commits it so it goes live, and releases the lock. Without the `commit`, the change sits in the candidate and nothing happens on the device.
 
