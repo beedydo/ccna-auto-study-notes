@@ -141,12 +141,12 @@ n/a
 ## Example 3 · Reading API code, platform by platform
 Ask the same 4 questions of every script. Each question has its own colour and number, and the code comments below carry the same tag.
 
-| Tag | Question | Look at |
-|---|---|---|
-| 🟦 **Q1** | **Which platform?** | URL path, import line (`requests` / `ncclient`) |
-| 🟧 **Q2** | **How does it log in?** | the first call, `auth=`, the header that carries the credential |
-| 🟩 **Q3** | **Where is the data?** | the key path after `.json()` |
-| 🟥 **Q4** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
+| Tag | What it is for | Question | Look at |
+|---|---|---|---|
+| 🟦 **Q1** | **Which product it is** | **Which platform?** | URL path, import line (`requests` / `ncclient`) |
+| 🟧 **Q2** | **Authentication method** | **How does it log in?** | the first call, `auth=`, the header that carries the credential |
+| 🟩 **Q3** | **What data you get back** | **Where is the data?** | the key path after `.json()` |
+| 🟥 **Q4** | **Error management** | **What does success look like?** | status code, `raise_for_status()`, task polling, `commit` |
 
 Snippets are trimmed from the runnable lab scripts in `labs/` (path under each heading). Read each one as: summary, code with tags, the 4 answers, then a diagram of the client/server conversation. Diagram shading shows which question a step answers (blue Q1, orange Q2, green Q3, red Q4); the Q labels themselves are not steps.
 
@@ -380,7 +380,7 @@ sequenceDiagram
 ---
 
 ### Side by side
-| | 🟦 Q1 Platform | 🟧 Q2 Login | 🟩 Q3 Data | 🟥 Q4 Success |
+| | 🟦 Q1 Which product it is | 🟧 Q2 Authentication method | 🟩 Q3 What data you get back | 🟥 Q4 Error management |
 |---|---|---|---|---|
 | Meraki | `api.meraki.com` | `Authorization: Bearer <key>` | plain list | `200`; `429` → `Retry-After` |
 | Catalyst Center | `/dna/...` | Basic → token → `X-Auth-Token` | `["response"]` | `200`; writes return a task |
